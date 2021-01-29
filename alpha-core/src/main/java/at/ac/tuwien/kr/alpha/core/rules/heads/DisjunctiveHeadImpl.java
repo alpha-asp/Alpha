@@ -4,15 +4,16 @@ import static at.ac.tuwien.kr.alpha.core.util.Util.join;
 
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.rules.DisjunctiveHead;
 
 /**
  * Copyright (c) 2017, the Alpha Team.
  */
-public class DisjunctiveHead extends Head {
-	public final List<CoreAtom> disjunctiveAtoms;
+public class DisjunctiveHeadImpl implements DisjunctiveHead {
+	public final List<Atom> disjunctiveAtoms;
 
-	public DisjunctiveHead(List<CoreAtom> disjunctiveAtoms) {
+	public DisjunctiveHeadImpl(List<Atom> disjunctiveAtoms) {
 		this.disjunctiveAtoms = disjunctiveAtoms;
 		if (disjunctiveAtoms != null && disjunctiveAtoms.size() > 1) {
 			throw new UnsupportedOperationException("Disjunction in rule heads is not yet supported");
@@ -25,7 +26,7 @@ public class DisjunctiveHead extends Head {
 	}
 
 	public boolean isGround() {
-		for (CoreAtom atom : disjunctiveAtoms) {
+		for (Atom atom : disjunctiveAtoms) {
 			if (!atom.isGround()) {
 				return false;
 			}
@@ -49,10 +50,10 @@ public class DisjunctiveHead extends Head {
 		if (obj == null) {
 			return false;
 		}
-		if (!(obj instanceof DisjunctiveHead)) {
+		if (!(obj instanceof DisjunctiveHeadImpl)) {
 			return false;
 		}
-		DisjunctiveHead other = (DisjunctiveHead) obj;
+		DisjunctiveHeadImpl other = (DisjunctiveHeadImpl) obj;
 		if (this.disjunctiveAtoms == null) {
 			if (other.disjunctiveAtoms != null) {
 				return false;

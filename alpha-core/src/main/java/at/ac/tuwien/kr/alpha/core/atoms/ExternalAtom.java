@@ -34,19 +34,21 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.core.common.terms.Terms;
 
 public class ExternalAtom extends CoreAtom implements VariableNormalizableAtom {
 
-	private final List<CoreTerm> input;
-	private final List<CoreTerm> output;
+	private final List<Term> input;
+	private final List<Term> output;
 
-	protected final CorePredicate predicate;
+	protected final Predicate predicate;
 	protected final PredicateInterpretation interpretation;
 
-	public ExternalAtom(CorePredicate predicate, PredicateInterpretation interpretation, List<CoreTerm> input, List<CoreTerm> output) {
+	public ExternalAtom(Predicate predicate, PredicateInterpretation interpretation, List<Term> input, List<Term> output) {
 		if (predicate == null) {
 			throw new IllegalArgumentException("predicate must not be null!");
 		}
@@ -70,7 +72,7 @@ public class ExternalAtom extends CoreAtom implements VariableNormalizableAtom {
 	}
 
 	@Override
-	public CorePredicate getPredicate() {
+	public Predicate getPredicate() {
 		return predicate;
 	}
 
@@ -78,27 +80,27 @@ public class ExternalAtom extends CoreAtom implements VariableNormalizableAtom {
 		return interpretation;
 	}
 
-	public List<CoreTerm> getInput() {
+	public List<Term> getInput() {
 		return Collections.unmodifiableList(input);
 	}
 
-	public List<CoreTerm> getOutput() {
+	public List<Term> getOutput() {
 		return Collections.unmodifiableList(output);
 	}
 
 	@Override
-	public List<CoreTerm> getTerms() {
+	public List<Term> getTerms() {
 		return input;
 	}
 
 	@Override
 	public boolean isGround() {
-		for (CoreTerm t : input) {
+		for (Term t : input) {
 			if (!t.isGround()) {
 				return false;
 			}
 		}
-		for (CoreTerm t : output) {
+		for (Term t : output) {
 			if (!t.isGround()) {
 				return false;
 			}
@@ -108,8 +110,8 @@ public class ExternalAtom extends CoreAtom implements VariableNormalizableAtom {
 
 	@Override
 	public ExternalAtom substitute(Substitution substitution) {
-		List<CoreTerm> substitutedInput = this.input.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
-		List<CoreTerm> substitutedOutput = this.output.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
+		List<Term> substitutedInput = this.input.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
+		List<Term> substitutedOutput = this.output.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
 		return new ExternalAtom(predicate, interpretation, substitutedInput, substitutedOutput);
 	}
 
@@ -131,7 +133,7 @@ public class ExternalAtom extends CoreAtom implements VariableNormalizableAtom {
 	}
 
 	@Override
-	public CoreAtom withTerms(List<CoreTerm> terms) {
+	public Atom withTerms(List<Term> terms) {
 		throw new UnsupportedOperationException("Editing term list is not supported for external atoms!");
 	}
 
@@ -171,8 +173,8 @@ public class ExternalAtom extends CoreAtom implements VariableNormalizableAtom {
 
 	@Override
 	public ExternalAtom normalizeVariables(String prefix, int counterStartingValue) {
-		List<CoreTerm> renamedInput = CoreTerm.renameTerms(this.input, prefix + "_IN_", counterStartingValue);
-		List<CoreTerm> renamedOutput = CoreTerm.renameTerms(this.output, prefix + "_OUT_", counterStartingValue);
+		List<Term> renamedInput = Terms.renameTerms(this.input, prefix + "_IN_", counterStartingValue);
+		List<Term> renamedOutput = Terms.renameTerms(this.output, prefix + "_OUT_", counterStartingValue);
 		return new ExternalAtom(this.predicate, this.interpretation, renamedInput, renamedOutput);
 	}
 

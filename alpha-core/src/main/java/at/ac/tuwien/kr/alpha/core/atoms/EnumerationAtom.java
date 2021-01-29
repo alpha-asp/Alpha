@@ -5,11 +5,13 @@ import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
 import java.util.HashMap;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 
 /**
  * Represents a ground-instance enumeration atom of form:
@@ -23,10 +25,10 @@ import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class EnumerationAtom extends BasicAtom {
-	public static final CorePredicate ENUMERATION_PREDICATE = CorePredicate.getInstance("_Enumeration", 3);
-	private static final HashMap<CoreTerm, HashMap<CoreTerm, Integer>> ENUMERATIONS = new HashMap<>();
+	public static final Predicate ENUMERATION_PREDICATE = CorePredicate.getInstance("_Enumeration", 3);
+	private static final HashMap<Term, HashMap<Term, Integer>> ENUMERATIONS = new HashMap<>();
 
-	public EnumerationAtom(List<CoreTerm> terms) {
+	public EnumerationAtom(List<Term> terms) {
 		super(ENUMERATION_PREDICATE, terms);
 		if (terms.size() != 3) {
 			throw new RuntimeException("EnumerationAtom must have arity three. Given terms are of wrong size: " + terms);
@@ -40,9 +42,9 @@ public class EnumerationAtom extends BasicAtom {
 		ENUMERATIONS.clear();
 	}
 
-	private Integer getEnumerationIndex(CoreTerm identifier, CoreTerm enumerationTerm) {
+	private Integer getEnumerationIndex(Term identifier, Term enumerationTerm) {
 		ENUMERATIONS.putIfAbsent(identifier, new HashMap<>());
-		HashMap<CoreTerm, Integer> enumeratedTerms = ENUMERATIONS.get(identifier);
+		HashMap<Term, Integer> enumeratedTerms = ENUMERATIONS.get(identifier);
 		Integer assignedInteger = enumeratedTerms.get(enumerationTerm);
 		if (assignedInteger == null) {
 			int enumerationIndex = enumeratedTerms.size() + 1;
@@ -63,13 +65,13 @@ public class EnumerationAtom extends BasicAtom {
 	 * @return a new substitution where the third term of the enumeration atom is bound to an integer.
 	 */
 	public Substitution addEnumerationIndexToSubstitution(Substitution substitution) {
-		CoreTerm idTerm = this.getTerms().get(0).substitute(substitution);
-		CoreTerm enumerationTerm = this.getTerms().get(1).substitute(substitution);
+		Term idTerm = this.getTerms().get(0).substitute(substitution);
+		Term enumerationTerm = this.getTerms().get(1).substitute(substitution);
 		if (!enumerationTerm.isGround()) {
 			throw new RuntimeException("Enumeration term is not ground after substitution. Should not happen.");
 		}
 		Integer enumerationIndex = getEnumerationIndex(idTerm, enumerationTerm);
-		Substitution retVal = new Substitution(substitution);
+		SubstitutionImpl retVal = new SubstitutionImpl(substitution);
 		retVal.put((VariableTermImpl) getTerms().get(2), CoreConstantTerm.getInstance(enumerationIndex));
 		return retVal;
 	}

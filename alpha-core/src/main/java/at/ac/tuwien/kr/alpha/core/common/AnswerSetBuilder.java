@@ -10,18 +10,20 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 
 public class AnswerSetBuilder {
 	private boolean firstInstance = true;
 	private String predicateSymbol;
-	private CorePredicate predicate;
-	private SortedSet<CorePredicate> predicates = new TreeSet<>();
-	private SortedSet<CoreAtom> instances = new TreeSet<>();
-	private Map<CorePredicate, SortedSet<CoreAtom>> predicateInstances = new HashMap<>();
+	private Predicate predicate;
+	private SortedSet<Predicate> predicates = new TreeSet<>();
+	private SortedSet<Atom> instances = new TreeSet<>();
+	private Map<Predicate, SortedSet<Atom>> predicateInstances = new HashMap<>();
 
 	public AnswerSetBuilder() {
 	}
@@ -34,7 +36,7 @@ public class AnswerSetBuilder {
 		this.instances = new TreeSet<>(copy.instances);
 		this.predicateInstances = new HashMap<>(copy.predicateInstances);
 		this.predicateInstances = copy.predicateInstances.entrySet().stream()
-			.collect(Collectors.toMap(Map.Entry::getKey, e -> new TreeSet<>(e.getValue())));
+				.collect(Collectors.toMap(Map.Entry::getKey, e -> new TreeSet<>(e.getValue())));
 	}
 
 	private void flush() {
@@ -43,7 +45,7 @@ public class AnswerSetBuilder {
 			predicates.add(predicate);
 			predicateInstances.put(predicate, new TreeSet<>(singletonList(new BasicAtom(predicate))));
 		} else {
-			SortedSet<CoreAtom> atoms = predicateInstances.get(predicate);
+			SortedSet<Atom> atoms = predicateInstances.get(predicate);
 			if (atoms == null) {
 				predicateInstances.put(predicate, new TreeSet<>(instances));
 			} else {
@@ -73,10 +75,10 @@ public class AnswerSetBuilder {
 
 		// Note that usage of terms does not pollute the heap,
 		// since we are only reading, not writing.
-		List<CoreTerm> termList = Stream
-			.of(terms)
-			.map(CoreConstantTerm::getInstance)
-			.collect(Collectors.toList());
+		List<Term> termList = Stream
+				.of(terms)
+				.map(CoreConstantTerm::getInstance)
+				.collect(Collectors.toList());
 
 		instances.add(new BasicAtom(predicate, termList));
 		return this;
@@ -89,7 +91,7 @@ public class AnswerSetBuilder {
 			predicates.add(predicate);
 		}
 
-		List<CoreTerm> termList = Stream.of(terms).map(CoreConstantTerm::getSymbolicInstance).collect(Collectors.toList());
+		List<Term> termList = Stream.of(terms).map(CoreConstantTerm::getSymbolicInstance).collect(Collectors.toList());
 		instances.add(new BasicAtom(predicate, termList));
 		return this;
 	}

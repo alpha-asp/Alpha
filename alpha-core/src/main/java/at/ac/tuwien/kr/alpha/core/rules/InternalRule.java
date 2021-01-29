@@ -32,10 +32,12 @@ import java.util.List;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingOrders;
@@ -52,11 +54,11 @@ public class InternalRule extends NormalRule {
 
 	private final int ruleId;
 
-	private final List<CorePredicate> occurringPredicates;
+	private final List<Predicate> occurringPredicates;
 
 	private final RuleGroundingOrders groundingOrders;
 
-	public InternalRule(NormalHeadImpl head, List<CoreLiteral> body) {
+	public InternalRule(NormalHead head, List<Literal> body) {
 		super(head, body);
 		if (body.isEmpty()) {
 			throw new IllegalArgumentException(
@@ -69,7 +71,7 @@ public class InternalRule extends NormalRule {
 			this.occurringPredicates.add(this.getHeadAtom().getPredicate());
 		}
 
-		for (CoreLiteral literal : body) {
+		for (Literal literal : body) {
 			if (literal instanceof AggregateLiteral) {
 				throw new IllegalArgumentException("AggregateLiterals aren't supported in InternalRules! (lit: " + literal.toString() + ")");
 			}
@@ -101,20 +103,20 @@ public class InternalRule extends NormalRule {
 	 * @return
 	 */
 	public InternalRule renameVariables(String newVariablePostfix) {
-		List<VariableTermImpl> occurringVariables = new ArrayList<>();
-		CoreAtom headAtom = this.getHeadAtom();
+		List<VariableTerm> occurringVariables = new ArrayList<>();
+		Atom headAtom = this.getHeadAtom();
 		occurringVariables.addAll(headAtom.getOccurringVariables());
-		for (CoreLiteral literal : this.getBody()) {
+		for (Literal literal : this.getBody()) {
 			occurringVariables.addAll(literal.getOccurringVariables());
 		}
 		Unifier variableReplacement = new Unifier();
-		for (VariableTermImpl occurringVariable : occurringVariables) {
+		for (VariableTerm occurringVariable : occurringVariables) {
 			final String newVariableName = occurringVariable.toString() + newVariablePostfix;
 			variableReplacement.put(occurringVariable, VariableTermImpl.getInstance(newVariableName));
 		}
-		CoreAtom renamedHeadAtom = headAtom.substitute(variableReplacement);
-		ArrayList<CoreLiteral> renamedBody = new ArrayList<>(this.getBody().size());
-		for (CoreLiteral literal : this.getBody()) {
+		Atom renamedHeadAtom = headAtom.substitute(variableReplacement);
+		ArrayList<Literal> renamedBody = new ArrayList<>(this.getBody().size());
+		for (Literal literal : this.getBody()) {
 			renamedBody.add(literal.substitute(variableReplacement));
 		}
 		return new InternalRule(new NormalHeadImpl(renamedHeadAtom), renamedBody);
@@ -124,7 +126,7 @@ public class InternalRule extends NormalRule {
 	 * Returns the predicates occurring in this rule.
 	 * @return a list of all predicates occurring in the rule (may contain duplicates and builtin atoms).
 	 */
-	public List<CorePredicate> getOccurringPredicates() {
+	public List<Predicate> getOccurringPredicates() {
 		return this.occurringPredicates;
 	}
 

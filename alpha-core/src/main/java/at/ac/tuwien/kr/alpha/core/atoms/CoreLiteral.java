@@ -32,11 +32,12 @@ import java.util.Set;
 
 import org.apache.commons.collections4.SetUtils;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 
 /**
  * A potentially negated {@link CoreAtom}
@@ -45,54 +46,61 @@ import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
  */
 public abstract class CoreLiteral implements Literal {
 
-	protected final CoreAtom atom;
+	protected final Atom atom;
 	protected final boolean positive;
 
-	public CoreLiteral(CoreAtom atom, boolean positive) {
+	public CoreLiteral(Atom atom, boolean positive) {
 		this.atom = atom;
 		this.positive = positive;
 	}
 
-	public CoreAtom getAtom() {
+	@Override
+	public Atom getAtom() {
 		return atom;
 	}
 
+	@Override
 	public boolean isNegated() {
 		return !positive;
 	}
 
-	public abstract CoreLiteral negate();
+	@Override
+	public abstract Literal negate();
 
-	public abstract CoreLiteral substitute(Substitution substitution);
+	public abstract Literal substitute(Substitution substitution);
 
-	public abstract Set<VariableTermImpl> getBindingVariables();
+	public abstract Set<VariableTerm> getBindingVariables();
 
-	public abstract Set<VariableTermImpl> getNonBindingVariables();
+	public abstract Set<VariableTerm> getNonBindingVariables();
 
 	/**
 	 * Union of {@link #getBindingVariables()} and {@link #getNonBindingVariables()}
 	 */
-	public Set<VariableTermImpl> getOccurringVariables() {
+	@Override
+	public Set<VariableTerm> getOccurringVariables() {
 		return SetUtils.union(getBindingVariables(), getNonBindingVariables());
 	}
 
 	/**
 	 * @see CoreAtom#getPredicate()
 	 */
-	public CorePredicate getPredicate() {
+	@Override
+	public Predicate getPredicate() {
 		return atom.getPredicate();
 	}
 
 	/**
 	 * @see CoreAtom#getTerms()
 	 */
-	public List<CoreTerm> getTerms() {
+	@Override
+	public List<Term> getTerms() {
 		return atom.getTerms();
 	}
 
 	/**
 	 * @see CoreAtom#isGround()
 	 */
+	@Override
 	public boolean isGround() {
 		return atom.isGround();
 	}
@@ -111,9 +119,9 @@ public abstract class CoreLiteral implements Literal {
 			return false;
 		}
 
-		CoreLiteral that = (CoreLiteral) o;
+		Literal that = (Literal) o;
 
-		return atom.equals(that.atom) && positive == that.positive;
+		return atom.equals(that.getAtom()) && positive == !that.isNegated();
 	}
 
 	@Override

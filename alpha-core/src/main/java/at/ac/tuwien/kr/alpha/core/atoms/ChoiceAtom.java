@@ -32,25 +32,27 @@ import static at.ac.tuwien.kr.alpha.core.util.Util.join;
 import java.util.Collections;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 public class ChoiceAtom extends CoreAtom {
 
-	public static final CorePredicate ON = CorePredicate.getInstance("ChoiceOn", 1, true, true);
-	public static final CorePredicate OFF = CorePredicate.getInstance("ChoiceOff", 1, true, true);
+	public static final Predicate ON = CorePredicate.getInstance("ChoiceOn", 1, true, true);
+	public static final Predicate OFF = CorePredicate.getInstance("ChoiceOff", 1, true, true);
 
-	private final CorePredicate predicate;
-	private final List<CoreTerm> terms;
+	private final Predicate predicate;
+	private final List<Term> terms;
 
-	private ChoiceAtom(CorePredicate predicate, CoreTerm term) {
+	private ChoiceAtom(Predicate predicate, Term term) {
 		this.predicate = predicate;
 		this.terms = Collections.singletonList(term);
 	}
 
-	private ChoiceAtom(CorePredicate predicate, int id) {
+	private ChoiceAtom(Predicate predicate, int id) {
 		this(predicate, CoreConstantTerm.getInstance(Integer.toString(id)));
 	}
 
@@ -63,12 +65,12 @@ public class ChoiceAtom extends CoreAtom {
 	}
 
 	@Override
-	public CorePredicate getPredicate() {
+	public Predicate getPredicate() {
 		return predicate;
 	}
 
 	@Override
-	public List<CoreTerm> getTerms() {
+	public List<Term> getTerms() {
 		return terms;
 	}
 
@@ -94,7 +96,7 @@ public class ChoiceAtom extends CoreAtom {
 	}
 
 	@Override
-	public CoreAtom withTerms(List<CoreTerm> terms) {
+	public Atom withTerms(List<Term> terms) {
 		throw new UnsupportedOperationException("Changing terms is not supported for ChoiceAtoms!");
 	}
 

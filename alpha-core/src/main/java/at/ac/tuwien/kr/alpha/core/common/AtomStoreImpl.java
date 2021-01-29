@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.grounder.IntIdGenerator;
@@ -43,8 +44,8 @@ import at.ac.tuwien.kr.alpha.core.solver.AtomCounter;
  * This class stores ground atoms and provides the translation from an (integer) atomId to a (structured) predicate instance.
  */
 public class AtomStoreImpl implements AtomStore {
-	private final List<CoreAtom> atomIdsToInternalBasicAtoms = new ArrayList<>();
-	private final Map<CoreAtom, Integer> predicateInstancesToAtomIds = new HashMap<>();
+	private final List<Atom> atomIdsToInternalBasicAtoms = new ArrayList<>();
+	private final Map<Atom, Integer> predicateInstancesToAtomIds = new HashMap<>();
 	private final IntIdGenerator atomIdGenerator = new IntIdGenerator(1);
 	private final AtomCounter atomCounter = new AtomCounter();
 
@@ -56,7 +57,7 @@ public class AtomStoreImpl implements AtomStore {
 	}
 
 	@Override
-	public int putIfAbsent(CoreAtom groundAtom) {
+	public int putIfAbsent(Atom groundAtom) {
 		if (!groundAtom.isGround()) {
 			throw new IllegalArgumentException("Atom must be ground: " + groundAtom);
 		}
@@ -74,7 +75,7 @@ public class AtomStoreImpl implements AtomStore {
 	}
 
 	@Override
-	public boolean contains(CoreAtom groundAtom) {
+	public boolean contains(Atom groundAtom) {
 		return predicateInstancesToAtomIds.containsKey(groundAtom);
 	}
 
@@ -89,7 +90,7 @@ public class AtomStoreImpl implements AtomStore {
 
 	public String printAtomIdTermMapping() {
 		StringBuilder ret = new StringBuilder();
-		for (Map.Entry<CoreAtom, Integer> entry : predicateInstancesToAtomIds.entrySet()) {
+		for (Map.Entry<Atom, Integer> entry : predicateInstancesToAtomIds.entrySet()) {
 			ret.append(entry.getValue()).append(" <-> ").append(entry.getKey().toString()).append(System.lineSeparator());
 		}
 		return ret.toString();
@@ -111,7 +112,7 @@ public class AtomStoreImpl implements AtomStore {
 	}
 
 	@Override
-	public CoreAtom get(int atom) {
+	public Atom get(int atom) {
 		try {
 			return atomIdsToInternalBasicAtoms.get(atom);
 		} catch (IndexOutOfBoundsException e) {
@@ -120,7 +121,7 @@ public class AtomStoreImpl implements AtomStore {
 	}
 
 	@Override
-	public int get(CoreAtom atom) {
+	public int get(Atom atom) {
 		return predicateInstancesToAtomIds.get(atom);
 	}
 

@@ -29,7 +29,8 @@ package at.ac.tuwien.kr.alpha.core.atoms;
 
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 
 /**
  * Represents a literal whose ground truth value(s) are independent of the
@@ -45,7 +46,7 @@ public abstract class FixedInterpretationLiteral extends CoreLiteral {
 	}
 
 	/**
-	 * Creates a list of {@link Substitution}s based on the given partial
+	 * Creates a list of {@link SubstitutionImpl}s based on the given partial
 	 * substitution, such that
 	 * this {@link FixedInterpretationLiteral} is true in every returned
 	 * substitution.

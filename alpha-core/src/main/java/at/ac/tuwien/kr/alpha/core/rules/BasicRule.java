@@ -29,8 +29,8 @@ package at.ac.tuwien.kr.alpha.core.rules;
 
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
-import at.ac.tuwien.kr.alpha.core.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.Head;
 
 /**
  * Represents a non-ground rule or a constraint. A {@link BasicRule} has a general {@link Head}, meaning both choice heads and disjunctive heads are permissible.
@@ -38,7 +38,7 @@ import at.ac.tuwien.kr.alpha.core.rules.heads.Head;
  */
 public class BasicRule extends AbstractRule<Head> {
 
-	public BasicRule(Head head, List<CoreLiteral> body) {
+	public BasicRule(Head head, List<Literal> body) {
 		super(head, body);
 	}
 

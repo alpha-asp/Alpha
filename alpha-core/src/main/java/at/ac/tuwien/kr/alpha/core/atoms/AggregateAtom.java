@@ -34,22 +34,26 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 public class AggregateAtom extends CoreAtom {
 
 	private final ComparisonOperator lowerBoundOperator;
-	private final CoreTerm lowerBoundTerm;
+	private final Term lowerBoundTerm;
 	private final ComparisonOperator upperBoundOperator;
-	private final CoreTerm upperBoundTerm;
+	private final Term upperBoundTerm;
 	private final AGGREGATEFUNCTION aggregatefunction;
 	private final List<AggregateElement> aggregateElements;
 
-	public AggregateAtom(ComparisonOperator lowerBoundOperator, CoreTerm lowerBoundTerm, ComparisonOperator upperBoundOperator, CoreTerm upperBoundTerm, AGGREGATEFUNCTION aggregatefunction, List<AggregateElement> aggregateElements) {
+	public AggregateAtom(ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, ComparisonOperator upperBoundOperator, Term upperBoundTerm,
+			AGGREGATEFUNCTION aggregatefunction, List<AggregateElement> aggregateElements) {
 		this.lowerBoundOperator = lowerBoundOperator;
 		this.lowerBoundTerm = lowerBoundTerm;
 		this.upperBoundOperator = upperBoundOperator;
@@ -69,12 +73,11 @@ public class AggregateAtom extends CoreAtom {
 			}
 		}
 		if (lowerBoundTerm != null && !lowerBoundTerm.isGround()
-			|| upperBoundTerm != null && !upperBoundTerm.isGround()) {
+				|| upperBoundTerm != null && !upperBoundTerm.isGround()) {
 			return false;
 		}
 		return true;
 	}
-
 
 	@Override
 	public AggregateLiteral toLiteral(boolean positive) {
@@ -82,15 +85,15 @@ public class AggregateAtom extends CoreAtom {
 	}
 
 	@Override
-	public List<CoreTerm> getTerms() {
+	public List<Term> getTerms() {
 		throw oops("Aggregate atom cannot report terms.");
 	}
 
 	@Override
-	public CoreAtom withTerms(List<CoreTerm> terms) {
+	public Atom withTerms(List<Term> terms) {
 		throw new UnsupportedOperationException("Editing term list is not supported for aggregate atoms!");
 	}
-	
+
 	@Override
 	public CorePredicate getPredicate() {
 		throw oops("Aggregate atom cannot report predicate.");
@@ -98,10 +101,11 @@ public class AggregateAtom extends CoreAtom {
 
 	/**
 	 * Returns all variables occurring inside the aggregate, between { ... }.
+	 * 
 	 * @return each variable occurring in some aggregate element.
 	 */
-	public List<VariableTermImpl> getAggregateVariables() {
-		List<VariableTermImpl> occurringVariables = new LinkedList<>();
+	public List<VariableTerm> getAggregateVariables() {
+		List<VariableTerm> occurringVariables = new LinkedList<>();
 		for (AggregateElement aggregateElement : aggregateElements) {
 			occurringVariables.addAll(aggregateElement.getOccurringVariables());
 		}
@@ -164,7 +168,7 @@ public class AggregateAtom extends CoreAtom {
 		return lowerBoundOperator;
 	}
 
-	public CoreTerm getLowerBoundTerm() {
+	public Term getLowerBoundTerm() {
 		return lowerBoundTerm;
 	}
 
@@ -172,7 +176,7 @@ public class AggregateAtom extends CoreAtom {
 		return upperBoundOperator;
 	}
 
-	public CoreTerm getUpperBoundTerm() {
+	public Term getUpperBoundTerm() {
 		return upperBoundTerm;
 	}
 
@@ -192,29 +196,29 @@ public class AggregateAtom extends CoreAtom {
 	}
 
 	public static class AggregateElement {
-		final List<CoreTerm> elementTerms;
-		final List<CoreLiteral> elementLiterals;
+		final List<Term> elementTerms;
+		final List<Literal> elementLiterals;
 
-		public AggregateElement(List<CoreTerm> elementTerms, List<CoreLiteral> elementLiterals) {
+		public AggregateElement(List<Term> elementTerms, List<Literal> elementLiterals) {
 			this.elementTerms = elementTerms;
 			this.elementLiterals = elementLiterals;
 		}
 
-		public List<CoreTerm> getElementTerms() {
+		public List<Term> getElementTerms() {
 			return elementTerms;
 		}
 
-		public List<CoreLiteral> getElementLiterals() {
+		public List<Literal> getElementLiterals() {
 			return elementLiterals;
 		}
 
 		public boolean isGround() {
-			for (CoreTerm elementTerm : elementTerms) {
+			for (Term elementTerm : elementTerms) {
 				if (!elementTerm.isGround()) {
 					return false;
 				}
 			}
-			for (CoreLiteral elementLiteral : elementLiterals) {
+			for (Literal elementLiteral : elementLiterals) {
 				if (!elementLiteral.isGround()) {
 					return false;
 				}
@@ -222,14 +226,14 @@ public class AggregateAtom extends CoreAtom {
 			return true;
 		}
 
-		public List<VariableTermImpl> getOccurringVariables() {
-			List<VariableTermImpl> occurringVariables = new LinkedList<>();
-			for (CoreTerm term : elementTerms) {
+		public List<VariableTerm> getOccurringVariables() {
+			List<VariableTerm> occurringVariables = new LinkedList<>();
+			for (Term term : elementTerms) {
 				if (term instanceof VariableTermImpl) {
 					occurringVariables.add((VariableTermImpl) term);
 				}
 			}
-			for (CoreLiteral literal : elementLiterals) {
+			for (Literal literal : elementLiterals) {
 				occurringVariables.addAll(literal.getBindingVariables());
 				occurringVariables.addAll(literal.getNonBindingVariables());
 			}
@@ -265,5 +269,5 @@ public class AggregateAtom extends CoreAtom {
 			return join("", elementTerms, " : ") + join("", elementLiterals, "");
 		}
 	}
-	
+
 }

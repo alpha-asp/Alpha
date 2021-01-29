@@ -25,22 +25,22 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder.instantiation;
 
-import at.ac.tuwien.kr.alpha.api.program.*;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
-import at.ac.tuwien.kr.alpha.core.grounder.Instance;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
-import java.util.ArrayList;
-import java.util.List;
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.core.grounder.Instance;
+import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 
 /**
  * Abstract base implementation of {@link LiteralInstantiationStrategy} that outlines a basic workflow for
  * {@link LiteralInstantiationStrategy#getTruthForGroundLiteral(Literal)} and
- * {@link LiteralInstantiationStrategy#getAcceptedSubstitutions(Literal, Substitution)} while leaving details of when an atom is true and
+ * {@link LiteralInstantiationStrategy#getAcceptedSubstitutions(Literal, SubstitutionImpl)} while leaving details of when an atom is true and
  * which {@link AssignmentStatus}es to consider valid for <code>getAcceptedSubstitutions</code> to implementations.
  * 
  * Copyright (c) 2020, the Alpha Team.
@@ -56,7 +56,7 @@ public abstract class AbstractLiteralInstantiationStrategy implements LiteralIns
 	 * literals is determined using the abstract method {@link AbstractLiteralInstantiationStrategy#getAssignmentStatusForAtom(Atom)}.
 	 */
 	@Override
-	public final AssignmentStatus getTruthForGroundLiteral(CoreLiteral groundLiteral) {
+	public final AssignmentStatus getTruthForGroundLiteral(Literal groundLiteral) {
 		if (groundLiteral.isNegated()) {
 			return this.getAssignmentStatusForNegatedGroundLiteral(groundLiteral);
 		}
@@ -64,7 +64,7 @@ public abstract class AbstractLiteralInstantiationStrategy implements LiteralIns
 	}
 
 	/**
-	 * See {@link LiteralInstantiationStrategy#getAcceptedSubstitutions(Literal, Substitution)}.
+	 * See {@link LiteralInstantiationStrategy#getAcceptedSubstitutions(Literal, SubstitutionImpl)}.
 	 * 
 	 * A very general implementation of the basic steps needed to obtain ground substitutions for a positive literal.
 	 * Potentially valid ground instances are obtained using {@link AbstractLiteralInstantiationStrategy#computeCandidateInstances(Atom)}, then
@@ -73,8 +73,8 @@ public abstract class AbstractLiteralInstantiationStrategy implements LiteralIns
 	 * {@link AbstractLiteralInstantiationStrategy#assignmentStatusAccepted(AssignmentStatus)}.
 	 */
 	@Override
-	public final List<ImmutablePair<Substitution, AssignmentStatus>> getAcceptedSubstitutions(CoreLiteral lit, Substitution partialSubstitution) {
-		CoreAtom atom = lit.getAtom();
+	public final List<ImmutablePair<Substitution, AssignmentStatus>> getAcceptedSubstitutions(Literal lit, Substitution partialSubstitution) {
+		Atom atom = lit.getAtom();
 		Iterable<Instance> groundInstances = this.computeCandidateInstances(atom);
 		return this.buildSubstitutionsFromInstances(atom, groundInstances, partialSubstitution);
 	}
@@ -88,7 +88,7 @@ public abstract class AbstractLiteralInstantiationStrategy implements LiteralIns
 	 * @param partiallyGroundAtom a partially ground atom for which to find fitting ground instances
 	 * @return a list of candidate instances
 	 */
-	protected abstract Iterable<Instance> computeCandidateInstances(CoreAtom partiallyGroundAtom);
+	protected abstract Iterable<Instance> computeCandidateInstances(Atom partiallyGroundAtom);
 
 	/**
 	 * Based on a list of candidate instances (see {@link AbstractLiteralInstantiationStrategy#computeCandidateInstances(Atom)}), create a list
@@ -100,14 +100,14 @@ public abstract class AbstractLiteralInstantiationStrategy implements LiteralIns
 	 * @param partialSubstitution
 	 * @return
 	 */
-	protected final List<ImmutablePair<Substitution, AssignmentStatus>> buildSubstitutionsFromInstances(CoreAtom atomToSubstitute,
+	protected final List<ImmutablePair<Substitution, AssignmentStatus>> buildSubstitutionsFromInstances(Atom atomToSubstitute,
 			Iterable<Instance> candidateInstances, Substitution partialSubstitution) {
 		List<ImmutablePair<Substitution, AssignmentStatus>> retVal = new ArrayList<>();
 		// Filter for only instances unifying with partialSubsitution, i.e. "where all joins work out".
 		Substitution currentInstanceSubstitution;
-		CoreAtom atomForCurrentInstance;
+		Atom atomForCurrentInstance;
 		for (Instance instance : candidateInstances) {
-			currentInstanceSubstitution = Substitution.specializeSubstitution(atomToSubstitute, instance, partialSubstitution);
+			currentInstanceSubstitution = SubstitutionImpl.specializeSubstitution(atomToSubstitute, instance, partialSubstitution);
 			if (currentInstanceSubstitution == null) {
 				// Instance does not unify with partialSubstitution, move on to the next instance.
 				continue;
@@ -126,9 +126,9 @@ public abstract class AbstractLiteralInstantiationStrategy implements LiteralIns
 		return retVal;
 	}
 
-	protected abstract AssignmentStatus getAssignmentStatusForAtom(CoreAtom atom);
+	protected abstract AssignmentStatus getAssignmentStatusForAtom(Atom atom);
 
-	protected abstract AssignmentStatus getAssignmentStatusForNegatedGroundLiteral(CoreLiteral negatedGroundLiteral);
+	protected abstract AssignmentStatus getAssignmentStatusForNegatedGroundLiteral(Literal negatedGroundLiteral);
 
 	protected abstract boolean assignmentStatusAccepted(AssignmentStatus assignmentStatus);
 

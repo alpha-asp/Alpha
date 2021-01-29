@@ -37,9 +37,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 
 /**
@@ -62,9 +63,9 @@ import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
  */
 public class RuleGroundingOrders {
 	private final InternalRule internalRule;
-	HashMap<CoreLiteral, RuleGroundingOrder> groundingOrders;
-	private HashMap<CoreLiteral, Float> literalSelectivity;
-	private List<CoreLiteral> startingLiterals;
+	HashMap<Literal, RuleGroundingOrder> groundingOrders;
+	private HashMap<Literal, Float> literalSelectivity;
+	private List<Literal> startingLiterals;
 
 	private final boolean fixedGroundingInstantiation;
 	private RuleGroundingOrder fixedGroundingOrder;
@@ -79,27 +80,28 @@ public class RuleGroundingOrders {
 
 	private void resetLiteralSelectivity() {
 		// Set selectivity of all literals to 1.0f.
-		for (CoreLiteral literal : internalRule.getBody()) {
+		for (Literal literal : internalRule.getBody()) {
 			literalSelectivity.put(literal, 1.0f);
 		}
 	}
 
 	/**
 	 * Computes starting literals and indicates whether there is a fixed ground instantiation for this rule.
+	 * 
 	 * @return true iff the rule has a fixed ground instantiation.
 	 */
 	private boolean computeStartingLiterals() {
-		LinkedHashSet<CoreLiteral> fixedStartingLiterals = new LinkedHashSet<>();
-		LinkedHashSet<CoreLiteral> ordinaryStartingLiterals = new LinkedHashSet<>();
-		
+		LinkedHashSet<Literal> fixedStartingLiterals = new LinkedHashSet<>();
+		LinkedHashSet<Literal> ordinaryStartingLiterals = new LinkedHashSet<>();
+
 		// If the rule is ground, every body literal is a starting literal and the ground instantiation is fixed.
 		if (internalRule.isGround()) {
 			startingLiterals = new LinkedList<>(internalRule.getBody());
 			return true;
 		}
-		
+
 		// Check each literal in the rule body whether it is eligible.
-		for (CoreLiteral literal : internalRule.getBody()) {
+		for (Literal literal : internalRule.getBody()) {
 			// Only literals that need no variables already bound can start grounding.
 			if (literal.getNonBindingVariables().size() != 0) {
 				continue;
@@ -127,18 +129,17 @@ public class RuleGroundingOrders {
 		}
 	}
 
-	public List<CoreLiteral> getStartingLiterals() {
+	public List<Literal> getStartingLiterals() {
 		return Collections.unmodifiableList(startingLiterals);
 	}
 
-	public void updateLiteralSelectivity(CoreLiteral literal, int numGivenTuples, int numObtainedTuples) {
+	public void updateLiteralSelectivity(Literal literal, int numGivenTuples, int numObtainedTuples) {
 		// TODO: add old selectivity (with a decay factor) and new selectivity.
 	}
 
-	public RuleGroundingOrder orderStartingFrom(CoreLiteral startingLiteral) {
+	public RuleGroundingOrder orderStartingFrom(Literal startingLiteral) {
 		return groundingOrders.get(startingLiteral);
 	}
-
 
 	public RuleGroundingOrder getFixedGroundingOrder() {
 		return fixedGroundingOrder;
@@ -146,6 +147,7 @@ public class RuleGroundingOrders {
 
 	/**
 	 * States whether the rule is without positive ordinary atoms, as for example in: p(Y) :- X = 1..3, not q(X), Y = X + 2, &ext[X,Y]().
+	 * 
 	 * @return true if the rule has a (limited number of) fixed grounding instantiation(s).
 	 */
 	public boolean fixedInstantiation() {
@@ -159,31 +161,32 @@ public class RuleGroundingOrders {
 			return;
 		}
 		// Compute grounding orders for all positive BasicAtoms.
-		for (CoreLiteral literal : startingLiterals) {
+		for (Literal literal : startingLiterals) {
 			computeGroundingOrder(literal);
 		}
 	}
 
-	private void computeGroundingOrder(CoreLiteral startingLiteral) {
-		Set<CoreLiteral> bodyLiterals = internalRule.getBody();
-		HashSet<VariableTermImpl> boundVariables = new HashSet<>();
+	private void computeGroundingOrder(Literal startingLiteral) {
+		Set<Literal> bodyLiterals = internalRule.getBody();
+		HashSet<VariableTerm> boundVariables = new HashSet<>();
 		boundVariables.addAll(startingLiteral.getBindingVariables());
-		LinkedHashSet<CoreLiteral> remainingLiterals = new LinkedHashSet<>(bodyLiterals);
+		LinkedHashSet<Literal> remainingLiterals = new LinkedHashSet<>(bodyLiterals);
 		remainingLiterals.remove(startingLiteral);
-		ArrayList<CoreLiteral> literalsOrder;
+		ArrayList<Literal> literalsOrder;
 		if (fixedGroundingInstantiation) {
 			literalsOrder = new ArrayList<>(bodyLiterals.size());
 			literalsOrder.add(startingLiteral);
 		} else {
 			literalsOrder = new ArrayList<>(bodyLiterals.size() - 1);
 		}
-		
+
 		int position = 0;
 		int positionLastVarBound = -1;
 		while (!remainingLiterals.isEmpty()) {
-			CoreLiteral nextGroundingLiteral = selectNextGroundingLiteral(remainingLiterals, boundVariables);
+			Literal nextGroundingLiteral = selectNextGroundingLiteral(remainingLiterals, boundVariables);
 			if (nextGroundingLiteral == null) {
-				throw new RuntimeException("Could not find a grounding order for rule " + internalRule + " with starting literal: " + startingLiteral + ". Rule is not safe.");
+				throw new RuntimeException(
+						"Could not find a grounding order for rule " + internalRule + " with starting literal: " + startingLiteral + ". Rule is not safe.");
 			}
 			remainingLiterals.remove(nextGroundingLiteral);
 			boolean boundNewVars = boundVariables.addAll(nextGroundingLiteral.getBindingVariables());
@@ -199,13 +202,13 @@ public class RuleGroundingOrders {
 		groundingOrders.put(startingLiteral, new RuleGroundingOrder(startingLiteral, literalsOrder, positionLastVarBound, internalRule.isGround()));
 	}
 
-	private CoreLiteral selectNextGroundingLiteral(LinkedHashSet<CoreLiteral> remainingLiterals, Set<VariableTermImpl> boundVariables) {
+	private Literal selectNextGroundingLiteral(LinkedHashSet<Literal> remainingLiterals, Set<VariableTerm> boundVariables) {
 		Float bestSelectivity = Float.MAX_VALUE;
-		CoreLiteral bestLiteral = null;
+		Literal bestLiteral = null;
 		boolean bestLiteralSharesVariables = false;
 		// Find the best literal whose nonbinding variables are already bound and whose selectivity is highest.
 		// To avoid cross products, select those first that have some of their variables already bound.
-		for (CoreLiteral literal : remainingLiterals) {
+		for (Literal literal : remainingLiterals) {
 			if (!boundVariables.containsAll(literal.getNonBindingVariables())) {
 				// Only consider literals whose nonbinding variables are already bound.
 				continue;
@@ -213,8 +216,8 @@ public class RuleGroundingOrders {
 			Float selectivity = literalSelectivity.get(literal);
 			boolean sharesVariables = sharesVariables(boundVariables, literal.getBindingVariables(), literal.getNonBindingVariables());
 			if (bestLiteral == null
-				|| sharesVariables && selectivity < bestSelectivity
-				|| sharesVariables && !bestLiteralSharesVariables) {
+					|| sharesVariables && selectivity < bestSelectivity
+					|| sharesVariables && !bestLiteralSharesVariables) {
 				bestLiteral = literal;
 				bestSelectivity = selectivity;
 				bestLiteralSharesVariables = sharesVariables;
@@ -223,7 +226,7 @@ public class RuleGroundingOrders {
 		return bestLiteral;
 	}
 
-	private boolean sharesVariables(Collection<VariableTermImpl> set1, Collection<VariableTermImpl> set2part1, Collection<VariableTermImpl> set2part2) {
+	private boolean sharesVariables(Collection<VariableTerm> set1, Collection<VariableTerm> set2part1, Collection<VariableTerm> set2part2) {
 		return !Collections.disjoint(set1, set2part1) || !Collections.disjoint(set1, set2part2);
 	}
 }

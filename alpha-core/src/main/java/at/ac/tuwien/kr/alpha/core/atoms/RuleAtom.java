@@ -32,10 +32,12 @@ import static at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm.getInstan
 import java.util.Arrays;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 
 /**
@@ -43,11 +45,11 @@ import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
  * second is a term containing variable substitutions.
  */
 public class RuleAtom extends CoreAtom {
-	public static final CorePredicate PREDICATE = CorePredicate.getInstance("_R_", 2, true, true);
+	public static final Predicate PREDICATE = CorePredicate.getInstance("_R_", 2, true, true);
 
-	private final List<CoreConstantTerm<String>> terms;
+	private final List<ConstantTerm<String>> terms;
 
-	private RuleAtom(List<CoreConstantTerm<String>> terms) {
+	private RuleAtom(List<ConstantTerm<String>> terms) {
 		if (terms.size() != 2) {
 			throw new IllegalArgumentException();
 		}
@@ -64,12 +66,12 @@ public class RuleAtom extends CoreAtom {
 	}
 
 	@Override
-	public CorePredicate getPredicate() {
+	public Predicate getPredicate() {
 		return PREDICATE;
 	}
 
 	@Override
-	public List<CoreTerm> getTerms() {
+	public List<Term> getTerms() {
 		return Arrays.asList(terms.get(0), terms.get(1));
 	}
 
@@ -114,7 +116,7 @@ public class RuleAtom extends CoreAtom {
 	}
 
 	@Override
-	public CoreAtom withTerms(List<CoreTerm> terms) {
+	public Atom withTerms(List<Term> terms) {
 		throw new UnsupportedOperationException("RuleAtoms do not support setting of terms!");
 	}
 }

@@ -31,36 +31,38 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.core.common.terms.Terms;
 
 /**
  * Represents a builtin comparison atom according to the standard.
  */
 public class ComparisonAtom extends CoreAtom implements VariableNormalizableAtom {
-	private final CorePredicate predicate;
+	private final Predicate predicate;
 	final ComparisonOperator operator;
-	private final List<CoreTerm> terms;
+	private final List<Term> terms;
 
-	private ComparisonAtom(List<CoreTerm> terms, ComparisonOperator operator) {
+	private ComparisonAtom(List<Term> terms, ComparisonOperator operator) {
 		this.terms = terms;
 		this.operator = operator;
 		this.predicate = operator.predicate();
 	}
 
-	public ComparisonAtom(CoreTerm term1, CoreTerm term2, ComparisonOperator operator) {
+	public ComparisonAtom(Term term1, Term term2, ComparisonOperator operator) {
 		this(Arrays.asList(term1, term2), operator);
 	}
 
 	@Override
-	public CorePredicate getPredicate() {
+	public Predicate getPredicate() {
 		return predicate;
 	}
 
 	@Override
-	public List<CoreTerm> getTerms() {
+	public List<Term> getTerms() {
 		return terms;
 	}
 
@@ -71,7 +73,7 @@ public class ComparisonAtom extends CoreAtom implements VariableNormalizableAtom
 
 	@Override
 	public ComparisonAtom substitute(Substitution substitution) {
-		List<CoreTerm> substitutedTerms = getTerms().stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
+		List<Term> substitutedTerms = getTerms().stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
 		return new ComparisonAtom(substitutedTerms, operator);
 	}
 
@@ -115,12 +117,12 @@ public class ComparisonAtom extends CoreAtom implements VariableNormalizableAtom
 
 	@Override
 	public ComparisonAtom normalizeVariables(String prefix, int counterStartingValue) {
-		List<CoreTerm> renamedTerms = CoreTerm.renameTerms(terms, prefix, counterStartingValue);
+		List<Term> renamedTerms = Terms.renameTerms(terms, prefix, counterStartingValue);
 		return new ComparisonAtom(renamedTerms.get(0), renamedTerms.get(1), operator);
 	}
 
 	@Override
-	public CoreAtom withTerms(List<CoreTerm> terms) {
+	public Atom withTerms(List<Term> terms) {
 		return new ComparisonAtom(terms, operator);
 	}
 

@@ -7,26 +7,26 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.core.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
  * Copyright (c) 2017-2020, the Alpha Team.
  */
-public class CardinalityNormalization extends ProgramTransformation<InputProgramImpl, InputProgramImpl> {
+public class CardinalityNormalization extends ProgramTransformation<InputProgram, InputProgram> {
 
 	private int aggregateCount;
 	private ProgramParserImpl parser = new ProgramParserImpl();
@@ -40,16 +40,16 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 		this.useSortingCircuitEncoding = useSortingCircuitEncoding;
 	}
 
-	private InputProgramImpl parse(String program) {
+	private InputProgram parse(String program) {
 		return parser.parse(program);
 	}
 
 	@Override
-	public InputProgramImpl apply(InputProgramImpl inputProgram) {
+	public InputProgram apply(InputProgram inputProgram) {
 		if (!this.rewritingNecessary(inputProgram)) {
 			return inputProgram;
 		}
-		InputProgramImpl.Builder programBuilder = InputProgramImpl.builder();
+		InputProgram.Builder programBuilder = InputProgram.builder();
 		programBuilder.addFacts(inputProgram.getFacts());
 		programBuilder.addInlineDirectives(inputProgram.getInlineDirectives());
 		//@formatter:off
@@ -92,7 +92,7 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 		List<BasicRule> rewrittenRules = rewriteAggregates(inputProgram.getRules());
 
 		String usedCardinalityEncoding = useSortingCircuitEncoding ? cardinalitySortingCircuit : cardinalityCountingGrid;
-		InputProgramImpl cardinalityEncoding = PredicateInternalizer.makePredicatesInternal(new ProgramParserImpl().parse(usedCardinalityEncoding));
+		InputProgram cardinalityEncoding = PredicateInternalizer.makePredicatesInternal(new ProgramParserImpl().parse(usedCardinalityEncoding));
 		programBuilder.addRules(rewrittenRules);
 
 		// Add enumeration rule that uses the special EnumerationAtom.
@@ -101,7 +101,7 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 		BasicRule tmpEnumRule = PredicateInternalizer.makePredicatesInternal(parse(
 			"sorting_network_input_number(A, I) :- sorting_network_input(A, X).")).getRules().get(0);
 		EnumerationAtom enumerationAtom = new EnumerationAtom(parse("sorting_network_index(A, X, I).").getFacts().get(0).getTerms());
-		List<CoreLiteral> enumerationRuleBody = new ArrayList<>(tmpEnumRule.getBody());
+		List<Literal> enumerationRuleBody = new ArrayList<>(tmpEnumRule.getBody());
 		enumerationRuleBody.add(enumerationAtom.toLiteral());
 		BasicRule enumerationRule = new BasicRule(tmpEnumRule.getHead(), enumerationRuleBody);
 		programBuilder.addRule(enumerationRule);
@@ -117,9 +117,9 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 	 * @param program the program.
 	 * @return true if count aggregates occur, false otherwise.
 	 */
-	private boolean rewritingNecessary(InputProgramImpl program) {
+	private boolean rewritingNecessary(InputProgram program) {
 		for (BasicRule rule : program.getRules()) {
-			for (CoreLiteral lit : rule.getBody()) {
+			for (Literal lit : rule.getBody()) {
 				if (lit instanceof AggregateLiteral) {
 					AggregateAtom aggregateAtom = ((AggregateLiteral) lit).getAtom();
 					if (aggregateAtom.getAggregatefunction() == AggregateAtom.AGGREGATEFUNCTION.COUNT) {
@@ -155,14 +155,14 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 		final BasicAtom lowerBoundAtom = (BasicAtom) PredicateInternalizer
 				.makePredicatesInternal(parse("sorting_network_bound(aggregate_arguments(AGGREGATE_ID), LOWER_BOUND).")).getFacts().get(0);
 
-		ArrayList<CoreLiteral> aggregateOutputAtoms = new ArrayList<>();
+		ArrayList<Literal> aggregateOutputAtoms = new ArrayList<>();
 		int aggregatesInRule = 0; // Only needed for limited rewriting.
 		ArrayList<BasicRule> additionalRules = new ArrayList<>();
 
-		List<CoreLiteral> rewrittenBody = new ArrayList<>(rule.getBody());
+		List<Literal> rewrittenBody = new ArrayList<>(rule.getBody());
 
-		for (Iterator<CoreLiteral> iterator = rewrittenBody.iterator(); iterator.hasNext();) {
-			CoreLiteral bodyElement = iterator.next();
+		for (Iterator<Literal> iterator = rewrittenBody.iterator(); iterator.hasNext();) {
+			Literal bodyElement = iterator.next();
 			// Skip non-aggregates.
 			if (!(bodyElement instanceof AggregateLiteral)) {
 				continue;
@@ -189,12 +189,12 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 			// Prepare aggregate parameters.
 			aggregateCount++;
 			Substitution aggregateSubstitution = new Unifier();
-			Collection<CoreTerm> globalVariables = getGlobalVariables(rewrittenBody, aggregateAtom);
+			Collection<Term> globalVariables = getGlobalVariables(rewrittenBody, aggregateAtom);
 			if (globalVariables.isEmpty()) {
 				aggregateSubstitution.put(VariableTermImpl.getInstance("AGGREGATE_ID"), CoreConstantTerm.getInstance(aggregateCount));
 			} else {
 				// In case some variables are not local to the aggregate, add them to the aggregate identifier
-				ArrayList<CoreTerm> globalVariableTermlist = new ArrayList<>(globalVariables);
+				ArrayList<Term> globalVariableTermlist = new ArrayList<>(globalVariables);
 				globalVariableTermlist.add(CoreConstantTerm.getInstance(aggregateCount));
 				aggregateSubstitution.put(VariableTermImpl.getInstance("AGGREGATE_ID"), FunctionTerm.getInstance("agg", globalVariableTermlist));
 			}
@@ -206,14 +206,14 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 			// Create input to sorting network from aggregate elements.
 			for (AggregateAtom.AggregateElement aggregateElement : aggregateAtom.getAggregateElements()) {
 				// Prepare element substitution.
-				List<CoreTerm> elementTerms = aggregateElement.getElementTerms();
+				List<Term> elementTerms = aggregateElement.getElementTerms();
 				FunctionTerm elementTuple = FunctionTerm.getInstance("element_tuple", elementTerms);
 				Substitution elementSubstitution = new Unifier(aggregateSubstitution);
 				elementSubstitution.put(VariableTermImpl.getInstance("ELEMENT_TUPLE"), elementTuple);
 
 				// Create new rule for input.
 				BasicAtom inputHeadAtom = aggregateInputAtom.substitute(elementSubstitution);
-				List<CoreLiteral> elementLiterals = new ArrayList<>(aggregateElement.getElementLiterals());
+				List<Literal> elementLiterals = new ArrayList<>(aggregateElement.getElementLiterals());
 
 				// If there are global variables used inside the aggregate, add original rule body
 				// (minus the aggregate itself) to input rule.
@@ -226,7 +226,7 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 
 			// Create lower bound for the aggregate.
 			BasicAtom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateSubstitution);
-			List<CoreLiteral> lowerBoundBody = rewrittenBody; // Note: this is only correct if no other aggregate occurs in the rule.
+			List<Literal> lowerBoundBody = rewrittenBody; // Note: this is only correct if no other aggregate occurs in the rule.
 			additionalRules.add(new BasicRule(new NormalHeadImpl(lowerBoundHeadAtom), lowerBoundBody));
 
 		}
@@ -236,19 +236,19 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 		return additionalRules;
 	}
 
-	static Collection<CoreTerm> getGlobalVariables(List<CoreLiteral> ruleBody, AggregateAtom aggregateAtom) {
+	static Collection<Term> getGlobalVariables(List<Literal> ruleBody, AggregateAtom aggregateAtom) {
 		// Hacky way to get all global variables: take all variables inside the aggregate that occur also in the
 		// rest of the rule.
-		HashSet<CoreTerm> occurringVariables = new LinkedHashSet<>();
-		for (CoreLiteral element : ruleBody) {
+		HashSet<Term> occurringVariables = new LinkedHashSet<>();
+		for (Literal element : ruleBody) {
 			if (element instanceof AggregateLiteral) {
 				continue;
 			}
 			occurringVariables.addAll(element.getBindingVariables());
 			occurringVariables.addAll(element.getNonBindingVariables());
 		}
-		LinkedHashSet<CoreTerm> globalVariables = new LinkedHashSet<>();
-		for (CoreTerm aggVariable : aggregateAtom.getAggregateVariables()) {
+		LinkedHashSet<Term> globalVariables = new LinkedHashSet<>();
+		for (Term aggVariable : aggregateAtom.getAggregateVariables()) {
 			if (occurringVariables.contains(aggVariable)) {
 				globalVariables.add(aggVariable);
 			}

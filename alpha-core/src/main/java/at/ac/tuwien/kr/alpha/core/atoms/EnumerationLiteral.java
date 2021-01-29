@@ -4,9 +4,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 /**
  * Copyright (c) 2018, the Alpha Team.
@@ -33,19 +34,19 @@ public class EnumerationLiteral extends BasicLiteral {
 	}
 
 	@Override
-	public Set<VariableTermImpl> getBindingVariables() {
+	public Set<VariableTerm> getBindingVariables() {
 		return Collections.singleton((VariableTermImpl)getTerms().get(2));
 	}
 
 	@Override
-	public Set<VariableTermImpl> getNonBindingVariables() {
-		Set<VariableTermImpl> ret = new HashSet<>(2);
-		CoreTerm idTerm = getTerms().get(0);
-		CoreTerm enumTerm = getTerms().get(1);
-		if (idTerm instanceof VariableTermImpl) {
+	public Set<VariableTerm> getNonBindingVariables() {
+		Set<VariableTerm> ret = new HashSet<>(2);
+		Term idTerm = getTerms().get(0);
+		Term enumTerm = getTerms().get(1);
+		if (idTerm instanceof VariableTerm) {
 			ret.add((VariableTermImpl) idTerm);
 		}
-		if (enumTerm instanceof VariableTermImpl) {
+		if (enumTerm instanceof VariableTerm) {
 			ret.add((VariableTermImpl) enumTerm);
 		}
 		return ret;

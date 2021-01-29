@@ -1,12 +1,14 @@
 package at.ac.tuwien.kr.alpha.core.common.terms;
 
-import at.ac.tuwien.kr.alpha.core.common.Interner;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
-
 import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.Interner;
 
 /**
  * An IntervalTerm represents the shorthand notation for a set of rules where all elements in this interval occur once, e.g., fact(2..5).
@@ -15,20 +17,20 @@ import java.util.List;
  */
 public class IntervalTerm extends CoreTerm {
 	private static final Interner<IntervalTerm> INTERNER = new Interner<>();
-	private final CoreTerm lowerBoundTerm;
-	private final CoreTerm upperBoundTerm;
+	private final Term lowerBoundTerm;
+	private final Term upperBoundTerm;
 
 	private final int lowerBound;
 	private final int upperBound;
 
 	private final boolean ground;
 
-	private IntervalTerm(CoreTerm lowerBound, CoreTerm upperBound) {
+	private IntervalTerm(Term lowerBound, Term upperBound) {
 		if (lowerBound == null || upperBound == null) {
 			throw new IllegalArgumentException();
 		}
 
-		this.ground = !((lowerBound instanceof VariableTermImpl) || (upperBound instanceof VariableTermImpl));
+		this.ground = !((lowerBound instanceof VariableTerm) || (upperBound instanceof VariableTerm));
 
 		this.lowerBoundTerm = lowerBound;
 		this.upperBoundTerm = upperBound;
@@ -42,7 +44,7 @@ public class IntervalTerm extends CoreTerm {
 		}
 	}
 
-	public static IntervalTerm getInstance(CoreTerm lowerBound, CoreTerm upperBound) {
+	public static IntervalTerm getInstance(Term lowerBound, Term upperBound) {
 		return INTERNER.intern(new IntervalTerm(lowerBound, upperBound));
 	}
 
@@ -66,12 +68,12 @@ public class IntervalTerm extends CoreTerm {
 	}
 
 	@Override
-	public List<VariableTermImpl> getOccurringVariables() {
-		LinkedList<VariableTermImpl> variables = new LinkedList<>();
-		if (lowerBoundTerm instanceof VariableTermImpl) {
+	public Set<VariableTerm> getOccurringVariables() {
+		Set<VariableTerm> variables = new LinkedHashSet<>();
+		if (lowerBoundTerm instanceof VariableTerm) {
 			variables.add((VariableTermImpl) lowerBoundTerm);
 		}
-		if (upperBoundTerm instanceof VariableTermImpl) {
+		if (upperBoundTerm instanceof VariableTerm) {
 			variables.add((VariableTermImpl) upperBoundTerm);
 		}
 		return variables;
@@ -114,17 +116,17 @@ public class IntervalTerm extends CoreTerm {
 	}
 
 	@Override
-	public int compareTo(CoreTerm o) {
+	public int compareTo(Term o) {
 		throw new UnsupportedOperationException("Intervals cannot be compared.");
 	}
 
 	@Override
-	public CoreTerm renameVariables(String renamePrefix) {
+	public Term renameVariables(String renamePrefix) {
 		return new IntervalTerm(lowerBoundTerm.renameVariables(renamePrefix), upperBoundTerm.renameVariables(renamePrefix));
 	}
 
 	@Override
-	public CoreTerm normalizeVariables(String renamePrefix, RenameCounter counter) {
+	public Term normalizeVariables(String renamePrefix, Term.RenameCounter counter) {
 		return IntervalTerm.getInstance(
 			lowerBoundTerm.normalizeVariables(renamePrefix, counter),
 			upperBoundTerm.normalizeVariables(renamePrefix, counter));
@@ -135,7 +137,7 @@ public class IntervalTerm extends CoreTerm {
 	 * @param term the term to test
 	 * @return true iff an IntervalTerm occurs in term.
 	 */
-	public static boolean termContainsIntervalTerm(CoreTerm term) {
+	public static boolean termContainsIntervalTerm(Term term) {
 		if (term instanceof IntervalTerm) {
 			return true;
 		} else if (term instanceof FunctionTerm) {
@@ -147,7 +149,7 @@ public class IntervalTerm extends CoreTerm {
 
 	public static boolean functionTermContainsIntervals(FunctionTerm functionTerm) {
 		// Test whether a function term contains an interval term (recursively).
-		for (CoreTerm term : functionTerm.getTerms()) {
+		for (Term term : functionTerm.getTerms()) {
 			if (term instanceof IntervalTerm) {
 				return true;
 			}

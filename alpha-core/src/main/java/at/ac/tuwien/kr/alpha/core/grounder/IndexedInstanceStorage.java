@@ -36,9 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
 
 /**
  * A storage for instances with a certain arity, where each position of the instance can be indexed.
@@ -47,7 +47,7 @@ import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
  * Copyright (c) 2016-2020, the Alpha Team.
  */
 public class IndexedInstanceStorage {
-	private final CorePredicate predicate;
+	private final Predicate predicate;
 	private final boolean positive;
 
 	/**
@@ -58,11 +58,11 @@ public class IndexedInstanceStorage {
 	/**
 	 * For each position, a mapping of termIds to list of instances with this termId at the corresponding position
 	 */
-	private final ArrayList<HashMap<CoreTerm, ArrayList<Instance>>> indices = new ArrayList<>();
+	private final ArrayList<HashMap<Term, ArrayList<Instance>>> indices = new ArrayList<>();
 
 	private final ArrayList<Instance> recentlyAddedInstances = new ArrayList<>();
 
-	public IndexedInstanceStorage(CorePredicate predicate, boolean positive) {
+	public IndexedInstanceStorage(Predicate predicate, boolean positive) {
 		this.predicate = predicate;
 		this.positive = positive;
 
@@ -72,7 +72,7 @@ public class IndexedInstanceStorage {
 		}
 	}
 
-	public CorePredicate getPredicate() {
+	public Predicate getPredicate() {
 		return predicate;
 	}
 
@@ -124,7 +124,7 @@ public class IndexedInstanceStorage {
 		recentlyAddedInstances.add(instance);
 		// Add instance to all indices.
 		for (int i = 0; i < indices.size(); i++) {
-			HashMap<CoreTerm, ArrayList<Instance>> posIndex = indices.get(i);
+			HashMap<Term, ArrayList<Instance>> posIndex = indices.get(i);
 			if (posIndex == null) {
 				continue;
 			}
@@ -141,7 +141,7 @@ public class IndexedInstanceStorage {
 		}
 		// Remove from all indices
 		for (int i = 0; i < indices.size(); i++) {
-			HashMap<CoreTerm, ArrayList<Instance>> posIndex = indices.get(i);
+			HashMap<Term, ArrayList<Instance>> posIndex = indices.get(i);
 			if (posIndex == null) {
 				continue;
 			}
@@ -169,8 +169,8 @@ public class IndexedInstanceStorage {
 	 * @param position
 	 * @return
 	 */
-	public List<Instance> getInstancesMatchingAtPosition(CoreTerm term, int position) {
-		Map<CoreTerm, ArrayList<Instance>> indexForPosition = indices.get(position);
+	public List<Instance> getInstancesMatchingAtPosition(Term term, int position) {
+		Map<Term, ArrayList<Instance>> indexForPosition = indices.get(position);
 		if (indexForPosition == null) {
 			throw new RuntimeException("IndexedInstanceStorage queried for position " + position + " which is not indexed.");
 		}
@@ -178,11 +178,11 @@ public class IndexedInstanceStorage {
 		return matchingInstances == null ? Collections.emptyList() : matchingInstances;
 	}
 
-	private int getMostSelectiveGroundTermPosition(CoreAtom atom) {
+	private int getMostSelectiveGroundTermPosition(Atom atom) {
 		int smallestNumberOfInstances = Integer.MAX_VALUE;
 		int mostSelectiveTermPosition = -1;
 		for (int i = 0; i < atom.getTerms().size(); i++) {
-			CoreTerm testTerm = atom.getTerms().get(i);
+			Term testTerm = atom.getTerms().get(i);
 			if (testTerm.isGround()) {
 				ArrayList<Instance> instancesMatchingTest = indices.get(i).get(testTerm);
 				if (instancesMatchingTest == null) {
@@ -199,12 +199,12 @@ public class IndexedInstanceStorage {
 		return mostSelectiveTermPosition;
 	}
 
-	public List<Instance> getInstancesFromPartiallyGroundAtom(CoreAtom substitute) {
+	public List<Instance> getInstancesFromPartiallyGroundAtom(Atom substitute) {
 		// For selection of the instances, find ground term on which to select.
 		int firstGroundTermPosition = getMostSelectiveGroundTermPosition(substitute);
 		// Select matching instances, select all if no ground term was found.
 		if (firstGroundTermPosition != -1) {
-			CoreTerm firstGroundTerm = substitute.getTerms().get(firstGroundTermPosition);
+			Term firstGroundTerm = substitute.getTerms().get(firstGroundTermPosition);
 			return getInstancesMatchingAtPosition(firstGroundTerm, firstGroundTermPosition);
 		} else {
 			return new ArrayList<>(getAllInstances());

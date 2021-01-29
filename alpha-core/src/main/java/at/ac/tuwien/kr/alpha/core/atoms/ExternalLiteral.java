@@ -27,14 +27,19 @@
  */
 package at.ac.tuwien.kr.alpha.core.atoms;
 
-import at.ac.tuwien.kr.alpha.api.program.Literal;
-import at.ac.tuwien.kr.alpha.api.terms.*;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import java.util.*;
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
+import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 
 /**
  * Contains a potentially negated {@link ExternalAtom}.
@@ -60,7 +65,7 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 	}
 
 	/**
-	 * @see CoreAtom#substitute(Substitution)
+	 * @see CoreAtom#substitute(SubstitutionImpl)
 	 */
 	@Override
 	public ExternalLiteral substitute(Substitution substitution) {
@@ -68,7 +73,7 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 	}
 
 	@Override
-	public Set<VariableTermImpl> getBindingVariables() {
+	public Set<VariableTerm> getBindingVariables() {
 		// If the external atom is negative, then all variables of input and output are non-binding
 		// and there are no binding variables (like for ordinary atoms).
 		// If the external atom is positive, then variables of output are binding.
@@ -77,11 +82,11 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 			return Collections.emptySet();
 		}
 
-		List<? extends CoreTerm> output = getAtom().getOutput();
+		List<Term> output = getAtom().getOutput();
 
-		Set<VariableTermImpl> binding = new HashSet<>(output.size());
+		Set<VariableTerm> binding = new HashSet<>(output.size());
 
-		for (CoreTerm out : output) {
+		for (Term out : output) {
 			if (out instanceof VariableTermImpl) {
 				binding.add((VariableTermImpl) out);
 			}
@@ -91,23 +96,23 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 	}
 
 	@Override
-	public Set<VariableTermImpl> getNonBindingVariables() {
-		List<? extends CoreTerm> input = getAtom().getInput();
-		List<? extends CoreTerm> output = getAtom().getOutput();
+	public Set<VariableTerm> getNonBindingVariables() {
+		List<Term> input = getAtom().getInput();
+		List<Term> output = getAtom().getOutput();
 
 		// External atoms have their input always non-binding, since they cannot
 		// be queried without some concrete input.
-		Set<VariableTermImpl> nonbindingVariables = new HashSet<>();
-		for (CoreTerm term : input) {
+		Set<VariableTerm> nonbindingVariables = new HashSet<>();
+		for (Term term : input) {
 			nonbindingVariables.addAll(term.getOccurringVariables());
 		}
 
 		// If the external atom is negative, then all variables of input and output are
 		// non-binding.
 		if (!positive) {
-			for (CoreTerm out : output) {
-				if (out instanceof VariableTermImpl) {
-					nonbindingVariables.add((VariableTermImpl) out);
+			for (Term out : output) {
+				if (out instanceof VariableTerm) {
+					nonbindingVariables.add((VariableTerm) out);
 				}
 			}
 		}
@@ -117,15 +122,15 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 
 	@Override
 	public List<Substitution> getSatisfyingSubstitutions(Substitution partialSubstitution) {
-		List<? extends CoreTerm> input = getAtom().getInput();
-		List<CoreTerm> substitutes = new ArrayList<>(input.size());
+		List<Term> input = getAtom().getInput();
+		List<Term> substitutes = new ArrayList<>(input.size());
 
 		// In preparation for evaluating the external atom, set the input values according
 		// to the partial substitution supplied by the grounder.
-		for (CoreTerm t : input) {
+		for (Term t : input) {
 			substitutes.add(t.substitute(partialSubstitution));
 		}
-		Set<List<? extends CoreConstantTerm<?>>> results = getAtom().getInterpretation().evaluate(substitutes);
+		Set<List<ConstantTerm<?>>> results = getAtom().getInterpretation().evaluate(substitutes);
 		if (results == null) {
 			throw new NullPointerException("Predicate " + getPredicate().getName() + " returned null. It must return a Set.");
 		}
@@ -154,14 +159,14 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 	 * non-binding.
 	 *
 	 * @param externalMethodResult The term lists obtained from evaluating the external atom
-	 *                (i.e. calling the java method) encapsulated by this literal
+	 *                             (i.e. calling the java method) encapsulated by this literal
 	 * @return true iff no list in externalMethodResult equals the external atom's output term
 	 *         list as substituted by the grounder, false otherwise
 	 */
-	private boolean isNegatedLiteralSatisfied(Set<List<? extends CoreConstantTerm<?>>> externalMethodResult) {
-		List<? extends CoreTerm> externalAtomOutTerms = this.getAtom().getOutput();
+	private boolean isNegatedLiteralSatisfied(Set<List<ConstantTerm<?>>> externalMethodResult) {
+		List<Term> externalAtomOutTerms = this.getAtom().getOutput();
 		boolean outputMatches;
-		for (List<? extends CoreConstantTerm<?>> resultTerms : externalMethodResult) {
+		for (List<ConstantTerm<?>> resultTerms : externalMethodResult) {
 			outputMatches = true;
 			for (int i = 0; i < externalAtomOutTerms.size(); i++) {
 				if (!resultTerms.get(i).equals(externalAtomOutTerms.get(i))) {
@@ -180,22 +185,22 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 		return true;
 	}
 
-	private List<Substitution> buildSubstitutionsForOutputs(Substitution partialSubstitution, Set<List<? extends CoreConstantTerm<?>>> outputs) {
+	private List<Substitution> buildSubstitutionsForOutputs(Substitution partialSubstitution, Set<List<ConstantTerm<?>>> outputs) {
 		List<Substitution> retVal = new ArrayList<>();
-		List<? extends CoreTerm> externalAtomOutputTerms = this.getAtom().getOutput();
-		for (List<? extends CoreConstantTerm<?>> bindings : outputs) {
+		List<Term> externalAtomOutputTerms = this.getAtom().getOutput();
+		for (List<ConstantTerm<?>> bindings : outputs) {
 			if (bindings.size() < externalAtomOutputTerms.size()) {
 				throw new RuntimeException(
-					"Predicate " + getPredicate().getName() + " returned " + bindings.size() + " terms when at least " + externalAtomOutputTerms.size()
-						+ " were expected.");
+						"Predicate " + getPredicate().getName() + " returned " + bindings.size() + " terms when at least " + externalAtomOutputTerms.size()
+								+ " were expected.");
 			}
-			Substitution ith = new Substitution(partialSubstitution);
+			SubstitutionImpl ith = new SubstitutionImpl(partialSubstitution);
 			boolean skip = false;
 			for (int i = 0; i < externalAtomOutputTerms.size(); i++) {
-				CoreTerm out = externalAtomOutputTerms.get(i);
+				Term out = externalAtomOutputTerms.get(i);
 
-				if (out instanceof VariableTermImpl) {
-					ith.put((VariableTermImpl) out, bindings.get(i));
+				if (out instanceof VariableTerm) {
+					ith.put((VariableTerm) out, bindings.get(i));
 				} else {
 					if (!bindings.get(i).equals(out)) {
 						skip = true;

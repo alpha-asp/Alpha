@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
 
 /**
@@ -40,9 +41,9 @@ import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
  */
 public class AtomCounter {
 
-	private final Map<Class<? extends CoreAtom>, Integer> countByType = new HashMap<>();
+	private final Map<Class<? extends Atom>, Integer> countByType = new HashMap<>();
 
-	public void add(CoreAtom atom) {
+	public void add(Atom atom) {
 		countByType.compute(atom.getClass(), (k, v) -> (v == null) ? 1 : v + 1);
 	}
 
@@ -50,7 +51,7 @@ public class AtomCounter {
 	 * @param type the class of atoms to count
 	 * @return the number of atoms of the given type
 	 */
-	public int getNumberOfAtoms(Class<? extends CoreAtom> type) {
+	public int getNumberOfAtoms(Class<? extends Atom> type) {
 		return countByType.getOrDefault(type, 0);
 	}
 
@@ -59,7 +60,7 @@ public class AtomCounter {
 	 */
 	public String getStatsByType() {
 		List<String> statsList = new ArrayList<>();
-		for (Map.Entry<Class<? extends CoreAtom>, Integer> entry : countByType.entrySet()) {
+		for (Map.Entry<Class<? extends Atom>, Integer> entry : countByType.entrySet()) {
 			statsList.add(entry.getKey().getSimpleName() + ": " + entry.getValue());
 		}
 		Collections.sort(statsList);

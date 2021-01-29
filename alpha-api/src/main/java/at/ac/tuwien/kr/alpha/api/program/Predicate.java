@@ -15,4 +15,8 @@ public interface Predicate extends Comparable<Predicate> {
 
 		return Integer.compare(getArity(), other.getArity());
 	}
+	
+	boolean isInternal();
+	
+	boolean isSolverInternal();
 }

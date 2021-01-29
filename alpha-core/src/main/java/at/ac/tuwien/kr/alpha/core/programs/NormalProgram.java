@@ -3,8 +3,8 @@ package at.ac.tuwien.kr.alpha.core.programs;
 import java.util.ArrayList;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.InlineDirectives;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
 
@@ -15,11 +15,11 @@ import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
  */
 public class NormalProgram extends AbstractProgram<NormalRule> {
 
-	public NormalProgram(List<NormalRule> rules, List<CoreAtom> facts, InlineDirectivesImpl inlineDirectives) {
+	public NormalProgram(List<NormalRule> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
 		super(rules, facts, inlineDirectives);
 	}
 
-	public static NormalProgram fromInputProgram(InputProgramImpl inputProgram) {
+	public static NormalProgram fromInputProgram(InputProgram inputProgram) {
 		List<NormalRule> normalRules = new ArrayList<>();
 		for (BasicRule r : inputProgram.getRules()) {
 			normalRules.add(NormalRule.fromBasicRule(r));

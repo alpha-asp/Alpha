@@ -11,10 +11,6 @@ import at.ac.tuwien.kr.alpha.api.program.InlineDirectives;
  */
 public class InlineDirectivesImpl implements InlineDirectives {
 
-	public enum DIRECTIVE {
-		enum_predicate_is
-	}
-
 	private final LinkedHashMap<DIRECTIVE, String> directives = new LinkedHashMap<>();
 
 	public String getDirectiveValue(DIRECTIVE directive) {
@@ -28,9 +24,13 @@ public class InlineDirectivesImpl implements InlineDirectives {
 		directives.put(directive, value);
 	}
 
-	public void accumulate(InlineDirectivesImpl other) {
-		for (Map.Entry<DIRECTIVE, String> directiveEntry : other.directives.entrySet()) {
+	public void accumulate(InlineDirectives other) {
+		for (Map.Entry<DIRECTIVE, String> directiveEntry : other.getDirectives().entrySet()) {
 			addDirective(directiveEntry.getKey(), directiveEntry.getValue());
 		}
+	}
+
+	public LinkedHashMap<DIRECTIVE, String> getDirectives() {
+		return this.directives;
 	}
 }

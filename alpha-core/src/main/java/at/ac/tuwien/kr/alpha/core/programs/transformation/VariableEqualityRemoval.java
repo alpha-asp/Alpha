@@ -37,11 +37,12 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.ComparisonLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
@@ -65,9 +66,9 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 
 	private NormalRule findAndReplaceVariableEquality(NormalRule rule) {
 		// Collect all equal variables.
-		HashMap<VariableTermImpl, HashSet<VariableTermImpl>> variableToEqualVariables = new LinkedHashMap<>();
-		HashSet<CoreLiteral> equalitiesToRemove = new HashSet<>();
-		for (CoreLiteral bodyElement : rule.getBody()) {
+		HashMap<VariableTerm, HashSet<VariableTerm>> variableToEqualVariables = new LinkedHashMap<>();
+		HashSet<Literal> equalitiesToRemove = new HashSet<>();
+		for (Literal bodyElement : rule.getBody()) {
 			if (!(bodyElement instanceof ComparisonLiteral)) {
 				continue;
 			}
@@ -75,13 +76,13 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 			if (!comparisonLiteral.isNormalizedEquality()) {
 				continue;
 			}
-			if (comparisonLiteral.getTerms().get(0) instanceof VariableTermImpl && comparisonLiteral.getTerms().get(1) instanceof VariableTermImpl) {
-				VariableTermImpl leftVariable = (VariableTermImpl) comparisonLiteral.getTerms().get(0);
-				VariableTermImpl rightVariable = (VariableTermImpl) comparisonLiteral.getTerms().get(1);
-				HashSet<VariableTermImpl> leftEqualVariables = variableToEqualVariables.get(leftVariable);
-				HashSet<VariableTermImpl> rightEqualVariables = variableToEqualVariables.get(rightVariable);
+			if (comparisonLiteral.getTerms().get(0) instanceof VariableTerm && comparisonLiteral.getTerms().get(1) instanceof VariableTerm) {
+				VariableTerm leftVariable = (VariableTerm) comparisonLiteral.getTerms().get(0);
+				VariableTerm rightVariable = (VariableTerm) comparisonLiteral.getTerms().get(1);
+				HashSet<VariableTerm> leftEqualVariables = variableToEqualVariables.get(leftVariable);
+				HashSet<VariableTerm> rightEqualVariables = variableToEqualVariables.get(rightVariable);
 				if (leftEqualVariables == null && rightEqualVariables == null) {
-					HashSet<VariableTermImpl> equalVariables = new LinkedHashSet<>(Arrays.asList(leftVariable, rightVariable));
+					HashSet<VariableTerm> equalVariables = new LinkedHashSet<>(Arrays.asList(leftVariable, rightVariable));
 					variableToEqualVariables.put(leftVariable, equalVariables);
 					variableToEqualVariables.put(rightVariable, equalVariables);
 				}
@@ -95,7 +96,7 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 				}
 				if (leftEqualVariables != null && rightEqualVariables != null) {
 					leftEqualVariables.addAll(rightEqualVariables);
-					for (VariableTermImpl rightEqualVariable : rightEqualVariables) {
+					for (VariableTerm rightEqualVariable : rightEqualVariables) {
 						variableToEqualVariables.put(rightEqualVariable, leftEqualVariables);
 					}
 				}
@@ -107,37 +108,37 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 			return rule;
 		}
 
-		List<CoreLiteral> rewrittenBody = new ArrayList<>(rule.getBody());
-		NormalHeadImpl rewrittenHead = rule.isConstraint() ? null : new NormalHeadImpl(rule.getHeadAtom());
+		List<Literal> rewrittenBody = new ArrayList<>(rule.getBody());
+		NormalHead rewrittenHead = rule.isConstraint() ? null : new NormalHeadImpl(rule.getHeadAtom());
 
 		// Use substitution for actual replacement.
 		Unifier replacementSubstitution = new Unifier();
 		// For each set of equal variables, take the first variable and replace all others by it.
-		for (Map.Entry<VariableTermImpl, HashSet<VariableTermImpl>> variableEqualityEntry : variableToEqualVariables.entrySet()) {
-			VariableTermImpl variableToReplace = variableEqualityEntry.getKey();
-			VariableTermImpl replacementVariable = variableEqualityEntry.getValue().iterator().next();
+		for (Map.Entry<VariableTerm, HashSet<VariableTerm>> variableEqualityEntry : variableToEqualVariables.entrySet()) {
+			VariableTerm variableToReplace = variableEqualityEntry.getKey();
+			VariableTerm replacementVariable = variableEqualityEntry.getValue().iterator().next();
 			if (variableToReplace == replacementVariable) {
 				continue;
 			}
 			replacementSubstitution.put(variableToReplace, replacementVariable);
 		}
 		// Replace/Substitute in each literal every term where one of the common variables occurs.
-		Iterator<CoreLiteral> bodyIterator = rewrittenBody.iterator();
+		Iterator<Literal> bodyIterator = rewrittenBody.iterator();
 		while (bodyIterator.hasNext()) {
-			CoreLiteral literal = bodyIterator.next();
+			Literal literal = bodyIterator.next();
 			if (equalitiesToRemove.contains(literal)) {
 				bodyIterator.remove();
 			}
 			for (int i = 0; i < literal.getTerms().size(); i++) {
-				CoreTerm replaced = literal.getTerms().get(i).substitute(replacementSubstitution);
+				Term replaced = literal.getTerms().get(i).substitute(replacementSubstitution);
 				literal.getTerms().set(i, replaced);
 			}
 		}
 		// Replace variables in head.
 		if (rewrittenHead != null) {
-			CoreAtom headAtom = rewrittenHead.getAtom();
+			Atom headAtom = rewrittenHead.getAtom();
 			for (int i = 0; i < headAtom.getTerms().size(); i++) {
-				CoreTerm replaced = headAtom.getTerms().get(i).substitute(replacementSubstitution);
+				Term replaced = headAtom.getTerms().get(i).substitute(replacementSubstitution);
 				headAtom.getTerms().set(i, replaced);
 			}
 		}

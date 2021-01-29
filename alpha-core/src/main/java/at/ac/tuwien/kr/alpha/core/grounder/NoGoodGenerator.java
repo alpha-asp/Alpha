@@ -40,13 +40,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
@@ -58,11 +59,11 @@ import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 public class NoGoodGenerator {
 	private final AtomStore atomStore;
 	private final ChoiceRecorder choiceRecorder;
-	private final Map<CorePredicate, LinkedHashSet<Instance>> factsFromProgram;
+	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private final InternalProgram programAnalysis;
 	private final Set<InternalRule> uniqueGroundRulePerGroundHead;
 
-	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<CorePredicate, LinkedHashSet<Instance>> factsFromProgram, InternalProgram programAnalysis, Set<InternalRule> uniqueGroundRulePerGroundHead) {
+	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, InternalProgram programAnalysis, Set<InternalRule> uniqueGroundRulePerGroundHead) {
 		this.atomStore = atomStore;
 		this.choiceRecorder = recorder;
 		this.factsFromProgram = factsFromProgram;
@@ -95,7 +96,7 @@ public class NoGoodGenerator {
 
 		final List<NoGood> result = new ArrayList<>();
 
-		final CoreAtom groundHeadAtom = nonGroundRule.getHeadAtom().substitute(substitution);
+		final Atom groundHeadAtom = nonGroundRule.getHeadAtom().substitute(substitution);
 		final int headId = atomStore.putIfAbsent(groundHeadAtom);
 		
 		// Prepare atom representing the rule body.
@@ -140,8 +141,8 @@ public class NoGoodGenerator {
 
 	List<Integer> collectNegLiterals(final InternalRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> bodyLiteralsNegative = new ArrayList<>();
-		for (CoreLiteral lit : nonGroundRule.getNegativeBody()) {
-			CoreAtom groundAtom = lit.getAtom().substitute(substitution);
+		for (Literal lit : nonGroundRule.getNegativeBody()) {
+			Atom groundAtom = lit.getAtom().substitute(substitution);
 			
 			final Set<Instance> factInstances = factsFromProgram.get(groundAtom.getPredicate());
 
@@ -162,7 +163,7 @@ public class NoGoodGenerator {
 
 	private List<Integer> collectPosLiterals(final InternalRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> bodyLiteralsPositive = new ArrayList<>();
-		for (CoreLiteral lit  : nonGroundRule.getPositiveBody()) {
+		for (Literal lit  : nonGroundRule.getPositiveBody()) {
 			if (lit instanceof FixedInterpretationLiteral) {
 				// TODO: conversion of atom to literal is ugly. NonGroundRule could manage atoms instead of literals, cf. FIXME there
 				// Atom has fixed interpretation, hence was checked earlier that it
@@ -170,13 +171,13 @@ public class NoGoodGenerator {
 				// FixedInterpretationAtoms need not be shown to the solver, skip it.
 				continue;
 			}
-			final CoreAtom atom = lit.getAtom();
+			final Atom atom = lit.getAtom();
 			// Skip the special enumeration atom.
 			if (atom instanceof EnumerationAtom) {
 				continue;
 			}
 
-			final CoreAtom groundAtom = atom.substitute(substitution);
+			final Atom groundAtom = atom.substitute(substitution);
 
 			// Consider facts to eliminate ground atoms from the generated nogoods that are always true
 			// and eliminate nogoods that are always satisfied due to facts.
@@ -196,7 +197,7 @@ public class NoGoodGenerator {
 		return bodyLiteralsPositive;
 	}
 
-	private boolean existsRuleWithPredicateInHead(final CorePredicate predicate) {
+	private boolean existsRuleWithPredicateInHead(final Predicate predicate) {
 		final HashSet<InternalRule> definingRules = programAnalysis.getPredicateDefiningRules().get(predicate);
 		return definingRules != null && !definingRules.isEmpty();
 	}

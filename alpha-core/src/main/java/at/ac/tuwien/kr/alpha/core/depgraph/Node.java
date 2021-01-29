@@ -25,7 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.depgraph;
 
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
 
 /**
  * A node in a dependency graph. One node references exactly one predicate. This means that all rule heads deriving the
@@ -36,9 +36,9 @@ import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
  */
 public class Node {
 
-	private final CorePredicate predicate;
+	private final Predicate predicate;
 
-	public Node(CorePredicate predicate) {
+	public Node(Predicate predicate) {
 		this.predicate = predicate;
 	}
 
@@ -64,7 +64,7 @@ public class Node {
 		return predicate.toString();
 	}
 
-	public CorePredicate getPredicate() {
+	public Predicate getPredicate() {
 		return predicate;
 	}
 }

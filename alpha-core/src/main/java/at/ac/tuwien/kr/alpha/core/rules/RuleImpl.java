@@ -2,7 +2,6 @@ package at.ac.tuwien.kr.alpha.core.rules;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -10,22 +9,24 @@ import org.apache.commons.collections4.SetUtils;
 
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.core.util.Util;
 
 /**
+ * TODO update javadoc
  * An abstract representation of a rule with a specific type of @{link Head} (type parameter H)
  * 
  * @param <H> the type of head for this rule
  * 
- *            Copyright (c) 2017-2019, the Alpha Team.
+ *            Copyright (c) 2017-2021, the Alpha Team.
  */
-public abstract class AbstractRule<H extends Head> {
+public class RuleImpl<H extends Head> implements Rule<H> {
 
 	private final H head;
 	private final Set<Literal> bodyLiteralsPositive;
 	private final Set<Literal> bodyLiteralsNegative;
 
-	public AbstractRule(H head, List<Literal> body) {
+	public RuleImpl(H head, Set<Literal> body) {
 		this.head = head;
 		Set<Literal> positiveBody = new LinkedHashSet<>();
 		Set<Literal> negativeBody = new LinkedHashSet<>();
@@ -116,10 +117,10 @@ public abstract class AbstractRule<H extends Head> {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof AbstractRule)) {
+		if (!(obj instanceof RuleImpl)) {
 			return false;
 		}
-		AbstractRule<?> other = (AbstractRule<?>) obj;
+		RuleImpl<?> other = (RuleImpl<?>) obj;
 		return Objects.equals(this.bodyLiteralsNegative, other.bodyLiteralsNegative)
 				&& Objects.equals(this.bodyLiteralsPositive, other.bodyLiteralsPositive)
 				&& Objects.equals(this.head, other.head);

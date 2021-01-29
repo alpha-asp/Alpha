@@ -8,7 +8,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.core.util.Util;
 
 /**
@@ -18,21 +19,21 @@ import at.ac.tuwien.kr.alpha.core.util.Util;
 public class BasicAnswerSet implements CoreAnswerSet {
 	public static final BasicAnswerSet EMPTY = new BasicAnswerSet(emptySortedSet(), emptyMap());
 
-	private final SortedSet<CorePredicate> predicates;
-	private final Map<CorePredicate, SortedSet<CoreAtom>> predicateInstances;
+	private final SortedSet<Predicate> predicates;
+	private final Map<Predicate, SortedSet<Atom>> predicateInstances;
 
-	public BasicAnswerSet(SortedSet<CorePredicate> predicates, Map<CorePredicate, SortedSet<CoreAtom>> predicateInstances) {
+	public BasicAnswerSet(SortedSet<Predicate> predicates, Map<Predicate, SortedSet<Atom>> predicateInstances) {
 		this.predicates = predicates;
 		this.predicateInstances = predicateInstances;
 	}
 
 	@Override
-	public SortedSet<CorePredicate> getPredicates() {
+	public SortedSet<Predicate> getPredicates() {
 		return predicates;
 	}
 
 	@Override
-	public SortedSet<CoreAtom> getPredicateInstances(CorePredicate predicate) {
+	public SortedSet<Atom> getPredicateInstances(Predicate predicate) {
 		return predicateInstances.get(predicate);
 	}
 
@@ -48,16 +49,16 @@ public class BasicAnswerSet implements CoreAnswerSet {
 		}
 
 		final StringBuilder sb = new StringBuilder("{ ");
-		for (Iterator<CorePredicate> iterator = predicates.iterator(); iterator.hasNext();) {
-			CorePredicate predicate = iterator.next();
-			Set<CoreAtom> instances = getPredicateInstances(predicate);
+		for (Iterator<Predicate> iterator = predicates.iterator(); iterator.hasNext();) {
+			Predicate predicate = iterator.next();
+			Set<Atom> instances = getPredicateInstances(predicate);
 
 			if (instances == null || instances.isEmpty()) {
 				sb.append(predicate.getName());
 				continue;
 			}
 
-			for (Iterator<CoreAtom> instanceIterator = instances.iterator(); instanceIterator.hasNext();) {
+			for (Iterator<Atom> instanceIterator = instances.iterator(); instanceIterator.hasNext();) {
 				sb.append(instanceIterator.next());
 				if (instanceIterator.hasNext()) {
 					sb.append(", ");
@@ -92,19 +93,19 @@ public class BasicAnswerSet implements CoreAnswerSet {
 
 	@Override
 	public int hashCode() {
-		return  31 * predicates.hashCode() + predicateInstances.hashCode();
+		return 31 * predicates.hashCode() + predicateInstances.hashCode();
 	}
 
 	@Override
 	public int compareTo(CoreAnswerSet other) {
-		final SortedSet<CorePredicate> predicates = this.getPredicates();
+		final SortedSet<Predicate> predicates = this.getPredicates();
 		int result = Util.compareSortedSets(predicates, other.getPredicates());
 
 		if (result != 0) {
 			return result;
 		}
 
-		for (CorePredicate predicate : predicates) {
+		for (Predicate predicate : predicates) {
 			result = Util.compareSortedSets(this.getPredicateInstances(predicate), other.getPredicateInstances(predicate));
 
 			if (result != 0) {

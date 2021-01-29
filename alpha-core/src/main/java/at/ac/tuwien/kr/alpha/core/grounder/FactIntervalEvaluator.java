@@ -1,15 +1,15 @@
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import at.ac.tuwien.kr.alpha.api.terms.*;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.IntervalTerm;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Helper functions to evaluate facts potentially containing intervals.
@@ -23,14 +23,14 @@ public class FactIntervalEvaluator {
 	 * @param fact the fact potentially containing intervals.
 	 * @return all instances stemming from unfolding the intervals.
 	 */
-	public static List<Instance> constructFactInstances(CoreAtom fact) {
+	public static List<Instance> constructFactInstances(Atom fact) {
 		// Construct instance(s) from the fact.
 		int arity = fact.getPredicate().getArity();
-		CoreTerm[] currentTerms = new CoreTerm[arity];
+		Term[] currentTerms = new CoreTerm[arity];
 		boolean containsIntervals = false;
 		// Check if instance contains intervals at all.
 		for (int i = 0; i < arity; i++) {
-			CoreTerm term = fact.getTerms().get(i);
+			Term term = fact.getTerms().get(i);
 			currentTerms[i] = term;
 			if (term instanceof IntervalTerm) {
 				containsIntervals = true;
@@ -47,11 +47,11 @@ public class FactIntervalEvaluator {
 		return unrollInstances(currentTerms, 0);
 	}
 
-	private static List<Instance> unrollInstances(CoreTerm[] currentTerms, int currentPosition) {
+	private static List<Instance> unrollInstances(Term[] currentTerms, int currentPosition) {
 		if (currentPosition == currentTerms.length) {
 			return Collections.singletonList(new Instance(currentTerms));
 		}
-		CoreTerm currentTerm = currentTerms[currentPosition];
+		Term currentTerm = currentTerms[currentPosition];
 		if (!(currentTerm instanceof IntervalTerm)) {
 			return unrollInstances(currentTerms, currentPosition + 1);
 		}
@@ -62,7 +62,7 @@ public class FactIntervalEvaluator {
 		int upper = ((IntervalTerm) currentTerm).getUpperBound();
 
 		for (int i = lower; i <= upper; i++) {
-			CoreTerm[] clonedTerms = currentTerms.clone();
+			Term[] clonedTerms = currentTerms.clone();
 			clonedTerms[currentPosition] = CoreConstantTerm.getInstance(i);
 			instances.addAll(unrollInstances(clonedTerms, currentPosition + 1));
 		}

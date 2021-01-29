@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgram;
 
 /**
@@ -9,7 +9,7 @@ import at.ac.tuwien.kr.alpha.core.programs.NormalProgram;
  * 
  * Copyright (c) 2019-2020, the Alpha Team.
  */
-public class NormalizeProgramTransformation extends ProgramTransformation<InputProgramImpl, NormalProgram> {
+public class NormalizeProgramTransformation extends ProgramTransformation<InputProgram, NormalProgram> {
 
 	private boolean useNormalizationGrid;
 
@@ -18,8 +18,8 @@ public class NormalizeProgramTransformation extends ProgramTransformation<InputP
 	}
 
 	@Override
-	public NormalProgram apply(InputProgramImpl inputProgram) {
-		InputProgramImpl tmpPrg;
+	public NormalProgram apply(InputProgram inputProgram) {
+		InputProgram tmpPrg;
 		// Transform choice rules.
 		tmpPrg = new ChoiceHeadToNormal().apply(inputProgram);
 		// Transform cardinality aggregates.

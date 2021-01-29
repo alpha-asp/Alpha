@@ -1,15 +1,18 @@
 package at.ac.tuwien.kr.alpha.core.common.terms;
 
-import at.ac.tuwien.kr.alpha.core.common.Interner;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
-
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
+
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.Interner;
 
 /**
  * Copyright (c) 2016-2020, the Alpha Team.
  */
-public class CoreConstantTerm<T extends Comparable<T>> extends CoreTerm {
+public class CoreConstantTerm<T extends Comparable<T>> extends CoreTerm implements ConstantTerm<T> {
 	private static final Interner<CoreConstantTerm<?>> INTERNER = new Interner<>();
 
 	private final T object;
@@ -36,12 +39,12 @@ public class CoreConstantTerm<T extends Comparable<T>> extends CoreTerm {
 	}
 
 	@Override
-	public List<VariableTermImpl> getOccurringVariables() {
-		return Collections.emptyList();
+	public Set<VariableTerm> getOccurringVariables() {
+		return Collections.emptySet();
 	}
 
 	@Override
-	public CoreTerm substitute(Substitution substitution) {
+	public Term substitute(Substitution substitution) {
 		return this;
 	}
 
@@ -97,7 +100,7 @@ public class CoreConstantTerm<T extends Comparable<T>> extends CoreTerm {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public int compareTo(CoreTerm o) {
+	public int compareTo(Term o) {
 		if (this == o) {
 			return 0;
 		}
@@ -144,10 +147,11 @@ public class CoreConstantTerm<T extends Comparable<T>> extends CoreTerm {
 	}
 
 	@Override
-	public CoreTerm normalizeVariables(String renamePrefix, RenameCounter counter) {
+	public CoreTerm normalizeVariables(String renamePrefix, Term.RenameCounter counter) {
 		return this;
 	}
 
+	@Override
 	public T getObject() {
 		return object;
 	}

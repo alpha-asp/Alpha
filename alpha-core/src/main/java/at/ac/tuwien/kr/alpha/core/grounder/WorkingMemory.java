@@ -34,19 +34,19 @@ import java.util.Set;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
 
 public class WorkingMemory {
-	protected HashMap<CorePredicate, ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage>> workingMemory = new HashMap<>();
+	protected HashMap<Predicate, ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage>> workingMemory = new HashMap<>();
 	private HashSet<IndexedInstanceStorage> modifiedWorkingMemories = new LinkedHashSet<>();
 
-	public boolean contains(CorePredicate predicate) {
+	public boolean contains(Predicate predicate) {
 		return workingMemory.containsKey(predicate);
 	}
 
-	public void initialize(CorePredicate predicate) {
+	public void initialize(Predicate predicate) {
 		if (workingMemory.containsKey(predicate)) {
 			return;
 		}
@@ -62,15 +62,15 @@ public class WorkingMemory {
 		workingMemory.put(predicate, new ImmutablePair<>(pos, neg));
 	}
 
-	public IndexedInstanceStorage get(CoreLiteral literal) {
+	public IndexedInstanceStorage get(Literal literal) {
 		return get(literal.getAtom(), !literal.isNegated());
 	}
 
-	public IndexedInstanceStorage get(CoreAtom atom, boolean value) {
+	public IndexedInstanceStorage get(Atom atom, boolean value) {
 		return get(atom.getPredicate(), value);
 	}
 
-	public IndexedInstanceStorage get(CorePredicate predicate, boolean value) {
+	public IndexedInstanceStorage get(Predicate predicate, boolean value) {
 		ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> pair = workingMemory.get(predicate);
 		if (value) {
 			return pair.getLeft();
@@ -79,11 +79,11 @@ public class WorkingMemory {
 		}
 	}
 
-	public void addInstance(CoreAtom atom, boolean value) {
+	public void addInstance(Atom atom, boolean value) {
 		addInstance(atom.getPredicate(), value, new Instance(atom.getTerms()));
 	}
 
-	public void addInstance(CorePredicate predicate, boolean value, Instance instance) {
+	public void addInstance(Predicate predicate, boolean value, Instance instance) {
 		IndexedInstanceStorage storage = get(predicate, value);
 
 		if (!storage.containsInstance(instance)) {
@@ -92,7 +92,7 @@ public class WorkingMemory {
 		}
 	}
 
-	public void addInstances(CorePredicate predicate, boolean value, Iterable<Instance> instances) {
+	public void addInstances(Predicate predicate, boolean value, Iterable<Instance> instances) {
 		IndexedInstanceStorage storage = get(predicate, value);
 
 		for (Instance instance : instances) {

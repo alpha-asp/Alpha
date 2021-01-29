@@ -2,8 +2,8 @@ package at.ac.tuwien.kr.alpha.core.grounder;
 
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 
@@ -18,14 +18,14 @@ public interface ProgramAnalyzingGrounder extends Grounder {
 	 * @param currentAssignment the current assignment.
 	 * @return a set of literals who jointly imply the atomToJustify not being TRUE.
 	 */
-	Set<CoreLiteral> justifyAtom(int atomToJustify, Assignment currentAssignment);
+	Set<Literal> justifyAtom(int atomToJustify, Assignment currentAssignment);
 
 	/**
 	 * Returns true iff the given atom is known to the grounder as a fact (hence not occurring in any assignment).
 	 * @param atom the atom.
 	 * @return true iff atom is a fact.
 	 */
-	boolean isFact(CoreAtom atom);
+	boolean isFact(Atom atom);
 
 	/**
 	 * Returns the NonGroundRule identified by the given id.

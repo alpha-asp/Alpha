@@ -27,50 +27,52 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramPartParser;
+import at.ac.tuwien.kr.alpha.core.util.Util;
 
-public class Substitution {
+public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Substitution {
 
 	private static final ProgramPartParser PROGRAM_PART_PARSER = new ProgramPartParser();
-	public static final Substitution EMPTY_SUBSTITUTION = new Substitution() {
+	public static final SubstitutionImpl EMPTY_SUBSTITUTION = new SubstitutionImpl() {
 		@Override
-		public <T extends Comparable<T>> CoreTerm put(VariableTermImpl variableTerm, CoreTerm groundTerm) {
-			throw oops("Should not be called on EMPTY_SUBSTITUTION");
+		public <T extends Comparable<T>> CoreTerm put(VariableTerm variableTerm, Term groundTerm) {
+			throw Util.oops("Should not be called on EMPTY_SUBSTITUTION");
 		}
 	};
 
-	protected TreeMap<VariableTermImpl, CoreTerm> substitution;
+	protected TreeMap<VariableTerm, Term> substitution;
 
-	private Substitution(TreeMap<VariableTermImpl, CoreTerm> substitution) {
+	private SubstitutionImpl(TreeMap<VariableTerm, Term> substitution) {
 		if (substitution == null) {
-			throw oops("Substitution is null.");
+			throw Util.oops("Substitution is null.");
 		}
 		this.substitution = substitution;
 	}
 
-	public Substitution() {
+	public SubstitutionImpl() {
 		this(new TreeMap<>());
 	}
 
-	public Substitution(Substitution clone) {
-		this(new TreeMap<>(clone.substitution));
+	public SubstitutionImpl(Substitution clone) {
+		this(new TreeMap<>(clone.getSubstitution()));
 	}
 
-	public static Substitution specializeSubstitution(CoreLiteral literal, Instance instance, Substitution substitution) {
+	public static Substitution specializeSubstitution(Literal literal, Instance instance, Substitution substitution) {
 		return specializeSubstitution(literal.getAtom(), instance, substitution);
 	}
 
@@ -78,9 +80,10 @@ public class Substitution {
 	 * Helper class to lazily clone the input substitution of Substitution.specializeSubstitution only when needed.
 	 */
 	private static class SpecializationHelper {
-		Substitution updatedSubstitution;	// Is null for as long as the given partial substitution is not extended, afterwards holds the updated/extended/specialized substitution.
+		Substitution updatedSubstitution; // Is null for as long as the given partial substitution is not extended, afterwards holds the
+											// updated/extended/specialized substitution.
 
-		Substitution unify(List<? extends CoreTerm> termList, Instance instance, Substitution partialSubstitution) {
+		Substitution unify(List<Term> termList, Instance instance, Substitution partialSubstitution) {
 			for (int i = 0; i < termList.size(); i++) {
 				if (!unifyTerms(termList.get(i), instance.terms.get(i), partialSubstitution)) {
 					return null;
@@ -93,7 +96,7 @@ public class Substitution {
 			return updatedSubstitution;
 		}
 
-		boolean unifyTerms(CoreTerm termNonGround, CoreTerm termGround, Substitution partialSubstitution) {
+		boolean unifyTerms(Term termNonGround, Term termGround, Substitution partialSubstitution) {
 			if (termNonGround == termGround) {
 				// Both terms are either the same constant or the same variable term
 				return true;
@@ -101,10 +104,14 @@ public class Substitution {
 				// Since right term is ground, both terms differ
 				return false;
 			} else if (termNonGround instanceof VariableTermImpl) {
-				VariableTermImpl variableTerm = (VariableTermImpl) termNonGround;
+				VariableTerm variableTerm = (VariableTerm) termNonGround;
 				// Left term is variable, bind it to the right term. Use original substitution if it has
 				// not been cloned yet.
-				CoreTerm bound = (updatedSubstitution == null ? partialSubstitution : updatedSubstitution).eval(variableTerm); // Get variable binding, either from input substitution if it has not been updated yet, or from the cloned/updated substitution.
+				Term bound = (updatedSubstitution == null ? partialSubstitution : updatedSubstitution).eval(variableTerm); // Get variable binding, either
+																															// from input substitution if it
+																															// has not been updated yet, or
+																															// from the cloned/updated
+																															// substitution.
 				if (bound != null) {
 					// Variable is already bound, return true if binding is the same as the current ground term.
 					return termGround == bound;
@@ -112,7 +119,7 @@ public class Substitution {
 				// Record new variable binding.
 				if (updatedSubstitution == null) {
 					// Clone substitution if it was not yet updated.
-					updatedSubstitution = new Substitution(partialSubstitution);
+					updatedSubstitution = new SubstitutionImpl(partialSubstitution);
 				}
 				updatedSubstitution.put(variableTerm, termGround);
 				return true;
@@ -152,30 +159,32 @@ public class Substitution {
 	 * @param instance     the ground instance to unify the atom with.
 	 * @param substitution the (partial) substitution for the atom. This is left unchanged in all cases.
 	 * @return null if the unification/specialization fails, otherwise it is a unifying substitution. If the
-	 * 	parameter substitution already is a unifier, it is returned. If the unifying substitution is an
-	 * 	extension of the input substitution, a new substitution will be returned.
+	 *         parameter substitution already is a unifier, it is returned. If the unifying substitution is an
+	 *         extension of the input substitution, a new substitution will be returned.
 	 */
-	public static Substitution specializeSubstitution(CoreAtom atom, Instance instance, Substitution substitution) {
+	public static Substitution specializeSubstitution(Atom atom, Instance instance, Substitution substitution) {
 		return new SpecializationHelper().unify(atom.getTerms(), instance, substitution);
 	}
 
 	/**
-	 * This method should be used to obtain the {@link CoreTerm} to be used in place of a given {@link VariableTermImpl} under this substitution.
+	 * This method should be used to obtain the {@link CoreTerm} to be used in place of a given {@link VariableTermImpl} under this
+	 * substitution.
 	 *
 	 * @param variableTerm the variable term to substitute, if possible
 	 * @return a constant term if the substitution contains the given variable, {@code null} otherwise.
 	 */
-	public CoreTerm eval(VariableTermImpl variableTerm) {
+	@Override
+	public Term eval(VariableTerm variableTerm) {
 		return this.substitution.get(variableTerm);
 	}
 
-	public <T extends Comparable<T>> CoreTerm put(VariableTermImpl variableTerm, CoreTerm groundTerm) {
+	public <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term groundTerm) {
 		if (!groundTerm.isGround()) {
-			throw oops("Right-hand term is not ground.");
+			throw Util.oops("Right-hand term is not ground.");
 		}
-		CoreTerm alreadyAssigned = substitution.get(variableTerm);
+		Term alreadyAssigned = substitution.get(variableTerm);
 		if (alreadyAssigned != null && alreadyAssigned != groundTerm) {
-			throw oops("Variable is already assigned to another term.");
+			throw Util.oops("Variable is already assigned to another term.");
 		}
 		// Note: We're destroying type information here.
 		return substitution.put(variableTerm, groundTerm);
@@ -185,11 +194,11 @@ public class Substitution {
 		return substitution.isEmpty();
 	}
 
-	public boolean isVariableSet(VariableTermImpl variable) {
+	public boolean isVariableSet(VariableTerm variable) {
 		return substitution.get(variable) != null;
 	}
 
-	public Set<VariableTermImpl> getMappedVariables() {
+	public Set<VariableTerm> getMappedVariables() {
 		return substitution.keySet();
 	}
 
@@ -202,7 +211,7 @@ public class Substitution {
 	public String toString() {
 		final StringBuilder ret = new StringBuilder("{");
 		boolean isFirst = true;
-		for (Map.Entry<VariableTermImpl, CoreTerm> e : substitution.entrySet()) {
+		for (Map.Entry<VariableTerm, Term> e : substitution.entrySet()) {
 			if (isFirst) {
 				isFirst = false;
 			} else {
@@ -214,10 +223,10 @@ public class Substitution {
 		return ret.toString();
 	}
 
-	public static Substitution fromString(String substitution) {
+	public static SubstitutionImpl fromString(String substitution) {
 		String bare = substitution.substring(1, substitution.length() - 1);
 		String[] assignments = bare.split(",");
-		Substitution ret = new Substitution();
+		SubstitutionImpl ret = new SubstitutionImpl();
 		for (String assignment : assignments) {
 			String[] keyVal = assignment.split("->");
 			VariableTermImpl variable = VariableTermImpl.getInstance(keyVal[0]);
@@ -236,7 +245,7 @@ public class Substitution {
 			return false;
 		}
 
-		Substitution that = (Substitution) o;
+		SubstitutionImpl that = (SubstitutionImpl) o;
 
 		return Objects.equals(substitution, that.substitution);
 	}
@@ -245,4 +254,11 @@ public class Substitution {
 	public int hashCode() {
 		return substitution != null ? substitution.hashCode() : 0;
 	}
+
+	
+	@Override
+	public TreeMap<VariableTerm, Term> getSubstitution() {
+		return this.substitution;
+	}
+	
 }

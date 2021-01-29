@@ -30,17 +30,19 @@ package at.ac.tuwien.kr.alpha.core.atoms;
 import java.util.List;
 import java.util.Set;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.core.grounder.Unifier;
 
 /**
  * An Atom is the common superclass of all representations of ASP atoms used by Alpha.
  */
-public abstract class CoreAtom implements Atom, Comparable<CoreAtom> {
+public abstract class CoreAtom implements Atom {
 
 	/**
 	 * Creates a new Atom that represents this Atom, but has the given term list instead.
@@ -48,12 +50,12 @@ public abstract class CoreAtom implements Atom, Comparable<CoreAtom> {
 	 * @param terms the terms to set.
 	 * @return a new Atom with the given terms set.
 	 */
-	public abstract CoreAtom withTerms(List<CoreTerm> terms);
+	public abstract Atom withTerms(List<Term> terms);
 
 	/**
 	 * Returns the set of all variables occurring in the Atom.
 	 */
-	public Set<VariableTermImpl> getOccurringVariables() {
+	public Set<VariableTerm> getOccurringVariables() {
 		return toLiteral().getOccurringVariables();
 	}
 
@@ -64,45 +66,50 @@ public abstract class CoreAtom implements Atom, Comparable<CoreAtom> {
 	 * @param substitution the variable substitution to apply.
 	 * @return the atom resulting from the application of the substitution.
 	 */
-	public abstract CoreAtom substitute(Substitution substitution);
+	public abstract Atom substitute(Substitution substitution);
 
-	public abstract List<CoreTerm> getTerms();
+	@Override
+	public abstract List<Term> getTerms();
 
-	public abstract CorePredicate getPredicate();
+	@Override
+	public abstract Predicate getPredicate();
 
 	/**
 	 * Returns whether this atom is ground, i.e., variable-free.
 	 *
 	 * @return true iff the terms of this atom contain no {@link VariableTermImpl}.
 	 */
+	@Override
 	public abstract boolean isGround();
 
 	/**
 	 * Creates a non-negated literal containing this atom.
 	 */
-	public CoreLiteral toLiteral() {
+	@Override
+	public Literal toLiteral() {
 		return toLiteral(true);
 	}
 
-	public abstract CoreLiteral toLiteral(boolean positive);
+	@Override
+	public abstract Literal toLiteral(boolean positive);
 
-	public CoreAtom renameVariables(String newVariablePrefix) {
+	public Atom renameVariables(String newVariablePrefix) {
 		Unifier renamingSubstitution = new Unifier();
 		int counter = 0;
-		for (VariableTermImpl variable : getOccurringVariables()) {
+		for (VariableTerm variable : getOccurringVariables()) {
 			renamingSubstitution.put(variable, VariableTermImpl.getInstance(newVariablePrefix + counter++));
 		}
 		return this.substitute(renamingSubstitution);
 	}
 
 	@Override
-	public int compareTo(CoreAtom o) {
+	public int compareTo(Atom o) {
 		if (o == null) {
 			return 1;
 		}
 
-		final List<? extends CoreTerm> aTerms = this.getTerms();
-		final List<? extends CoreTerm> bTerms = o.getTerms();
+		final List<Term> aTerms = this.getTerms();
+		final List<Term> bTerms = o.getTerms();
 
 		if (aTerms.size() != bTerms.size()) {
 			return Integer.compare(aTerms.size(), bTerms.size());

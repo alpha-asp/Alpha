@@ -31,8 +31,9 @@ import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
 
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 
@@ -41,7 +42,7 @@ import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
  */
 public class Unification {
 
-	public static Unifier unifyAtoms(CoreAtom left, CoreAtom right) {
+	public static Unifier unifyAtoms(Atom left, Atom right) {
 		return unifyAtoms(left, right, false);
 	}
 
@@ -51,17 +52,17 @@ public class Unification {
 	 * @param specific the specific Atom.
 	 * @return a Unifier sigma such that specific == general.substitute(sigma), returns null if no such sigma exists.
 	 */
-	public static Unifier instantiate(CoreAtom general, CoreAtom specific) {
+	public static Unifier instantiate(Atom general, Atom specific) {
 		return unifyAtoms(specific, general, true);
 	}
 
-	private static Unifier unifyAtoms(CoreAtom left, CoreAtom right, boolean keepLeftAsIs) {
-		Set<VariableTermImpl> leftOccurringVariables = left.getOccurringVariables();
-		Set<VariableTermImpl> rightOccurringVaribles = right.getOccurringVariables();
+	private static Unifier unifyAtoms(Atom left, Atom right, boolean keepLeftAsIs) {
+		Set<VariableTerm> leftOccurringVariables = left.getOccurringVariables();
+		Set<VariableTerm> rightOccurringVaribles = right.getOccurringVariables();
 		boolean leftSmaller = leftOccurringVariables.size() < rightOccurringVaribles.size();
-		Set<VariableTermImpl> smallerSet = leftSmaller ? leftOccurringVariables : rightOccurringVaribles;
-		Set<VariableTermImpl> largerSet = leftSmaller ? rightOccurringVaribles : leftOccurringVariables;
-		for (VariableTermImpl variableTerm : smallerSet) {
+		Set<VariableTerm> smallerSet = leftSmaller ? leftOccurringVariables : rightOccurringVaribles;
+		Set<VariableTerm> largerSet = leftSmaller ? rightOccurringVaribles : leftOccurringVariables;
+		for (VariableTerm variableTerm : smallerSet) {
 			if (largerSet.contains(variableTerm)) {
 				throw oops("Left and right atom share variables.");
 			}
@@ -71,8 +72,8 @@ public class Unification {
 			return null;
 		}
 		for (int i = 0; i < left.getPredicate().getArity(); i++) {
-			final CoreTerm leftTerm = left.getTerms().get(i);
-			final CoreTerm rightTerm = right.getTerms().get(i);
+			final Term leftTerm = left.getTerms().get(i);
+			final Term rightTerm = right.getTerms().get(i);
 			if (!unifyTerms(leftTerm, rightTerm, mgu, keepLeftAsIs)) {
 				return null;
 			}
@@ -80,9 +81,9 @@ public class Unification {
 		return mgu;
 	}
 
-	private static boolean unifyTerms(CoreTerm left, CoreTerm right, Unifier currentSubstitution, boolean keepLeftAsIs) {
-		final CoreTerm leftSubs = left.substitute(currentSubstitution);
-		final CoreTerm rightSubs = right.substitute(currentSubstitution);
+	private static boolean unifyTerms(Term left, Term right, Unifier currentSubstitution, boolean keepLeftAsIs) {
+		final Term leftSubs = left.substitute(currentSubstitution);
+		final Term rightSubs = right.substitute(currentSubstitution);
 		if (leftSubs == rightSubs) {
 			return true;
 		}
@@ -102,8 +103,8 @@ public class Unification {
 				return false;
 			}
 			for (int i = 0; i < leftFunction.getTerms().size(); i++) {
-				final CoreTerm leftTerm = leftFunction.getTerms().get(i);
-				final CoreTerm rightTerm = rightFunction.getTerms().get(i);
+				final Term leftTerm = leftFunction.getTerms().get(i);
+				final Term rightTerm = rightFunction.getTerms().get(i);
 				if (!unifyTerms(leftTerm, rightTerm, currentSubstitution, keepLeftAsIs)) {
 					return false;
 				}

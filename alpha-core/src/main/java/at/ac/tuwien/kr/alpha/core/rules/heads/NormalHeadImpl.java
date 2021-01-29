@@ -1,9 +1,7 @@
 package at.ac.tuwien.kr.alpha.core.rules.heads;
 
-import java.util.Optional;
-
+import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
 
 /**
  * Represents a normal head, i.e., a head that is an Atom.
@@ -11,9 +9,9 @@ import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
  */
 public class NormalHeadImpl implements NormalHead {
 
-	private final Optional<CoreAtom> atom;
+	private final Atom atom;
 
-	public NormalHeadImpl(Optional<CoreAtom> atom) {
+	public NormalHeadImpl(Atom atom) {
 		this.atom = atom;
 	}
 
@@ -23,7 +21,7 @@ public class NormalHeadImpl implements NormalHead {
 		return false;
 	}
 
-	public Optional<CoreAtom> getAtom() {
+	public Atom getAtom() {
 		return atom;
 	}
 

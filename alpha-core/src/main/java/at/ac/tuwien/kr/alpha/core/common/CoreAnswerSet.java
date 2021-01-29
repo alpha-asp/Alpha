@@ -2,12 +2,13 @@ package at.ac.tuwien.kr.alpha.core.common;
 
 import java.util.SortedSet;
 
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
 
 public interface CoreAnswerSet extends Comparable<CoreAnswerSet> {
-	SortedSet<CorePredicate> getPredicates();
+	SortedSet<Predicate> getPredicates();
 
-	SortedSet<CoreAtom> getPredicateInstances(CorePredicate predicate);
+	SortedSet<Atom> getPredicateInstances(Predicate predicate);
 
 	boolean isEmpty();
 }

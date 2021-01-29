@@ -1,5 +1,7 @@
 package at.ac.tuwien.kr.alpha.core.atoms;
 
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+
 /**
  * Interface for atom whose variables can be normalized, i.e., enumerated from
  * left to right.
@@ -15,6 +17,6 @@ public interface VariableNormalizableAtom {
 	 * @return the Atom where all variables are renamed and enumerated
 	 *         left-to-right.
 	 */
-	CoreAtom normalizeVariables(String prefix, int counterStartingValue);
+	Atom normalizeVariables(String prefix, int counterStartingValue);
 	
 }

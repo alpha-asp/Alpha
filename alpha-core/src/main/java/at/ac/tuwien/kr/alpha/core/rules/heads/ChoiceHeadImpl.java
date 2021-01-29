@@ -4,11 +4,11 @@ import static at.ac.tuwien.kr.alpha.core.util.Util.join;
 
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 
 /**
  * Represents the head of a choice rule.
@@ -18,17 +18,17 @@ import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 public class ChoiceHeadImpl implements ChoiceHead {
 	private final List<ChoiceElement> choiceElements;
 
-	private final CoreTerm lowerBound;
+	private final Term lowerBound;
 	private final ComparisonOperator lowerOp;
 
-	private final CoreTerm upperBound;
+	private final Term upperBound;
 	private final ComparisonOperator upperOp;
 
-	public static class ChoiceElement {
-		public final CoreAtom choiceAtom;
-		public final List<CoreLiteral> conditionLiterals;
+	public static class ChoiceElementImpl implements ChoiceElement {
+		public final Atom choiceAtom;
+		public final List<Literal> conditionLiterals;
 
-		public ChoiceElement(CoreAtom choiceAtom, List<CoreLiteral> conditionLiterals) {
+		public ChoiceElementImpl(Atom choiceAtom, List<Literal> conditionLiterals) {
 			this.choiceAtom = choiceAtom;
 			this.conditionLiterals = conditionLiterals;
 		}
@@ -43,6 +43,16 @@ public class ChoiceHeadImpl implements ChoiceHead {
 
 			return join(result + " : ", conditionLiterals, "");
 		}
+
+		@Override
+		public Atom getChoiceAtom() {
+			return choiceAtom;
+		}
+
+		@Override
+		public List<Literal> getConditionLiterals() {
+			return conditionLiterals;
+		}
 	}
 
 	public ComparisonOperator getLowerOperator() {
@@ -53,19 +63,23 @@ public class ChoiceHeadImpl implements ChoiceHead {
 		return upperOp;
 	}
 
+	@Override
 	public List<ChoiceElement> getChoiceElements() {
 		return choiceElements;
 	}
 
-	public CoreTerm getLowerBound() {
+	@Override
+	public Term getLowerBound() {
 		return lowerBound;
 	}
 
-	public CoreTerm getUpperBound() {
+	@Override
+	public Term getUpperBound() {
 		return upperBound;
 	}
 
-	public ChoiceHeadImpl(List<ChoiceElement> choiceElements, CoreTerm lowerBound, ComparisonOperator lowerOp, CoreTerm upperBound, ComparisonOperator upperOp) {
+	public ChoiceHeadImpl(List<ChoiceElement> choiceElements, Term lowerBound, ComparisonOperator lowerOp, Term upperBound,
+			ComparisonOperator upperOp) {
 		this.choiceElements = choiceElements;
 		this.lowerBound = lowerBound;
 		this.lowerOp = lowerOp;

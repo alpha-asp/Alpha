@@ -33,10 +33,13 @@ import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
 import java.util.Arrays;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.core.common.terms.Terms;
 
 /**
  * Helper for treating IntervalTerms in rules.
@@ -53,25 +56,25 @@ import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 public class IntervalAtom extends CoreAtom implements VariableNormalizableAtom {
 	private static final CorePredicate PREDICATE = CorePredicate.getInstance("_interval", 2, true);
 
-	private final List<CoreTerm> terms;
+	private final List<Term> terms;
 
-	public IntervalAtom(IntervalTerm intervalTerm, CoreTerm intervalRepresentingVariable) {
+	public IntervalAtom(IntervalTerm intervalTerm, Term intervalRepresentingVariable) {
 		this.terms = Arrays.asList(intervalTerm, intervalRepresentingVariable);
 	}
 
 	@Override
-	public CorePredicate getPredicate() {
+	public Predicate getPredicate() {
 		return PREDICATE;
 	}
 
 	@Override
-	public List<CoreTerm> getTerms() {
+	public List<Term> getTerms() {
 		return terms;
 	}
 
 	@Override
 	public boolean isGround() {
-		for (CoreTerm t : this.terms) {
+		for (Term t : this.terms) {
 			if (!t.isGround()) {
 				return false;
 			}
@@ -123,12 +126,12 @@ public class IntervalAtom extends CoreAtom implements VariableNormalizableAtom {
 
 	@Override
 	public IntervalAtom normalizeVariables(String prefix, int counterStartingValue) {
-		List<CoreTerm> renamedTerms = CoreTerm.renameTerms(terms, prefix, counterStartingValue);
+		List<Term> renamedTerms = Terms.renameTerms(terms, prefix, counterStartingValue);
 		return new IntervalAtom((IntervalTerm) renamedTerms.get(0), renamedTerms.get(1));
 	}
 
 	@Override
-	public CoreAtom withTerms(List<CoreTerm> terms) {
+	public Atom withTerms(List<Term> terms) {
 		throw new UnsupportedOperationException("IntervalAtoms do not support setting of terms!");
 	}
 }

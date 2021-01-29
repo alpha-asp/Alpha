@@ -25,20 +25,20 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder.instantiation;
 
-import at.ac.tuwien.kr.alpha.api.program.*;
-import at.ac.tuwien.kr.alpha.core.atoms.ComparisonLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.EnumerationLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.ExternalLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.FixedInterpretationLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.IntervalLiteral;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+import java.util.List;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.core.atoms.ComparisonLiteral;
+import at.ac.tuwien.kr.alpha.core.atoms.EnumerationLiteral;
+import at.ac.tuwien.kr.alpha.core.atoms.ExternalLiteral;
+import at.ac.tuwien.kr.alpha.core.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.core.atoms.IntervalLiteral;
+import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 
 /**
  * Provides ground instantiations for literals.
@@ -65,7 +65,7 @@ public class LiteralInstantiator {
 	}
 
 	/**
-	 * Instantiates a literal using an existing {@link Substitution} as starting point.
+	 * Instantiates a literal using an existing {@link SubstitutionImpl} as starting point.
 	 *
 	 * This method is intended to be called as part of a larger rule instantiation (i.e. grounding) workflow in order to find ground
 	 * instantiations of literals, i.e. extensions of the given partial substitution that yield useable ground instances for the given literal.
@@ -75,7 +75,7 @@ public class LiteralInstantiator {
 	 * @param partialSubstitution a substitution that serves as a starting point. May be empty.
 	 * @return a {@link LiteralInstantiationResult} containing ground substitutions - if any exist - along with some metadata for the grounder
 	 */
-	public LiteralInstantiationResult instantiateLiteral(CoreLiteral lit, Substitution partialSubstitution) {
+	public LiteralInstantiationResult instantiateLiteral(Literal lit, Substitution partialSubstitution) {
 		LOGGER.trace("Instantiating literal: {}", lit);
 		if (lit instanceof FixedInterpretationLiteral) {
 			return this.instantiateFixedInterpretationLiteral((FixedInterpretationLiteral) lit, partialSubstitution);
@@ -112,7 +112,7 @@ public class LiteralInstantiator {
 	}
 
 	/**
-	 * Calculates a substitution that adds an enumeration index (see {@link EnumerationLiteral#addEnumerationIndexToSubstitution(Substitution)})
+	 * Calculates a substitution that adds an enumeration index (see {@link EnumerationLiteral#addEnumerationIndexToSubstitution(SubstitutionImpl)})
 	 * to the given partial substitution. Due to the special nature of enumeration literals, this method will always return
 	 * {@link LiteralInstantiationResult.Type#CONTINUE} as its result type. This method assumes that the partial substitution has
 	 * <emph>not</emph> been applied to the passed literal.
@@ -135,10 +135,10 @@ public class LiteralInstantiator {
 	 * @param lit
 	 * @param partialSubstitution
 	 */
-	private LiteralInstantiationResult instantiateBasicLiteral(CoreLiteral lit, Substitution partialSubstitution) {
+	private LiteralInstantiationResult instantiateBasicLiteral(Literal lit, Substitution partialSubstitution) {
 		LOGGER.trace("Instantiating basic literal: {}", lit);
 		List<ImmutablePair<Substitution, AssignmentStatus>> substitutions;
-		CoreLiteral substitutedLiteral = lit.substitute(partialSubstitution);
+		Literal substitutedLiteral = lit.substitute(partialSubstitution);
 		LOGGER.trace("Substituted literal is {}", substitutedLiteral);
 		if (substitutedLiteral.isGround()) {
 			LOGGER.trace("Literal {} is already ground, checking truth", substitutedLiteral);

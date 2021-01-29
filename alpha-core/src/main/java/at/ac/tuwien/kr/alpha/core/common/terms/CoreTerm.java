@@ -1,12 +1,13 @@
 package at.ac.tuwien.kr.alpha.core.common.terms;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 
 //@formatter:off
 /**
@@ -35,7 +36,7 @@ import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 //@formatter:on
 public abstract class CoreTerm implements Term {
 
-	public abstract List<VariableTermImpl> getOccurringVariables();
+	public abstract Set<VariableTerm> getOccurringVariables();
 
 	/**
 	 * Applies a substitution, result may be nonground.
@@ -43,10 +44,10 @@ public abstract class CoreTerm implements Term {
 	 * @param substitution the variable substitution to apply.
 	 * @return the non-substitute term where all variable substitutions have been applied.
 	 */
-	public abstract CoreTerm substitute(Substitution substitution);
+	public abstract Term substitute(Substitution substitution);
 
 	// TODO change this to work on interfaces and break out of this class
-	private static int priority(CoreTerm term) {
+	private static int priority(Term term) {
 		final Class<?> clazz = term.getClass();
 		if (clazz.equals(CoreConstantTerm.class)) {
 			return 1;
@@ -71,27 +72,29 @@ public abstract class CoreTerm implements Term {
 	 * @param renamePrefix the name to prefix all occurring variables.
 	 * @return the term with all variables renamed.
 	 */
-	public abstract CoreTerm renameVariables(String renamePrefix);
+	public abstract Term renameVariables(String renamePrefix);
 
-	public abstract CoreTerm normalizeVariables(String renamePrefix, RenameCounter counter);
+	public abstract Term normalizeVariables(String renamePrefix, Term.RenameCounter counter);
 
-	public static class RenameCounter {
+	public static class RenameCounter implements Term.RenameCounter {
 		int counter;
-		final HashMap<VariableTermImpl, VariableTermImpl> renamedVariables;
+		final HashMap<VariableTerm, VariableTerm> renamedVariables;
 
 		public RenameCounter(int startingValue) {
 			counter = startingValue;
 			renamedVariables = new HashMap<>();
 		}
-	}
-
-	public static List<CoreTerm> renameTerms(List<? extends CoreTerm> terms, String prefix, int counterStartingValue) {
-		List<CoreTerm> renamedTerms = new ArrayList<>(terms.size());
-		CoreTerm.RenameCounter renameCounter = new CoreTerm.RenameCounter(counterStartingValue);
-		for (CoreTerm term : terms) {
-			renamedTerms.add(term.normalizeVariables(prefix, renameCounter));
+		
+		public Map<VariableTerm, VariableTerm> getRenamedVariables(){
+			return renamedVariables;
 		}
-		return renamedTerms;
+		
+		public int getAndIncrement() {
+			int retVal = counter;
+			counter++;
+			return retVal;
+		}
+		
 	}
 
 	@Override

@@ -34,16 +34,20 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.core.common.terms.Terms;
 
 /**
  * Represents ordinary ASP atoms.
  */
 public class BasicAtom extends CoreAtom implements VariableNormalizableAtom {
-	private final CorePredicate predicate;
-	private final List<CoreTerm> terms;
+	private final Predicate predicate;
+	private final List<Term> terms;
 	private final boolean ground;
 
 	/**
@@ -52,12 +56,12 @@ public class BasicAtom extends CoreAtom implements VariableNormalizableAtom {
 	 * @param predicate
 	 * @param terms
 	 */
-	public BasicAtom(CorePredicate predicate, List<CoreTerm> terms) {
+	public BasicAtom(Predicate predicate, List<Term> terms) {
 		this.predicate = predicate;
 		this.terms = terms;
 
 		boolean ground = true;
-		for (CoreTerm term : terms) {
+		for (Term term : terms) {
 			if (!term.isGround()) {
 				ground = false;
 				break;
@@ -67,21 +71,21 @@ public class BasicAtom extends CoreAtom implements VariableNormalizableAtom {
 		this.ground = ground;
 	}
 
-	public BasicAtom(CorePredicate predicate, CoreTerm... terms) {
+	public BasicAtom(Predicate predicate, Term... terms) {
 		this(predicate, Arrays.asList(terms));
 	}
 
-	public BasicAtom(CorePredicate predicate) {
+	public BasicAtom(Predicate predicate) {
 		this(predicate, Collections.emptyList());
 	}
 
 	@Override
-	public CorePredicate getPredicate() {
+	public Predicate getPredicate() {
 		return predicate;
 	}
 
 	@Override
-	public List<CoreTerm> getTerms() {
+	public List<Term> getTerms() {
 		return terms;
 	}
 
@@ -99,7 +103,7 @@ public class BasicAtom extends CoreAtom implements VariableNormalizableAtom {
 
 	@Override
 	public BasicAtom normalizeVariables(String prefix, int counterStartingValue) {
-		List<CoreTerm> renamedTerms = CoreTerm.renameTerms(terms, prefix, counterStartingValue);
+		List<Term> renamedTerms = Terms.renameTerms(terms, prefix, counterStartingValue);
 		return new BasicAtom(predicate, renamedTerms);
 	}
 
@@ -119,7 +123,7 @@ public class BasicAtom extends CoreAtom implements VariableNormalizableAtom {
 	}
 
 	@Override
-	public int compareTo(CoreAtom o) {
+	public int compareTo(Atom o) {
 		if (this.terms.size() != o.getTerms().size()) {
 			return this.terms.size() - o.getTerms().size();
 		}
@@ -160,7 +164,7 @@ public class BasicAtom extends CoreAtom implements VariableNormalizableAtom {
 	}
 
 	@Override
-	public CoreAtom withTerms(List<CoreTerm> terms) {
+	public Atom withTerms(List<Term> terms) {
 		return new BasicAtom(predicate, terms);
 	}
 }

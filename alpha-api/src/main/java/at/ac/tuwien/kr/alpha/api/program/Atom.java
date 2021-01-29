@@ -1,7 +1,9 @@
 package at.ac.tuwien.kr.alpha.api.program;
 
 import java.util.List;
+import java.util.Set;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 
@@ -26,4 +28,12 @@ public interface Atom extends Comparable<Atom> {
 	 * @return a literal that is positive iff the given parameter is true.
 	 */
 	Literal toLiteral(boolean positive);
+	
+	Set<VariableTerm> getOccurringVariables();
+	
+	Atom substitute(Substitution substitution);
+	
+	Atom renameVariables(String newVariablePrefix);
+	
+	Atom withTerms(List<Term> terms);
 }

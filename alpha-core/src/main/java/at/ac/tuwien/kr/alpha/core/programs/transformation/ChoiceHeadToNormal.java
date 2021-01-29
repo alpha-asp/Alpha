@@ -27,34 +27,34 @@
  */
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import at.ac.tuwien.kr.alpha.api.program.*;
-import at.ac.tuwien.kr.alpha.api.terms.*;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.heads.ChoiceHeadImpl;
-import at.ac.tuwien.kr.alpha.core.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.rules.Head;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
+import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
+import at.ac.tuwien.kr.alpha.core.rules.heads.ChoiceHeadImpl;
+import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
+
 /**
  * Copyright (c) 2017-2020, the Alpha Team.
  */
-public class ChoiceHeadToNormal extends ProgramTransformation<InputProgramImpl, InputProgramImpl> {
+public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, InputProgram> {
 	private final static String PREDICATE_NEGATION_PREFIX = "_n";
 
 	@Override
-	public InputProgramImpl apply(InputProgramImpl inputProgram) {
-		InputProgramImpl.Builder programBuilder = InputProgramImpl.builder();
+	public InputProgram apply(InputProgram inputProgram) {
+		InputProgram.Builder programBuilder = InputProgram.builder();
 		List<BasicRule> additionalRules = new ArrayList<>();
 
 		List<BasicRule> srcRules = new ArrayList<>(inputProgram.getRules());
@@ -82,29 +82,29 @@ public class ChoiceHeadToNormal extends ProgramTransformation<InputProgramImpl, 
 				// Create two guessing rules for each choiceElement.
 
 				// Construct common body to both rules.
-				CoreAtom head = choiceElement.choiceAtom;
-				List<CoreLiteral> ruleBody = new ArrayList<>(rule.getBody());
-				ruleBody.addAll(choiceElement.conditionLiterals);
+				Atom head = choiceElement.getChoiceAtom();
+				List<Literal> ruleBody = new ArrayList<>(rule.getBody());
+				ruleBody.addAll(choiceElement.getConditionLiterals());
 
 				if (containsIntervalTerms(head)) {
 					throw new RuntimeException("Program contains a choice rule with interval terms in its head. This is not supported (yet).");
 				}
 
 				// Construct head atom for the choice.
-				CorePredicate headPredicate = head.getPredicate();
+				Predicate headPredicate = head.getPredicate();
 
-				CorePredicate negPredicate = CorePredicate.getInstance(PREDICATE_NEGATION_PREFIX + headPredicate.getName(), headPredicate.getArity() + 1, true);
-				List<CoreTerm> headTerms = new ArrayList<>(head.getTerms());
+				Predicate negPredicate = CorePredicate.getInstance(PREDICATE_NEGATION_PREFIX + headPredicate.getName(), headPredicate.getArity() + 1, true);
+				List<Term> headTerms = new ArrayList<>(head.getTerms());
 				headTerms.add(0, CoreConstantTerm.getInstance("1")); // FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for
 																	// classical negative atoms.
 				CoreAtom negHead = new BasicAtom(negPredicate, headTerms);
 
 				// Construct two guessing rules.
-				List<CoreLiteral> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
+				List<Literal> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithNegHead.add(new BasicAtom(head.getPredicate(), head.getTerms()).toLiteral(false));
 				additionalRules.add(new BasicRule(new NormalHeadImpl(negHead), guessingRuleBodyWithNegHead));
 
-				List<CoreLiteral> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
+				List<Literal> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithHead.add(new BasicAtom(negPredicate, headTerms).toLiteral(false));
 				additionalRules.add(new BasicRule(new NormalHeadImpl(head), guessingRuleBodyWithHead));
 
@@ -115,8 +115,8 @@ public class ChoiceHeadToNormal extends ProgramTransformation<InputProgramImpl, 
 				.addInlineDirectives(inputProgram.getInlineDirectives()).build();
 	}
 
-	private static boolean containsIntervalTerms(CoreAtom atom) {
-		for (CoreTerm term : atom.getTerms()) {
+	private static boolean containsIntervalTerms(Atom atom) {
+		for (Term term : atom.getTerms()) {
 			if (IntervalTerm.termContainsIntervalTerm(term)) {
 				return true;
 			}

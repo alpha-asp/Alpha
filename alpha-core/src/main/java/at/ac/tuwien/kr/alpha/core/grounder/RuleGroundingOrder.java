@@ -28,7 +28,7 @@ package at.ac.tuwien.kr.alpha.core.grounder;
 import java.util.ArrayList;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 
 /**
@@ -36,13 +36,13 @@ import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
  */
 public class RuleGroundingOrder {
 
-	private CoreLiteral startingLiteral;
-	private List<CoreLiteral> otherLiterals;
+	private Literal startingLiteral;
+	private List<Literal> otherLiterals;
 	private int positionLastVarBound;
 	private int stopBindingAtOrderPosition;
 	private final boolean ground;
 	
-	RuleGroundingOrder(CoreLiteral startingLiteral, List<CoreLiteral> otherLiterals, int positionLastVarBound, boolean isGround) {
+	RuleGroundingOrder(Literal startingLiteral, List<Literal> otherLiterals, int positionLastVarBound, boolean isGround) {
 		super();
 		this.startingLiteral = startingLiteral;
 		this.otherLiterals = otherLiterals;
@@ -66,7 +66,7 @@ public class RuleGroundingOrder {
 	 * @param orderPosition zero-based index into list of literals except the starting literal
 	 * @return the literal at the given position, or {@code null} if it is already known that this literal is not able to yield new bindings
 	 */
-	public CoreLiteral getLiteralAtOrderPosition(int orderPosition) {
+	public Literal getLiteralAtOrderPosition(int orderPosition) {
 		if (orderPosition >= stopBindingAtOrderPosition) {
 			return null;
 		}
@@ -125,7 +125,7 @@ public class RuleGroundingOrder {
 		this.stopBindingAtOrderPosition = this.otherLiterals.size();
 	}
 
-	public CoreLiteral getStartingLiteral() {
+	public Literal getStartingLiteral() {
 		return this.startingLiteral;
 	}
 

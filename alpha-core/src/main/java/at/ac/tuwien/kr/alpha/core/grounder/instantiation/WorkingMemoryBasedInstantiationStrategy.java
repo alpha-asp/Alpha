@@ -25,8 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder.instantiation;
 
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.core.grounder.Instance;
 import at.ac.tuwien.kr.alpha.core.grounder.WorkingMemory;
 
@@ -47,17 +47,17 @@ public class WorkingMemoryBasedInstantiationStrategy extends AbstractLiteralInst
 	}
 
 	@Override
-	protected Iterable<Instance> computeCandidateInstances(CoreAtom partiallyGroundAtom) {
+	protected Iterable<Instance> computeCandidateInstances(Atom partiallyGroundAtom) {
 		return this.workingMemory.get(partiallyGroundAtom, true).getInstancesFromPartiallyGroundAtom(partiallyGroundAtom);
 	}
 
 	@Override
-	protected AssignmentStatus getAssignmentStatusForAtom(CoreAtom atom) {
+	protected AssignmentStatus getAssignmentStatusForAtom(Atom atom) {
 		return this.workingMemory.get(atom, true).containsInstance(Instance.fromAtom(atom)) ? AssignmentStatus.TRUE : AssignmentStatus.FALSE;
 	}
 
 	@Override
-	protected AssignmentStatus getAssignmentStatusForNegatedGroundLiteral(CoreLiteral negatedGroundLiteral) {
+	protected AssignmentStatus getAssignmentStatusForNegatedGroundLiteral(Literal negatedGroundLiteral) {
 		return this.getAssignmentStatusForAtom(negatedGroundLiteral.getAtom()) == AssignmentStatus.TRUE ? AssignmentStatus.FALSE : AssignmentStatus.TRUE;
 	}
 

@@ -5,7 +5,7 @@ package at.ac.tuwien.kr.alpha.core.rules.heads;
  *
  * Copyright (c) 2017-2019, the Alpha Team.
  */
-public abstract class Head {
+public abstract class HeadImpl {
 	
 	@Override
 	public abstract String toString();

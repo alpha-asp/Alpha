@@ -25,22 +25,22 @@
  */
 package at.ac.tuwien.kr.alpha.core.depgraph;
 
-import at.ac.tuwien.kr.alpha.api.program.*;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.FixedInterpretationLiteral;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.core.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 
 /**
  * Internal representation of an {@link at.ac.tuwien.kr.alpha.core.programs.InternalProgram}'s dependency graph. The dependency graph tracks dependencies
@@ -64,9 +64,9 @@ public final class DependencyGraph {
 	 */
 	private final Map<Node, List<Edge>> adjacencyMap;
 
-	private final Map<CorePredicate, Node> nodesByPredicate;
+	private final Map<Predicate, Node> nodesByPredicate;
 
-	private DependencyGraph(Map<Node, List<Edge>> adjacencyMap, Map<CorePredicate, Node> nodesByPredicate) {
+	private DependencyGraph(Map<Node, List<Edge>> adjacencyMap, Map<Predicate, Node> nodesByPredicate) {
 		this.adjacencyMap = adjacencyMap;
 		this.nodesByPredicate = nodesByPredicate;
 	}
@@ -91,7 +91,7 @@ public final class DependencyGraph {
 		private Collection<InternalRule> rules;
 
 		private Map<Node, List<Edge>> adjacentNodesMap = new HashMap<>();
-		private Map<CorePredicate, Node> nodesByPredicate = new HashMap<>();
+		private Map<Predicate, Node> nodesByPredicate = new HashMap<>();
 
 		private Builder(Collection<InternalRule> rules) {
 			this.rules = rules;
@@ -102,7 +102,7 @@ public final class DependencyGraph {
 			for (InternalRule rule : rules) {
 				LOGGER.debug("Processing rule: {}", rule);
 				Node headNode = handleRuleHead(rule);
-				for (CoreLiteral literal : rule.getBody()) {
+				for (Literal literal : rule.getBody()) {
 					LOGGER.trace("Processing rule body literal: {}", literal);
 					if (literal instanceof FixedInterpretationLiteral) {
 						LOGGER.trace("Ignoring FixedInterpretationLiteral {}", literal);
@@ -118,7 +118,7 @@ public final class DependencyGraph {
 			LOGGER.trace("Processing head of rule: {}", rule);
 			Node headNode;
 			if (rule.isConstraint()) {
-				CorePredicate pred = generateConstraintDummyPredicate();
+				Predicate pred = generateConstraintDummyPredicate();
 				headNode = new Node(pred);
 				List<Edge> dependencies = new ArrayList<>();
 				dependencies.add(new Edge(headNode, false));
@@ -128,8 +128,8 @@ public final class DependencyGraph {
 				adjacentNodesMap.put(headNode, dependencies);
 				nodesByPredicate.put(pred, headNode);
 			} else {
-				CoreAtom head = rule.getHeadAtom();
-				CorePredicate pred = head.getPredicate();
+				Atom head = rule.getHeadAtom();
+				Predicate pred = head.getPredicate();
 				if (!nodesByPredicate.containsKey(pred)) {
 					headNode = new Node(pred);
 					adjacentNodesMap.put(headNode, new ArrayList<>());
@@ -141,10 +141,10 @@ public final class DependencyGraph {
 			return headNode;
 		}
 
-		private void handleRuleBodyLiteral(Node headNode, CoreLiteral lit) {
+		private void handleRuleBodyLiteral(Node headNode, Literal lit) {
 			List<Edge> dependants;
 			Node bodyNode;
-			CorePredicate bodyPred = lit.getPredicate();
+			Predicate bodyPred = lit.getPredicate();
 			if (!nodesByPredicate.containsKey(bodyPred)) {
 				LOGGER.trace("Creating new node for bodyPred {}", bodyPred);
 				dependants = new ArrayList<>();
@@ -164,7 +164,7 @@ public final class DependencyGraph {
 			nodesByPredicate.put(bodyPred, bodyNode);
 		}
 
-		private CorePredicate generateConstraintDummyPredicate() {
+		private Predicate generateConstraintDummyPredicate() {
 			return CorePredicate.getInstance(String.format(DependencyGraph.Builder.CONSTRAINT_PREDICATE_FORMAT, ++constraintNumber), 0);
 		}
 	}

@@ -35,13 +35,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.core.common.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 
 /**
  * Contains a potentially negated {@link ComparisonAtom}.
@@ -74,21 +76,21 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 	}
 
 	/**
-	 * @see CoreAtom#substitute(Substitution)
+	 * @see CoreAtom#substitute(SubstitutionImpl)
 	 */
 	@Override
 	public ComparisonLiteral substitute(Substitution substitution) {
 		return new ComparisonLiteral(getAtom().substitute(substitution), positive);
 	}
 
-	private boolean assignable(CoreTerm term) {
+	private boolean assignable(Term term) {
 		return isNormalizedEquality && term instanceof VariableTermImpl;
 	}
 
 	@Override
-	public Set<VariableTermImpl> getBindingVariables() {
-		final CoreTerm left = getTerms().get(0);
-		final CoreTerm right = getTerms().get(1);
+	public Set<VariableTerm> getBindingVariables() {
+		final Term left = getTerms().get(0);
+		final Term right = getTerms().get(1);
 		if (assignable(left) && assignable(right)) {
 			// In case this is "X = Y" or "not X != Y" then both sides are binding given that the other is.
 			// In this case non-binding and binding variables cannot be reported accurately, in fact, the double variable could be compiled away.
@@ -104,12 +106,12 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 	}
 
 	@Override
-	public Set<VariableTermImpl> getNonBindingVariables() {
-		final CoreTerm left = getTerms().get(0);
-		final CoreTerm right = getTerms().get(1);
-		HashSet<VariableTermImpl> occurringVariables = new HashSet<>();
-		List<VariableTermImpl> leftOccurringVariables = new LinkedList<>(left.getOccurringVariables());
-		List<VariableTermImpl> rightOccurringVariables = new LinkedList<>(right.getOccurringVariables());
+	public Set<VariableTerm> getNonBindingVariables() {
+		final Term left = getTerms().get(0);
+		final Term right = getTerms().get(1);
+		HashSet<VariableTerm> occurringVariables = new HashSet<>();
+		List<VariableTerm> leftOccurringVariables = new LinkedList<>(left.getOccurringVariables());
+		List<VariableTerm> rightOccurringVariables = new LinkedList<>(right.getOccurringVariables());
 		if (assignable(left)) {
 			leftOccurringVariables.remove(left);
 		}
@@ -128,17 +130,17 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 	@Override
 	public List<Substitution> getSatisfyingSubstitutions(Substitution partialSubstitution) {
 		// Treat case where this is just comparison with all variables bound by partialSubstitution.
-		final CoreTerm left = getAtom().getTerms().get(0).substitute(partialSubstitution);
-		final CoreTerm right = getAtom().getTerms().get(1).substitute(partialSubstitution);
+		final Term left = getAtom().getTerms().get(0).substitute(partialSubstitution);
+		final Term right = getAtom().getTerms().get(1).substitute(partialSubstitution);
 		final boolean leftAssigning = assignable(left);
 		final boolean rightAssigning = assignable(right);
 		if (!leftAssigning && !rightAssigning) {
 			// No assignment (variables are bound by partialSubstitution), thus evaluate comparison only.
-			CoreTerm leftEvaluatedSubstitute = evaluateTerm(left);
+			Term leftEvaluatedSubstitute = evaluateTerm(left);
 			if (leftEvaluatedSubstitute == null) {
 				return Collections.emptyList();
 			}
-			CoreTerm rightEvaluatedSubstitute = evaluateTerm(right);
+			Term rightEvaluatedSubstitute = evaluateTerm(right);
 			if (rightEvaluatedSubstitute == null) {
 				return Collections.emptyList();
 			}
@@ -149,8 +151,8 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 			}
 		}
 		// Treat case that this is X = t or t = X.
-		VariableTermImpl variable = null;
-		CoreTerm expression = null;
+		VariableTerm variable = null;
+		Term expression = null;
 		if (leftAssigning) {
 			variable = (VariableTermImpl) left;
 			expression = right;
@@ -159,8 +161,8 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 			variable = (VariableTermImpl) right;
 			expression = left;
 		}
-		CoreTerm groundTerm = expression.substitute(partialSubstitution);
-		CoreTerm resultTerm = null;
+		Term groundTerm = expression.substitute(partialSubstitution);
+		Term resultTerm = null;
 		// Check if the groundTerm is an arithmetic expression and evaluate it if so.
 		if (groundTerm instanceof ArithmeticTerm) {
 			Integer result = evaluateGroundTerm(groundTerm);
@@ -172,18 +174,18 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 			// Ground term is another term (constant, or function term).
 			resultTerm = groundTerm;
 		}
-		Substitution extendedSubstitution = new Substitution(partialSubstitution);
+		SubstitutionImpl extendedSubstitution = new SubstitutionImpl(partialSubstitution);
 		extendedSubstitution.put(variable, resultTerm);
 		return Collections.singletonList(extendedSubstitution);
 	}
 	
 	public boolean isLeftOrRightAssigning() {
-		final CoreTerm left = getTerms().get(0);
-		final CoreTerm right = getTerms().get(1);
+		final Term left = getTerms().get(0);
+		final Term right = getTerms().get(1);
 		return isNormalizedEquality && (assignable(left) && right.isGround() || assignable(right) && left.isGround());
 	}
 
-	private CoreTerm evaluateTerm(CoreTerm term) {
+	private Term evaluateTerm(Term term) {
 		// Evaluate arithmetics.
 		if (term instanceof ArithmeticTerm) {
 			Integer result = ArithmeticTerm.evaluateGroundTerm(term);
@@ -195,7 +197,7 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 		return term;
 	}
 
-	private boolean compare(CoreTerm x, CoreTerm y) {
+	private boolean compare(Term x, Term y) {
 		final int comparisonResult = x.compareTo(y);
 		ComparisonOperator operator = isNegated() ? getAtom().operator.getNegation() : getAtom().operator;
 		switch (operator) {

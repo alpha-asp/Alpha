@@ -27,14 +27,16 @@
  */
 package at.ac.tuwien.kr.alpha.core.common.terms;
 
-import at.ac.tuwien.kr.alpha.core.common.Interner;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import com.google.common.math.IntMath;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.Interner;
 
 /**
  * This class represents an arithmetic expression occurring as a term.
@@ -42,17 +44,17 @@ import java.util.List;
  */
 public class ArithmeticTerm extends CoreTerm {
 	private static final Interner<ArithmeticTerm> INTERNER = new Interner<>();
-	protected final CoreTerm left;
+	protected final Term left;
 	private final ArithmeticOperator arithmeticOperator;
-	private final CoreTerm right;
+	private final Term right;
 
-	private ArithmeticTerm(CoreTerm left, ArithmeticOperator arithmeticOperator, CoreTerm right) {
+	private ArithmeticTerm(Term left, ArithmeticOperator arithmeticOperator, Term right) {
 		this.left = left;
 		this.arithmeticOperator = arithmeticOperator;
 		this.right = right;
 	}
 
-	public static CoreTerm getInstance(CoreTerm left, ArithmeticOperator arithmeticOperator, CoreTerm right) {
+	public static Term getInstance(Term left, ArithmeticOperator arithmeticOperator, Term right) {
 		// Evaluate ground arithmetic terms immediately and return result.
 		if (left.isGround() && right.isGround()) {
 			Integer result = new ArithmeticTerm(left, arithmeticOperator, right).evaluateExpression();
@@ -61,49 +63,48 @@ public class ArithmeticTerm extends CoreTerm {
 		return INTERNER.intern(new ArithmeticTerm(left, arithmeticOperator, right));
 	}
 
-
 	@Override
 	public boolean isGround() {
 		return left.isGround() && right.isGround();
 	}
 
 	@Override
-	public List<VariableTermImpl> getOccurringVariables() {
-		LinkedHashSet<VariableTermImpl> occurringVariables = new LinkedHashSet<>(left.getOccurringVariables());
+	public Set<VariableTerm> getOccurringVariables() {
+		LinkedHashSet<VariableTerm> occurringVariables = new LinkedHashSet<>(left.getOccurringVariables());
 		occurringVariables.addAll(right.getOccurringVariables());
-		return new ArrayList<>(occurringVariables);
+		return occurringVariables;
 	}
 
 	@Override
-	public CoreTerm substitute(Substitution substitution) {
+	public Term substitute(Substitution substitution) {
 		return getInstance(left.substitute(substitution), arithmeticOperator, right.substitute(substitution));
 	}
 
 	@Override
-	public CoreTerm renameVariables(String renamePrefix) {
+	public Term renameVariables(String renamePrefix) {
 		return getInstance(left.renameVariables(renamePrefix), arithmeticOperator, right.renameVariables(renamePrefix));
 	}
 
 	@Override
-	public CoreTerm normalizeVariables(String renamePrefix, RenameCounter counter) {
-		CoreTerm normalizedLeft = left.normalizeVariables(renamePrefix, counter);
-		CoreTerm normalizedRight = right.normalizeVariables(renamePrefix, counter);
+	public Term normalizeVariables(String renamePrefix, Term.RenameCounter counter) {
+		Term normalizedLeft = left.normalizeVariables(renamePrefix, counter);
+		Term normalizedRight = right.normalizeVariables(renamePrefix, counter);
 		return ArithmeticTerm.getInstance(normalizedLeft, arithmeticOperator, normalizedRight);
 
 	}
 
-	public static Integer evaluateGroundTerm(CoreTerm term) {
+	public static Integer evaluateGroundTerm(Term term) {
 		if (!term.isGround()) {
 			throw new RuntimeException("Cannot evaluate arithmetic term since it is not ground: " + term);
 		}
 		return evaluateGroundTermHelper(term);
 	}
 
-	private static Integer evaluateGroundTermHelper(CoreTerm term) {
-		if (term instanceof CoreConstantTerm
-			&& ((CoreConstantTerm<?>) term).getObject() instanceof Integer) {
+	private static Integer evaluateGroundTermHelper(Term term) {
+		if (term instanceof ConstantTerm
+				&& ((ConstantTerm<?>) term).getObject() instanceof Integer) {
 			// Extract integer from the constant.
-			return (Integer) ((CoreConstantTerm<?>) term).getObject();
+			return (Integer) ((ConstantTerm<?>) term).getObject();
 		} else if (term instanceof ArithmeticTerm) {
 			return ((ArithmeticTerm) term).evaluateExpression();
 		} else {
@@ -160,7 +161,6 @@ public class ArithmeticTerm extends CoreTerm {
 		MODULO("\\"),
 		BITXOR("^");
 
-
 		private String asString;
 
 		ArithmeticOperator(String asString) {
@@ -197,12 +197,11 @@ public class ArithmeticTerm extends CoreTerm {
 
 	public static class MinusTerm extends ArithmeticTerm {
 
-		private MinusTerm(CoreTerm term) {
+		private MinusTerm(Term term) {
 			super(term, null, null);
 		}
 
-
-		public static CoreTerm getInstance(CoreTerm term) {
+		public static Term getInstance(Term term) {
 			// Evaluate ground arithmetic terms immediately and return result.
 			if (term.isGround()) {
 				Integer result = evaluateGroundTermHelper(term) * -1;
@@ -222,23 +221,23 @@ public class ArithmeticTerm extends CoreTerm {
 		}
 
 		@Override
-		public List<VariableTermImpl> getOccurringVariables() {
+		public Set<VariableTerm> getOccurringVariables() {
 			return left.getOccurringVariables();
 		}
 
 		@Override
-		public CoreTerm substitute(Substitution substitution) {
+		public Term substitute(Substitution substitution) {
 			return getInstance(left.substitute(substitution));
 		}
 
 		@Override
-		public CoreTerm renameVariables(String renamePrefix) {
+		public Term renameVariables(String renamePrefix) {
 			return getInstance(left.renameVariables(renamePrefix));
 		}
-		
+
 		@Override
-		public CoreTerm normalizeVariables(String renamePrefix, RenameCounter counter) {
-			CoreTerm normalizedLeft = left.normalizeVariables(renamePrefix, counter);
+		public Term normalizeVariables(String renamePrefix, Term.RenameCounter counter) {
+			Term normalizedLeft = left.normalizeVariables(renamePrefix, counter);
 			return MinusTerm.getInstance(normalizedLeft);
 		}
 

@@ -28,11 +28,12 @@ package at.ac.tuwien.kr.alpha.core.grounder.instantiation;
 import java.util.LinkedHashSet;
 import java.util.Map;
 
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.grounder.IndexedInstanceStorage;
 import at.ac.tuwien.kr.alpha.core.grounder.Instance;
 import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
@@ -70,18 +71,18 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 	private WorkingMemory workingMemory;
 	private AtomStore atomStore;
 	private Assignment currentAssignment;
-	private LinkedHashSet<CoreAtom> staleWorkingMemoryEntries;
-	private Map<CorePredicate, LinkedHashSet<Instance>> facts;
+	private LinkedHashSet<Atom> staleWorkingMemoryEntries;
+	private Map<Predicate, LinkedHashSet<Instance>> facts;
 
 	public DefaultLazyGroundingInstantiationStrategy(WorkingMemory workingMemory, AtomStore atomStore,
-			Map<CorePredicate, LinkedHashSet<Instance>> facts) {
+			Map<Predicate, LinkedHashSet<Instance>> facts) {
 		this.workingMemory = workingMemory;
 		this.atomStore = atomStore;
 		this.facts = facts;
 	}
 
 	@Override
-	protected Iterable<Instance> computeCandidateInstances(CoreAtom partiallyGroundAtom) {
+	protected Iterable<Instance> computeCandidateInstances(Atom partiallyGroundAtom) {
 		IndexedInstanceStorage instanceStorage = this.workingMemory.get(partiallyGroundAtom, true);
 		return instanceStorage.getInstancesFromPartiallyGroundAtom(partiallyGroundAtom);
 	}
@@ -105,7 +106,7 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 	 */
 	//@formatter:on
 	@Override
-	protected AssignmentStatus getAssignmentStatusForAtom(CoreAtom atom) {
+	protected AssignmentStatus getAssignmentStatusForAtom(Atom atom) {
 		if (this.currentAssignment == null || this.isFact(atom)) {
 			// currentAssignment == null is a legitimate case, grounder may be in bootstrap
 			// and will call bindNextAtom with null assignment in that case.
@@ -133,7 +134,7 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 		return retVal;
 	}
 
-	private boolean isFact(CoreAtom atom) {
+	private boolean isFact(Atom atom) {
 		if (this.facts.get(atom.getPredicate()) == null) {
 			return false;
 		} else {
@@ -142,7 +143,7 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 	}
 
 	@Override
-	protected AssignmentStatus getAssignmentStatusForNegatedGroundLiteral(CoreLiteral negatedGroundLiteral) {
+	protected AssignmentStatus getAssignmentStatusForNegatedGroundLiteral(Literal negatedGroundLiteral) {
 		return AssignmentStatus.TRUE;
 	}
 
@@ -169,7 +170,7 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 		this.currentAssignment = currentAssignment;
 	}
 
-	public void setStaleWorkingMemoryEntries(LinkedHashSet<CoreAtom> staleWorkingMemoryEntries) {
+	public void setStaleWorkingMemoryEntries(LinkedHashSet<Atom> staleWorkingMemoryEntries) {
 		this.staleWorkingMemoryEntries = staleWorkingMemoryEntries;
 	}
 

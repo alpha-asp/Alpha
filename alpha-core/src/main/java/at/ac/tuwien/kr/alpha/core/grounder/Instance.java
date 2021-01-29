@@ -5,8 +5,8 @@ import static at.ac.tuwien.kr.alpha.core.util.Util.join;
 import java.util.Arrays;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.core.util.Util;
 
 /**
@@ -15,17 +15,17 @@ import at.ac.tuwien.kr.alpha.core.util.Util;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class Instance {
-	public final List<CoreTerm> terms;
+	public final List<Term> terms;
 
-	public Instance(CoreTerm... terms) {
+	public Instance(Term... terms) {
 		this(Arrays.asList(terms));
 	}
 
-	public Instance(List<CoreTerm> terms) {
+	public Instance(List<Term> terms) {
 		this.terms = terms;
 	}
 
-	public static Instance fromAtom(CoreAtom atom) {
+	public static Instance fromAtom(Atom atom) {
 		if (!atom.isGround()) {
 			throw Util.oops("Cannot create instance from non-ground atom " + atom.toString());
 		}

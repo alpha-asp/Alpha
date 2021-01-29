@@ -1,13 +1,13 @@
 package at.ac.tuwien.kr.alpha.core.common.terms;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.common.Interner;
 import at.ac.tuwien.kr.alpha.core.grounder.IntIdGenerator;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 /**
  * Copyright (c) 2016-2017, the Alpha Team.
@@ -38,13 +38,13 @@ public class VariableTermImpl extends CoreTerm implements VariableTerm {
 	}
 
 	@Override
-	public List<VariableTermImpl> getOccurringVariables() {
-		return Collections.singletonList(this);
+	public Set<VariableTerm> getOccurringVariables() {
+		return Collections.singleton(this);
 	}
 
 	@Override
-	public CoreTerm substitute(Substitution substitution) {
-		CoreTerm groundTerm = substitution.eval(this);
+	public Term substitute(Substitution substitution) {
+		Term groundTerm = substitution.eval(this);
 		if (groundTerm == null) {
 			// If variable is not substituted, keep term as is.
 			return this;
@@ -98,13 +98,13 @@ public class VariableTermImpl extends CoreTerm implements VariableTerm {
 	}
 
 	@Override
-	public CoreTerm normalizeVariables(String renamePrefix, RenameCounter counter) {
-		VariableTermImpl renamedThis = counter.renamedVariables.get(this);
+	public Term normalizeVariables(String renamePrefix, Term.RenameCounter counter) {
+		VariableTerm renamedThis = counter.getRenamedVariables().get(this);
 		if (renamedThis != null) {
 			return renamedThis;
 		} else {
-			VariableTermImpl renamedVariable = VariableTermImpl.getInstance(renamePrefix + counter.counter++);
-			counter.renamedVariables.put(this, renamedVariable);
+			VariableTerm renamedVariable = VariableTermImpl.getInstance(renamePrefix + counter.getAndIncrement());
+			counter.getRenamedVariables().put(this, renamedVariable);
 			return renamedVariable;
 		}
 	}

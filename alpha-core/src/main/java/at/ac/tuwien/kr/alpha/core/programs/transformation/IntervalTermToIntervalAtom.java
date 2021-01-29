@@ -32,10 +32,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.IntervalAtom;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
@@ -58,14 +60,14 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 	 */
 	private static NormalRule rewriteIntervalSpecifications(NormalRule rule) {
 		// Collect all intervals and replace them with variables.
-		Map<VariableTermImpl, IntervalTerm> intervalReplacements = new LinkedHashMap<>();
+		Map<VariableTerm, IntervalTerm> intervalReplacements = new LinkedHashMap<>();
 
-		List<CoreLiteral> rewrittenBody = new ArrayList<>();
+		List<Literal> rewrittenBody = new ArrayList<>();
 
-		for (CoreLiteral literal : rule.getBody()) {
+		for (Literal literal : rule.getBody()) {
 			rewrittenBody.add(rewriteLiteral(literal, intervalReplacements));
 		}
-		NormalHeadImpl rewrittenHead = rule.isConstraint() ? null :
+		NormalHead rewrittenHead = rule.isConstraint() ? null :
 			new NormalHeadImpl(rewriteLiteral(rule.getHeadAtom().toLiteral(), intervalReplacements).getAtom());
 
 		// If intervalReplacements is empty, no IntervalTerms have been found, keep rule as is.
@@ -74,7 +76,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		}
 
 		// Add new IntervalAtoms representing the interval specifications.
-		for (Map.Entry<VariableTermImpl, IntervalTerm> interval : intervalReplacements.entrySet()) {
+		for (Map.Entry<VariableTerm, IntervalTerm> interval : intervalReplacements.entrySet()) {
 			rewrittenBody.add(new IntervalAtom(interval.getValue(), interval.getKey()).toLiteral());
 		}
 		return new NormalRule(rewrittenHead, rewrittenBody);
@@ -83,12 +85,12 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 	/**
 	 * Replaces every IntervalTerm by a new variable and returns a mapping of the replaced VariableTerm -> IntervalTerm.
 	 */
-	private static CoreLiteral rewriteLiteral(CoreLiteral lit, Map<VariableTermImpl, IntervalTerm> intervalReplacement) {
-		CoreAtom atom = lit.getAtom();
-		List<CoreTerm> termList = new ArrayList<>(atom.getTerms());
+	private static Literal rewriteLiteral(Literal lit, Map<VariableTerm, IntervalTerm> intervalReplacement) {
+		Atom atom = lit.getAtom();
+		List<Term> termList = new ArrayList<>(atom.getTerms());
 		boolean didChange = false;
 		for (int i = 0; i < termList.size(); i++) {
-			CoreTerm term = termList.get(i);
+			Term term = termList.get(i);
 			if (term instanceof IntervalTerm) {
 				VariableTermImpl replacementVariable = VariableTermImpl.getInstance(INTERVAL_VARIABLE_PREFIX + intervalReplacement.size());
 				intervalReplacement.put(replacementVariable, (IntervalTerm) term);
@@ -103,17 +105,17 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 			}
 		}
 		if (didChange) {
-			CoreAtom rewrittenAtom = atom.withTerms(termList);
+			Atom rewrittenAtom = atom.withTerms(termList);
 			return lit.isNegated() ? rewrittenAtom.toLiteral().negate() : rewrittenAtom.toLiteral();
 		}
 		return lit;
 	}
 
-	private static FunctionTerm rewriteFunctionTerm(FunctionTerm functionTerm, Map<VariableTermImpl, IntervalTerm> intervalReplacement) {
-		List<CoreTerm> termList = new ArrayList<>(functionTerm.getTerms());
+	private static FunctionTerm rewriteFunctionTerm(FunctionTerm functionTerm, Map<VariableTerm, IntervalTerm> intervalReplacement) {
+		List<Term> termList = new ArrayList<>(functionTerm.getTerms());
 		boolean didChange = false;
 		for (int i = 0; i < termList.size(); i++) {
-			CoreTerm term = termList.get(i);
+			Term term = termList.get(i);
 			if (term instanceof IntervalTerm) {
 				VariableTermImpl replacementVariable = VariableTermImpl.getInstance("_Interval" + intervalReplacement.size());
 				intervalReplacement.put(replacementVariable, (IntervalTerm) term);

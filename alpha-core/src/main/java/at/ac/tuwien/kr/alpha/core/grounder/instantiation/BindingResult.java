@@ -28,7 +28,7 @@ package at.ac.tuwien.kr.alpha.core.grounder.instantiation;
 import java.util.ArrayList;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 
 /**
  * Contains substitutions produced for generating ground substitutions of a rule,

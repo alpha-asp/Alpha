@@ -3,10 +3,12 @@ package at.ac.tuwien.kr.alpha.core.atoms;
 import java.util.HashSet;
 import java.util.Set;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 
 /**
  * Copyright (c) 2018, the Alpha Team.
@@ -27,7 +29,7 @@ public class AggregateLiteral extends CoreLiteral {
 	}
 
 	/**
-	 * @see CoreAtom#substitute(Substitution)
+	 * @see CoreAtom#substitute(SubstitutionImpl)
 	 */
 	@Override
 	public AggregateLiteral substitute(Substitution substitution) {
@@ -35,8 +37,8 @@ public class AggregateLiteral extends CoreLiteral {
 	}
 
 	@Override
-	public Set<VariableTermImpl> getBindingVariables() {
-		Set<VariableTermImpl> bindingVariables = new HashSet<>();
+	public Set<VariableTerm> getBindingVariables() {
+		Set<VariableTerm> bindingVariables = new HashSet<>();
 		if (boundBindingVariable(getAtom().getLowerBoundOperator(), getAtom().getLowerBoundTerm(), positive) != null) {
 			bindingVariables.add((VariableTermImpl) getAtom().getLowerBoundTerm());
 		}
@@ -47,13 +49,13 @@ public class AggregateLiteral extends CoreLiteral {
 	}
 
 	@Override
-	public Set<VariableTermImpl> getNonBindingVariables() {
+	public Set<VariableTerm> getNonBindingVariables() {
 		// Note: every local variable that also occurs globally in the rule is a nonBindingVariable, hence an
 		// aggregate literal alone cannot detect its non-binding (i.e. global) variables.
 		throw new UnsupportedOperationException();
 	}
 
-	private static VariableTermImpl boundBindingVariable(ComparisonOperator op, CoreTerm bound, boolean positive) {
+	private static VariableTerm boundBindingVariable(ComparisonOperator op, Term bound, boolean positive) {
 		boolean isNormalizedEquality = op == ComparisonOperator.EQ && positive || op == ComparisonOperator.NE && !positive;
 		if (isNormalizedEquality &&  bound instanceof VariableTermImpl) {
 			return (VariableTermImpl) bound;
