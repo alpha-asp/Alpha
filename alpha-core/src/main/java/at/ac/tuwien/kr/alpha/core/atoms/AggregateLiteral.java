@@ -6,7 +6,7 @@ import java.util.Set;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.core.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 
 /**
@@ -54,8 +54,8 @@ public class AggregateLiteral extends CoreLiteral {
 		throw new UnsupportedOperationException();
 	}
 
-	private static VariableTerm boundBindingVariable(ComparisonOperator op, Term bound, boolean positive) {
-		boolean isNormalizedEquality = op == ComparisonOperator.EQ && positive || op == ComparisonOperator.NE && !positive;
+	private static VariableTerm boundBindingVariable(ComparisonOperatorImpl op, Term bound, boolean positive) {
+		boolean isNormalizedEquality = op == ComparisonOperatorImpl.EQ && positive || op == ComparisonOperatorImpl.NE && !positive;
 		if (isNormalizedEquality &&  bound instanceof VariableTermImpl) {
 			return (VariableTermImpl) bound;
 		}

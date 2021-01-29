@@ -6,5 +6,8 @@ dependencies {
 	
 	api project(":alpha-api")
 	implementation project(":alpha-core")
+	
+	testImplementation group: 'junit', name: 'junit', version: '4.12'
+	
 }
 

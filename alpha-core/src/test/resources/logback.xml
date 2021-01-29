@@ -1,0 +1,24 @@
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- Reference at http://logback.qos.ch/manual/layouts.html#conversionWord -->
+            <pattern>%5relative %.-1level %20.20logger %msg %n</pattern>
+        </encoder>
+    </appender>
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>junit.log</file>
+        <append>false</append>
+        <encoder>
+            <!-- Reference at http://logback.qos.ch/manual/layouts.html#conversionWord -->
+            <pattern>%-4r %-5level %logger{35}: %msg%n</pattern>
+        </encoder>
+    </appender>
+    
+    <logger name="at.ac.tuwien.kr.alpha.grounder.NaiveGrounder" level="INFO"/>
+    <logger name="at.ac.tuwien.kr.alpha.solver" level="INFO"/>
+    
+    <root level="INFO">
+        <appender-ref ref="FILE" />
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>

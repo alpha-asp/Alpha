@@ -35,7 +35,7 @@ import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.core.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 import at.ac.tuwien.kr.alpha.core.common.terms.Terms;
 
 /**
@@ -43,16 +43,16 @@ import at.ac.tuwien.kr.alpha.core.common.terms.Terms;
  */
 public class ComparisonAtom extends CoreAtom implements VariableNormalizableAtom {
 	private final Predicate predicate;
-	final ComparisonOperator operator;
+	final ComparisonOperatorImpl operator;
 	private final List<Term> terms;
 
-	private ComparisonAtom(List<Term> terms, ComparisonOperator operator) {
+	private ComparisonAtom(List<Term> terms, ComparisonOperatorImpl operator) {
 		this.terms = terms;
 		this.operator = operator;
 		this.predicate = operator.predicate();
 	}
 
-	public ComparisonAtom(Term term1, Term term2, ComparisonOperator operator) {
+	public ComparisonAtom(Term term1, Term term2, ComparisonOperatorImpl operator) {
 		this(Arrays.asList(term1, term2), operator);
 	}
 

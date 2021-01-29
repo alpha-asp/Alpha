@@ -35,7 +35,7 @@ public final class Terms {
 
 	public static List<Term> renameTerms(List<Term> terms, String prefix, int counterStartingValue) {
 		List<Term> renamedTerms = new ArrayList<>(terms.size());
-		CoreTerm.RenameCounter renameCounter = new CoreTerm.RenameCounter(counterStartingValue);
+		CoreTerm.RenameCounterImpl renameCounter = new CoreTerm.RenameCounterImpl(counterStartingValue);
 		for (Term term : terms) {
 			renamedTerms.add(term.normalizeVariables(prefix, renameCounter));
 		}

@@ -1,8 +1,10 @@
 package at.ac.tuwien.kr.alpha.core.common;
 
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.Util;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
 
-public enum ComparisonOperator {
+public enum ComparisonOperatorImpl implements ComparisonOperator {
 	EQ("="),
 	NE("!="),
 	LT("<"),
@@ -12,7 +14,7 @@ public enum ComparisonOperator {
 
 	private String asString;
 
-	ComparisonOperator(String asString) {
+	ComparisonOperatorImpl(String asString) {
 		this.asString = asString;
 	}
 
@@ -21,7 +23,7 @@ public enum ComparisonOperator {
 		return asString;
 	}
 
-	public ComparisonOperator getNegation() {
+	public ComparisonOperatorImpl getNegation() {
 		switch (this) {
 			case EQ: return NE;
 			case NE: return EQ;
@@ -33,7 +35,7 @@ public enum ComparisonOperator {
 		throw Util.oops("Unknown binary operator encountered, cannot negate it");
 	}
 	
-	public CorePredicate predicate() {
+	public Predicate predicate() {
 		return CorePredicate.getInstance(this.asString, 2);
 	}
 }

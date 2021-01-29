@@ -15,4 +15,8 @@ public interface Rule<H extends Head> {
 	
 	// TODO clean up programs/rules mess
 	Atom getHeadAtom();
+	
+	Set<Literal> getPositiveBody();
+	
+	Set<Literal> getNegativeBody();
 }

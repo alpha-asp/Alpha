@@ -49,7 +49,7 @@ import at.ac.tuwien.kr.alpha.core.parser.ProgramPartParser;
 public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Substitution {
 
 	private static final ProgramPartParser PROGRAM_PART_PARSER = new ProgramPartParser();
-	public static final SubstitutionImpl EMPTY_SUBSTITUTION = new SubstitutionImpl() {
+	public static final Substitution EMPTY_SUBSTITUTION = new SubstitutionImpl() {
 		@Override
 		public <T extends Comparable<T>> CoreTerm put(VariableTerm variableTerm, Term groundTerm) {
 			throw Util.oops("Should not be called on EMPTY_SUBSTITUTION");

@@ -56,7 +56,7 @@ import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.app.ComponentGraphWriter;
 import at.ac.tuwien.kr.alpha.app.DependencyGraphWriter;
-import at.ac.tuwien.kr.alpha.config.CommandLineParser;
+import at.ac.tuwien.kr.alpha.app.config.CommandLineParser;
 import at.ac.tuwien.kr.alpha.core.common.AnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.core.common.SimpleAnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph;

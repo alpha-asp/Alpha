@@ -39,7 +39,7 @@ import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.core.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 import at.ac.tuwien.kr.alpha.core.common.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
@@ -53,9 +53,9 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 
 	public ComparisonLiteral(ComparisonAtom atom, boolean positive) {
 		super(atom, positive);
-		final ComparisonOperator operator = getAtom().operator;
-		isNormalizedEquality = (positive && operator == ComparisonOperator.EQ)
-			|| (!positive && operator == ComparisonOperator.NE);
+		final ComparisonOperatorImpl operator = getAtom().operator;
+		isNormalizedEquality = (positive && operator == ComparisonOperatorImpl.EQ)
+			|| (!positive && operator == ComparisonOperatorImpl.NE);
 	}
 	
 	@Override
@@ -199,7 +199,7 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 
 	private boolean compare(Term x, Term y) {
 		final int comparisonResult = x.compareTo(y);
-		ComparisonOperator operator = isNegated() ? getAtom().operator.getNegation() : getAtom().operator;
+		ComparisonOperatorImpl operator = isNegated() ? getAtom().operator.getNegation() : getAtom().operator;
 		switch (operator) {
 			case EQ:
 				return comparisonResult ==  0;

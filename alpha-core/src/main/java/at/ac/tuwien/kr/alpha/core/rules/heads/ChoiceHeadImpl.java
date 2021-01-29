@@ -4,11 +4,12 @@ import static at.ac.tuwien.kr.alpha.api.Util.join;
 
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.core.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 
 /**
  * Represents the head of a choice rule.
@@ -19,10 +20,10 @@ public class ChoiceHeadImpl implements ChoiceHead {
 	private final List<ChoiceElement> choiceElements;
 
 	private final Term lowerBound;
-	private final ComparisonOperator lowerOp;
+	private final ComparisonOperatorImpl lowerOp;
 
 	private final Term upperBound;
-	private final ComparisonOperator upperOp;
+	private final ComparisonOperatorImpl upperOp;
 
 	public static class ChoiceElementImpl implements ChoiceElement {
 		public final Atom choiceAtom;
@@ -55,10 +56,12 @@ public class ChoiceHeadImpl implements ChoiceHead {
 		}
 	}
 
+	@Override
 	public ComparisonOperator getLowerOperator() {
 		return lowerOp;
 	}
 
+	@Override
 	public ComparisonOperator getUpperOperator() {
 		return upperOp;
 	}
@@ -78,8 +81,8 @@ public class ChoiceHeadImpl implements ChoiceHead {
 		return upperBound;
 	}
 
-	public ChoiceHeadImpl(List<ChoiceElement> choiceElements, Term lowerBound, ComparisonOperator lowerOp, Term upperBound,
-			ComparisonOperator upperOp) {
+	public ChoiceHeadImpl(List<ChoiceElement> choiceElements, Term lowerBound, ComparisonOperatorImpl lowerOp, Term upperBound,
+			ComparisonOperatorImpl upperOp) {
 		this.choiceElements = choiceElements;
 		this.lowerBound = lowerBound;
 		this.lowerOp = lowerOp;

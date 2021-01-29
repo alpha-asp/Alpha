@@ -68,7 +68,7 @@ import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.core.common.BasicAnswerSet;
-import at.ac.tuwien.kr.alpha.core.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
@@ -246,9 +246,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	public Head visitChoice(ASPCore2Parser.ChoiceContext ctx) {
 		// choice : (lt=term lop=binop)? CURLY_OPEN choice_elements? CURLY_CLOSE (uop=binop ut=term)?;
 		Term lt = null;
-		ComparisonOperator lop = null;
+		ComparisonOperatorImpl lop = null;
 		Term ut = null;
-		ComparisonOperator uop = null;
+		ComparisonOperatorImpl uop = null;
 		if (ctx.lt != null) {
 			lt = (Term) visit(ctx.lt);
 			lop = visitBinop(ctx.lop);
@@ -329,9 +329,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		// aggregate : NAF? (lt=term lop=binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (uop=binop ut=term)?;
 		boolean isPositive = ctx.NAF() == null;
 		Term lt = null;
-		ComparisonOperator lop = null;
+		ComparisonOperatorImpl lop = null;
 		Term ut = null;
-		ComparisonOperator uop = null;
+		ComparisonOperatorImpl uop = null;
 		if (ctx.lt != null) {
 			lt = (CoreTerm) visit(ctx.lt);
 			lop = visitBinop(ctx.lop);
@@ -430,20 +430,20 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public ComparisonOperator visitBinop(ASPCore2Parser.BinopContext ctx) {
+	public ComparisonOperatorImpl visitBinop(ASPCore2Parser.BinopContext ctx) {
 		// binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
 		if (ctx.EQUAL() != null) {
-			return ComparisonOperator.EQ;
+			return ComparisonOperatorImpl.EQ;
 		} else if (ctx.UNEQUAL() != null) {
-			return ComparisonOperator.NE;
+			return ComparisonOperatorImpl.NE;
 		} else if (ctx.LESS() != null) {
-			return ComparisonOperator.LT;
+			return ComparisonOperatorImpl.LT;
 		} else if (ctx.LESS_OR_EQ() != null) {
-			return ComparisonOperator.LE;
+			return ComparisonOperatorImpl.LE;
 		} else if (ctx.GREATER() != null) {
-			return ComparisonOperator.GT;
+			return ComparisonOperatorImpl.GT;
 		} else if (ctx.GREATER_OR_EQ() != null) {
-			return ComparisonOperator.GE;
+			return ComparisonOperatorImpl.GE;
 		} else {
 			throw notSupported(ctx);
 		}

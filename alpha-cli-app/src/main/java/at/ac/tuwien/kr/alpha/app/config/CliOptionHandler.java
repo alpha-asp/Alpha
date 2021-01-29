@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.config;
+package at.ac.tuwien.kr.alpha.app.config;
 
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;

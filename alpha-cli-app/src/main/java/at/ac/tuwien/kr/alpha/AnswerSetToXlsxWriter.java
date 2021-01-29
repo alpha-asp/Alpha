@@ -16,7 +16,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.mapper.AnswerSetToObjectMapper;
-import at.ac.tuwien.kr.alpha.api.mapper.AnswerSetToWorkbookMapper;
+import at.ac.tuwien.kr.alpha.app.mappers.AnswerSetToWorkbookMapper;
 
 public class AnswerSetToXlsxWriter implements BiConsumer<Integer, AnswerSet> {
 

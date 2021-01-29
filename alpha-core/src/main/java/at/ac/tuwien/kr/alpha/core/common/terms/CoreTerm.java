@@ -76,11 +76,11 @@ public abstract class CoreTerm implements Term {
 
 	public abstract Term normalizeVariables(String renamePrefix, Term.RenameCounter counter);
 
-	public static class RenameCounter implements Term.RenameCounter {
+	public static class RenameCounterImpl implements Term.RenameCounter {
 		int counter;
 		final HashMap<VariableTerm, VariableTerm> renamedVariables;
 
-		public RenameCounter(int startingValue) {
+		public RenameCounterImpl(int startingValue) {
 			counter = startingValue;
 			renamedVariables = new HashMap<>();
 		}

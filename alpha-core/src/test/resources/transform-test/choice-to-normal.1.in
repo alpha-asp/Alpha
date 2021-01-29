@@ -1,0 +1,1 @@
+{ red(N); green(N); blue(N) } :- node(N).

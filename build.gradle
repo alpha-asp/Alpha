@@ -4,6 +4,7 @@ plugins {
 	id 'com.github.kt3k.coveralls' version '2.8.1'
 }
 
+// TODO project property for dependency versions
 wrapper {
 	gradleVersion = '6.7'
 	distributionType = 'ALL'

@@ -39,20 +39,20 @@ import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.core.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 
 public class AggregateAtom extends CoreAtom {
 
-	private final ComparisonOperator lowerBoundOperator;
+	private final ComparisonOperatorImpl lowerBoundOperator;
 	private final Term lowerBoundTerm;
-	private final ComparisonOperator upperBoundOperator;
+	private final ComparisonOperatorImpl upperBoundOperator;
 	private final Term upperBoundTerm;
 	private final AGGREGATEFUNCTION aggregatefunction;
 	private final List<AggregateElement> aggregateElements;
 
-	public AggregateAtom(ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, ComparisonOperator upperBoundOperator, Term upperBoundTerm,
+	public AggregateAtom(ComparisonOperatorImpl lowerBoundOperator, Term lowerBoundTerm, ComparisonOperatorImpl upperBoundOperator, Term upperBoundTerm,
 			AGGREGATEFUNCTION aggregatefunction, List<AggregateElement> aggregateElements) {
 		this.lowerBoundOperator = lowerBoundOperator;
 		this.lowerBoundTerm = lowerBoundTerm;
@@ -60,7 +60,7 @@ public class AggregateAtom extends CoreAtom {
 		this.upperBoundTerm = upperBoundTerm;
 		this.aggregatefunction = aggregatefunction;
 		this.aggregateElements = aggregateElements;
-		if (upperBoundOperator != null || lowerBoundOperator != ComparisonOperator.LE || lowerBoundTerm == null) {
+		if (upperBoundOperator != null || lowerBoundOperator != ComparisonOperatorImpl.LE || lowerBoundTerm == null) {
 			throw new UnsupportedOperationException("Aggregate construct not yet supported: " + this);
 		}
 	}
@@ -164,7 +164,7 @@ public class AggregateAtom extends CoreAtom {
 		return result;
 	}
 
-	public ComparisonOperator getLowerBoundOperator() {
+	public ComparisonOperatorImpl getLowerBoundOperator() {
 		return lowerBoundOperator;
 	}
 
@@ -172,7 +172,7 @@ public class AggregateAtom extends CoreAtom {
 		return lowerBoundTerm;
 	}
 
-	public ComparisonOperator getUpperBoundOperator() {
+	public ComparisonOperatorImpl getUpperBoundOperator() {
 		return upperBoundOperator;
 	}
 
