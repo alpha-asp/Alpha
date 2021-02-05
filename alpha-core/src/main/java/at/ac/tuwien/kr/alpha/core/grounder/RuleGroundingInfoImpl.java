@@ -40,6 +40,7 @@ import java.util.Set;
 import at.ac.tuwien.kr.alpha.api.grounder.RuleGroundingInfo;
 import at.ac.tuwien.kr.alpha.api.grounder.RuleGroundingOrder;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
@@ -63,7 +64,7 @@ import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
  * literal (whose interpretation is not fixed) is a starting literal, at least for the current grounding procedure.
  */
 public class RuleGroundingInfoImpl implements RuleGroundingInfo {
-	private final InternalRule internalRule;
+	private final CompiledRule internalRule;
 	HashMap<Literal, RuleGroundingOrderImpl> groundingOrders;
 	private HashMap<Literal, Float> literalSelectivity;
 	private List<Literal> startingLiterals;
@@ -71,7 +72,7 @@ public class RuleGroundingInfoImpl implements RuleGroundingInfo {
 	private final boolean fixedGroundingInstantiation;
 	private RuleGroundingOrderImpl fixedGroundingOrder;
 
-	public RuleGroundingInfoImpl(InternalRule internalRule) {
+	public RuleGroundingInfoImpl(CompiledRule internalRule) {
 		this.internalRule = internalRule;
 		this.literalSelectivity = new HashMap<>();
 		resetLiteralSelectivity();

@@ -4,12 +4,13 @@ import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.*;
+import at.ac.tuwien.kr.alpha.core.solver.*;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
 import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
-import static at.ac.tuwien.kr.alpha.solver.AntecedentTest.antecedentsEquals;
+import static at.ac.tuwien.kr.alpha.core.solver.AntecedentTest.antecedentsEquals;
 import static org.junit.Assert.*;
 
 /**

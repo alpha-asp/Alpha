@@ -23,17 +23,18 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Optional;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Optional;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.Solver;
 
 /**
  * Tests {@link AbstractSolver} using a racks configuration problem.
@@ -47,10 +48,7 @@ public class RacksTest extends AbstractSolverTests {
 	}
 
 	private void test() throws IOException {
-		CharStream programInputStream = CharStreams.fromPath(
-			Paths.get("benchmarks", "siemens", "racks", "racks.lp")
-		);
-		Solver solver = getInstance(programInputStream);
+		Solver solver = getInstance(Files.newInputStream(Paths.get("benchmarks", "siemens", "racks", "racks.lp")));
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		//System.out.println(answerSet);
 		// TODO: check correctness of answer set

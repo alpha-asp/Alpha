@@ -13,4 +13,6 @@ public interface Substitution {
 	
 	<T extends Comparable<T>> Term put(VariableTerm variableTerm, Term groundTerm);
 
+	boolean isVariableSet(VariableTerm var);
+	
 }

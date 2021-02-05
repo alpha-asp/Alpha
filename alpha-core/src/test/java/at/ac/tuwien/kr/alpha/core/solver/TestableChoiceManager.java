@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2017-2018 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -23,16 +23,28 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.core.solver;
+
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
- * Executes {@link AggregatesTest} with {@code normalizationCountingGrid=true}.
+ * This class is only here to make {@link ChoiceManager#addChoiceInformation(Pair)} public so that unit tests can access it.
+ * 
+ * Copyright (c) 2017 Siemens AG
+ *
  */
-public class AggregatesCardinalityCountingGridTest extends AggregatesTest {
+public class TestableChoiceManager extends ChoiceManager {
+
+	public TestableChoiceManager(WritableAssignment assignment, NoGoodStore store) {
+		super(assignment, store);
+	}
 
 	@Override
-	protected boolean useCountingGridNormalization() {
-		return true;
+	public void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms, Map<Integer, Set<Integer>> headsToBodies) {
+		super.addChoiceInformation(choiceAtoms, headsToBodies);
 	}
 
 }

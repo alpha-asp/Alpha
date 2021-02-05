@@ -23,20 +23,21 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.core.grounder.DummyGrounder;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
+
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeTrue;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.core.grounder.DummyGrounder;
 
 public class SolverStatisticsTests extends AbstractSolverTests {
 

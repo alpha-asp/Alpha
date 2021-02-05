@@ -25,13 +25,15 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.heuristics;
 
-import org.junit.Test;
-
-import static at.ac.tuwien.kr.alpha.core.grounder.heuristics.GrounderHeuristicsConfiguration.PERMISSIVE_STRING;
-import static at.ac.tuwien.kr.alpha.core.grounder.heuristics.GrounderHeuristicsConfiguration.STRICT_STRING;
+import static at.ac.tuwien.kr.alpha.api.grounder.heuristics.GrounderHeuristicsConfiguration.PERMISSIVE_STRING;
+import static at.ac.tuwien.kr.alpha.api.grounder.heuristics.GrounderHeuristicsConfiguration.STRICT_STRING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+
+import at.ac.tuwien.kr.alpha.api.grounder.heuristics.GrounderHeuristicsConfiguration;
 
 /**
  * Tests {@link GrounderHeuristicsConfiguration}

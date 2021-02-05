@@ -29,8 +29,8 @@ import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.NoGoodStoreAlphaRoaming;
-import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
+import at.ac.tuwien.kr.alpha.core.solver.NoGoodStoreAlphaRoaming;
+import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
 
 import java.util.Arrays;
 import java.util.Collection;

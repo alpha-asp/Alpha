@@ -23,27 +23,27 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.api.Alpha;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
-import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
-import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.core.grounder.atoms.RuleAtom;
-import at.ac.tuwien.kr.alpha.core.grounder.parser.ProgramParser;
+import static at.ac.tuwien.kr.alpha.core.common.Literals.atomOf;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Collection;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collection;
-
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static org.junit.Assert.assertTrue;
+import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.program.CompiledProgram;
+import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.core.common.NoGood;
+import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 
 public class ChoiceManagerTests extends AbstractSolverTests {
 	private Grounder grounder;
@@ -52,11 +52,9 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 
 	@Before
 	public void setUp() {
-		Alpha system = new Alpha();
 		String testProgram = "h :- b1, b2, not b3, not b4.";
-		InputProgram parsedProgram = new ProgramParser().parse(testProgram);
-		NormalProgram normalProgram = system.normalizeProgram(parsedProgram);
-		InternalProgram internalProgram = InternalProgram.fromNormalProgram(normalProgram);
+		ASPCore2Program parsedProgram = new ProgramParserImpl().parse(testProgram);
+		CompiledProgram internalProgram = InternalProgram.fromNormalProgram(new NormalizeProgramTransformation(false).apply(parsedProgram));
 		atomStore = new AtomStoreImpl();
 		grounder = new NaiveGrounder(internalProgram, atomStore, true);
 		WritableAssignment assignment = new TrailAssignment(atomStore);

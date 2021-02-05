@@ -25,9 +25,9 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.NoGoodStore;
-import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
+import at.ac.tuwien.kr.alpha.core.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.core.solver.NoGoodStore;
+import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
 
 /**
  * A {@link ChoiceManager} for testing purposes that regards all atoms as active choice atoms.

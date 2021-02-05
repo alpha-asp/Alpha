@@ -23,19 +23,19 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Optional;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Optional;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
 
 /**
  * Tests {@link AbstractSolver} using Omiga benchmark problems.
@@ -91,8 +91,7 @@ public class OmigaBenchmarksTest extends AbstractSolverTests {
 	}
 
 	private void test(String folder, String aspFileName) throws IOException {
-		CharStream programInputStream = CharStreams.fromPath(Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName));
-		Optional<AnswerSet> answerSet = getInstance(programInputStream).stream().findFirst();
+		Optional<AnswerSet> answerSet = getInstance(Files.newInputStream(Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName))).stream().findFirst();
 		// System.out.println(answerSet);
 		// TODO: check correctness of answer set
 	}

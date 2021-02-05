@@ -1,15 +1,6 @@
 package at.ac.tuwien.kr.alpha.test.util;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.program.AbstractProgram;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.core.util.AnswerSetsParser;
-
-import org.junit.Assert;
+import static java.util.Collections.emptySet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,7 +9,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import static java.util.Collections.emptySet;
+import org.junit.Assert;
+
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.program.Program;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.core.util.AnswerSetsParser;
 
 public class TestUtils {
 
@@ -72,26 +73,26 @@ public class TestUtils {
 		TestUtils.assertAnswerSetsEqual(expectedAnswerSets, actual);
 	}
 
-	public static void assertFactsContainedInProgram(AbstractProgram<?> prog, Atom... facts) {
+	public static void assertFactsContainedInProgram(Program<?> prog, Atom... facts) {
 		for (Atom fact : facts) {
 			Assert.assertTrue(prog.getFacts().contains(fact));
 		}
 	}
 
 	public static Atom basicAtomWithStringTerms(String predicate, String... terms) {
-		Predicate pred = Predicate.getInstance(predicate, terms.length);
+		Predicate pred = CorePredicate.getInstance(predicate, terms.length);
 		List<Term> trms = new ArrayList<>();
 		for (String str : terms) {
-			trms.add(ConstantTerm.getInstance(str));
+			trms.add(CoreConstantTerm.getInstance(str));
 		}
 		return new BasicAtom(pred, trms);
 	}
 
 	public static Atom basicAtomWithSymbolicTerms(String predicate, String... constantSymbols) {
-		Predicate pred = Predicate.getInstance(predicate, constantSymbols.length);
+		Predicate pred = CorePredicate.getInstance(predicate, constantSymbols.length);
 		List<Term> trms = new ArrayList<>();
 		for (String str : constantSymbols) {
-			trms.add(ConstantTerm.getSymbolicInstance(str));
+			trms.add(CoreConstantTerm.getSymbolicInstance(str));
 		}
 		return new BasicAtom(pred, trms);
 	}

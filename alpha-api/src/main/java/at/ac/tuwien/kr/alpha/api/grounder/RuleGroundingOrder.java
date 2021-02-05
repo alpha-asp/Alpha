@@ -12,5 +12,7 @@ public interface RuleGroundingOrder {
 	RuleGroundingOrder pushBack(int pos);
 	
 	void considerUntilCurrentEnd();
+	
+	int getPositionFromWhichAllVarsAreBound();
 
 }

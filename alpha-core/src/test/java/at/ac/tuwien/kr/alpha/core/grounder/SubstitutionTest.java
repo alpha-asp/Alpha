@@ -27,64 +27,73 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
-import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.core.grounder.atoms.RuleAtom;
-import at.ac.tuwien.kr.alpha.core.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.test.util.SubstitutionTestUtil;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+
+import at.ac.tuwien.kr.alpha.api.grounder.Instance;
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.api.rules.Head;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
+import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
+import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
+import at.ac.tuwien.kr.alpha.test.util.SubstitutionTestUtil;
 
 public class SubstitutionTest {
-	private static final ProgramParser PARSER = new ProgramParser();
+	private static final ProgramParser PARSER = new ProgramParserImpl();
 
-	private static final ConstantTerm<?> A = ConstantTerm.getSymbolicInstance("a");
-	private static final ConstantTerm<?> B = ConstantTerm.getSymbolicInstance("b");
-	private static final ConstantTerm<?> C = ConstantTerm.getSymbolicInstance("c");
+	private static final ConstantTerm<?> A = CoreConstantTerm.getSymbolicInstance("a");
+	private static final ConstantTerm<?> B = CoreConstantTerm.getSymbolicInstance("b");
+	private static final ConstantTerm<?> C = CoreConstantTerm.getSymbolicInstance("c");
 
-	private static final VariableTerm X = VariableTerm.getInstance("X");
-	private static final VariableTerm Y = VariableTerm.getInstance("Y");
-	private static final BasicAtom PX = new BasicAtom(Predicate.getInstance("p", 1), X);
-	private static final BasicAtom PY = new BasicAtom(Predicate.getInstance("p", 1), Y);
+	private static final VariableTerm X = VariableTermImpl.getInstance("X");
+	private static final VariableTerm Y = VariableTermImpl.getInstance("Y");
+	private static final BasicAtom PX = new BasicAtom(CorePredicate.getInstance("p", 1), X);
+	private static final BasicAtom PY = new BasicAtom(CorePredicate.getInstance("p", 1), Y);
 	private static final Instance PA = new Instance(A);
 	private static final Instance PB = new Instance(B);
 
 	@Test
 	public void putSimpleBinding() {
-		Substitution substitution = new Substitution();
+		Substitution substitution = new SubstitutionImpl();
 		substitution.put(Y, A);
 		assertEquals(A, substitution.eval(Y));
 	}
 
 	@Test
 	public void specializeTermsSimpleBinding() {
-		Substitution substitution = Substitution.specializeSubstitution(PY, PA, Substitution.EMPTY_SUBSTITUTION);
+		Substitution substitution = SubstitutionImpl.specializeSubstitution(PY, PA, SubstitutionImpl.EMPTY_SUBSTITUTION);
 		assertEquals(A, substitution.eval(Y));
 	}
 
 	@Test
 	public void specializeTermsFunctionTermBinding() {
-		Substitution substitution = new Substitution();
+		Substitution substitution = new SubstitutionImpl();
 		substitution.put(Y, A);
 
 		FunctionTerm groundFunctionTerm = FunctionTerm.getInstance("f", B, C);
 		Instance qfBC = new Instance(groundFunctionTerm);
 		Term nongroundFunctionTerm = FunctionTerm.getInstance("f", B, X);
-		BasicAtom qfBX = new BasicAtom(Predicate.getInstance("q", 2), nongroundFunctionTerm);
+		BasicAtom qfBX = new BasicAtom(CorePredicate.getInstance("q", 2), nongroundFunctionTerm);
 
-		Substitution substitution1 = Substitution.specializeSubstitution(qfBX, qfBC, substitution);
+		Substitution substitution1 = SubstitutionImpl.specializeSubstitution(qfBX, qfBC, substitution);
 
 		assertEquals(C, substitution1.eval(X));
 		assertEquals(A, substitution1.eval(Y));
@@ -102,20 +111,20 @@ public class SubstitutionTest {
 
 	@Test
 	public void groundAndPrintRule() {
-		BasicRule rule = PARSER.parse("x :- p(X,Y), not q(X,Y).").getRules().get(0);
-		InternalRule nonGroundRule = InternalRule.fromNormalRule(NormalRule.fromBasicRule(rule));
-		Substitution substitution1 = Substitution.specializeSubstitution(PX, PA, Substitution.EMPTY_SUBSTITUTION);
-		Substitution substitution2 = Substitution.specializeSubstitution(PY, PB, substitution1);
+		Rule<Head> rule = PARSER.parse("x :- p(X,Y), not q(X,Y).").getRules().get(0);
+		CompiledRule nonGroundRule = InternalRule.fromNormalRule(NormalRule.fromBasicRule(rule));
+		Substitution substitution1 = SubstitutionImpl.specializeSubstitution(PX, PA, SubstitutionImpl.EMPTY_SUBSTITUTION);
+		Substitution substitution2 = SubstitutionImpl.specializeSubstitution(PY, PB, substitution1);
 		String printedString = SubstitutionTestUtil.groundAndPrintRule(nonGroundRule, substitution2);
 		assertEquals("x :- p(a, b), not q(a, b).", printedString);
 	}
 
 	@Test
 	public void specializeBasicAtom() {
-		Predicate p = Predicate.getInstance("p", 2);
+		Predicate p = CorePredicate.getInstance("p", 2);
 		BasicAtom atom = new BasicAtom(p, Arrays.asList(X, Y));
 		Instance instance = new Instance(A, B);
-		Substitution substitution = Substitution.specializeSubstitution(atom, instance, Substitution.EMPTY_SUBSTITUTION);
+		Substitution substitution = SubstitutionImpl.specializeSubstitution(atom, instance, SubstitutionImpl.EMPTY_SUBSTITUTION);
 		BasicAtom substituted = atom.substitute(substitution);
 		assertEquals(p, substituted.getPredicate());
 		assertEquals(A, substituted.getTerms().get(0));
@@ -123,10 +132,10 @@ public class SubstitutionTest {
 	}
 
 	private void substituteBasicAtomLiteral(boolean negated) {
-		Predicate p = Predicate.getInstance("p", 2);
+		Predicate p = CorePredicate.getInstance("p", 2);
 		BasicAtom atom = new BasicAtom(p, Arrays.asList(X, Y));
 		Literal literal = new BasicLiteral(atom, !negated);
-		Substitution substitution = new Substitution();
+		Substitution substitution = new SubstitutionImpl();
 		substitution.put(X, A);
 		substitution.put(Y, B);
 		literal = literal.substitute(substitution);
@@ -147,23 +156,23 @@ public class SubstitutionTest {
 	}
 
 	private void groundLiteralToString(boolean negated) {
-		Predicate p = Predicate.getInstance("p", 2);
+		Predicate p = CorePredicate.getInstance("p", 2);
 		BasicAtom atom = new BasicAtom(p, Arrays.asList(X, Y));
-		Substitution substitution1 = Substitution.specializeSubstitution(PX, PA, Substitution.EMPTY_SUBSTITUTION);
-		Substitution substitution = Substitution.specializeSubstitution(PY, PB, substitution1);
+		Substitution substitution1 = SubstitutionImpl.specializeSubstitution(PX, PA, SubstitutionImpl.EMPTY_SUBSTITUTION);
+		Substitution substitution = SubstitutionImpl.specializeSubstitution(PY, PB, substitution1);
 		String printedString = SubstitutionTestUtil.groundLiteralToString(atom.toLiteral(!negated), substitution, true);
 		assertEquals((negated ? "not " : "") + "p(a, b)", printedString);
 	}
 
 	@Test
 	public void substitutionFromString() {
-		BasicRule rule = PARSER.parse("x :- p(X,Y), not q(X,Y).").getRules().get(0);
-		InternalRule nonGroundRule = InternalRule.fromNormalRule(NormalRule.fromBasicRule(rule));
-		Substitution substitution1 = Substitution.specializeSubstitution(PX, PA, Substitution.EMPTY_SUBSTITUTION);
-		Substitution substitution = Substitution.specializeSubstitution(PY, PB, substitution1);
+		Rule<Head> rule = PARSER.parse("x :- p(X,Y), not q(X,Y).").getRules().get(0);
+		CompiledRule nonGroundRule = InternalRule.fromNormalRule(NormalRule.fromBasicRule(rule));
+		Substitution substitution1 = SubstitutionImpl.specializeSubstitution(PX, PA, SubstitutionImpl.EMPTY_SUBSTITUTION);
+		Substitution substitution = SubstitutionImpl.specializeSubstitution(PY, PB, substitution1);
 		RuleAtom ruleAtom = new RuleAtom(nonGroundRule, substitution);
 		String substitutionString = (String) ((ConstantTerm<?>) ruleAtom.getTerms().get(1)).getObject();
-		Substitution fromString = Substitution.fromString(substitutionString);
+		Substitution fromString = SubstitutionImpl.fromString(substitutionString);
 		assertEquals(substitution, fromString);
 	}
 }

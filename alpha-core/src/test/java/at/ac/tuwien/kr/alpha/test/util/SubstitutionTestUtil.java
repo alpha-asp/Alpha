@@ -28,14 +28,14 @@
 
 package at.ac.tuwien.kr.alpha.test.util;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 
 public class SubstitutionTestUtil {
 
-	public static String groundAndPrintRule(InternalRule rule, Substitution substitution) {
+	public static String groundAndPrintRule(CompiledRule rule, Substitution substitution) {
 		StringBuilder ret = new StringBuilder();
 		if (!rule.isConstraint()) {
 			Atom groundHead = rule.getHeadAtom().substitute(substitution);

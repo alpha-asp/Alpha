@@ -27,59 +27,63 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.structure;
 
-import at.ac.tuwien.kr.alpha.api.Alpha;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
-import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.core.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
-import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
-import org.junit.Test;
+import static junit.framework.TestCase.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
+import java.util.function.Function;
 
-import static junit.framework.TestCase.assertFalse;
-import static org.junit.Assert.assertNotEquals;
+import org.junit.Test;
+
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.CompiledProgram;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
+import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
+import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
+import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
 
 /**
  * Copyright (c) 2018-2020, the Alpha Team.
  */
 public class AnalyzeUnjustifiedTest {
 
-	private final ProgramParser parser = new ProgramParser();
+	private final ProgramParser parser = new ProgramParserImpl();
+	private final NormalizeProgramTransformation normalize = new NormalizeProgramTransformation(false);
+	private final Function<String, CompiledProgram> parseAndPreprocess = (str) -> {
+		return InternalProgram.fromNormalProgram(normalize.apply(parser.parse(str)));
+	};
 
 	@Test
 	public void justifySimpleRules() {
-		Alpha system = new Alpha();
 		String program = "p(X) :- q(X)." +
 			"q(X) :- p(X)." +
 			"q(5) :- r." +
 			"r :- not nr." +
 			"nr :- not r." +
 			":- not p(5).";
-		InputProgram parsedProgram = parser.parse(program);
-		NormalProgram normal = system.normalizeProgram(parsedProgram);
-		InternalProgram internalProgram = InternalProgram.fromNormalProgram(normal);
+		CompiledProgram internalProgram = parseAndPreprocess.apply(program);
 		AtomStore atomStore = new AtomStoreImpl();
 		NaiveGrounder grounder = new NaiveGrounder(internalProgram, atomStore, true);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
-		int rId = atomStore.get(new BasicAtom(Predicate.getInstance("r", 0)));
-		int nrId = atomStore.get(new BasicAtom(Predicate.getInstance("nr", 0)));
+		int rId = atomStore.get(new BasicAtom(CorePredicate.getInstance("r", 0)));
+		int nrId = atomStore.get(new BasicAtom(CorePredicate.getInstance("nr", 0)));
 		assignment.growForMaxAtomId();
 		assignment.assign(rId, ThriceTruth.FALSE);
 		assignment.assign(nrId, ThriceTruth.TRUE);
-		BasicAtom p5 = new BasicAtom(Predicate.getInstance("p", 1), Collections.singletonList(ConstantTerm.getInstance(5)));
+		BasicAtom p5 = new BasicAtom(CorePredicate.getInstance("p", 1), Collections.singletonList(CoreConstantTerm.getInstance(5)));
 		assignment.assign(atomStore.get(p5), ThriceTruth.MBT);
 		Set<Literal> reasons = grounder.justifyAtom(atomStore.get(p5), assignment);
 		assertFalse(reasons.isEmpty());
@@ -87,7 +91,6 @@ public class AnalyzeUnjustifiedTest {
 
 	@Test
 	public void justifyLargerRules() {
-		Alpha system = new Alpha();
 		String program = "p(X) :- q(X,Y), r(Y), not s(X,Y)." +
 			"{ q(1,X)} :- dom(X)." +
 			"dom(1..3)." +
@@ -95,9 +98,7 @@ public class AnalyzeUnjustifiedTest {
 			"{r(2)}." +
 			"{s(1,2)}." +
 			":- not p(1).";
-		InputProgram parsedProgram = parser.parse(program);
-		NormalProgram normal = system.normalizeProgram(parsedProgram);
-		InternalProgram internalProgram = InternalProgram.fromNormalProgram(normal);
+		CompiledProgram internalProgram = parseAndPreprocess.apply(program);
 		AtomStore atomStore = new AtomStoreImpl();
 		NaiveGrounder grounder = new NaiveGrounder(internalProgram, atomStore, true);
 		grounder.getNoGoods(null);
@@ -128,16 +129,13 @@ public class AnalyzeUnjustifiedTest {
 
 	@Test
 	public void justifyMultipleReasons() {
-		Alpha system = new Alpha();
 		String program = "n(a). n(b). n(c). n(d). n(e)." +
 			"s(a,b). s(b,c). s(c,d). s(d,e)." +
 			"{ q(X) } :- n(X)." +
 			"p(X) :- q(X)." +
 			"p(X) :- p(Y), s(Y,X)." +
 			":- not p(c).";
-		InputProgram parsedProgram = parser.parse(program);
-		NormalProgram normal = system.normalizeProgram(parsedProgram);
-		InternalProgram internalProgram = InternalProgram.fromNormalProgram(normal);
+		CompiledProgram internalProgram = parseAndPreprocess.apply(program);
 		AtomStore atomStore = new AtomStoreImpl();
 		NaiveGrounder grounder = new NaiveGrounder(internalProgram, atomStore, true);
 		grounder.getNoGoods(null);
@@ -160,12 +158,12 @@ public class AnalyzeUnjustifiedTest {
 		assignment.assign(qdId, ThriceTruth.FALSE);
 		assignment.assign(qeId, ThriceTruth.FALSE);
 
-		Predicate nq = Predicate.getInstance("_nq", 2, true);
-		Atom nqa = new BasicAtom(nq, Arrays.asList(ConstantTerm.getInstance("1"), ConstantTerm.getSymbolicInstance("a")));
-		Atom nqb = new BasicAtom(nq, Arrays.asList(ConstantTerm.getInstance("1"), ConstantTerm.getSymbolicInstance("b")));
-		Atom nqc = new BasicAtom(nq, Arrays.asList(ConstantTerm.getInstance("1"), ConstantTerm.getSymbolicInstance("c")));
-		Atom nqd = new BasicAtom(nq, Arrays.asList(ConstantTerm.getInstance("1"), ConstantTerm.getSymbolicInstance("d")));
-		Atom nqe = new BasicAtom(nq, Arrays.asList(ConstantTerm.getInstance("1"), ConstantTerm.getSymbolicInstance("e")));
+		Predicate nq = CorePredicate.getInstance("_nq", 2, true);
+		Atom nqa = new BasicAtom(nq, Arrays.asList(CoreConstantTerm.getInstance("1"), CoreConstantTerm.getSymbolicInstance("a")));
+		Atom nqb = new BasicAtom(nq, Arrays.asList(CoreConstantTerm.getInstance("1"), CoreConstantTerm.getSymbolicInstance("b")));
+		Atom nqc = new BasicAtom(nq, Arrays.asList(CoreConstantTerm.getInstance("1"), CoreConstantTerm.getSymbolicInstance("c")));
+		Atom nqd = new BasicAtom(nq, Arrays.asList(CoreConstantTerm.getInstance("1"), CoreConstantTerm.getSymbolicInstance("d")));
+		Atom nqe = new BasicAtom(nq, Arrays.asList(CoreConstantTerm.getInstance("1"), CoreConstantTerm.getSymbolicInstance("e")));
 		int nqaId = atomStore.get(nqa);
 		int nqbId = atomStore.get(nqb);
 		int nqcId = atomStore.get(nqc);
@@ -186,7 +184,6 @@ public class AnalyzeUnjustifiedTest {
 
 	@Test
 	public void justifyNegatedFactsRemovedFromReasons() {
-		Alpha system = new Alpha();
 		String program = "forbidden(2,9). forbidden(1,9)." +
 			"p(X) :- q(X)." +
 			"q(X) :- p(X)." +
@@ -194,25 +191,23 @@ public class AnalyzeUnjustifiedTest {
 			"r :- not nr, not forbidden(2,9), not forbidden(1,9)." +
 			"nr :- not r." +
 			":- not p(5).";
-		InputProgram parsedProgram = parser.parse(program);
-		NormalProgram normal = system.normalizeProgram(parsedProgram);
-		InternalProgram internalProgram = InternalProgram.fromNormalProgram(normal);
+		CompiledProgram internalProgram = parseAndPreprocess.apply(program);
 		AtomStore atomStore = new AtomStoreImpl();
 		NaiveGrounder grounder = new NaiveGrounder(internalProgram, atomStore, true);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
-		int rId = atomStore.get(new BasicAtom(Predicate.getInstance("r", 0)));
-		int nrId = atomStore.get(new BasicAtom(Predicate.getInstance("nr", 0)));
+		int rId = atomStore.get(new BasicAtom(CorePredicate.getInstance("r", 0)));
+		int nrId = atomStore.get(new BasicAtom(CorePredicate.getInstance("nr", 0)));
 		assignment.growForMaxAtomId();
 		assignment.assign(rId, ThriceTruth.FALSE);
 		assignment.assign(nrId, ThriceTruth.TRUE);
-		BasicAtom p5 = new BasicAtom(Predicate.getInstance("p", 1), Collections.singletonList(ConstantTerm.getInstance(5)));
+		BasicAtom p5 = new BasicAtom(CorePredicate.getInstance("p", 1), Collections.singletonList(CoreConstantTerm.getInstance(5)));
 		assignment.assign(atomStore.get(p5), ThriceTruth.MBT);
 		Set<Literal> reasons = grounder.justifyAtom(atomStore.get(p5), assignment);
 		assertFalse(reasons.isEmpty());
 		for (Literal literal : reasons) {
 			// Check that facts are not present in justification.
-			assertNotEquals(literal.getPredicate(), Predicate.getInstance("forbidden", 2));
+			assertNotEquals(literal.getPredicate(), CorePredicate.getInstance("forbidden", 2));
 		}
 	}
 }

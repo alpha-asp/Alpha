@@ -14,5 +14,7 @@ public interface RuleGroundingInfo {
 	List<Literal> getStartingLiterals();
 	
 	RuleGroundingOrder orderStartingFrom(Literal startingLiteral);
+	
+	void computeGroundingOrders();
 
 }

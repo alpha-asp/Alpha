@@ -26,10 +26,11 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.solver.NoGoodStoreAlphaRoaming;
-import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
-import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
-import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
+import at.ac.tuwien.kr.alpha.core.solver.NoGoodStoreAlphaRoaming;
+import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
+import at.ac.tuwien.kr.alpha.core.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
+
 import org.junit.Before;
 import org.junit.Test;
 

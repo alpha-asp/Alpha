@@ -1,36 +1,49 @@
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
+import static at.ac.tuwien.kr.alpha.core.common.NoGood.fact;
+import static at.ac.tuwien.kr.alpha.core.common.NoGood.headFirst;
+import static at.ac.tuwien.kr.alpha.core.solver.AntecedentTest.antecedentsEquals;
+import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.TRUE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static at.ac.tuwien.kr.alpha.common.NoGood.fact;
-import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
-import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
-import static at.ac.tuwien.kr.alpha.solver.AntecedentTest.antecedentsEquals;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
-import static org.junit.Assert.*;
+import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
+import at.ac.tuwien.kr.alpha.core.common.Assignment;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.core.common.NoGood;
 
 /**
  * Copyright (c) 2017, the Alpha Team.
  */
-public class NaiveNoGoodStoreTest {
+public class NoGoodStoreAlphaRoamingTest {
+
 	private final AtomStore atomStore;
 	private final TrailAssignment assignment;
-	private final NaiveNoGoodStore store;
+	private final NoGoodStoreAlphaRoaming store;
 
-	public NaiveNoGoodStoreTest() {
+	public NoGoodStoreAlphaRoamingTest() {
 		atomStore = new AtomStoreImpl();
+		AtomStoreTest.fillAtomStore(atomStore, 200);
 		assignment = new TrailAssignment(atomStore);
-		store = new NaiveNoGoodStore(assignment);
+		assignment.growForMaxAtomId();
+		store = new NoGoodStoreAlphaRoaming(assignment);
 	}
 
 	@Before
 	public void setUp() {
 		store.clear();
-		AtomStoreTest.fillAtomStore(atomStore, 200);
-		assignment.growForMaxAtomId();
+		store.growForMaxAtomId(fromOldLiterals(200));
 	}
 
 	@Test
@@ -83,7 +96,6 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
 	public void addNotCausingAssignmentFalse() {
 		assignment.assign(1, FALSE);
 		assignment.assign(4, TRUE);
@@ -204,7 +216,7 @@ public class NaiveNoGoodStoreTest {
 		assignment.assign(2, FALSE);
 		assignment.assign(3, FALSE);
 
-		store.add(1, NoGood.headFirst(fromOldLiterals(-1, -3, -2)));
+		store.add(1, headFirst(fromOldLiterals(-1, -3, -2)));
 		store.propagate();
 
 		assertEquals(TRUE, assignment.getTruth(1));
@@ -250,7 +262,6 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for propagation in add.")
 	public void propagateNaryMBTTwice() {
 		assignment.assign(4, FALSE);
 		assignment.assign(3, MBT);
@@ -281,7 +292,7 @@ public class NaiveNoGoodStoreTest {
 
 		// First deduce 1 from 2 and 3, then deduce
 		// 5 from -4 and 1.
-		store.propagate();
+		assertNull(store.propagate());
 		assertTrue(store.didPropagate());
 
 		assertEquals(TRUE, assignment.getTruth(1));
@@ -298,15 +309,13 @@ public class NaiveNoGoodStoreTest {
 		// 2.
 		store.add(2, fact(fromOldLiterals(-2)));
 		assertNull(store.propagate());
-		assertTrue(store.didPropagate());
-		assertEquals(TRUE, assignment.getTruth(2));
+		assertFalse(store.didPropagate());
 		assertNull(assignment.getTruth(1));
 
 		// 3.
 		store.add(3, fact(fromOldLiterals(-3)));
 		assertNull(store.propagate());
 		assertTrue(store.didPropagate());
-		assertEquals(TRUE, assignment.getTruth(3));
 
 		assertEquals(TRUE, assignment.getTruth(1));
 	}
@@ -343,7 +352,6 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
 	public void conflictingBinary() {
 		final NoGood noGood = new NoGood(fromOldLiterals(1, 2));
 		assignment.assign(1, TRUE);
@@ -353,7 +361,6 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
 	public void conflictingNary() {
 		final NoGood noGood = new NoGood(fromOldLiterals(1, 2, 3));
 		assignment.assign(1, TRUE);
@@ -383,7 +390,6 @@ public class NaiveNoGoodStoreTest {
 		assertNull(assignment.assign(2, FALSE));
 		assertNull(assignment.assign(7, FALSE));
 		assertNull(store.propagate());
-		assertNull(store.propagate());
 	}
 
 	@Test
@@ -394,8 +400,8 @@ public class NaiveNoGoodStoreTest {
 		assertNull(assignment.assign(11, TRUE));
 		assertNull(assignment.assign(19, TRUE));
 		ConflictCause conflictCause = store.propagate();
-		assertNotNull(conflictCause);
 		assertFalse(store.didPropagate());
+		assertNotNull(conflictCause);
 		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
@@ -407,8 +413,8 @@ public class NaiveNoGoodStoreTest {
 		assertNull(assignment.assign(11, MBT));
 		assertNull(assignment.assign(19, MBT));
 		ConflictCause conflictCause = store.propagate();
-		assertNotNull(conflictCause);
 		assertFalse(store.didPropagate());
+		assertNotNull(conflictCause);
 		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
@@ -433,7 +439,6 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
 	public void naryNoGoodViolatedDuringAdditionAllTrue() {
 		NoGood noGood = new NoGood(fromOldLiterals(1, 2, 3));
 		assertNull(assignment.assign(1, TRUE));
@@ -445,7 +450,6 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
 	public void naryNoGoodViolatedDuringAdditionAllMbt() {
 		NoGood noGood = new NoGood(fromOldLiterals(1, 2, 3));
 		assertNull(assignment.assign(1, MBT));
@@ -459,14 +463,13 @@ public class NaiveNoGoodStoreTest {
 	@Test
 	public void binaryNoGoodViolatedAfterAddition() {
 		NoGood noGood = new NoGood(fromOldLiterals(1, 2));
-		assertNull(store.add(1, noGood));
+		assertNull(store.add(11, noGood));
 		assertNull(assignment.assign(1, MBT));
 		assertNull(assignment.assign(2, MBT));
 		assertNotNull(store.propagate());
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
 	public void binaryNoGoodViolatedDuringAdditionAllTrue() {
 		NoGood noGood = new NoGood(fromOldLiterals(1, 2));
 		assertNull(assignment.assign(1, TRUE));
@@ -477,7 +480,6 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
 	public void binaryNoGoodViolatedDuringAdditionAllMbt() {
 		NoGood noGood = new NoGood(fromOldLiterals(1, 2));
 		assertNull(assignment.assign(1, MBT));
@@ -532,7 +534,6 @@ public class NaiveNoGoodStoreTest {
 
 
 	@Test
-	@Ignore("Checks for propagation in add.")
 	public void addedBinaryNoGoodPropagatesTrueFromFalse() {
 		NoGood noGood = headFirst(fromOldLiterals(-11, -12));
 		assertNull(assignment.choose(12, FALSE));
@@ -571,18 +572,55 @@ public class NaiveNoGoodStoreTest {
 		assertEquals(TRUE, assignment.getTruth(1));
 	}
 
+	@Ignore // TrailAssignment no longer propagates at lower decision level.
 	@Test
-	@Ignore("Not decision-level aware.")
 	public void propagationAtLowerDecisionLevel() {
 		NoGood noGood = headFirst(fromOldLiterals(-1, 2, -3));
 		assertNull(assignment.choose(3, FALSE));
 		assertNull(assignment.choose(2, TRUE));
 		assertNull(assignment.choose(4, TRUE));
 		assertNull(store.add(10, noGood));
-		assertNull(store.propagate());
+		store.propagate();
 		assertEquals(TRUE, assignment.getTruth(1));
 		Assignment.Entry entry = assignment.get(1);
 		assertEquals(TRUE, entry.getTruth());
 		assertEquals(2, entry.getDecisionLevel());
+	}
+
+	@Test
+	public void violationByPropagationAtLowerDecisionLevel() {
+		assertNull(store.add(1, new NoGood(fromOldLiterals(1, -2))));
+		assertNull(store.add(2, new NoGood(fromOldLiterals(2, -3))));
+		assertNull(store.add(3, new NoGood(fromOldLiterals(2, -4))));
+		assertNull(store.add(4, new NoGood(fromOldLiterals(3, 4, 5))));
+
+		assertNull(assignment.choose(7, FALSE));
+		assertNull(store.propagate());
+		assertNull(assignment.choose(6, FALSE));
+		assertNull(store.propagate());
+		assertNull(assignment.choose(5, TRUE));
+		assertNull(store.propagate());
+
+		assertNull(store.add(5, new NoGood(fromOldLiterals(-1))));
+		ConflictCause cause = store.propagate();
+		assertNotNull(cause);
+	}
+
+	@Test
+	public void alphaWatchNotIgnored() {
+		assertNull(assignment.choose(2, TRUE));
+		assertNull(store.propagate());
+		assertNull(assignment.choose(3, TRUE));
+		assertNull(store.propagate());
+		assertNull(assignment.choose(1, TRUE));
+		assertNull(store.propagate());
+
+		assertNull(store.add(1, headFirst(fromOldLiterals(-1, 2, 3))));
+
+		store.backtrack();
+		store.backtrack();
+		assertNull(assignment.choose(3, TRUE));
+		assertNull(store.propagate());
+		assertEquals(TRUE, assignment.getTruth(1));
 	}
 }

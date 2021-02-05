@@ -23,29 +23,31 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.api.Alpha;
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.core.grounder.parser.ProgramParser;
-
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.SortedSet;
 
-import static org.junit.Assert.assertTrue;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
 /**
  * Tests {@link AbstractSolver} using some hanoi tower test cases (see https://en.wikipedia.org/wiki/Tower_of_Hanoi).
@@ -55,7 +57,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(HanoiTowerTest.class);
 
-	private final ProgramParser parser = new ProgramParser();
+	private final ProgramParser parser = new ProgramParserImpl();
 
 	@Test(timeout = 10000)
 	@Ignore("disabled to save resources during CI")
@@ -93,8 +95,8 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	}
 
 	private void testHanoiTower(String instance) throws IOException {
-		Alpha system = new Alpha();
-		InputProgram prog = system.readProgramFiles(false, null, Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp"),
+		ASPCore2Program prog = new ProgramParserImpl().parse(
+				Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp"),
 				Paths.get("src", "test", "resources", "HanoiTower_instances", instance + ".asp"));
 		Solver solver = getInstance(prog);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
@@ -103,27 +105,28 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	}
 
 	/**
-	 * Conducts a very simple, non-comprehensive goal check (i.e. it may classify answer sets as correct that are actually wrong) by checking if for every goal/3
+	 * Conducts a very simple, non-comprehensive goal check (i.e. it may classify answer sets as correct that are actually wrong) by checking if
+	 * for every goal/3
 	 * fact in the input there is a corresponding on/3 atom in the output.
 	 */
-	private void checkGoal(InputProgram parsedProgram, AnswerSet answerSet) {
-		Predicate ongoal = Predicate.getInstance("ongoal", 2);
-		Predicate on = Predicate.getInstance("on", 3);
+	private void checkGoal(ASPCore2Program parsedProgram, AnswerSet answerSet) {
+		Predicate ongoal = CorePredicate.getInstance("ongoal", 2);
+		Predicate on = CorePredicate.getInstance("on", 3);
 		int steps = getSteps(parsedProgram);
 		SortedSet<Atom> onInstancesInAnswerSet = answerSet.getPredicateInstances(on);
 		for (Atom atom : parsedProgram.getFacts()) {
 			if (atom.getPredicate().getName().equals(ongoal.getName()) && atom.getPredicate().getArity() == ongoal.getArity()) {
 				Term expectedTop = atom.getTerms().get(0);
 				Term expectedBottom = atom.getTerms().get(1);
-				Term expectedSteps = ConstantTerm.getInstance(steps);
+				Term expectedSteps = CoreConstantTerm.getInstance(steps);
 				Atom expectedAtom = new BasicAtom(on, expectedSteps, expectedBottom, expectedTop);
 				assertTrue("Answer set does not contain " + expectedAtom, onInstancesInAnswerSet.contains(expectedAtom));
 			}
 		}
 	}
 
-	private int getSteps(InputProgram parsedProgram) {
-		Predicate steps = Predicate.getInstance("steps", 1);
+	private int getSteps(ASPCore2Program parsedProgram) {
+		Predicate steps = CorePredicate.getInstance("steps", 1);
 		for (Atom atom : parsedProgram.getFacts()) {
 			if (atom.getPredicate().getName().equals(steps.getName()) && atom.getPredicate().getArity() == steps.getArity()) {
 				return Integer.valueOf(atom.getTerms().get(0).toString());

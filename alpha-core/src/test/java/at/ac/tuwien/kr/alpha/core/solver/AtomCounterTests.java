@@ -23,32 +23,35 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.core.solver;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import org.junit.Before;
-import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
-import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.core.grounder.atoms.ChoiceAtom;
-import at.ac.tuwien.kr.alpha.core.grounder.atoms.RuleAtom;
+import org.junit.Before;
+import org.junit.Test;
+
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.core.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom;
+import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
+import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
+import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
+import at.ac.tuwien.kr.alpha.core.solver.AtomCounter;
 
 public class AtomCounterTests {
 
@@ -97,19 +100,19 @@ public class AtomCounterTests {
 	}
 
 	private void createBasicAtom1() {
-		atomStore.putIfAbsent(new BasicAtom(Predicate.getInstance("p", 0)));
+		atomStore.putIfAbsent(new BasicAtom(CorePredicate.getInstance("p", 0)));
 	}
 
 	private void createBasicAtom2() {
-		atomStore.putIfAbsent(new BasicAtom(Predicate.getInstance("q", 1), ConstantTerm.getInstance(1)));
+		atomStore.putIfAbsent(new BasicAtom(CorePredicate.getInstance("q", 1), CoreConstantTerm.getInstance(1)));
 	}
 
 	private void createAggregateAtom() {
-		final ConstantTerm<Integer> c1 = ConstantTerm.getInstance(1);
-		final ConstantTerm<Integer> c2 = ConstantTerm.getInstance(2);
-		final ConstantTerm<Integer> c3 = ConstantTerm.getInstance(3);
+		final ConstantTerm<Integer> c1 = CoreConstantTerm.getInstance(1);
+		final ConstantTerm<Integer> c2 = CoreConstantTerm.getInstance(2);
+		final ConstantTerm<Integer> c3 = CoreConstantTerm.getInstance(3);
 		List<Term> basicTerms = Arrays.asList(c1, c2, c3);
-		AggregateAtom.AggregateElement aggregateElement = new AggregateAtom.AggregateElement(basicTerms, Collections.singletonList(new BasicAtom(Predicate.getInstance("p", 3), c1, c2, c3).toLiteral()));
+		AggregateAtom.AggregateElement aggregateElement = new AggregateAtom.AggregateElement(basicTerms, Collections.singletonList(new BasicAtom(CorePredicate.getInstance("p", 3), c1, c2, c3).toLiteral()));
 		atomStore.putIfAbsent(new AggregateAtom(ComparisonOperatorImpl.LE, c1, null, null, AggregateAtom.AGGREGATEFUNCTION.COUNT, Collections.singletonList(aggregateElement)));
 	}
 
@@ -118,9 +121,9 @@ public class AtomCounterTests {
 	}
 
 	private void createRuleAtom() {
-		Atom atomAA = new BasicAtom(Predicate.getInstance("aa", 0));
-		InternalRule ruleAA = new InternalRule(new NormalHead(atomAA), Collections.singletonList(new BasicAtom(Predicate.getInstance("bb", 0)).toLiteral(false)));
-		atomStore.putIfAbsent(new RuleAtom(ruleAA, new Substitution()));
+		Atom atomAA = new BasicAtom(CorePredicate.getInstance("aa", 0));
+		CompiledRule ruleAA = new InternalRule(new NormalHeadImpl(atomAA), Collections.singletonList(new BasicAtom(CorePredicate.getInstance("bb", 0)).toLiteral(false)));
+		atomStore.putIfAbsent(new RuleAtom(ruleAA, new SubstitutionImpl()));
 	}
 
 	private void expectGetNumberOfAtoms(AtomCounter atomCounter, Class<? extends Atom> classOfAtoms, int expectedNumber) {

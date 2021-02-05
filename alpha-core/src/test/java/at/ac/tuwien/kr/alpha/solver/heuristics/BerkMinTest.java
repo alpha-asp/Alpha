@@ -29,10 +29,11 @@ import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.NaiveNoGoodStore;
-import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
-import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
-import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
+import at.ac.tuwien.kr.alpha.core.solver.NaiveNoGoodStore;
+import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
+import at.ac.tuwien.kr.alpha.core.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
+
 import org.junit.Before;
 import org.junit.Test;
 

@@ -31,17 +31,21 @@ import java.util.List;
 
 import org.junit.Test;
 
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
-import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
-import at.ac.tuwien.kr.alpha.core.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.api.rules.Head;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
+import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
+import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
 
 /**
  * Tests {@link BasicRule#toString()} and {@link InternalRule#toString()}.
  */
 public class RuleToStringTest {
-	private final ProgramParser parser = new ProgramParser();
+	private final ProgramParser parser = new ProgramParserImpl();
 	
 	@Test
 	public void positiveRuleToString() {
@@ -84,18 +88,18 @@ public class RuleToStringTest {
 	}
 
 	private void parseSingleRuleAndCheckToString(String rule) {
-		BasicRule parsedRule = parseSingleRule(rule);
+		Rule<Head> parsedRule = parseSingleRule(rule);
 		assertEquals(rule, parsedRule.toString());
 	}
 
 	private void constructNonGroundRuleAndCheckToString(String textualRule) {
-		InternalRule nonGroundRule = InternalRule.fromNormalRule(NormalRule.fromBasicRule(parseSingleRule(textualRule)));
+		CompiledRule nonGroundRule = InternalRule.fromNormalRule(NormalRule.fromBasicRule(parseSingleRule(textualRule)));
 		assertEquals(textualRule, nonGroundRule.toString());
 	}
 
-	private BasicRule parseSingleRule(String rule) {
-		InputProgram program = parser.parse(rule);
-		List<BasicRule> rules = program.getRules();
+	private Rule<Head> parseSingleRule(String rule) {
+		ASPCore2Program program = parser.parse(rule);
+		List<Rule<Head>> rules = program.getRules();
 		assertEquals("Number of rules", 1, rules.size());
 		return rules.get(0);
 	}

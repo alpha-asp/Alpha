@@ -23,15 +23,16 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver;
-
-import org.junit.Ignore;
-import org.junit.Test;
+package at.ac.tuwien.kr.alpha.core.solver;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
+
+import org.junit.Ignore;
+import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -42,111 +43,107 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.core.grounder.parser.ProgramParser;
 
-/**
- * Tests {@link AbstractSolver} using some three-coloring test cases, as described in:
- * Lefèvre, Claire; Béatrix, Christopher; Stéphan, Igor; Garcia, Laurent (2017):
- * ASPeRiX, a first-order forward chaining approach for answer set computing.
- * In Theory and Practice of Logic Programming, pp. 1-45.
- * DOI: 10.1017/S1471068416000569
- */
-public class ThreeColouringWheelTest extends AbstractSolverTests {
+public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 	@Test(timeout = 1000)
-	public void testN4() throws IOException {
-		testThreeColouring(4);
+	public void testV3E3() throws IOException {
+		testThreeColouring(3, 3);
 	}
 
-	@Test(timeout = 1000)
-	public void testN5() throws IOException {
-		testThreeColouring(5);
-	}
-
-	@Test(timeout = 6000)
+	@Test(timeout = 10000)
 	@Ignore("disabled to save resources during CI")
-	public void testN6() throws IOException {
-		testThreeColouring(6);
+	public void testV10E18() throws IOException {
+		testThreeColouring(10, 18);
+	}
+
+	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
+	public void testV20E38() throws IOException {
+		testThreeColouring(20, 38);
+	}
+
+	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
+	public void testV30E48() throws IOException {
+		testThreeColouring(30, 48);
 	}
 
 	@Test(timeout = 60000)
 	@Ignore("disabled to save resources during CI")
-	public void testN3() throws IOException {
-		testThreeColouring(3);
+	public void testV200E300() throws IOException {
+		testThreeColouring(200, 300);
 	}
 
 	@Test(timeout = 60000)
 	@Ignore("disabled to save resources during CI")
-	public void testN7() throws IOException {
-		testThreeColouring(7);
+	public void testV300E200() throws IOException {
+		testThreeColouring(300, 200);
 	}
 
 	@Test(timeout = 60000)
 	@Ignore("disabled to save resources during CI")
-	public void testN11() throws IOException {
-		testThreeColouring(11);
+	public void testV300E300() throws IOException {
+		testThreeColouring(300, 300);
 	}
 
-	private void testThreeColouring(int n) throws IOException {
+	private void testThreeColouring(int nVertices, int nEdges) throws IOException {
 		InputProgram tmpPrg = new ProgramParser().parse(
-				"col(V,C) :- v(V), c(C), not ncol(V,C)." +
-				"ncol(V,C) :- col(V,D), c(C), C != D." +
-				":- e(V,U), col(V,C), col(U,C).");
+				"blue(N) :- v(N), not red(N), not green(N)." +
+				"red(N) :- v(N), not blue(N), not green(N)." +
+				"green(N) :- v(N), not red(N), not blue(N)." +
+				":- e(N1,N2), blue(N1), blue(N2)." +
+				":- e(N1,N2), red(N1), red(N2)." +
+				":- e(N1,N2), green(N1), green(N2).");
 		InputProgram.Builder prgBuilder = InputProgram.builder(tmpPrg);
-		prgBuilder.addFacts(createColors("red", "blue", "green"));
-		prgBuilder.addFacts(createVertices(n));
-		prgBuilder.addFacts(createEdges(n));
+		prgBuilder.addFacts(createVertices(nVertices));
+		prgBuilder.addFacts(createEdges(nVertices, nEdges));
 		InputProgram program = prgBuilder.build();
-
 		maybeShuffle(program);
 
-		Solver solver = getInstance(program);
-
-		Optional<AnswerSet> answerSet = solver.stream().findAny();
+		Optional<AnswerSet> answerSet = getInstance(program).stream().findAny();
 		//System.out.println(answerSet);
 
 		// TODO: check correctness of answer set
 	}
 
 	private void maybeShuffle(InputProgram program) {
-		// FIXME since InputProgram is immutable this needs to be reworked a bit if used
-		// No shuffling here.
-	}
 
-	private List<Atom> createColors(String... colours) {
-		List<Atom> facts = new ArrayList<>(colours.length);
-		Predicate predicate = Predicate.getInstance("c", 1);
-		for (String colour : colours) {
-			List<Term> terms = new ArrayList<>(1);
-			terms.add(ConstantTerm.getInstance(colour));
-			facts.add(new BasicAtom(predicate, terms));
-		}
-		return facts;
+		// TODO: switch on if different rule orderings in the encoding are desired (e.g. for benchmarking purposes)
+		// FIXME since InputProgram is immutable this needs to be reworked a bit if used
+		// Collections.reverse(program.getRules());
+		// Collections.shuffle(program.getRules());
+		// Collections.reverse(program.getFacts());
+		// Collections.shuffle(program.getFacts());
 	}
 
 	private List<Atom> createVertices(int n) {
 		List<Atom> facts = new ArrayList<>(n);
-		for (int i = 1; i <= n; i++) {
+		for (int i = 0; i < n; i++) {
 			facts.add(fact("v", i));
 		}
 		return facts;
 	}
 
-	private List<Atom> createEdges(int n) {
-		List<Atom> facts = new ArrayList<>(n);
-		for (int i = 2; i <= n; i++) {
-			facts.add(fact("e", 1, i));
+	private List<Atom> createEdges(int vertices, int edges) {
+		Random rand = new Random(0);
+		List<Atom> facts = new ArrayList<>(edges);
+		for (int i = 0; i < edges; i++) {
+			int v1 = 0;
+			int v2 = 0;
+			while (v1 == v2) {
+				v1 = rand.nextInt(vertices);
+				v2 = rand.nextInt(vertices);
+			}
+			facts.add(fact("e", v1, v2));
+			facts.add(fact("e", v2, v1));
 		}
-		for (int i = 2; i <= n - 1; i++) {
-			facts.add(fact("e", i, i + 1));
-		}
-		facts.add(fact("e", n, 2));
 		return facts;
 	}
 
 	private Atom fact(String predicateName, int... iTerms) {
 		List<Term> terms = new ArrayList<>(1);
-		Predicate predicate = Predicate.getInstance(predicateName, iTerms.length);
 		for (int i : iTerms) {
 			terms.add(ConstantTerm.getInstance(i));
 		}
-		return new BasicAtom(predicate, terms);
+		return new BasicAtom(Predicate.getInstance(predicateName, iTerms.length), terms);
 	}
 }

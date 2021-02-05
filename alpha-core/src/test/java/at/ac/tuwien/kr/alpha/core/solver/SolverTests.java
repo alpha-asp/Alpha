@@ -25,14 +25,11 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.core.solver;
 
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import org.antlr.v4.runtime.CharStreams;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -44,23 +41,29 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 
+import org.junit.Test;
+
 import at.ac.tuwien.kr.alpha.api.Alpha;
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.solver.heuristics.Heuristic;
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.core.common.AnswerSetBuilder;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.core.grounder.DummyGrounder;
-import at.ac.tuwien.kr.alpha.core.grounder.parser.InlineDirectives;
-import at.ac.tuwien.kr.alpha.core.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.util.AnswerSetsParser;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import junit.framework.TestCase;
 
 public class SolverTests extends AbstractSolverTests {
@@ -80,12 +83,12 @@ public class SolverTests extends AbstractSolverTests {
 	public void testObjectProgram() throws IOException {
 		final Thingy thingy = new Thingy();
 
-		final Atom fact = new BasicAtom(Predicate.getInstance("foo", 1), ConstantTerm.getInstance(thingy));
+		final Atom fact = new BasicAtom(CorePredicate.getInstance("foo", 1), CoreConstantTerm.getInstance(thingy));
 
 		final InputProgram program = new InputProgram(
 			Collections.emptyList(),
 			Collections.singletonList(fact),
-			new InlineDirectives()
+			new InlineDirectivesImpl()
 		);
 
 		assertEquals(singleton(new AnswerSetBuilder()
@@ -686,8 +689,8 @@ public class SolverTests extends AbstractSolverTests {
 		// Check manually that there is one answer set, wrong_double_occurrence has not been derived, and enum yielded a unique position for each term.
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.iterator().next();
-		assertEquals(null, answerSet.getPredicateInstances(Predicate.getInstance("wrong_double_occurrence", 0)));
-		SortedSet<Atom> positions = answerSet.getPredicateInstances(Predicate.getInstance("unique_position", 2));
+		assertEquals(null, answerSet.getPredicateInstances(CorePredicate.getInstance("wrong_double_occurrence", 0)));
+		SortedSet<Atom> positions = answerSet.getPredicateInstances(CorePredicate.getInstance("unique_position", 2));
 		assertEnumerationPositions(positions, 3);
 	}
 
@@ -703,8 +706,8 @@ public class SolverTests extends AbstractSolverTests {
 		// Check manually that there is one answer set, wrong_double_occurrence has not been derived, and enum yielded a unique position for each term.
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.iterator().next();
-		assertPropositionalPredicateFalse(answerSet, Predicate.getInstance("wrong_double_occurrence", 0));
-		SortedSet<Atom> positions = answerSet.getPredicateInstances(Predicate.getInstance("unique_position", 2));
+		assertPropositionalPredicateFalse(answerSet, CorePredicate.getInstance("wrong_double_occurrence", 0));
+		SortedSet<Atom> positions = answerSet.getPredicateInstances(CorePredicate.getInstance("unique_position", 2));
 		assertEnumerationPositions(positions, 3);
 	}
 
@@ -721,10 +724,10 @@ public class SolverTests extends AbstractSolverTests {
 		// Check manually that there is one answer set, wrong_double_occurrence has not been derived, and enum yielded a unique position for each term.
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.iterator().next();
-		assertPropositionalPredicateFalse(answerSet, Predicate.getInstance("wrong_double_occurrence", 0));
-		SortedSet<Atom> positions = answerSet.getPredicateInstances(Predicate.getInstance("unique_position1", 2));
+		assertPropositionalPredicateFalse(answerSet, CorePredicate.getInstance("wrong_double_occurrence", 0));
+		SortedSet<Atom> positions = answerSet.getPredicateInstances(CorePredicate.getInstance("unique_position1", 2));
 		assertEnumerationPositions(positions, 4);
-		SortedSet<Atom> positions2 = answerSet.getPredicateInstances(Predicate.getInstance("unique_position2", 2));
+		SortedSet<Atom> positions2 = answerSet.getPredicateInstances(CorePredicate.getInstance("unique_position2", 2));
 		assertEnumerationPositions(positions2, 4);
 	}
 
@@ -769,17 +772,17 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void testLearnedUnaryNoGoodCausingOutOfOrderLiteralsConflict() throws IOException {
-		final ProgramParser parser = new ProgramParser();
+		final ProgramParser parser = new ProgramParserImpl();
 		InputProgram.Builder bld = InputProgram.builder();
-		bld.accumulate(parser.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp"))));
-		bld.accumulate(parser.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "HanoiTower_instances", "simple.asp"))));
+		bld.accumulate(parser.parse(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp")));
+		bld.accumulate(parser.parse(Paths.get("src", "test", "resources", "HanoiTower_instances", "simple.asp")));
 		InputProgram parsedProgram = bld.build();
 		
 		SystemConfig config = new SystemConfig();
 		config.setSolverName("default");
 		config.setNogoodStoreName("alpharoaming");
 		config.setSeed(0);
-		config.setBranchingHeuristic(BranchingHeuristicFactory.Heuristic.valueOf("VSIDS"));
+		config.setBranchingHeuristic(Heuristic.valueOf("VSIDS"));
 		config.setDebugInternalChecks(true);
 		config.setDisableJustificationSearch(false);
 		config.setEvaluateStratifiedPart(false);

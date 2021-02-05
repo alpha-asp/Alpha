@@ -25,39 +25,40 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.api.Alpha;
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
-import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
-import at.ac.tuwien.kr.alpha.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.core.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
-import at.ac.tuwien.kr.alpha.test.util.TestUtils;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+import org.slf4j.LoggerFactory;
+
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.program.CompiledProgram;
+import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.solver.heuristics.Heuristic;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
+import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
+import at.ac.tuwien.kr.alpha.test.util.TestUtils;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 
 @RunWith(Parameterized.class)
 public abstract class AbstractSolverTests {
@@ -70,10 +71,10 @@ public abstract class AbstractSolverTests {
 				nonDeprecatedHeuristicsNames.add(field.getName());
 			}
 		}
-		NON_DEPRECATED_HEURISTICS_NAMES = nonDeprecatedHeuristicsNames.toArray(new String[]{});
+		NON_DEPRECATED_HEURISTICS_NAMES = nonDeprecatedHeuristicsNames.toArray(new String[] {});
 	}
 
-	private final ProgramParser parser = new ProgramParser();
+	private final ProgramParser parser = new ProgramParserImpl();
 
 	/**
 	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
@@ -102,7 +103,7 @@ public abstract class AbstractSolverTests {
 	 * (which are not tuned for good performance as well as VSIDS).
 	 */
 	void ignoreNonDefaultDomainIndependentHeuristics() {
-		org.junit.Assume.assumeTrue(heuristic == BranchingHeuristicFactory.Heuristic.VSIDS);
+		org.junit.Assume.assumeTrue(heuristic == Heuristic.VSIDS);
 	}
 
 	private static String[] getProperty(String subKey, String def) {
@@ -124,10 +125,10 @@ public abstract class AbstractSolverTests {
 
 		// "ALL" is a magic value that will be expanded to contain all heuristics.
 		if ("ALL".equals(heuristics[0])) {
-			BranchingHeuristicFactory.Heuristic[] values = BranchingHeuristicFactory.Heuristic.values();
+			Heuristic[] values = Heuristic.values();
 			heuristics = new String[values.length];
 			int i = 0;
-			for (BranchingHeuristicFactory.Heuristic heuristic : values) {
+			for (Heuristic heuristic : values) {
 				heuristics[i++] = heuristic.toString();
 			}
 		}
@@ -156,8 +157,8 @@ public abstract class AbstractSolverTests {
 						for (String gtc : gtcValues) {
 							for (String gtr : gtrValues) {
 								for (String dir : dirValues) {
-									factories.add(new Object[]{
-											solver, grounder, store, BranchingHeuristicFactory.Heuristic.valueOf(heuristic), seed, checks, gtc, gtr, Boolean.valueOf(dir)
+									factories.add(new Object[] {
+											solver, grounder, store, Heuristic.valueOf(heuristic), seed, checks, gtc, gtr, Boolean.valueOf(dir)
 									});
 								}
 							}
@@ -180,7 +181,7 @@ public abstract class AbstractSolverTests {
 	public String storeName;
 
 	@Parameter(3)
-	public BranchingHeuristicFactory.Heuristic heuristic;
+	public Heuristic heuristic;
 
 	@Parameter(4)
 	public long seed;
@@ -212,35 +213,29 @@ public abstract class AbstractSolverTests {
 		return config;
 	}
 
-	protected Solver getInstance(InputProgram program) {
-		Alpha system = new Alpha();
+	protected Solver getInstance(ASPCore2Program program) {
 		AtomStore atomStore = new AtomStoreImpl();
-		NormalProgram normalized = system.normalizeProgram(program);
-		InternalProgram preprocessed = InternalProgram.fromNormalProgram(normalized);
+		CompiledProgram preprocessed = InternalProgram.fromNormalProgram(new NormalizeProgramTransformation(false).apply(program));
 		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, preprocessed, atomStore, true));
 	}
 
 	protected Solver getInstance(String program) {
-		return getInstance(CharStreams.fromString(program));
+		return getInstance(parser.parse(program));
 	}
 
-	protected Solver getInstance(CharStream program) {
-		try {
-			return getInstance(parser.parse(program));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+	protected Solver getInstance(InputStream program) {
+		return getInstance(parser.parse(program));
 	}
 
 	protected Set<AnswerSet> collectSet(String program) {
 		return getInstance(program).collectSet();
 	}
 
-	protected Set<AnswerSet> collectSet(InputProgram program) {
+	protected Set<AnswerSet> collectSet(ASPCore2Program program) {
 		return getInstance(program).collectSet();
 	}
 
-	protected Set<AnswerSet> collectSet(CharStream program) {
+	protected Set<AnswerSet> collectSet(InputStream program) {
 		return getInstance(program).collectSet();
 	}
 

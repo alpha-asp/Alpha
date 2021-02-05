@@ -15,4 +15,5 @@ public interface CompiledRule extends Rule<NormalHead> {
 	
 	CompiledRule renameVariables(String str);
 
+	boolean isGround();
 }

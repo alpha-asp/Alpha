@@ -23,12 +23,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
-import org.junit.Ignore;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,8 +34,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeTrue;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.solver.heuristics.Heuristic;
 
 /**
  * Tests {@link AbstractSolver} using some pigeon-hole test cases (see https://en.wikipedia.org/wiki/Pigeonhole_principle).
@@ -45,43 +46,43 @@ import static org.junit.Assume.assumeTrue;
 public class PigeonHoleTest extends AbstractSolverTests {
 	@Test(timeout = 5000)
 	public void test2Pigeons2Holes() throws IOException {
-		assumeTrue(heuristic == BranchingHeuristicFactory.Heuristic.VSIDS);
+		assumeTrue(heuristic == Heuristic.VSIDS);
 		testPigeonsHoles(2, 2);
 	}
 
 	@Test(timeout = 5000)
 	public void test3Pigeons2Holes() throws IOException {
-		assumeTrue(heuristic == BranchingHeuristicFactory.Heuristic.VSIDS);
+		assumeTrue(heuristic == Heuristic.VSIDS);
 		testPigeonsHoles(3, 2);
 	}
 
 	@Test(timeout = 5000)
 	public void test2Pigeons3Holes() throws IOException {
-		assumeTrue(heuristic == BranchingHeuristicFactory.Heuristic.VSIDS);
+		assumeTrue(heuristic == Heuristic.VSIDS);
 		testPigeonsHoles(2, 3);
 	}
 
 	@Test(timeout = 10000)
 	public void test3Pigeons3Holes() throws IOException {
-		assumeTrue(heuristic == BranchingHeuristicFactory.Heuristic.VSIDS);
+		assumeTrue(heuristic == Heuristic.VSIDS);
 		testPigeonsHoles(3, 3);
 	}
 
 	@Test(timeout = 10000)
 	public void test4Pigeons3Holes() throws IOException {
-		assumeTrue(heuristic == BranchingHeuristicFactory.Heuristic.VSIDS);
+		assumeTrue(heuristic == Heuristic.VSIDS);
 		testPigeonsHoles(4, 3);
 	}
 
 	@Test(timeout = 10000)
 	public void test3Pigeons4Holes() throws IOException {
-		assumeTrue(heuristic == BranchingHeuristicFactory.Heuristic.VSIDS);
+		assumeTrue(heuristic == Heuristic.VSIDS);
 		testPigeonsHoles(3, 4);
 	}
 
 	@Test(timeout = 10000)
 	public void test4Pigeons4Holes() throws IOException {
-		assumeTrue(heuristic == BranchingHeuristicFactory.Heuristic.VSIDS);
+		assumeTrue(heuristic == Heuristic.VSIDS);
 		testPigeonsHoles(4, 4);
 	}
 

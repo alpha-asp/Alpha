@@ -25,20 +25,26 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.common.*;
-import org.junit.Before;
-import org.junit.Test;
-
-import at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type;
+import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
-import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
+
+import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.core.common.NoGood;
+import at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type;
 
 public class LearnedNoGoodDeletionTest {
 

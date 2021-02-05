@@ -35,10 +35,11 @@ import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.core.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.solver.NaiveNoGoodStore;
-import at.ac.tuwien.kr.alpha.solver.TestableChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
-import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
+import at.ac.tuwien.kr.alpha.core.solver.NaiveNoGoodStore;
+import at.ac.tuwien.kr.alpha.core.solver.TestableChoiceManager;
+import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
+
 import org.junit.Before;
 import org.junit.Test;
 

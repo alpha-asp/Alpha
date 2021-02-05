@@ -28,42 +28,44 @@
 
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.core.grounder.parser.ProgramParser;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
 public class UnifierTest extends SubstitutionTest {
 
 	@Test
 	public void extendUnifier() {
-		VariableTerm varX = VariableTerm.getInstance("X");
-		VariableTerm varY = VariableTerm.getInstance("Y");
+		VariableTerm varX = VariableTermImpl.getInstance("X");
+		VariableTerm varY = VariableTermImpl.getInstance("Y");
 		Unifier sub1 = new Unifier();
 		sub1.put(varX, varY);
 		Unifier sub2 = new Unifier();
-		sub2.put(varY, ConstantTerm.getInstance("a"));
+		sub2.put(varY, CoreConstantTerm.getInstance("a"));
 
 		sub1.extendWith(sub2);
 		BasicAtom atom1 = parseAtom("p(X)");
 
 		Atom atomSubstituted = atom1.substitute(sub1);
-		assertEquals(ConstantTerm.getInstance("a"), atomSubstituted.getTerms().get(0));
+		assertEquals(CoreConstantTerm.getInstance("a"), atomSubstituted.getTerms().get(0));
 	}
 
 	@Test
 	public void mergeUnifierIntoLeft() {
-		VariableTerm varX = VariableTerm.getInstance("X");
-		VariableTerm varY = VariableTerm.getInstance("Y");
-		VariableTerm varZ = VariableTerm.getInstance("Z");
-		Term constA = ConstantTerm.getInstance("a");
+		VariableTerm varX = VariableTermImpl.getInstance("X");
+		VariableTerm varY = VariableTermImpl.getInstance("Y");
+		VariableTerm varZ = VariableTermImpl.getInstance("Z");
+		Term constA = CoreConstantTerm.getInstance("a");
 		Unifier left = new Unifier();
 		left.put(varX, varY);
 		left.put(varZ, varY);
@@ -75,8 +77,8 @@ public class UnifierTest extends SubstitutionTest {
 	}
 
 	private BasicAtom parseAtom(String atom) {
-		ProgramParser programParser = new ProgramParser();
-		InputProgram program = programParser.parse(atom + ".");
+		ProgramParser programParser = new ProgramParserImpl();
+		ASPCore2Program program = programParser.parse(atom + ".");
 		return (BasicAtom) program.getFacts().get(0);
 	}
 }

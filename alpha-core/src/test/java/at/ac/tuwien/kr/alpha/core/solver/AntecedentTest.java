@@ -1,6 +1,8 @@
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.core.solver;
 
 import java.util.HashSet;
+
+import at.ac.tuwien.kr.alpha.core.solver.Antecedent;
 
 public class AntecedentTest {
 

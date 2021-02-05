@@ -23,22 +23,23 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.api.Alpha;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
-import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
-import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.core.grounder.heuristics.GrounderHeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.core.grounder.transformation.CardinalityNormalization;
-import at.ac.tuwien.kr.alpha.core.grounder.transformation.SumNormalization;
+import java.io.IOException;
 
 import org.junit.Test;
 
-import java.io.IOException;
+import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.api.grounder.heuristics.GrounderHeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.program.CompiledProgram;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.CardinalityNormalization;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.SumNormalization;
 
 /**
  * Tests if correct answer sets for programs containing aggregates are computed.
@@ -168,12 +169,9 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	}
 	
 	@Override
-	protected Solver getInstance(InputProgram program) {
-		Alpha system = new Alpha();
-		system.getConfig().setUseNormalizationGrid(useCountingGridNormalization());
+	protected Solver getInstance(ASPCore2Program program) {
 		AtomStore atomStore = new AtomStoreImpl();
-		NormalProgram normal = system.normalizeProgram(program);
-		InternalProgram preprocessed = InternalProgram.fromNormalProgram(normal);
+		CompiledProgram preprocessed = InternalProgram.fromNormalProgram(new NormalizeProgramTransformation(useCountingGridNormalization()).apply(program));
 		return super.getInstance(atomStore, GrounderFactory.getInstance(grounderName, preprocessed, atomStore, p->true, new GrounderHeuristicsConfiguration(), true));
 	}
 	
