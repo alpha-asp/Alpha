@@ -23,26 +23,30 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver.heuristics;
+package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.core.solver.*;
+import static at.ac.tuwien.kr.alpha.core.common.Literals.atomToLiteral;
+import static org.junit.Assert.assertEquals;
+
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.core.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.core.solver.NoGoodStore;
+import at.ac.tuwien.kr.alpha.core.solver.NoGoodStoreAlphaRoaming;
+import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
 
 /**
- * Tests {@link BranchingHeuristicFactory}
+ * Tests {@link ReplayHeuristic}
  */
-public class BranchingHeuristicFactoryTest {
+public class ReplayHeuristicTest {
 
-	private final BranchingHeuristicFactory factory = new BranchingHeuristicFactory();
 	private final boolean debugInternalChecks = true;
 	private ChoiceManager choiceManager;
 
@@ -51,23 +55,25 @@ public class BranchingHeuristicFactoryTest {
 		AtomStore atomStore = new AtomStoreImpl();
 		WritableAssignment assignment = new TrailAssignment(atomStore);
 		NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment, debugInternalChecks);
-		this.choiceManager = new ChoiceManager(assignment, store);
+		this.choiceManager = new PseudoChoiceManager(assignment, store);
 	}
 
 	@Test
-	public void testChainedHeuristicWithReplay() {
-		HeuristicsConfigurationBuilder builder = new HeuristicsConfigurationBuilder().setHeuristic(BranchingHeuristicFactory.Heuristic.VSIDS).setReplayChoices(Arrays.asList(1, 2, 3));
-		BranchingHeuristic branchingHeuristic = factory.getInstance(builder.build(), null, null, choiceManager, null);
-		assertEquals(ChainedBranchingHeuristics.class, branchingHeuristic.getClass());
-		assertTrue("Unexpected type of branchingHeuristic: " + branchingHeuristic.getClass(), branchingHeuristic instanceof ChainedBranchingHeuristics);
-		assertEquals(ChainedBranchingHeuristics.class.getSimpleName() + "[" + ReplayHeuristic.class.getSimpleName() + ", " + VSIDS.class.getSimpleName() + "]", branchingHeuristic.toString());
-	}
+	public void testBasicChoiceSequence() {
+		final int literal1 = atomToLiteral(2);
+		final int signedAtom1 = 2;
 
-	@Test
-	public void testChainedHeuristicWithoutReplay() {
-		HeuristicsConfigurationBuilder builder = new HeuristicsConfigurationBuilder().setHeuristic(BranchingHeuristicFactory.Heuristic.VSIDS).setReplayChoices(null);
-		BranchingHeuristic branchingHeuristic = factory.getInstance(builder.build(), null, null, choiceManager, null);
-		assertEquals(VSIDS.class, branchingHeuristic.getClass());
+		final int literal2 = atomToLiteral(4, false);
+		final int signedAtom2 = -4;
+
+		final int literal3 = atomToLiteral(7);
+		final int signedAtom3 = 7;
+
+		final List<Integer> chosenSignedAtoms = Arrays.asList(signedAtom1, signedAtom2, signedAtom3);
+		final ReplayHeuristic replayHeuristic = new ReplayHeuristic(chosenSignedAtoms, choiceManager);
+		assertEquals(literal1, replayHeuristic.chooseLiteral());
+		assertEquals(literal2, replayHeuristic.chooseLiteral());
+		assertEquals(literal3, replayHeuristic.chooseLiteral());
 	}
 
 }

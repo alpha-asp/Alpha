@@ -25,9 +25,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import org.junit.Ignore;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,14 +32,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.core.grounder.parser.ProgramParser;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
 /**
  * Tests {@link AbstractSolver} using some three-coloring test cases, as described in: 
@@ -159,7 +162,7 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 	}
 
 	private void testThreeColouring(int n, boolean shuffle, int seed) throws IOException {
-		InputProgram tmpPrg = new ProgramParser()
+		ASPCore2Program tmpPrg = new ProgramParserImpl()
 				.parse("col(V,C) :- v(V), c(C), not ncol(V,C)." + "ncol(V,C) :- col(V,D), c(C), C != D." + ":- e(V,U), col(V,C), col(U,C).");
 		InputProgram.Builder prgBuilder = InputProgram.builder().accumulate(tmpPrg);
 		prgBuilder.addFacts(createColors("1", "2", "3"));
@@ -177,8 +180,8 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 		List<Atom> facts = new ArrayList<>(colours.length);
 		for (String colour : colours) {
 			List<Term> terms = new ArrayList<>(1);
-			terms.add(ConstantTerm.getInstance(colour));
-			facts.add(new BasicAtom(Predicate.getInstance("c", 1), terms));
+			terms.add(CoreConstantTerm.getInstance(colour));
+			facts.add(new BasicAtom(CorePredicate.getInstance("c", 1), terms));
 		}
 		return facts;
 	}
@@ -220,9 +223,9 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 
 	private Atom fact(String predicateName, int... iTerms) {
 		List<Term> terms = new ArrayList<>(iTerms.length);
-		Predicate predicate = Predicate.getInstance(predicateName, iTerms.length);
+		Predicate predicate = CorePredicate.getInstance(predicateName, iTerms.length);
 		for (int i : iTerms) {
-			terms.add(ConstantTerm.getInstance(i));
+			terms.add(CoreConstantTerm.getInstance(i));
 		}
 		return new BasicAtom(predicate, terms);
 	}

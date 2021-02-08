@@ -1,17 +1,28 @@
 package at.ac.tuwien.kr.alpha.solver.learning;
 
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.core.solver.*;
+import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
+import static at.ac.tuwien.kr.alpha.core.solver.AntecedentTest.antecedentsEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
-import static at.ac.tuwien.kr.alpha.core.solver.AntecedentTest.antecedentsEquals;
-import static org.junit.Assert.*;
+import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.core.common.NoGood;
+import at.ac.tuwien.kr.alpha.core.solver.Antecedent;
+import at.ac.tuwien.kr.alpha.core.solver.ConflictCause;
+import at.ac.tuwien.kr.alpha.core.solver.NoGoodStore;
+import at.ac.tuwien.kr.alpha.core.solver.NoGoodStoreAlphaRoaming;
+import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
+import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
+import at.ac.tuwien.kr.alpha.core.solver.learning.GroundConflictNoGoodLearner;
 
 /**
  * Copyright (c) 2016-2019, the Alpha Team.

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 Siemens AG
+ * Copyright (c) 2018 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -23,34 +23,29 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver.heuristics;
+package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
-import at.ac.tuwien.kr.alpha.common.Literals;
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.core.solver.NoGoodStoreAlphaRoaming;
+import at.ac.tuwien.kr.alpha.core.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.core.solver.NoGoodStore;
 import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
+/**
+ * A {@link ChoiceManager} for testing purposes that regards all atoms as active choice atoms.
+ *
+ */
+class PseudoChoiceManager extends ChoiceManager {
 
-public class HeuristicTestUtils {
-
-	static void addNoGoods(AtomStore atomStore, WritableAssignment assignment, NoGoodStoreAlphaRoaming noGoodStore, VSIDS vsids, NoGood... noGoods) {
-		int numberOfAtoms = Arrays.stream(noGoods).flatMapToInt(NoGood::stream).map(Literals::atomOf).max().getAsInt();
-		AtomStoreTest.fillAtomStore(atomStore, numberOfAtoms);
-		assignment.growForMaxAtomId();
-		noGoodStore.growForMaxAtomId(numberOfAtoms);
-		vsids.growForMaxAtomId(numberOfAtoms);
-		Collection<NoGood> setOfNoGoods = new HashSet<>();
-		int noGoodId = 1;
-		for (NoGood noGood : noGoods) {
-			setOfNoGoods.add(noGood);
-			noGoodStore.add(noGoodId++, noGood);
-		}
-		vsids.heapOfActiveAtoms.newNoGoods(setOfNoGoods);
+	public PseudoChoiceManager(WritableAssignment assignment, NoGoodStore store) {
+		super(assignment, store);
 	}
 
+	@Override
+	public boolean isAtomChoice(int atom) {
+		return true;
+	}
+
+	@Override
+	public boolean isActiveChoiceAtom(int atom) {
+		return true;
+	}
 }

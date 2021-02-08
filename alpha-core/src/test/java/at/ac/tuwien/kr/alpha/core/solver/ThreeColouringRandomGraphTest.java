@@ -34,14 +34,15 @@ import java.util.Random;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.core.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
 public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 	@Test(timeout = 1000)
@@ -86,7 +87,7 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 	}
 
 	private void testThreeColouring(int nVertices, int nEdges) throws IOException {
-		InputProgram tmpPrg = new ProgramParser().parse(
+		ASPCore2Program tmpPrg = new ProgramParserImpl().parse(
 				"blue(N) :- v(N), not red(N), not green(N)." +
 				"red(N) :- v(N), not blue(N), not green(N)." +
 				"green(N) :- v(N), not red(N), not blue(N)." +
@@ -142,8 +143,8 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 	private Atom fact(String predicateName, int... iTerms) {
 		List<Term> terms = new ArrayList<>(1);
 		for (int i : iTerms) {
-			terms.add(ConstantTerm.getInstance(i));
+			terms.add(CoreConstantTerm.getInstance(i));
 		}
-		return new BasicAtom(Predicate.getInstance(predicateName, iTerms.length), terms);
+		return new BasicAtom(CorePredicate.getInstance(predicateName, iTerms.length), terms);
 	}
 }

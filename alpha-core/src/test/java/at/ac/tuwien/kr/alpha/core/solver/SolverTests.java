@@ -32,25 +32,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 
 import org.junit.Test;
 
-import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
-import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
-import at.ac.tuwien.kr.alpha.api.solver.heuristics.Heuristic;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.common.AnswerSetBuilder;
@@ -61,7 +54,6 @@ import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.core.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.util.AnswerSetsParser;
 import junit.framework.TestCase;
@@ -769,32 +761,6 @@ public class SolverTests extends AbstractSolverTests {
 			"value(3), num(1)"
 		);
 	}
-
-	@Test
-	public void testLearnedUnaryNoGoodCausingOutOfOrderLiteralsConflict() throws IOException {
-		final ProgramParser parser = new ProgramParserImpl();
-		InputProgram.Builder bld = InputProgram.builder();
-		bld.accumulate(parser.parse(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp")));
-		bld.accumulate(parser.parse(Paths.get("src", "test", "resources", "HanoiTower_instances", "simple.asp")));
-		InputProgram parsedProgram = bld.build();
-		
-		SystemConfig config = new SystemConfig();
-		config.setSolverName("default");
-		config.setNogoodStoreName("alpharoaming");
-		config.setSeed(0);
-		config.setBranchingHeuristic(Heuristic.valueOf("VSIDS"));
-		config.setDebugInternalChecks(true);
-		config.setDisableJustificationSearch(false);
-		config.setEvaluateStratifiedPart(false);
-		config.setReplayChoices(Arrays.asList(21, 26, 36, 56, 91, 96, 285, 166, 101, 290, 106, 451, 445, 439, 448,
-			433, 427, 442, 421, 415, 436, 409, 430, 397, 391, 424, 385, 379,
-			418, 373, 412, 406, 394, 388, 382, 245, 232, 208
-		));
-		Alpha alpha = new Alpha(config);
-		Optional<AnswerSet> answerSet = alpha.solve(parsedProgram).findFirst();
-		assertTrue(answerSet.isPresent());
-	}
-
 
 	@Test
 	public void dummyGrounder() {

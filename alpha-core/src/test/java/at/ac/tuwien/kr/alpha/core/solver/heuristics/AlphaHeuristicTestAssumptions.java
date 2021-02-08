@@ -23,33 +23,34 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver.heuristics;
+package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.api.Alpha;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
-import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
-import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.core.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.core.solver.NaiveNoGoodStore;
-import at.ac.tuwien.kr.alpha.core.solver.TestableChoiceManager;
-import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
-import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
+import static at.ac.tuwien.kr.alpha.core.common.Literals.atomOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Collection;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collection;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import at.ac.tuwien.kr.alpha.api.program.CompiledProgram;
+import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.core.common.NoGood;
+import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
+import at.ac.tuwien.kr.alpha.core.solver.NaiveNoGoodStore;
+import at.ac.tuwien.kr.alpha.core.solver.TestableChoiceManager;
+import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
 
 /**
  * Tests assumptions made by {@link DependencyDrivenHeuristic} and other domain-independent heuristics.
@@ -60,6 +61,13 @@ import static org.junit.Assert.assertTrue;
  *
  */
 public class AlphaHeuristicTestAssumptions {
+	
+	private final ProgramParser parser = new ProgramParserImpl();
+	private final NormalizeProgramTransformation normalizer = new NormalizeProgramTransformation(false);
+	private final Function<String, CompiledProgram> parseAndPreprocess = (str) -> {
+		return InternalProgram.fromNormalProgram(normalizer.apply(parser.parse(str)));
+	};
+	
 	private Grounder grounder;
 	private WritableAssignment assignment;
 	private TestableChoiceManager choiceManager;
@@ -67,16 +75,13 @@ public class AlphaHeuristicTestAssumptions {
 
 	@Before
 	public void setUp() {
-		Alpha system = new Alpha();
 		String testProgram = ""
 				+ "b1."
 				+ "b2."
 				+ "{b3}."
 				+ "{b4}."
 				+ "h :- b1, b2, not b3, not b4.";
-		InputProgram parsedProgram = new ProgramParser().parse(testProgram);
-		NormalProgram normal = system.normalizeProgram(parsedProgram);
-		InternalProgram internalProgram = InternalProgram.fromNormalProgram(normal);
+		CompiledProgram internalProgram = parseAndPreprocess.apply(testProgram);
 		atomStore = new AtomStoreImpl();
 		grounder = new NaiveGrounder(internalProgram, atomStore, true);
 		assignment = new TrailAssignment(atomStore);

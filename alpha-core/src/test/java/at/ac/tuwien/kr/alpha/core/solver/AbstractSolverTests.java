@@ -39,7 +39,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
@@ -55,10 +54,7 @@ import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
-import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.test.util.TestUtils;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 
 @RunWith(Parameterized.class)
 public abstract class AbstractSolverTests {
@@ -76,18 +72,18 @@ public abstract class AbstractSolverTests {
 
 	private final ProgramParser parser = new ProgramParserImpl();
 
-	/**
-	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
-	 */
-	protected static void enableTracing() {
-		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		root.setLevel(ch.qos.logback.classic.Level.TRACE);
-	}
-
-	protected static void enableDebugLog() {
-		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		root.setLevel(Level.DEBUG);
-	}
+//	/**
+//	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
+//	 */
+//	protected static void enableTracing() {
+//		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+//		root.setLevel(ch.qos.logback.classic.Level.TRACE);
+//	}
+//
+//	protected static void enableDebugLog() {
+//		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+//		root.setLevel(Level.DEBUG);
+//	}
 
 	/**
 	 * Calling this method in a test leads to the test being ignored for the naive solver.

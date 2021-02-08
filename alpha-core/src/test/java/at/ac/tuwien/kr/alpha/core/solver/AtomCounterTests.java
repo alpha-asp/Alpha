@@ -51,7 +51,6 @@ import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
-import at.ac.tuwien.kr.alpha.core.solver.AtomCounter;
 
 public class AtomCounterTests {
 

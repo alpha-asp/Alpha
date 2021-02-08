@@ -59,7 +59,7 @@ public class InputProgram extends AbstractProgram<Rule<Head>> implements ASPCore
 		return new Builder();
 	}
 
-	public static Builder builder(InputProgram prog) {
+	public static Builder builder(ASPCore2Program prog) {
 		return new Builder(prog);
 	}
 
@@ -72,7 +72,7 @@ public class InputProgram extends AbstractProgram<Rule<Head>> implements ASPCore
 		private List<Atom> facts = new ArrayList<>();
 		private InlineDirectives inlineDirectives = new InlineDirectivesImpl();
 
-		public Builder(InputProgram prog) {
+		public Builder(ASPCore2Program prog) {
 			this.addRules(prog.getRules());
 			this.addFacts(prog.getFacts());
 			this.addInlineDirectives(prog.getInlineDirectives());

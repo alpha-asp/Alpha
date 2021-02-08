@@ -34,13 +34,16 @@ import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -59,8 +62,10 @@ import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.CompiledProgram;
 import at.ac.tuwien.kr.alpha.api.program.Program;
+import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.solver.heuristics.Heuristic;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.ExternalAtom;
@@ -72,6 +77,7 @@ import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.externals.AspStandardLibrary;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
@@ -590,4 +596,30 @@ public class AlphaImplTest {
 		ASPCore2Program prog = system.readProgram(inputCfg);
 		assertFalse(system.solve(prog).limit(limit).collect(Collectors.toList()).isEmpty());
 	}
+	
+	@Test
+	public void testLearnedUnaryNoGoodCausingOutOfOrderLiteralsConflict() throws IOException {
+		final ProgramParser parser = new ProgramParserImpl();
+		InputProgram.Builder bld = InputProgram.builder();
+		bld.accumulate(parser.parse(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp")));
+		bld.accumulate(parser.parse(Paths.get("src", "test", "resources", "HanoiTower_instances", "simple.asp")));
+		InputProgram parsedProgram = bld.build();
+		
+		SystemConfig config = new SystemConfig();
+		config.setSolverName("default");
+		config.setNogoodStoreName("alpharoaming");
+		config.setSeed(0);
+		config.setBranchingHeuristic(Heuristic.valueOf("VSIDS"));
+		config.setDebugInternalChecks(true);
+		config.setDisableJustificationSearch(false);
+		config.setEvaluateStratifiedPart(false);
+		config.setReplayChoices(Arrays.asList(21, 26, 36, 56, 91, 96, 285, 166, 101, 290, 106, 451, 445, 439, 448,
+			433, 427, 442, 421, 415, 436, 409, 430, 397, 391, 424, 385, 379,
+			418, 373, 412, 406, 394, 388, 382, 245, 232, 208
+		));
+		Alpha alpha = new AlphaImpl(config);
+		Optional<AnswerSet> answerSet = alpha.solve(parsedProgram).findFirst();
+		assertTrue(answerSet.isPresent());
+	}	
+	
 }
