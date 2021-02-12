@@ -168,8 +168,8 @@ public class StratifiedEvaluationTest {
 		String asp = "claimedTruth(bla). truth(X) :- claimedTruth(X), &sayTrue[X]. lie(X) :- claimedTruth(X), not &sayTrue[X].";
 		Map<String, PredicateInterpretation> externals = new HashMap<>();
 		externals.put("sayTrue", Externals.processPredicateMethod(this.getClass().getMethod("sayTrue", Object.class)));
-		ProgramParser parserWithExternals = new ProgramParserImpl(externals);
-		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalizer.apply(parserWithExternals.parse(asp)));
+		ProgramParser parserWithExternals = new ProgramParserImpl();
+		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalizer.apply(parserWithExternals.parse(asp, externals)));
 		CompiledProgram evaluated = new StratifiedEvaluation().apply(analyzed);
 		Set<AnswerSet> answerSets = solveCompiledProg.apply(evaluated);
 		TestUtils.assertAnswerSetsEqual("claimedTruth(bla), truth(bla)", answerSets);

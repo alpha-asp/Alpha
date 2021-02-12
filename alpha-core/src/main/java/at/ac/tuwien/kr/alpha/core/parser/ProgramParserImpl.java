@@ -23,19 +23,22 @@ import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
 public class ProgramParserImpl implements ProgramParser {
-	private final Map<String, PredicateInterpretation> externals;
+//	private final Map<String, PredicateInterpretation> externals;
+//
+//	// TODO not sure if it makes sense to have this constructor... is it even used?
+//	public ProgramParserImpl(Map<String, PredicateInterpretation> externals) {
+//		this.externals = externals;
+//	}
 
-	public ProgramParserImpl(Map<String, PredicateInterpretation> externals) {
-		this.externals = externals;
-	}
-
-	public ProgramParserImpl() {
-		this(Collections.emptyMap());
-	}
-
+	@Override
 	public ASPCore2Program parse(String s) {
+		return parse(s, Collections.emptyMap());
+	}
+
+	@Override
+	public ASPCore2Program parse(String s, Map<String, PredicateInterpretation> externals) {
 		try {
-			return parse(CharStreams.fromString(s));
+			return parse(CharStreams.fromString(s), externals);
 		} catch (IOException e) {
 			// In this case we assume that something went fundamentally
 			// wrong when using a String as input. The caller probably
@@ -49,7 +52,11 @@ public class ProgramParserImpl implements ProgramParser {
 		}
 	}
 
-	public InputProgram parse(CharStream stream) throws IOException {
+	public ASPCore2Program parse(CharStream stream) throws IOException {
+		return parse(stream, Collections.emptyMap());
+	}
+
+	public ASPCore2Program parse(CharStream stream, Map<String, PredicateInterpretation> externals) throws IOException {
 		//@formatter:off
 		/*
 		 * // In order to require less memory: use unbuffered streams and avoid constructing a full parse tree. 
@@ -113,32 +120,30 @@ public class ProgramParserImpl implements ProgramParser {
 	}
 
 	@Override
-	public InputProgram parse(String programString, Map<String, PredicateInterpretation> externalPredicateDefinitions) {
-		// TODO Auto-generated method stub
-		return null;
+	public ASPCore2Program parse(InputStream programSource, Map<String, PredicateInterpretation> externalPredicateDefinitions) throws IOException {
+		return parse(CharStreams.fromStream(programSource), externalPredicateDefinitions);
 	}
 
 	@Override
-	public InputProgram parse(InputStream programSource, Map<String, PredicateInterpretation> externalPredicateDefinitions) {
-		// TODO Auto-generated method stub
-		return null;
+	public ASPCore2Program parse(Path programPath, Map<String, PredicateInterpretation> externalPredicateDefinitions) throws IOException {
+		return parse(CharStreams.fromPath(programPath), externalPredicateDefinitions);
 	}
 
 	@Override
-	public InputProgram parse(Path programPath, Map<String, PredicateInterpretation> externalPredicateDefinitions) {
-		// TODO Auto-generated method stub
-		return null;
+	public ASPCore2Program parse(Map<String, PredicateInterpretation> externalPredicateDefinitions, Path... programSources) throws IOException {
+		InputProgram.Builder bld = InputProgram.builder();
+		for (Path src : programSources) {
+			bld.accumulate(parse(src, externalPredicateDefinitions));
+		}
+		return bld.build();
 	}
 
 	@Override
-	public InputProgram parse(Map<String, PredicateInterpretation> externalPredicateDefinitions, Path... programSources) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public InputProgram parse(Iterable<Path> programSources, Map<String, PredicateInterpretation> externalPredicateDefinitions) {
-		// TODO Auto-generated method stub
-		return null;
+	public ASPCore2Program parse(Iterable<Path> programSources, Map<String, PredicateInterpretation> externalPredicateDefinitions) throws IOException {
+		InputProgram.Builder bld = InputProgram.builder();
+		for (Path src : programSources) {
+			bld.accumulate(parse(src, externalPredicateDefinitions));
+		}
+		return bld.build();
 	}
 }

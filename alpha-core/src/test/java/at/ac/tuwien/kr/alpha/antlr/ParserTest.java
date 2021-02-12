@@ -125,7 +125,7 @@ public class ParserTest {
 		IntervalTerm factInterval = (IntervalTerm) parsedProgram.getFacts().get(0).getTerms().get(0);
 		assertTrue(factInterval.equals(IntervalTerm.getInstance(CoreConstantTerm.getInstance(2), CoreConstantTerm.getInstance(5))));
 		IntervalTerm bodyInterval = (IntervalTerm) ((Literal) parsedProgram.getRules().get(0).getBody().stream().findFirst().get()).getTerms().get(1);
-		assertTrue(bodyInterval.equals(IntervalTerm.getInstance(CoreConstantTerm.getInstance(3), CoreConstantTerm.getInstance("X"))));
+		assertTrue(bodyInterval.equals(IntervalTerm.getInstance(CoreConstantTerm.getInstance(3), VariableTermImpl.getInstance("X"))));
 	}
 
 	@Test

@@ -104,9 +104,9 @@ public class AlphaImpl implements Alpha {
 
 	@Override
 	public ASPCore2Program readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
-		ProgramParserImpl parser = new ProgramParserImpl(externals);
+		ProgramParserImpl parser = new ProgramParserImpl();
 		InputProgram.Builder prgBuilder = InputProgram.builder();
-		InputProgram tmpProg;
+		ASPCore2Program tmpProg;
 		for (Path path : paths) {
 			CharStream stream;
 			if (!literate) {
@@ -114,7 +114,7 @@ public class AlphaImpl implements Alpha {
 			} else {
 				stream = CharStreams.fromChannel(Util.streamToChannel(Util.literate(Files.lines(path))), 4096, CodingErrorAction.REPLACE, path.toString());
 			}
-			tmpProg = parser.parse(stream);
+			tmpProg = parser.parse(stream, externals);
 			prgBuilder.accumulate(tmpProg);
 		}
 		return prgBuilder.build();
@@ -122,8 +122,8 @@ public class AlphaImpl implements Alpha {
 
 	@Override
 	public ASPCore2Program readProgramString(String aspString, Map<String, PredicateInterpretation> externals) {
-		ProgramParserImpl parser = new ProgramParserImpl(externals);
-		return parser.parse(aspString);
+		ProgramParserImpl parser = new ProgramParserImpl();
+		return parser.parse(aspString, externals);
 	}
 
 	@Override

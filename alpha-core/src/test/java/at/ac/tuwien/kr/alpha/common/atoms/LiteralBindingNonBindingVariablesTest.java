@@ -56,7 +56,7 @@ import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 public class LiteralBindingNonBindingVariablesTest {
 
 	private final Map<String, PredicateInterpretation> externals = new HashMap<>();
-	private final ProgramParser parser = new ProgramParserImpl(externals);
+	private final ProgramParser parser = new ProgramParserImpl();
 
 	@Test
 	public void testPositiveBasicLiteral() {
@@ -182,7 +182,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	@Test
 	public void testPositiveExternalLiteral() {
 		externals.put("ext", new IntPredicateInterpretation(i -> i > 0));
-		Rule<Head> rule = parser.parse("p(X) :- q(Y), &ext[Y](X).").getRules().get(0);
+		Rule<Head> rule = parser.parse("p(X) :- q(Y), &ext[Y](X).", externals).getRules().get(0);
 		Literal literal = rule.getBody().stream().filter((lit) -> lit.getPredicate().getName().equals("ext")).findFirst().get();
 		assertEquals(false, literal.isNegated());
 		expectVariables(literal.getBindingVariables(), "X");
@@ -192,7 +192,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	@Test
 	public void testNegativeExternalLiteral() {
 		externals.put("ext", new IntPredicateInterpretation(i -> i > 0));
-		Literal literal = parser.parse("p(X) :- q(Y), not &ext[Y](X).").getRules().get(0).getNegativeBody().stream().findFirst().get();
+		Literal literal = parser.parse("p(X) :- q(Y), not &ext[Y](X).", externals).getRules().get(0).getNegativeBody().stream().findFirst().get();
 		assertEquals(true, literal.isNegated());
 		expectVariables(literal.getBindingVariables());
 		expectVariables(literal.getNonBindingVariables(), "X", "Y");

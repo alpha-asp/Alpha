@@ -16,11 +16,12 @@ public class NormalHeadImpl implements NormalHead {
 	}
 
 	// Note that at some point in the future it might make sense to have this method directly in Head
+	@Override
 	public boolean isGround() {
-		// return atom.isGround(); TODO
-		return false;
+		return atom.isGround();
 	}
 
+	@Override
 	public Atom getAtom() {
 		return atom;
 	}

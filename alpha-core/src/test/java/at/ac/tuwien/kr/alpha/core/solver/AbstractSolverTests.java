@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -220,7 +221,11 @@ public abstract class AbstractSolverTests {
 	}
 
 	protected Solver getInstance(InputStream program) {
-		return getInstance(parser.parse(program));
+		try {
+			return getInstance(parser.parse(program));
+		} catch (IOException ex) {
+			throw new RuntimeException("IOException in program parsing!");
+		}
 	}
 
 	protected Set<AnswerSet> collectSet(String program) {

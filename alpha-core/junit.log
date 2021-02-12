@@ -1,0 +1,48 @@
+6062 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.016s: 140
+6110 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 140 decisions in 1.016s or 137.79527 decisions per sec. Overall replayed assignments: 655.
+7057 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.0s: 11
+7057 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 151 decisions in 2.016s or 74.900795 decisions per sec. Overall replayed assignments: 824.
+9052 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.142s: 146
+9053 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 146 decisions in 1.142s or 127.84589 decisions per sec. Overall replayed assignments: 751.
+10192 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.14s: 20
+10193 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 166 decisions in 2.282s or 72.7432 decisions per sec. Overall replayed assignments: 1012.
+16095 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.0s: 183
+16095 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 183 decisions in 1.0s or 183.0 decisions per sec. Overall replayed assignments: 206.
+18487 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.002s: 216
+18488 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 216 decisions in 1.002s or 215.56886 decisions per sec. Overall replayed assignments: 228.
+20461 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.024s: 1
+20461 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 1 decisions in 1.024s or 0.97656244 decisions per sec. Overall replayed assignments: 0.
+22172 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.169s: 1
+22172 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 1 decisions in 1.169s or 0.855432 decisions per sec. Overall replayed assignments: 0.
+23207 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.035s: 0
+23211 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 1 decisions in 2.204s or 0.4537205 decisions per sec. Overall replayed assignments: 0.
+25040 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.063s: 1
+25041 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 1 decisions in 1.063s or 0.9407338 decisions per sec. Overall replayed assignments: 0.
+26937 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.056s: 1
+26937 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 1 decisions in 1.056s or 0.9469697 decisions per sec. Overall replayed assignments: 0.
+29335 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.053s: 0
+29335 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 0 decisions in 1.053s or 0.0 decisions per sec. Overall replayed assignments: 0.
+30376 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.041s: 0
+30376 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 0 decisions in 2.094s or 0.0 decisions per sec. Overall replayed assignments: 0.
+31382 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.006s: 0
+31382 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 0 decisions in 3.1s or 0.0 decisions per sec. Overall replayed assignments: 0.
+32421 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.039s: 0
+32422 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 0 decisions in 4.139s or 0.0 decisions per sec. Overall replayed assignments: 0.
+33426 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.005s: 0
+33428 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 0 decisions in 5.144s or 0.0 decisions per sec. Overall replayed assignments: 0.
+34453 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.027s: 0
+34453 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 0 decisions in 6.171s or 0.0 decisions per sec. Overall replayed assignments: 0.
+37118 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.128s: 1
+37118 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 1 decisions in 1.128s or 0.8865248 decisions per sec. Overall replayed assignments: 0.
+38610 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.002s: 0
+38610 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 0 decisions in 1.002s or 0.0 decisions per sec. Overall replayed assignments: 0.
+39643 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.033s: 0
+39643 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 0 decisions in 2.035s or 0.0 decisions per sec. Overall replayed assignments: 0.
+40683 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.04s: 0
+40683 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 0 decisions in 3.075s or 0.0 decisions per sec. Overall replayed assignments: 0.
+41712 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.029s: 0
+41713 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 0 decisions in 4.104s or 0.0 decisions per sec. Overall replayed assignments: 0.
+42733 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.021s: 0
+42734 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 0 decisions in 5.125s or 0.0 decisions per sec. Overall replayed assignments: 0.
+45215 INFO  a.a.t.k.a.core.solver.DefaultSolver: Decisions in 1.073s: 1
+45215 INFO  a.a.t.k.a.core.solver.DefaultSolver: Overall performance: 1 decisions in 1.073s or 0.9319665 decisions per sec. Overall replayed assignments: 0.

@@ -84,14 +84,17 @@ public class InternalProgram extends AbstractProgram<CompiledRule> implements Co
 		predicateDefiningRules.get(headPredicate).add(rule);
 	}
 
+	@Override
 	public Map<Predicate, LinkedHashSet<CompiledRule>> getPredicateDefiningRules() {
 		return Collections.unmodifiableMap(predicateDefiningRules);
 	}
 
+	@Override
 	public Map<Predicate, LinkedHashSet<Instance>> getFactsByPredicate() {
 		return Collections.unmodifiableMap(factsByPredicate);
 	}
 
+	@Override
 	public Map<Integer, CompiledRule> getRulesById() {
 		return Collections.unmodifiableMap(rulesById);
 	}
