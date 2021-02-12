@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.antlr.v4.runtime.BailErrorStrategy;
@@ -20,15 +21,16 @@ import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
+import at.ac.tuwien.kr.alpha.core.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
 public class ProgramParserImpl implements ProgramParser {
-//	private final Map<String, PredicateInterpretation> externals;
-//
-//	// TODO not sure if it makes sense to have this constructor... is it even used?
-//	public ProgramParserImpl(Map<String, PredicateInterpretation> externals) {
-//		this.externals = externals;
-//	}
+
+	private final Map<String, PredicateInterpretation> preloadedExternals;
+
+	public ProgramParserImpl() {
+		this.preloadedExternals = Externals.getStandardLibraryExternals();
+	}
 
 	@Override
 	public ASPCore2Program parse(String s) {
@@ -114,8 +116,17 @@ public class ProgramParserImpl implements ProgramParser {
 			throw new ParseCancellationException();
 		}
 
+		// The union of this parser's preloaded externals and the (program-specific) externals passed to the parse method
+		Map<String, PredicateInterpretation> knownExternals;
+		if (externals != null && !externals.isEmpty()) {
+			knownExternals = new HashMap<>(preloadedExternals);
+			knownExternals.putAll(externals);
+		} else {
+			knownExternals = preloadedExternals;
+		}
+
 		// Construct internal program representation.
-		ParseTreeVisitor visitor = new ParseTreeVisitor(externals);
+		ParseTreeVisitor visitor = new ParseTreeVisitor(knownExternals);
 		return visitor.translate(programContext);
 	}
 

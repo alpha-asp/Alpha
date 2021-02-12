@@ -44,7 +44,7 @@ public class AnswerSetToWorkbookMapperTest {
 				+ "q(A, B) :- p(A), p(B).";
 		//@formatter:on
 		Alpha alpha = new AlphaImpl();
-		List<AnswerSet> answerSets = alpha.solve(alpha.readProgramString(progstr, null)).collect(Collectors.toList());
+		List<AnswerSet> answerSets = alpha.solve(alpha.readProgramString(progstr)).collect(Collectors.toList());
 		Assert.assertEquals(1, answerSets.size());
 		AnswerSet as = answerSets.get(0);
 		Workbook answerSetWorkbook = this.mapper.mapFromAnswerSet(as);

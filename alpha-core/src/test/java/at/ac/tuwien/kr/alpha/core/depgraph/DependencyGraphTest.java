@@ -159,7 +159,7 @@ public class DependencyGraphTest {
 		bld.append("b :- a.").append("\n");
 		bld.append("a :- b.").append("\n");
 
-		ASPCore2Program prog = parser.parse(bld.toString(), null);
+		ASPCore2Program prog = parser.parse(bld.toString());
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();

@@ -477,7 +477,7 @@ public class AlphaImplTest {
 	public void filterTest() {
 		String progstr = "a. b. c. d :- c. e(a, b) :- d.";
 		Alpha system = new AlphaImpl();
-		ASPCore2Program prog = system.readProgramString(progstr, null);
+		ASPCore2Program prog = system.readProgramString(progstr);
 		Set<AnswerSet> actual = system.solve(prog, (p) -> p.equals(CorePredicate.getInstance("a", 0)) || p.equals(CorePredicate.getInstance("e", 2)))
 				.collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").predicate("e").symbolicInstance("a", "b").build()));

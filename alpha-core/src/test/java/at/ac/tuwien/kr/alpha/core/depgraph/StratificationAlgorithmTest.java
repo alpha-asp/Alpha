@@ -41,7 +41,7 @@ public class StratificationAlgorithmTest {
 
 	@Test
 	public void stratifyOneRuleTest() {
-		ASPCore2Program prog = parser.parse("a :- b.", null);
+		ASPCore2Program prog = parser.parse("a :- b.");
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();

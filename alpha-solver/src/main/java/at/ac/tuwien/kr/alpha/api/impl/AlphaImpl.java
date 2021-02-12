@@ -28,17 +28,17 @@
 package at.ac.tuwien.kr.alpha.api.impl;
 
 import java.io.IOException;
-import java.nio.charset.CodingErrorAction;
+import java.io.InputStream;
+import java.nio.channels.Channels;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +55,7 @@ import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.program.CompiledProgram;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.api.program.Program;
+import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
@@ -74,6 +75,7 @@ public class AlphaImpl implements Alpha {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlphaImpl.class);
 
 	private SystemConfig config = new SystemConfig(); // The config is initialized with default values.
+	private ProgramParser parser = new ProgramParserImpl();
 
 	public AlphaImpl(SystemConfig cfg) {
 		this.config = cfg;
@@ -104,15 +106,14 @@ public class AlphaImpl implements Alpha {
 
 	@Override
 	public ASPCore2Program readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
-		ProgramParserImpl parser = new ProgramParserImpl();
 		InputProgram.Builder prgBuilder = InputProgram.builder();
 		ASPCore2Program tmpProg;
 		for (Path path : paths) {
-			CharStream stream;
+			InputStream stream;
 			if (!literate) {
-				stream = CharStreams.fromPath(path);
+				stream = Files.newInputStream(path);
 			} else {
-				stream = CharStreams.fromChannel(Util.streamToChannel(Util.literate(Files.lines(path))), 4096, CodingErrorAction.REPLACE, path.toString());
+				stream = Channels.newInputStream(Util.streamToChannel(Util.literate(Files.lines(path))));
 			}
 			tmpProg = parser.parse(stream, externals);
 			prgBuilder.accumulate(tmpProg);
@@ -122,13 +123,12 @@ public class AlphaImpl implements Alpha {
 
 	@Override
 	public ASPCore2Program readProgramString(String aspString, Map<String, PredicateInterpretation> externals) {
-		ProgramParserImpl parser = new ProgramParserImpl();
 		return parser.parse(aspString, externals);
 	}
 
 	@Override
 	public ASPCore2Program readProgramString(String aspString) {
-		return readProgramString(aspString, null);
+		return readProgramString(aspString, Collections.emptyMap());
 	}
 
 	// TODO make sure to adapt this without exposing internal imnplementation types
