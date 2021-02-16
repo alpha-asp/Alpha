@@ -98,7 +98,7 @@ gradle-app.setting
 
 ### Custom additions ###
 /.checkstyle
-/junit.log
+*/junit.log
 .idea/modules/*.iml
 *.tokens
 /.dbeaver
