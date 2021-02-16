@@ -1,6 +1,7 @@
 plugins {
     id 'antlr'
     id 'alpha.java-library-conventions'
+    id 'maven-publish' 
 }
 
 
@@ -57,3 +58,18 @@ jacocoTestReport {
 	}
 }
 
+java {
+	withSourcesJar()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'at.ac.tuwien.kr.alpha'
+            artifactId = 'alpha-core'
+            version = '0.8-SNAPSHOT'
+
+            from components.java
+        }
+    }
+}

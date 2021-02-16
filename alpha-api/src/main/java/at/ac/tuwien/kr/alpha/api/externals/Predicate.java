@@ -5,14 +5,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * This annotation is used for discovery of method that represent
- * external predicates at runtime.
- *
- * In order to have your method detected by Alpha, annotate it
+/* TODO this should be javadoc, but has a problem with the ref to Externals 
+ *  * In order to have your method detected by Alpha, annotate it
  * with this annotation and call {@link Externals#scan}.
  *
  * @see Externals#scan
+ */
+
+/**
+ * This annotation is used for discovery of method that represent
+ * external predicates at runtime.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

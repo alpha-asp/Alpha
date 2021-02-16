@@ -25,8 +25,11 @@
  */
 package at.ac.tuwien.kr.alpha.api.grounder.heuristics;
 
+/* TODO this should be javadoc but has a problem with the ref to a component from core module:
+* Contains configuration parameters for heuristics used by {@link at.ac.tuwien.kr.alpha.grounder.Grounder}s.
+*/
+
 /**
- * Contains configuration parameters for heuristics used by {@link at.ac.tuwien.kr.alpha.grounder.Grounder}s.
  *
  * Both parameters {@link #toleranceConstraints} and {@link #toleranceRules} are interpreted as follows:
  * A rule (or constraint) is grounded if the following conditions are satisfied:

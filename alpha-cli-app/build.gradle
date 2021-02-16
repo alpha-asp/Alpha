@@ -1,5 +1,6 @@
 plugins {
     id 'alpha.java-application-conventions'
+    id 'maven-publish'
 }
 
 dependencies {
@@ -41,4 +42,20 @@ task bundledJar(type: Jar) {
 	rename { name -> (name.equals("LICENSE.txt") || name.equals("LICENSE")) ? "LICENSE." + (j++) + ".txt" : null }
 
 	with jar
+}
+
+java {
+	withSourcesJar()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'at.ac.tuwien.kr.alpha'
+            artifactId = 'alpha-cli-app'
+            version = '0.8-SNAPSHOT'
+
+            from components.java
+        }
+    }
 }
