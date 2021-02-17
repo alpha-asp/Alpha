@@ -19,7 +19,7 @@ public class AggregateLiteral extends CoreLiteral {
 
 	@Override
 	public AggregateAtom getAtom() {
-		return (AggregateAtom)atom;
+		return (AggregateAtom) atom;
 	}
 
 	@Override

@@ -114,7 +114,7 @@ public class AggregateAtom extends CoreAtom {
 
 	@Override
 	public AggregateAtom substitute(Substitution substitution) {
-		return null;
+		throw new UnsupportedOperationException("Cannot substitute AggregateAtom!");
 	}
 
 	@Override
