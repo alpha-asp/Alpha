@@ -32,7 +32,7 @@ import org.junit.Test;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.Term.RenameCounter;
 import at.ac.tuwien.kr.alpha.commons.AbstractTerm.RenameCounterImpl;
-import at.ac.tuwien.kr.alpha.commons.ArithmeticTerm.MinusTerm;
+import at.ac.tuwien.kr.alpha.commons.ArithmeticTermImpl.MinusTerm;
 
 /**
  * Tests {@link MinusTerm}

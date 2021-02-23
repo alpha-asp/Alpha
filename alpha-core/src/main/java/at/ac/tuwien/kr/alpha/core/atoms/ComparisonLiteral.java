@@ -27,8 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.atoms;
 
-import static at.ac.tuwien.kr.alpha.commons.ArithmeticTerm.evaluateGroundTerm;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -37,9 +35,9 @@ import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
@@ -164,7 +162,7 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 		Term resultTerm = null;
 		// Check if the groundTerm is an arithmetic expression and evaluate it if so.
 		if (groundTerm instanceof ArithmeticTerm) {
-			Integer result = evaluateGroundTerm(groundTerm);
+			Integer result = Terms.evaluateGroundTerm(groundTerm);
 			if (result == null) {
 				return Collections.emptyList();
 			}
@@ -187,7 +185,7 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 	private Term evaluateTerm(Term term) {
 		// Evaluate arithmetics.
 		if (term instanceof ArithmeticTerm) {
-			Integer result = ArithmeticTerm.evaluateGroundTerm(term);
+			Integer result = Terms.evaluateGroundTerm(term);
 			if (result == null) {
 				return null;
 			}

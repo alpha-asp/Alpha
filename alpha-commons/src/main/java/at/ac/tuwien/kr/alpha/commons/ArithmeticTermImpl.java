@@ -30,10 +30,9 @@ package at.ac.tuwien.kr.alpha.commons;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import com.google.common.math.IntMath;
-
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.terms.ArithmeticOperator;
+import at.ac.tuwien.kr.alpha.api.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.util.Interner;
@@ -42,25 +41,25 @@ import at.ac.tuwien.kr.alpha.commons.util.Interner;
  * This class represents an arithmetic expression occurring as a term.
  * Copyright (c) 2017-2019, the Alpha Team.
  */
-public class ArithmeticTerm extends AbstractTerm {
-	private static final Interner<ArithmeticTerm> INTERNER = new Interner<>();
+class ArithmeticTermImpl extends AbstractTerm implements ArithmeticTerm {
+	private static final Interner<ArithmeticTermImpl> INTERNER = new Interner<>();
 	protected final Term left;
 	private final ArithmeticOperator arithmeticOperator;
 	private final Term right;
 
-	private ArithmeticTerm(Term left, ArithmeticOperator arithmeticOperator, Term right) {
+	private ArithmeticTermImpl(Term left, ArithmeticOperator arithmeticOperator, Term right) {
 		this.left = left;
 		this.arithmeticOperator = arithmeticOperator;
 		this.right = right;
 	}
 
-	public static Term getInstance(Term left, ArithmeticOperator arithmeticOperator, Term right) {
+	static Term getInstance(Term left, ArithmeticOperator arithmeticOperator, Term right) {
 		// Evaluate ground arithmetic terms immediately and return result.
 		if (left.isGround() && right.isGround()) {
-			Integer result = new ArithmeticTerm(left, arithmeticOperator, right).evaluateExpression();
+			Integer result = new ArithmeticTermImpl(left, arithmeticOperator, right).evaluateExpression();
 			return ConstantTermImpl.getInstance(result);
 		}
-		return INTERNER.intern(new ArithmeticTerm(left, arithmeticOperator, right));
+		return INTERNER.intern(new ArithmeticTermImpl(left, arithmeticOperator, right));
 	}
 
 	@Override
@@ -89,37 +88,8 @@ public class ArithmeticTerm extends AbstractTerm {
 	public Term normalizeVariables(String renamePrefix, Term.RenameCounter counter) {
 		Term normalizedLeft = left.normalizeVariables(renamePrefix, counter);
 		Term normalizedRight = right.normalizeVariables(renamePrefix, counter);
-		return ArithmeticTerm.getInstance(normalizedLeft, arithmeticOperator, normalizedRight);
+		return ArithmeticTermImpl.getInstance(normalizedLeft, arithmeticOperator, normalizedRight);
 
-	}
-
-	public static Integer evaluateGroundTerm(Term term) {
-		if (!term.isGround()) {
-			throw new RuntimeException("Cannot evaluate arithmetic term since it is not ground: " + term);
-		}
-		return evaluateGroundTermHelper(term);
-	}
-
-	private static Integer evaluateGroundTermHelper(Term term) {
-		if (term instanceof ConstantTerm
-				&& ((ConstantTerm<?>) term).getObject() instanceof Integer) {
-			// Extract integer from the constant.
-			return (Integer) ((ConstantTerm<?>) term).getObject();
-		} else if (term instanceof ArithmeticTerm) {
-			return ((ArithmeticTerm) term).evaluateExpression();
-		} else {
-			// ASP Core 2 standard allows non-integer terms in arithmetic expressions, result is to simply ignore the ground instance.
-			return null;
-		}
-	}
-
-	Integer evaluateExpression() {
-		Integer leftInt = evaluateGroundTermHelper(left);
-		Integer rightInt = evaluateGroundTermHelper(right);
-		if (leftInt == null || rightInt == null) {
-			return null;
-		}
-		return arithmeticOperator.eval(leftInt, rightInt);
 	}
 
 	@Override
@@ -136,7 +106,7 @@ public class ArithmeticTerm extends AbstractTerm {
 			return false;
 		}
 
-		ArithmeticTerm that = (ArithmeticTerm) o;
+		ArithmeticTermImpl that = (ArithmeticTermImpl) o;
 
 		if (left != that.left) {
 			return false;
@@ -151,68 +121,51 @@ public class ArithmeticTerm extends AbstractTerm {
 	public int hashCode() {
 		return 31 * (31 * left.hashCode() + arithmeticOperator.hashCode()) + right.hashCode();
 	}
-
-	public enum ArithmeticOperator {
-		PLUS("+"),
-		MINUS("-"),
-		TIMES("*"),
-		DIV("/"),
-		POWER("**"),
-		MODULO("\\"),
-		BITXOR("^");
-
-		private String asString;
-
-		ArithmeticOperator(String asString) {
-			this.asString = asString;
-		}
-
-		@Override
-		public String toString() {
-			return asString;
-		}
-
-		public Integer eval(Integer left, Integer right) {
-			switch (this) {
-				case PLUS:
-					return left + right;
-				case MINUS:
-					return left - right;
-				case TIMES:
-					return left * right;
-				case DIV:
-					return left / right;
-				case POWER:
-					return IntMath.checkedPow(left, right);
-				case MODULO:
-					return left % right;
-				case BITXOR:
-					return left ^ right;
-				default:
-					throw new RuntimeException("Unknown arithmetic operator encountered.");
-
-			}
-		}
+	
+	@Override
+	public ArithmeticOperator getOperator() {
+		return arithmeticOperator;
+	}
+	
+	@Override
+	public Term getLeftOperand() {
+		return left;
+	}
+	
+	@Override
+	public Term getRightOperand() {
+		return right;
 	}
 
-	public static class MinusTerm extends ArithmeticTerm {
+	@Override
+	public Integer evaluateExpression() {
+		Integer leftInt = Terms.evaluateGroundTermHelper(left);
+		Integer rightInt = Terms.evaluateGroundTermHelper(right);
+		if (leftInt == null || rightInt == null) {
+			return null;
+		}
+		return arithmeticOperator.eval(leftInt, rightInt);
+	}
+	
+	// FIXME it doesn't seem like this class is really needed, could be handled by an if in ArithmeticTermImpl#getInstance
+	public static class MinusTerm extends ArithmeticTermImpl {
 
 		private MinusTerm(Term term) {
 			super(term, null, null);
 		}
 
-		public static Term getInstance(Term term) {
+		static Term getInstance(Term term) {
 			// Evaluate ground arithmetic terms immediately and return result.
 			if (term.isGround()) {
-				Integer result = evaluateGroundTermHelper(term) * -1;
+				Integer result = Terms.evaluateGroundTerm(term) * -1;
 				return ConstantTermImpl.getInstance(result);
 			}
 			return INTERNER.intern(new MinusTerm(term));
 		}
 
 		@Override
-		Integer evaluateExpression() {
-			return evaluateGroundTermHelper(left) * -1;
+		public Integer evaluateExpression() {
+			return Terms.evaluateGroundTermHelper(left) * -1;
 		}
 
 		@Override

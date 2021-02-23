@@ -55,11 +55,11 @@ import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead;
 import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead.ChoiceElement;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
+import at.ac.tuwien.kr.alpha.api.terms.ArithmeticOperator;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.commons.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateAtom;
@@ -451,10 +451,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	public ComparisonAtom visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
 		// builtin_atom : term binop term;
 		return new ComparisonAtom(
-			(Term) visit(ctx.term(0)),
-			(Term) visit(ctx.term(1)),
-			visitBinop(ctx.binop())
-		);
+				(Term) visit(ctx.term(0)),
+				(Term) visit(ctx.term(1)),
+				visitBinop(ctx.binop()));
 	}
 
 	@Override
@@ -560,11 +559,10 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		List<Term> outputTerms = visitTerms(ctx.output);
 
 		return new ExternalAtom(
-			CorePredicate.getInstance(predicateName, outputTerms.size()),
-			interpretation,
-			visitTerms(ctx.input),
-			outputTerms
-		);
+				CorePredicate.getInstance(predicateName, outputTerms.size()),
+				interpretation,
+				visitTerms(ctx.input),
+				outputTerms);
 	}
 
 	@Override
@@ -581,34 +579,34 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Object visitTerm_minusArithTerm(ASPCore2Parser.Term_minusArithTermContext ctx) {
 		// | MINUS term
-		return ArithmeticTerm.MinusTerm.getInstance((Term) visit(ctx.term()));
+		return Terms.newMinusTerm((Term) visit(ctx.term()));
 	}
 
 	@Override
 	public Object visitTerm_timesdivmodArithTerm(ASPCore2Parser.Term_timesdivmodArithTermContext ctx) {
 		// | term (TIMES | DIV | MODULO) term
-		ArithmeticTerm.ArithmeticOperator op = ctx.TIMES() != null ? ArithmeticTerm.ArithmeticOperator.TIMES
-			: ctx.DIV() != null ? ArithmeticTerm.ArithmeticOperator.DIV : ArithmeticTerm.ArithmeticOperator.MODULO;
-		return ArithmeticTerm.getInstance((Term) visit(ctx.term(0)), op, (Term) visit(ctx.term(1)));
+		ArithmeticOperator op = ctx.TIMES() != null ? ArithmeticOperator.TIMES
+				: ctx.DIV() != null ? ArithmeticOperator.DIV : ArithmeticOperator.MODULO;
+		return Terms.newArithmeticTerm((Term) visit(ctx.term(0)), op, (Term) visit(ctx.term(1)));
 	}
 
 	@Override
 	public Object visitTerm_plusminusArithTerm(ASPCore2Parser.Term_plusminusArithTermContext ctx) {
 		// | term (PLUS | MINUS) term
-		ArithmeticTerm.ArithmeticOperator op = ctx.PLUS() != null ? ArithmeticTerm.ArithmeticOperator.PLUS : ArithmeticTerm.ArithmeticOperator.MINUS;
-		return ArithmeticTerm.getInstance((Term) visit(ctx.term(0)), op, (Term) visit(ctx.term(1)));
+		ArithmeticOperator op = ctx.PLUS() != null ? ArithmeticOperator.PLUS : ArithmeticOperator.MINUS;
+		return Terms.newArithmeticTerm((Term) visit(ctx.term(0)), op, (Term) visit(ctx.term(1)));
 	}
 
 	@Override
 	public Object visitTerm_powerArithTerm(ASPCore2Parser.Term_powerArithTermContext ctx) {
 		// |<assoc=right> term POWER term
-		ArithmeticTerm.ArithmeticOperator op = ArithmeticTerm.ArithmeticOperator.POWER;
-		return ArithmeticTerm.getInstance((Term) visit(ctx.term(0)), op, (Term) visit(ctx.term(1)));
+		ArithmeticOperator op = ArithmeticOperator.POWER;
+		return Terms.newArithmeticTerm((Term) visit(ctx.term(0)), op, (Term) visit(ctx.term(1)));
 	}
 
 	@Override
 	public Object visitTerm_bitxorArithTerm(ASPCore2Parser.Term_bitxorArithTermContext ctx) {
 		// | term BITXOR term
-		return ArithmeticTerm.getInstance((Term) visit(ctx.term(0)), ArithmeticTerm.ArithmeticOperator.BITXOR, (Term) visit(ctx.term(1)));
+		return Terms.newArithmeticTerm((Term) visit(ctx.term(0)), ArithmeticOperator.BITXOR, (Term) visit(ctx.term(1)));
 	}
 }
