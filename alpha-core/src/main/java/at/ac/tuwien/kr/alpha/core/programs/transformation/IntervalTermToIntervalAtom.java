@@ -36,9 +36,9 @@ import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
 import at.ac.tuwien.kr.alpha.commons.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.IntervalAtom;
@@ -98,9 +98,9 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 				termList.set(i, replacementVariable);
 				didChange = true;
 			}
-			if (term instanceof FunctionTermImpl) {
+			if (term instanceof FunctionTerm) {
 				// Rewrite function terms recursively.
-				FunctionTermImpl rewrittenFunctionTerm = rewriteFunctionTerm((FunctionTermImpl) term, intervalReplacement);
+				FunctionTerm rewrittenFunctionTerm = rewriteFunctionTerm((FunctionTerm) term, intervalReplacement);
 				termList.set(i, rewrittenFunctionTerm);
 				didChange = true;
 			}
@@ -112,7 +112,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		return lit;
 	}
 
-	private static FunctionTermImpl rewriteFunctionTerm(FunctionTermImpl functionTerm, Map<VariableTerm, IntervalTerm> intervalReplacement) {
+	private static FunctionTerm rewriteFunctionTerm(FunctionTerm functionTerm, Map<VariableTerm, IntervalTerm> intervalReplacement) {
 		List<Term> termList = new ArrayList<>(functionTerm.getTerms());
 		boolean didChange = false;
 		for (int i = 0; i < termList.size(); i++) {
@@ -123,9 +123,9 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 				termList.set(i, replacementVariable);
 				didChange = true;
 			}
-			if (term instanceof FunctionTermImpl) {
+			if (term instanceof FunctionTerm) {
 				// Recursively rewrite function terms.
-				FunctionTermImpl rewrittenFunctionTerm = rewriteFunctionTerm((FunctionTermImpl) term, intervalReplacement);
+				FunctionTerm rewrittenFunctionTerm = rewriteFunctionTerm((FunctionTerm) term, intervalReplacement);
 				if (rewrittenFunctionTerm != term) {
 					termList.set(i, rewrittenFunctionTerm);
 					didChange = true;
@@ -133,7 +133,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 			}
 		}
 		if (didChange) {
-			return FunctionTermImpl.getInstance(functionTerm.getSymbol(), termList);
+			return Terms.newFunctionTerm(functionTerm.getSymbol(), termList);
 		}
 		return functionTerm;
 	}

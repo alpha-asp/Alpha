@@ -11,8 +11,8 @@ import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
 import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
@@ -158,7 +158,7 @@ public class SumNormalization extends ProgramTransformation<ASPCore2Program, ASP
 				// In case some variables are not local to the aggregate, add them to the aggregate identifier
 				ArrayList<Term> globalVariableTermlist = new ArrayList<>(globalVariables);
 				globalVariableTermlist.add(Terms.newConstant(aggregateCount));
-				aggregateUnifier.put(Terms.newVariable("AGGREGATE_ID"), FunctionTermImpl.getInstance("agg", globalVariableTermlist));
+				aggregateUnifier.put(Terms.newVariable("AGGREGATE_ID"), Terms.newFunctionTerm("agg", globalVariableTermlist));
 			}
 			aggregateUnifier.put(Terms.newVariable("LOWER_BOUND"), aggregateAtom.getLowerBoundTerm());
 
@@ -169,7 +169,7 @@ public class SumNormalization extends ProgramTransformation<ASPCore2Program, ASP
 			for (AggregateAtom.AggregateElement aggregateElement : aggregateAtom.getAggregateElements()) {
 				// Prepare element substitution.
 				List<Term> elementTerms = aggregateElement.getElementTerms();
-				FunctionTermImpl elementTuple = FunctionTermImpl.getInstance("element_tuple", elementTerms);
+				FunctionTerm elementTuple = Terms.newFunctionTerm("element_tuple", elementTerms);
 				Unifier elementUnifier = new Unifier(aggregateUnifier);
 				elementUnifier.put(Terms.newVariable("ELEMENT_TUPLE"), elementTuple);
 				elementUnifier.put(Terms.newVariable("FIRST_VARIABLE"), elementTuple.getTerms().get(0));

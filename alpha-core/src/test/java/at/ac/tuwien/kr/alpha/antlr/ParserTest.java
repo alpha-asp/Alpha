@@ -50,9 +50,9 @@ import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead;
+import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
 import at.ac.tuwien.kr.alpha.commons.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateAtom;
@@ -86,8 +86,8 @@ public class ParserTest {
 		assertEquals("Program contains one fact.", 1, parsedProgram.getFacts().size());
 		assertEquals("Predicate name of fact is p.", "p", parsedProgram.getFacts().get(0).getPredicate().getName());
 		assertEquals("Fact has two terms.", 2, parsedProgram.getFacts().get(0).getPredicate().getArity());
-		assertEquals("First term is function term f.", "f", ((FunctionTermImpl) parsedProgram.getFacts().get(0).getTerms().get(0)).getSymbol());
-		assertEquals("Second term is function term g.", "g", ((FunctionTermImpl) parsedProgram.getFacts().get(0).getTerms().get(1)).getSymbol());
+		assertEquals("First term is function term f.", "f", ((FunctionTerm) parsedProgram.getFacts().get(0).getTerms().get(0)).getSymbol());
+		assertEquals("Second term is function term g.", "g", ((FunctionTerm) parsedProgram.getFacts().get(0).getTerms().get(1)).getSymbol());
 	}
 
 	@Test

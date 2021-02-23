@@ -17,7 +17,7 @@ import at.ac.tuwien.kr.alpha.commons.util.Interner;
 /**
  * Copyright (c) 2016-2017, the Alpha Team.
  */
-public class FunctionTermImpl extends AbstractTerm implements FunctionTerm {
+class FunctionTermImpl extends AbstractTerm implements FunctionTerm {
 	private static final Interner<FunctionTermImpl> INTERNER = new Interner<>();
 
 	private final String symbol;
@@ -50,10 +50,12 @@ public class FunctionTermImpl extends AbstractTerm implements FunctionTerm {
 		return getInstance(functionSymbol, Arrays.asList(terms));
 	}
 
+	@Override
 	public List<Term> getTerms() {
 		return terms;
 	}
 
+	@Override
 	public String getSymbol() {
 		return symbol;
 	}

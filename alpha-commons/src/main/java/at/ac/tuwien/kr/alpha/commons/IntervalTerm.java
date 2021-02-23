@@ -5,6 +5,7 @@ import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.util.Interner;
@@ -146,13 +147,13 @@ public class IntervalTerm extends AbstractTerm {
 		}
 	}
 
-	public static boolean functionTermContainsIntervals(FunctionTermImpl functionTerm) {
+	public static boolean functionTermContainsIntervals(FunctionTerm functionTerm) {
 		// Test whether a function term contains an interval term (recursively).
 		for (Term term : functionTerm.getTerms()) {
 			if (term instanceof IntervalTerm) {
 				return true;
 			}
-			if (term instanceof FunctionTermImpl && functionTermContainsIntervals((FunctionTermImpl) term)) {
+			if (term instanceof FunctionTermImpl && functionTermContainsIntervals((FunctionTerm) term)) {
 				return true;
 			}
 		}

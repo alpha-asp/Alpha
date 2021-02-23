@@ -6,8 +6,8 @@ import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Instance;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
 import at.ac.tuwien.kr.alpha.commons.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.Terms;
 
@@ -34,7 +34,7 @@ public class FactIntervalEvaluator {
 			currentTerms[i] = term;
 			if (term instanceof IntervalTerm) {
 				containsIntervals = true;
-			} else if (term instanceof FunctionTermImpl && IntervalTerm.functionTermContainsIntervals((FunctionTermImpl) term)) {
+			} else if (term instanceof FunctionTerm && IntervalTerm.functionTermContainsIntervals((FunctionTerm) term)) {
 				containsIntervals = true;
 				throw new UnsupportedOperationException("Intervals inside function terms in facts are not supported yet. Try turning the fact into a rule.");
 			}

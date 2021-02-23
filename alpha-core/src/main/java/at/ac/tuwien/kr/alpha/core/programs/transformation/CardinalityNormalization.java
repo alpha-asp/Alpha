@@ -12,8 +12,8 @@ import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
 import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
@@ -198,7 +198,7 @@ public class CardinalityNormalization extends ProgramTransformation<ASPCore2Prog
 				// In case some variables are not local to the aggregate, add them to the aggregate identifier
 				ArrayList<Term> globalVariableTermlist = new ArrayList<>(globalVariables);
 				globalVariableTermlist.add(Terms.newConstant(aggregateCount));
-				aggregateSubstitution.put(Terms.newVariable("AGGREGATE_ID"), FunctionTermImpl.getInstance("agg", globalVariableTermlist));
+				aggregateSubstitution.put(Terms.newVariable("AGGREGATE_ID"), Terms.newFunctionTerm("agg", globalVariableTermlist));
 			}
 			aggregateSubstitution.put(Terms.newVariable("LOWER_BOUND"), aggregateAtom.getLowerBoundTerm());
 
@@ -209,7 +209,7 @@ public class CardinalityNormalization extends ProgramTransformation<ASPCore2Prog
 			for (AggregateAtom.AggregateElement aggregateElement : aggregateAtom.getAggregateElements()) {
 				// Prepare element substitution.
 				List<Term> elementTerms = aggregateElement.getElementTerms();
-				FunctionTermImpl elementTuple = FunctionTermImpl.getInstance("element_tuple", elementTerms);
+				FunctionTerm elementTuple = Terms.newFunctionTerm("element_tuple", elementTerms);
 				Substitution elementSubstitution = new Unifier(aggregateSubstitution);
 				elementSubstitution.put(Terms.newVariable("ELEMENT_TUPLE"), elementTuple);
 

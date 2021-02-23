@@ -56,10 +56,10 @@ import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead.ChoiceElement;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.ArithmeticTerm;
-import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
 import at.ac.tuwien.kr.alpha.commons.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateAtom;
@@ -515,8 +515,8 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public FunctionTermImpl visitTerm_func(ASPCore2Parser.Term_funcContext ctx) {
-		return FunctionTermImpl.getInstance(ctx.ID().getText(), visitTerms(ctx.terms()));
+	public FunctionTerm visitTerm_func(ASPCore2Parser.Term_funcContext ctx) {
+		return Terms.newFunctionTerm(ctx.ID().getText(), visitTerms(ctx.terms()));
 	}
 
 	@Override

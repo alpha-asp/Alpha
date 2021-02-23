@@ -39,9 +39,9 @@ import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
 import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramPartParser;
 
@@ -123,10 +123,10 @@ public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Subs
 				}
 				updatedSubstitution.put(variableTerm, termGround);
 				return true;
-			} else if (termNonGround instanceof FunctionTermImpl && termGround instanceof FunctionTermImpl) {
+			} else if (termNonGround instanceof FunctionTerm && termGround instanceof FunctionTerm) {
 				// Both terms are function terms
-				FunctionTermImpl ftNonGround = (FunctionTermImpl) termNonGround;
-				FunctionTermImpl ftGround = (FunctionTermImpl) termGround;
+				FunctionTerm ftNonGround = (FunctionTerm) termNonGround;
+				FunctionTerm ftGround = (FunctionTerm) termGround;
 
 				if (!(ftNonGround.getSymbol().equals(ftGround.getSymbol()))) {
 					return false;
