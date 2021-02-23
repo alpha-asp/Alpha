@@ -7,8 +7,8 @@ import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Terms;
-import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 
@@ -32,7 +32,7 @@ public class EnumerationAtom extends BasicAtom {
 		if (terms.size() != 3) {
 			throw new RuntimeException("EnumerationAtom must have arity three. Given terms are of wrong size: " + terms);
 		}
-		if (!(getTerms().get(2) instanceof VariableTermImpl)) {
+		if (!(getTerms().get(2) instanceof VariableTerm)) {
 			throw new RuntimeException("Third parameter of EnumerationAtom must be a variable: " + terms);
 		}
 	}
@@ -71,7 +71,7 @@ public class EnumerationAtom extends BasicAtom {
 		}
 		Integer enumerationIndex = getEnumerationIndex(idTerm, enumerationTerm);
 		SubstitutionImpl retVal = new SubstitutionImpl(substitution);
-		retVal.put((VariableTermImpl) getTerms().get(2), Terms.newConstant(enumerationIndex));
+		retVal.put((VariableTerm) getTerms().get(2), Terms.newConstant(enumerationIndex));
 		return retVal;
 	}
 

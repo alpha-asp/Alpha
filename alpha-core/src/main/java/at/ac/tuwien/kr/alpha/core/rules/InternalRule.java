@@ -39,7 +39,7 @@ import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingInfoImpl;
@@ -104,6 +104,7 @@ public class InternalRule extends NormalRule implements CompiledRule {
 	 * @param newVariablePostfix
 	 * @return
 	 */
+	@Override
 	public InternalRule renameVariables(String newVariablePostfix) {
 		List<VariableTerm> occurringVariables = new ArrayList<>();
 		Atom headAtom = this.getHeadAtom();
@@ -114,7 +115,7 @@ public class InternalRule extends NormalRule implements CompiledRule {
 		Unifier variableReplacement = new Unifier();
 		for (VariableTerm occurringVariable : occurringVariables) {
 			final String newVariableName = occurringVariable.toString() + newVariablePostfix;
-			variableReplacement.put(occurringVariable, VariableTermImpl.getInstance(newVariableName));
+			variableReplacement.put(occurringVariable, Terms.newVariable(newVariableName));
 		}
 		Atom renamedHeadAtom = headAtom.substitute(variableReplacement);
 		ArrayList<Literal> renamedBody = new ArrayList<>(this.getBody().size());
@@ -128,10 +129,12 @@ public class InternalRule extends NormalRule implements CompiledRule {
 	 * Returns the predicates occurring in this rule.
 	 * @return a list of all predicates occurring in the rule (may contain duplicates and builtin atoms).
 	 */
+	@Override
 	public List<Predicate> getOccurringPredicates() {
 		return this.occurringPredicates;
 	}
 
+	@Override
 	public RuleGroundingInfoImpl getGroundingInfo() {
 		return this.groundingOrders;
 	}

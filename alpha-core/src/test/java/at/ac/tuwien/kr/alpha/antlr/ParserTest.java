@@ -55,7 +55,6 @@ import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
 import at.ac.tuwien.kr.alpha.commons.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.Terms;
-import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
@@ -125,7 +124,7 @@ public class ParserTest {
 		IntervalTerm factInterval = (IntervalTerm) parsedProgram.getFacts().get(0).getTerms().get(0);
 		assertTrue(factInterval.equals(IntervalTerm.getInstance(Terms.newConstant(2), Terms.newConstant(5))));
 		IntervalTerm bodyInterval = (IntervalTerm) ((Literal) parsedProgram.getRules().get(0).getBody().stream().findFirst().get()).getTerms().get(1);
-		assertTrue(bodyInterval.equals(IntervalTerm.getInstance(Terms.newConstant(3), VariableTermImpl.getInstance("X"))));
+		assertTrue(bodyInterval.equals(IntervalTerm.getInstance(Terms.newConstant(3), Terms.newVariable("X"))));
 	}
 
 	@Test
@@ -202,13 +201,13 @@ public class ParserTest {
 		assertTrue(optionalBodyElement.isPresent());
 		Literal bodyElement = optionalBodyElement.get();
 		AggregateLiteral parsedAggregate = (AggregateLiteral) bodyElement;
-		VariableTerm x = VariableTermImpl.getInstance("X");
-		VariableTerm y = VariableTermImpl.getInstance("Y");
-		VariableTerm z = VariableTermImpl.getInstance("Z");
+		VariableTerm x = Terms.newVariable("X");
+		VariableTerm y = Terms.newVariable("Y");
+		VariableTerm z = Terms.newVariable("Z");
 		List<Term> basicTerms = Arrays.asList(x, y, z);
 		AggregateAtom.AggregateElement aggregateElement = new AggregateAtom.AggregateElement(basicTerms,
 				Collections.singletonList(new BasicAtom(CorePredicate.getInstance("p", 3), x, y, z).toLiteral()));
-		AggregateAtom expectedAggregate = new AggregateAtom(ComparisonOperatorImpl.LE, VariableTermImpl.getInstance("K"), null, null,
+		AggregateAtom expectedAggregate = new AggregateAtom(ComparisonOperatorImpl.LE, Terms.newVariable("K"), null, null,
 				AggregateAtom.AGGREGATEFUNCTION.COUNT, Collections.singletonList(aggregateElement));
 		assertEquals(expectedAggregate, parsedAggregate.getAtom());
 	}

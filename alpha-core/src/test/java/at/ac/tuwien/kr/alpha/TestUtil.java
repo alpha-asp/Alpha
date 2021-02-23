@@ -33,7 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Terms;
-import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
@@ -52,7 +51,7 @@ public class TestUtil {
 		for (int i = 0; i < termStrings.length; i++) {
 			String termString = termStrings[i];
 			if (StringUtils.isAllUpperCase(termString.substring(0, 1))) {
-				terms[i] = VariableTermImpl.getInstance(termString);
+				terms[i] = Terms.newVariable(termString);
 			} else {
 				terms[i] = Terms.newConstant(termString);
 			}

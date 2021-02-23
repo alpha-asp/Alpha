@@ -36,7 +36,7 @@ import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.grounder.Unifier;
 
 /**
@@ -50,11 +50,13 @@ public abstract class CoreAtom implements Atom {
 	 * @param terms the terms to set.
 	 * @return a new Atom with the given terms set.
 	 */
+	@Override
 	public abstract Atom withTerms(List<Term> terms);
 
 	/**
 	 * Returns the set of all variables occurring in the Atom.
 	 */
+	@Override
 	public Set<VariableTerm> getOccurringVariables() {
 		return toLiteral().getOccurringVariables();
 	}
@@ -66,6 +68,7 @@ public abstract class CoreAtom implements Atom {
 	 * @param substitution the variable substitution to apply.
 	 * @return the atom resulting from the application of the substitution.
 	 */
+	@Override
 	public abstract Atom substitute(Substitution substitution);
 
 	@Override
@@ -93,11 +96,12 @@ public abstract class CoreAtom implements Atom {
 	@Override
 	public abstract Literal toLiteral(boolean positive);
 
+	@Override
 	public Atom renameVariables(String newVariablePrefix) {
 		Unifier renamingSubstitution = new Unifier();
 		int counter = 0;
 		for (VariableTerm variable : getOccurringVariables()) {
-			renamingSubstitution.put(variable, VariableTermImpl.getInstance(newVariablePrefix + counter++));
+			renamingSubstitution.put(variable, Terms.newVariable(newVariablePrefix + counter++));
 		}
 		return this.substitute(renamingSubstitution);
 	}

@@ -13,7 +13,6 @@ import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.commons.Terms;
-import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
@@ -103,7 +102,7 @@ public class LiteralInstantiationStrategyTest {
 	@Test
 	public void defaultLazyGroundingNoAssignmentSubstituteNonGroundLiteral() {
 		Predicate q = CorePredicate.getInstance("q", 2);
-		BasicAtom nonGroundAtom = new BasicAtom(q, Terms.newSymbolicConstant("a"), VariableTermImpl.getInstance("X"));
+		BasicAtom nonGroundAtom = new BasicAtom(q, Terms.newSymbolicConstant("a"), Terms.newVariable("X"));
 		WorkingMemory workingMemory = new WorkingMemory();
 		workingMemory.initialize(q);
 		workingMemory.addInstance(new BasicAtom(q, Terms.newSymbolicConstant("a"), Terms.newSymbolicConstant("b")), true);
@@ -120,8 +119,8 @@ public class LiteralInstantiationStrategyTest {
 		Substitution substitution = substitutionInfo.left;
 		AssignmentStatus assignmentStatus = substitutionInfo.right;
 		Assert.assertEquals(AssignmentStatus.TRUE, assignmentStatus);
-		Assert.assertTrue(substitution.isVariableSet(VariableTermImpl.getInstance("X")));
-		Assert.assertEquals(Terms.newSymbolicConstant("b"), substitution.eval(VariableTermImpl.getInstance("X")));
+		Assert.assertTrue(substitution.isVariableSet(Terms.newVariable("X")));
+		Assert.assertEquals(Terms.newSymbolicConstant("b"), substitution.eval(Terms.newVariable("X")));
 		Assert.assertTrue(staleSet.isEmpty());
 	}
 
@@ -266,7 +265,7 @@ public class LiteralInstantiationStrategyTest {
 	@Test
 	public void defaultLazyGroundingSubstituteNonGroundLiteralWithUnassignedInstance() {
 		Predicate q = CorePredicate.getInstance("q", 2);
-		BasicAtom nonGroundAtom = new BasicAtom(q, Terms.newSymbolicConstant("a"), VariableTermImpl.getInstance("X"));
+		BasicAtom nonGroundAtom = new BasicAtom(q, Terms.newSymbolicConstant("a"), Terms.newVariable("X"));
 		WorkingMemory workingMemory = new WorkingMemory();
 		workingMemory.initialize(q);
 		workingMemory.addInstance(new BasicAtom(q, Terms.newSymbolicConstant("a"), Terms.newSymbolicConstant("b")), true);
@@ -285,8 +284,8 @@ public class LiteralInstantiationStrategyTest {
 		Substitution substitution = substitutionInfo.left;
 		AssignmentStatus assignmentStatus = substitutionInfo.right;
 		Assert.assertEquals(AssignmentStatus.UNASSIGNED, assignmentStatus);
-		Assert.assertTrue(substitution.isVariableSet(VariableTermImpl.getInstance("X")));
-		Assert.assertEquals(Terms.newSymbolicConstant("b"), substitution.eval(VariableTermImpl.getInstance("X")));
+		Assert.assertTrue(substitution.isVariableSet(Terms.newVariable("X")));
+		Assert.assertEquals(Terms.newSymbolicConstant("b"), substitution.eval(Terms.newVariable("X")));
 
 		Assert.assertEquals(1, staleSet.size());
 		Assert.assertTrue(staleSet.contains(new BasicAtom(q, Terms.newSymbolicConstant("a"), Terms.newSymbolicConstant("b"))));
@@ -305,7 +304,7 @@ public class LiteralInstantiationStrategyTest {
 	@Test
 	public void defaultLazyGroundingSubstituteNonGroundLiteralWithTrueInstance() {
 		Predicate q = CorePredicate.getInstance("q", 2);
-		BasicAtom nonGroundAtom = new BasicAtom(q, Terms.newSymbolicConstant("a"), VariableTermImpl.getInstance("X"));
+		BasicAtom nonGroundAtom = new BasicAtom(q, Terms.newSymbolicConstant("a"), Terms.newVariable("X"));
 		WorkingMemory workingMemory = new WorkingMemory();
 		workingMemory.initialize(q);
 		workingMemory.addInstance(new BasicAtom(q, Terms.newSymbolicConstant("a"), Terms.newSymbolicConstant("b")), true);
@@ -328,8 +327,8 @@ public class LiteralInstantiationStrategyTest {
 		Substitution substitution = substitutionInfo.left;
 		AssignmentStatus assignmentStatus = substitutionInfo.right;
 		Assert.assertEquals(AssignmentStatus.TRUE, assignmentStatus);
-		Assert.assertTrue(substitution.isVariableSet(VariableTermImpl.getInstance("X")));
-		Assert.assertEquals(Terms.newSymbolicConstant("b"), substitution.eval(VariableTermImpl.getInstance("X")));
+		Assert.assertTrue(substitution.isVariableSet(Terms.newVariable("X")));
+		Assert.assertEquals(Terms.newSymbolicConstant("b"), substitution.eval(Terms.newVariable("X")));
 
 		Assert.assertTrue(staleSet.isEmpty());
 	}
@@ -346,7 +345,7 @@ public class LiteralInstantiationStrategyTest {
 	@Test
 	public void defaultLazyGroundingSubstituteNonGroundLiteralWithFalseInstance() {
 		Predicate q = CorePredicate.getInstance("q", 2);
-		BasicAtom nonGroundAtom = new BasicAtom(q, Terms.newSymbolicConstant("a"), VariableTermImpl.getInstance("X"));
+		BasicAtom nonGroundAtom = new BasicAtom(q, Terms.newSymbolicConstant("a"), Terms.newVariable("X"));
 		WorkingMemory workingMemory = new WorkingMemory();
 		workingMemory.initialize(q);
 		workingMemory.addInstance(new BasicAtom(q, Terms.newSymbolicConstant("a"), Terms.newSymbolicConstant("b")), true);

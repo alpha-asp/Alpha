@@ -40,7 +40,7 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
 import at.ac.tuwien.kr.alpha.commons.IntervalTerm;
-import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
@@ -93,7 +93,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		for (int i = 0; i < termList.size(); i++) {
 			Term term = termList.get(i);
 			if (term instanceof IntervalTerm) {
-				VariableTermImpl replacementVariable = VariableTermImpl.getInstance(INTERVAL_VARIABLE_PREFIX + intervalReplacement.size());
+				VariableTerm replacementVariable = Terms.newVariable(INTERVAL_VARIABLE_PREFIX + intervalReplacement.size());
 				intervalReplacement.put(replacementVariable, (IntervalTerm) term);
 				termList.set(i, replacementVariable);
 				didChange = true;
@@ -118,7 +118,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		for (int i = 0; i < termList.size(); i++) {
 			Term term = termList.get(i);
 			if (term instanceof IntervalTerm) {
-				VariableTermImpl replacementVariable = VariableTermImpl.getInstance("_Interval" + intervalReplacement.size());
+				VariableTerm replacementVariable = Terms.newVariable("_Interval" + intervalReplacement.size());
 				intervalReplacement.put(replacementVariable, (IntervalTerm) term);
 				termList.set(i, replacementVariable);
 				didChange = true;

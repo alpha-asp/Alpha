@@ -41,7 +41,6 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.commons.Terms;
-import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 
@@ -84,7 +83,7 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 	}
 
 	private boolean assignable(Term term) {
-		return isNormalizedEquality && term instanceof VariableTermImpl;
+		return isNormalizedEquality && term instanceof VariableTerm;
 	}
 
 	@Override
@@ -97,10 +96,10 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 			throw new RuntimeException("Builtin equality with left and right side being variables encountered. Should not happen.");
 		}
 		if (assignable(left)) {
-			return Collections.singleton((VariableTermImpl) left);
+			return Collections.singleton((VariableTerm) left);
 		}
 		if (assignable(right)) {
-			return Collections.singleton((VariableTermImpl) right);
+			return Collections.singleton((VariableTerm) right);
 		}
 		return Collections.emptySet();
 	}
@@ -154,11 +153,11 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 		VariableTerm variable = null;
 		Term expression = null;
 		if (leftAssigning) {
-			variable = (VariableTermImpl) left;
+			variable = (VariableTerm) left;
 			expression = right;
 		}
 		if (rightAssigning) {
-			variable = (VariableTermImpl) right;
+			variable = (VariableTerm) right;
 			expression = left;
 		}
 		Term groundTerm = expression.substitute(partialSubstitution);

@@ -15,7 +15,6 @@ import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
 import at.ac.tuwien.kr.alpha.commons.Terms;
-import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
@@ -194,14 +193,14 @@ public class CardinalityNormalization extends ProgramTransformation<ASPCore2Prog
 			Substitution aggregateSubstitution = new Unifier();
 			Collection<Term> globalVariables = getGlobalVariables(rewrittenBody, aggregateAtom);
 			if (globalVariables.isEmpty()) {
-				aggregateSubstitution.put(VariableTermImpl.getInstance("AGGREGATE_ID"), Terms.newConstant(aggregateCount));
+				aggregateSubstitution.put(Terms.newVariable("AGGREGATE_ID"), Terms.newConstant(aggregateCount));
 			} else {
 				// In case some variables are not local to the aggregate, add them to the aggregate identifier
 				ArrayList<Term> globalVariableTermlist = new ArrayList<>(globalVariables);
 				globalVariableTermlist.add(Terms.newConstant(aggregateCount));
-				aggregateSubstitution.put(VariableTermImpl.getInstance("AGGREGATE_ID"), FunctionTermImpl.getInstance("agg", globalVariableTermlist));
+				aggregateSubstitution.put(Terms.newVariable("AGGREGATE_ID"), FunctionTermImpl.getInstance("agg", globalVariableTermlist));
 			}
-			aggregateSubstitution.put(VariableTermImpl.getInstance("LOWER_BOUND"), aggregateAtom.getLowerBoundTerm());
+			aggregateSubstitution.put(Terms.newVariable("LOWER_BOUND"), aggregateAtom.getLowerBoundTerm());
 
 			// Create new output atom for addition to rule body instead of the aggregate.
 			aggregateOutputAtoms.add(aggregateOutputAtom.substitute(aggregateSubstitution).toLiteral());
@@ -212,7 +211,7 @@ public class CardinalityNormalization extends ProgramTransformation<ASPCore2Prog
 				List<Term> elementTerms = aggregateElement.getElementTerms();
 				FunctionTermImpl elementTuple = FunctionTermImpl.getInstance("element_tuple", elementTerms);
 				Substitution elementSubstitution = new Unifier(aggregateSubstitution);
-				elementSubstitution.put(VariableTermImpl.getInstance("ELEMENT_TUPLE"), elementTuple);
+				elementSubstitution.put(Terms.newVariable("ELEMENT_TUPLE"), elementTuple);
 
 				// Create new rule for input.
 				BasicAtom inputHeadAtom = aggregateInputAtom.substitute(elementSubstitution);

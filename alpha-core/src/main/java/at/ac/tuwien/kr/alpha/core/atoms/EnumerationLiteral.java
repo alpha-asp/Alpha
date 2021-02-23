@@ -7,7 +7,6 @@ import java.util.Set;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 
 /**
  * Copyright (c) 2018, the Alpha Team.
@@ -35,7 +34,7 @@ public class EnumerationLiteral extends BasicLiteral {
 
 	@Override
 	public Set<VariableTerm> getBindingVariables() {
-		return Collections.singleton((VariableTermImpl)getTerms().get(2));
+		return Collections.singleton((VariableTerm)getTerms().get(2));
 	}
 
 	@Override
@@ -44,10 +43,10 @@ public class EnumerationLiteral extends BasicLiteral {
 		Term idTerm = getTerms().get(0);
 		Term enumTerm = getTerms().get(1);
 		if (idTerm instanceof VariableTerm) {
-			ret.add((VariableTermImpl) idTerm);
+			ret.add((VariableTerm) idTerm);
 		}
 		if (enumTerm instanceof VariableTerm) {
-			ret.add((VariableTermImpl) enumTerm);
+			ret.add((VariableTerm) enumTerm);
 		}
 		return ret;
 

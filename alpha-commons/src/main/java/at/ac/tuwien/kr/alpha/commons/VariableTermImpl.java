@@ -12,7 +12,7 @@ import at.ac.tuwien.kr.alpha.commons.util.Interner;
 /**
  * Copyright (c) 2016-2017, the Alpha Team.
  */
-public class VariableTermImpl extends AbstractTerm implements VariableTerm {
+class VariableTermImpl extends AbstractTerm implements VariableTerm {
 	private static final Interner<VariableTermImpl> INTERNER = new Interner<>();
 
 	private static final String ANONYMOUS_VARIABLE_PREFIX = "_";

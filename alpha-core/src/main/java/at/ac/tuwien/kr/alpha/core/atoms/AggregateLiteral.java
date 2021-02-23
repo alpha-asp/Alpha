@@ -6,7 +6,6 @@ import java.util.Set;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 
 /**
@@ -28,7 +27,7 @@ public class AggregateLiteral extends CoreLiteral {
 	}
 
 	/**
-	 * @see CoreAtom#substitute(SubstitutionImpl)
+	 * @see CoreAtom#substitute(Substitution)
 	 */
 	@Override
 	public AggregateLiteral substitute(Substitution substitution) {
@@ -39,10 +38,10 @@ public class AggregateLiteral extends CoreLiteral {
 	public Set<VariableTerm> getBindingVariables() {
 		Set<VariableTerm> bindingVariables = new HashSet<>();
 		if (boundBindingVariable(getAtom().getLowerBoundOperator(), getAtom().getLowerBoundTerm(), positive) != null) {
-			bindingVariables.add((VariableTermImpl) getAtom().getLowerBoundTerm());
+			bindingVariables.add((VariableTerm) getAtom().getLowerBoundTerm());
 		}
 		if (boundBindingVariable(getAtom().getUpperBoundOperator(), getAtom().getUpperBoundTerm(), positive) != null) {
-			bindingVariables.add((VariableTermImpl) getAtom().getUpperBoundTerm());
+			bindingVariables.add((VariableTerm) getAtom().getUpperBoundTerm());
 		}
 		return bindingVariables;
 	}
@@ -56,8 +55,8 @@ public class AggregateLiteral extends CoreLiteral {
 
 	private static VariableTerm boundBindingVariable(ComparisonOperatorImpl op, Term bound, boolean positive) {
 		boolean isNormalizedEquality = op == ComparisonOperatorImpl.EQ && positive || op == ComparisonOperatorImpl.NE && !positive;
-		if (isNormalizedEquality &&  bound instanceof VariableTermImpl) {
-			return (VariableTermImpl) bound;
+		if (isNormalizedEquality &&  bound instanceof VariableTerm) {
+			return (VariableTerm) bound;
 		}
 		return null;
 	}

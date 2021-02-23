@@ -42,7 +42,7 @@ import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
-import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramPartParser;
 
 public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Substitution {
@@ -103,7 +103,7 @@ public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Subs
 			} else if (termNonGround instanceof ConstantTerm) {
 				// Since right term is ground, both terms differ
 				return false;
-			} else if (termNonGround instanceof VariableTermImpl) {
+			} else if (termNonGround instanceof VariableTerm) {
 				VariableTerm variableTerm = (VariableTerm) termNonGround;
 				// Left term is variable, bind it to the right term. Use original substitution if it has
 				// not been cloned yet.
@@ -178,6 +178,7 @@ public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Subs
 		return this.substitution.get(variableTerm);
 	}
 
+	@Override
 	public <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term groundTerm) {
 		if (!groundTerm.isGround()) {
 			throw Util.oops("Right-hand term is not ground.");
@@ -194,6 +195,7 @@ public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Subs
 		return substitution.isEmpty();
 	}
 
+	@Override
 	public boolean isVariableSet(VariableTerm variable) {
 		return substitution.get(variable) != null;
 	}
@@ -229,7 +231,7 @@ public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Subs
 		SubstitutionImpl ret = new SubstitutionImpl();
 		for (String assignment : assignments) {
 			String[] keyVal = assignment.split("->");
-			VariableTermImpl variable = VariableTermImpl.getInstance(keyVal[0]);
+			VariableTerm variable = Terms.newVariable(keyVal[0]);
 			Term assignedTerm = PROGRAM_PART_PARSER.parseTerm(keyVal[1]);
 			ret.put(variable, assignedTerm);
 		}

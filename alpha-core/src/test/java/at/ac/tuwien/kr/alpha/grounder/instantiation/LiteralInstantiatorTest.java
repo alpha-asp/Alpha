@@ -13,7 +13,6 @@ import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Terms;
-import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.ComparisonAtom;
@@ -33,7 +32,7 @@ public class LiteralInstantiatorTest {
 
 	@Test
 	public void instantiateSatisfiedFixedInterpretationLiteral() {
-		ComparisonAtom equalsThree = new ComparisonAtom(Terms.newConstant(3), VariableTermImpl.getInstance("THREE"), ComparisonOperatorImpl.EQ);
+		ComparisonAtom equalsThree = new ComparisonAtom(Terms.newConstant(3), Terms.newVariable("THREE"), ComparisonOperatorImpl.EQ);
 		Literal lit = new ComparisonLiteral(equalsThree, true);
 		Substitution substitution = new SubstitutionImpl();
 		LiteralInstantiator instantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(null));
@@ -43,17 +42,17 @@ public class LiteralInstantiatorTest {
 		Assert.assertEquals(1, resultSubstitutions.size());
 		Assert.assertEquals(AssignmentStatus.TRUE, resultSubstitutions.get(0).right);
 		Substitution extendedSubstitution = resultSubstitutions.get(0).left;
-		Assert.assertTrue(extendedSubstitution.isVariableSet(VariableTermImpl.getInstance("THREE")));
-		Assert.assertEquals(Terms.newConstant(3), extendedSubstitution.eval(VariableTermImpl.getInstance("THREE")));
+		Assert.assertTrue(extendedSubstitution.isVariableSet(Terms.newVariable("THREE")));
+		Assert.assertEquals(Terms.newConstant(3), extendedSubstitution.eval(Terms.newVariable("THREE")));
 	}
 
 	@Test
 	public void instantiateUnsatisfiedFixedInterpretationLiteral() {
-		ComparisonAtom fiveEqualsThree = new ComparisonAtom(VariableTermImpl.getInstance("FIVE"), VariableTermImpl.getInstance("THREE"), ComparisonOperatorImpl.EQ);
+		ComparisonAtom fiveEqualsThree = new ComparisonAtom(Terms.newVariable("FIVE"), Terms.newVariable("THREE"), ComparisonOperatorImpl.EQ);
 		Literal lit = new ComparisonLiteral(fiveEqualsThree, true);
 		Substitution substitution = new SubstitutionImpl();
-		substitution.put(VariableTermImpl.getInstance("FIVE"), Terms.newConstant(5));
-		substitution.put(VariableTermImpl.getInstance("THREE"), Terms.newConstant(3));
+		substitution.put(Terms.newVariable("FIVE"), Terms.newConstant(5));
+		substitution.put(Terms.newVariable("THREE"), Terms.newConstant(3));
 		LiteralInstantiator instantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(null));
 		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution);
 		Assert.assertEquals(LiteralInstantiationResult.Type.STOP_BINDING, result.getType());
@@ -61,9 +60,9 @@ public class LiteralInstantiatorTest {
 
 	@Test
 	public void instantiateEnumLiteral() {
-		VariableTerm enumTerm = VariableTermImpl.getInstance("E");
-		VariableTerm idTerm = VariableTermImpl.getInstance("X");
-		VariableTerm indexTerm = VariableTermImpl.getInstance("I");
+		VariableTerm enumTerm = Terms.newVariable("E");
+		VariableTerm idTerm = Terms.newVariable("X");
+		VariableTerm indexTerm = Terms.newVariable("I");
 		List<Term> termList = new ArrayList<>();
 		termList.add(enumTerm);
 		termList.add(idTerm);
@@ -88,8 +87,8 @@ public class LiteralInstantiatorTest {
 		WorkingMemory workingMemory = new WorkingMemory();
 		workingMemory.initialize(p);
 		workingMemory.addInstance(new BasicAtom(p, Terms.newSymbolicConstant("x"), Terms.newSymbolicConstant("y")), true);
-		VariableTerm x = VariableTermImpl.getInstance("X");
-		VariableTerm y = VariableTermImpl.getInstance("Y");
+		VariableTerm x = Terms.newVariable("X");
+		VariableTerm y = Terms.newVariable("Y");
 		Literal lit = new BasicLiteral(new BasicAtom(p, x, y), true);
 		Substitution substitution = new SubstitutionImpl();
 		substitution.put(x, Terms.newSymbolicConstant("x"));
@@ -111,8 +110,8 @@ public class LiteralInstantiatorTest {
 		Predicate p = CorePredicate.getInstance("p", 2);
 		WorkingMemory workingMemory = new WorkingMemory();
 		workingMemory.initialize(p);
-		VariableTerm x = VariableTermImpl.getInstance("X");
-		VariableTerm y = VariableTermImpl.getInstance("Y");
+		VariableTerm x = Terms.newVariable("X");
+		VariableTerm y = Terms.newVariable("Y");
 		Literal lit = new BasicLiteral(new BasicAtom(p, x, y), true);
 		Substitution substitution = new SubstitutionImpl();
 		substitution.put(x, Terms.newSymbolicConstant("x"));
@@ -132,8 +131,8 @@ public class LiteralInstantiatorTest {
 		workingMemory.initialize(p);
 		workingMemory.addInstance(new BasicAtom(p, Terms.newSymbolicConstant("x"), Terms.newSymbolicConstant("y")), true);
 		workingMemory.addInstance(new BasicAtom(p, Terms.newSymbolicConstant("x"), Terms.newSymbolicConstant("z")), true);
-		VariableTerm x = VariableTermImpl.getInstance("X");
-		VariableTerm y = VariableTermImpl.getInstance("Y");
+		VariableTerm x = Terms.newVariable("X");
+		VariableTerm y = Terms.newVariable("Y");
 		Literal lit = new BasicLiteral(new BasicAtom(p, x, y), true);
 		Substitution substitution = new SubstitutionImpl();
 		substitution.put(x, Terms.newSymbolicConstant("x"));

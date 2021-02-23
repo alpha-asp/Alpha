@@ -40,7 +40,6 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.Terms;
-import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 
 /**
@@ -56,7 +55,7 @@ public class IntervalLiteral extends FixedInterpretationLiteral {
 	public IntervalAtom getAtom() {
 		return (IntervalAtom) atom;
 	}
-
+	
 	@Override
 	public IntervalLiteral negate() {
 		throw new UnsupportedOperationException("IntervalLiteral cannot be negated");
@@ -72,7 +71,7 @@ public class IntervalLiteral extends FixedInterpretationLiteral {
 			// Still a variable, generate all elements in the interval.
 			for (int i = intervalTerm.getLowerBound(); i <= intervalTerm.getUpperBound(); i++) {
 				Substitution ith = new SubstitutionImpl(partialSubstitution);
-				ith.put((VariableTermImpl) intervalRepresentingVariable, Terms.newConstant(i));
+				ith.put((VariableTerm) intervalRepresentingVariable, Terms.newConstant(i));
 				substitutions.add(ith);
 			}
 			return substitutions;
@@ -84,6 +83,7 @@ public class IntervalLiteral extends FixedInterpretationLiteral {
 				return Collections.emptyList();
 			}
 			// TODO to avoid that type of unchecked cast, we may want interval terms to not extend AbstractTerm
+			@SuppressWarnings("unchecked")
 			Integer integer = ((ConstantTerm<Integer>) intervalRepresentingVariable).getObject();
 			if (intervalTerm.getLowerBound() <= integer && integer <= intervalTerm.getUpperBound()) {
 				return Collections.singletonList(partialSubstitution);

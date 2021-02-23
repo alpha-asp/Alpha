@@ -35,7 +35,6 @@ import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
-import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 
 /**
  * Copyright (c) 2017, the Alpha Team.
@@ -87,12 +86,12 @@ public class Unification {
 		if (leftSubs == rightSubs) {
 			return true;
 		}
-		if (!keepLeftAsIs && leftSubs instanceof VariableTermImpl && !currentSubstitution.isVariableSet((VariableTermImpl) leftSubs)) {
-			currentSubstitution.put((VariableTermImpl) leftSubs, rightSubs);
+		if (!keepLeftAsIs && leftSubs instanceof VariableTerm && !currentSubstitution.isVariableSet((VariableTerm) leftSubs)) {
+			currentSubstitution.put((VariableTerm) leftSubs, rightSubs);
 			return true;
 		}
-		if (rightSubs instanceof VariableTermImpl && !currentSubstitution.isVariableSet((VariableTermImpl) rightSubs)) {
-			currentSubstitution.put((VariableTermImpl) rightSubs, leftSubs);
+		if (rightSubs instanceof VariableTerm && !currentSubstitution.isVariableSet((VariableTerm) rightSubs)) {
+			currentSubstitution.put((VariableTerm) rightSubs, leftSubs);
 			return true;
 		}
 		if (leftSubs instanceof FunctionTermImpl && rightSubs instanceof FunctionTermImpl) {

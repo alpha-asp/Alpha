@@ -46,7 +46,6 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
 import at.ac.tuwien.kr.alpha.commons.Terms;
-import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
@@ -63,8 +62,8 @@ public class SubstitutionTest {
 	private static final ConstantTerm<String> B = Terms.newSymbolicConstant("b");
 	private static final ConstantTerm<String> C = Terms.newSymbolicConstant("c");
 
-	private static final VariableTerm X = VariableTermImpl.getInstance("X");
-	private static final VariableTerm Y = VariableTermImpl.getInstance("Y");
+	private static final VariableTerm X = Terms.newVariable("X");
+	private static final VariableTerm Y = Terms.newVariable("Y");
 	private static final BasicAtom PX = new BasicAtom(CorePredicate.getInstance("p", 1), X);
 	private static final BasicAtom PY = new BasicAtom(CorePredicate.getInstance("p", 1), Y);
 	private static final Instance PA = new Instance(A);

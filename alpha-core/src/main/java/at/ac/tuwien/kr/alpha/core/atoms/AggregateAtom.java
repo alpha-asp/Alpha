@@ -39,7 +39,6 @@ import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 
@@ -229,8 +228,8 @@ public class AggregateAtom extends CoreAtom {
 		public List<VariableTerm> getOccurringVariables() {
 			List<VariableTerm> occurringVariables = new LinkedList<>();
 			for (Term term : elementTerms) {
-				if (term instanceof VariableTermImpl) {
-					occurringVariables.add((VariableTermImpl) term);
+				if (term instanceof VariableTerm) {
+					occurringVariables.add((VariableTerm) term);
 				}
 			}
 			for (Literal literal : elementLiterals) {

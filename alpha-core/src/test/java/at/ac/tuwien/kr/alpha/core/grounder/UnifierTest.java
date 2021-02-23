@@ -38,7 +38,6 @@ import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Terms;
-import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
@@ -46,8 +45,8 @@ public class UnifierTest extends SubstitutionTest {
 
 	@Test
 	public void extendUnifier() {
-		VariableTerm varX = VariableTermImpl.getInstance("X");
-		VariableTerm varY = VariableTermImpl.getInstance("Y");
+		VariableTerm varX = Terms.newVariable("X");
+		VariableTerm varY = Terms.newVariable("Y");
 		Unifier sub1 = new Unifier();
 		sub1.put(varX, varY);
 		Unifier sub2 = new Unifier();
@@ -62,9 +61,9 @@ public class UnifierTest extends SubstitutionTest {
 
 	@Test
 	public void mergeUnifierIntoLeft() {
-		VariableTerm varX = VariableTermImpl.getInstance("X");
-		VariableTerm varY = VariableTermImpl.getInstance("Y");
-		VariableTerm varZ = VariableTermImpl.getInstance("Z");
+		VariableTerm varX = Terms.newVariable("X");
+		VariableTerm varY = Terms.newVariable("Y");
+		VariableTerm varZ = Terms.newVariable("Z");
 		Term constA = Terms.newConstant("a");
 		Unifier left = new Unifier();
 		left.put(varX, varY);

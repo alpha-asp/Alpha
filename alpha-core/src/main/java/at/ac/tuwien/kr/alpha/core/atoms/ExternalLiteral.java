@@ -38,7 +38,6 @@ import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 
 /**
@@ -87,8 +86,8 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 		Set<VariableTerm> binding = new HashSet<>(output.size());
 
 		for (Term out : output) {
-			if (out instanceof VariableTermImpl) {
-				binding.add((VariableTermImpl) out);
+			if (out instanceof VariableTerm) {
+				binding.add((VariableTerm) out);
 			}
 		}
 
