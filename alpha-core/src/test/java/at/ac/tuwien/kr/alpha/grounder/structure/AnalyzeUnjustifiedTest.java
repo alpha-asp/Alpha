@@ -42,11 +42,11 @@ import at.ac.tuwien.kr.alpha.api.program.CompiledProgram;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
@@ -83,7 +83,7 @@ public class AnalyzeUnjustifiedTest {
 		assignment.growForMaxAtomId();
 		assignment.assign(rId, ThriceTruth.FALSE);
 		assignment.assign(nrId, ThriceTruth.TRUE);
-		BasicAtom p5 = new BasicAtom(CorePredicate.getInstance("p", 1), Collections.singletonList(CoreConstantTerm.getInstance(5)));
+		BasicAtom p5 = new BasicAtom(CorePredicate.getInstance("p", 1), Collections.singletonList(Terms.newConstant(5)));
 		assignment.assign(atomStore.get(p5), ThriceTruth.MBT);
 		Set<Literal> reasons = grounder.justifyAtom(atomStore.get(p5), assignment);
 		assertFalse(reasons.isEmpty());
@@ -159,11 +159,11 @@ public class AnalyzeUnjustifiedTest {
 		assignment.assign(qeId, ThriceTruth.FALSE);
 
 		Predicate nq = CorePredicate.getInstance("_nq", 2, true);
-		Atom nqa = new BasicAtom(nq, Arrays.asList(CoreConstantTerm.getInstance("1"), CoreConstantTerm.getSymbolicInstance("a")));
-		Atom nqb = new BasicAtom(nq, Arrays.asList(CoreConstantTerm.getInstance("1"), CoreConstantTerm.getSymbolicInstance("b")));
-		Atom nqc = new BasicAtom(nq, Arrays.asList(CoreConstantTerm.getInstance("1"), CoreConstantTerm.getSymbolicInstance("c")));
-		Atom nqd = new BasicAtom(nq, Arrays.asList(CoreConstantTerm.getInstance("1"), CoreConstantTerm.getSymbolicInstance("d")));
-		Atom nqe = new BasicAtom(nq, Arrays.asList(CoreConstantTerm.getInstance("1"), CoreConstantTerm.getSymbolicInstance("e")));
+		Atom nqa = new BasicAtom(nq, Arrays.asList(Terms.newConstant("1"), Terms.newSymbolicConstant("a")));
+		Atom nqb = new BasicAtom(nq, Arrays.asList(Terms.newConstant("1"), Terms.newSymbolicConstant("b")));
+		Atom nqc = new BasicAtom(nq, Arrays.asList(Terms.newConstant("1"), Terms.newSymbolicConstant("c")));
+		Atom nqd = new BasicAtom(nq, Arrays.asList(Terms.newConstant("1"), Terms.newSymbolicConstant("d")));
+		Atom nqe = new BasicAtom(nq, Arrays.asList(Terms.newConstant("1"), Terms.newSymbolicConstant("e")));
 		int nqaId = atomStore.get(nqa);
 		int nqbId = atomStore.get(nqb);
 		int nqcId = atomStore.get(nqc);
@@ -201,7 +201,7 @@ public class AnalyzeUnjustifiedTest {
 		assignment.growForMaxAtomId();
 		assignment.assign(rId, ThriceTruth.FALSE);
 		assignment.assign(nrId, ThriceTruth.TRUE);
-		BasicAtom p5 = new BasicAtom(CorePredicate.getInstance("p", 1), Collections.singletonList(CoreConstantTerm.getInstance(5)));
+		BasicAtom p5 = new BasicAtom(CorePredicate.getInstance("p", 1), Collections.singletonList(Terms.newConstant(5)));
 		assignment.assign(atomStore.get(p5), ThriceTruth.MBT);
 		Set<Literal> reasons = grounder.justifyAtom(atomStore.get(p5), assignment);
 		assertFalse(reasons.isEmpty());

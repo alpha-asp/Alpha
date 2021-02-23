@@ -16,9 +16,9 @@ import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.ExternalAtom;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
@@ -48,7 +48,7 @@ public class AtomsTest {
 	public static final Set<List<ConstantTerm<Integer>>> extWithOutput(int in) {
 		Set<List<ConstantTerm<Integer>>> retVal = new HashSet<>();
 		List<ConstantTerm<Integer>> lst = new ArrayList<>();
-		lst.add(CoreConstantTerm.getSymbolicInstance(Integer.toString(in)));
+		lst.add(Terms.newConstant(in));
 		retVal.add(lst);
 		return retVal;
 	}

@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.common;
+package at.ac.tuwien.kr.alpha.commons.util;
 
 import java.lang.ref.WeakReference;
 import java.util.WeakHashMap;

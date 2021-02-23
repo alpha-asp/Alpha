@@ -7,9 +7,9 @@ import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Terms;
+import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 
 /**
@@ -71,7 +71,7 @@ public class EnumerationAtom extends BasicAtom {
 		}
 		Integer enumerationIndex = getEnumerationIndex(idTerm, enumerationTerm);
 		SubstitutionImpl retVal = new SubstitutionImpl(substitution);
-		retVal.put((VariableTermImpl) getTerms().get(2), CoreConstantTerm.getInstance(enumerationIndex));
+		retVal.put((VariableTermImpl) getTerms().get(2), Terms.newConstant(enumerationIndex));
 		return retVal;
 	}
 

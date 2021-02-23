@@ -50,11 +50,11 @@ import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.CompiledProgram;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
@@ -248,9 +248,9 @@ public class StratifiedEvaluationTest {
 		//@formatter:on
 		CompiledProgram evaluated = parseAndEvaluate.apply(asp);
 		Predicate rank = CorePredicate.getInstance("thing_rank", 2);
-		BasicAtom rank1 = new BasicAtom(rank, CoreConstantTerm.getSymbolicInstance("a"), CoreConstantTerm.getInstance(1));
-		BasicAtom rank2 = new BasicAtom(rank, CoreConstantTerm.getSymbolicInstance("b"), CoreConstantTerm.getInstance(2));
-		BasicAtom rank3 = new BasicAtom(rank, CoreConstantTerm.getSymbolicInstance("c"), CoreConstantTerm.getInstance(3));
+		BasicAtom rank1 = new BasicAtom(rank, Terms.newSymbolicConstant("a"), Terms.newConstant(1));
+		BasicAtom rank2 = new BasicAtom(rank, Terms.newSymbolicConstant("b"), Terms.newConstant(2));
+		BasicAtom rank3 = new BasicAtom(rank, Terms.newSymbolicConstant("c"), Terms.newConstant(3));
 		List<Atom> evaluatedFacts = evaluated.getFacts();
 		Assert.assertTrue(evaluatedFacts.contains(rank1));
 		Assert.assertTrue(evaluatedFacts.contains(rank2));

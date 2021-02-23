@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.common.terms;
+package at.ac.tuwien.kr.alpha.commons;
 
 import java.util.Collections;
 import java.util.Set;
@@ -6,13 +6,13 @@ import java.util.Set;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.core.common.Interner;
-import at.ac.tuwien.kr.alpha.core.grounder.IntIdGenerator;
+import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
+import at.ac.tuwien.kr.alpha.commons.util.Interner;
 
 /**
  * Copyright (c) 2016-2017, the Alpha Team.
  */
-public class VariableTermImpl extends CoreTerm implements VariableTerm {
+public class VariableTermImpl extends AbstractTerm implements VariableTerm {
 	private static final Interner<VariableTermImpl> INTERNER = new Interner<>();
 
 	private static final String ANONYMOUS_VARIABLE_PREFIX = "_";
@@ -93,7 +93,7 @@ public class VariableTermImpl extends CoreTerm implements VariableTerm {
 	}
 
 	@Override
-	public CoreTerm renameVariables(String renamePrefix) {
+	public AbstractTerm renameVariables(String renamePrefix) {
 		return VariableTermImpl.getInstance(renamePrefix + variableName);
 	}
 

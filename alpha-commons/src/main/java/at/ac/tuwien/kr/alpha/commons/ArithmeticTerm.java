@@ -25,7 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.common.terms;
+package at.ac.tuwien.kr.alpha.commons;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -36,13 +36,13 @@ import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.core.common.Interner;
+import at.ac.tuwien.kr.alpha.commons.util.Interner;
 
 /**
  * This class represents an arithmetic expression occurring as a term.
  * Copyright (c) 2017-2019, the Alpha Team.
  */
-public class ArithmeticTerm extends CoreTerm {
+public class ArithmeticTerm extends AbstractTerm {
 	private static final Interner<ArithmeticTerm> INTERNER = new Interner<>();
 	protected final Term left;
 	private final ArithmeticOperator arithmeticOperator;
@@ -58,7 +58,7 @@ public class ArithmeticTerm extends CoreTerm {
 		// Evaluate ground arithmetic terms immediately and return result.
 		if (left.isGround() && right.isGround()) {
 			Integer result = new ArithmeticTerm(left, arithmeticOperator, right).evaluateExpression();
-			return CoreConstantTerm.getInstance(result);
+			return ConstantTermImpl.getInstance(result);
 		}
 		return INTERNER.intern(new ArithmeticTerm(left, arithmeticOperator, right));
 	}
@@ -205,7 +205,7 @@ public class ArithmeticTerm extends CoreTerm {
 			// Evaluate ground arithmetic terms immediately and return result.
 			if (term.isGround()) {
 				Integer result = evaluateGroundTermHelper(term) * -1;
-				return CoreConstantTerm.getInstance(result);
+				return ConstantTermImpl.getInstance(result);
 			}
 			return INTERNER.intern(new MinusTerm(term));
 		}

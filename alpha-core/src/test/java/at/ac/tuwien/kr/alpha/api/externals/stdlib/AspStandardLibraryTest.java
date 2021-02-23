@@ -7,7 +7,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.externals.AspStandardLibrary;
 
 public class AspStandardLibraryTest {
@@ -18,12 +18,12 @@ public class AspStandardLibraryTest {
 		Assert.assertEquals(1, dtSubstitution.size());
 		List<ConstantTerm<Integer>> dtTerms = dtSubstitution.stream().findFirst().get();
 		Assert.assertEquals(6, dtTerms.size());
-		Assert.assertEquals(CoreConstantTerm.getInstance(2020), dtTerms.get(0));
-		Assert.assertEquals(CoreConstantTerm.getInstance(5), dtTerms.get(1));
-		Assert.assertEquals(CoreConstantTerm.getInstance(20), dtTerms.get(2));
-		Assert.assertEquals(CoreConstantTerm.getInstance(1), dtTerms.get(3));
-		Assert.assertEquals(CoreConstantTerm.getInstance(19), dtTerms.get(4));
-		Assert.assertEquals(CoreConstantTerm.getInstance(13), dtTerms.get(5));
+		Assert.assertEquals(Terms.newConstant(2020), dtTerms.get(0));
+		Assert.assertEquals(Terms.newConstant(5), dtTerms.get(1));
+		Assert.assertEquals(Terms.newConstant(20), dtTerms.get(2));
+		Assert.assertEquals(Terms.newConstant(1), dtTerms.get(3));
+		Assert.assertEquals(Terms.newConstant(19), dtTerms.get(4));
+		Assert.assertEquals(Terms.newConstant(13), dtTerms.get(5));
 	}
 
 	@Test
@@ -32,12 +32,12 @@ public class AspStandardLibraryTest {
 		Assert.assertEquals(1, dtSubstitution.size());
 		List<ConstantTerm<Integer>> dtTerms = dtSubstitution.stream().findFirst().get();
 		Assert.assertEquals(6, dtTerms.size());
-		Assert.assertEquals(CoreConstantTerm.getInstance(2123), dtTerms.get(0));
-		Assert.assertEquals(CoreConstantTerm.getInstance(7), dtTerms.get(1));
-		Assert.assertEquals(CoreConstantTerm.getInstance(18), dtTerms.get(2));
-		Assert.assertEquals(CoreConstantTerm.getInstance(22), dtTerms.get(3));
-		Assert.assertEquals(CoreConstantTerm.getInstance(37), dtTerms.get(4));
-		Assert.assertEquals(CoreConstantTerm.getInstance(1), dtTerms.get(5));
+		Assert.assertEquals(Terms.newConstant(2123), dtTerms.get(0));
+		Assert.assertEquals(Terms.newConstant(7), dtTerms.get(1));
+		Assert.assertEquals(Terms.newConstant(18), dtTerms.get(2));
+		Assert.assertEquals(Terms.newConstant(22), dtTerms.get(3));
+		Assert.assertEquals(Terms.newConstant(37), dtTerms.get(4));
+		Assert.assertEquals(Terms.newConstant(1), dtTerms.get(5));
 	}
 
 	@Test
@@ -47,12 +47,12 @@ public class AspStandardLibraryTest {
 		Assert.assertEquals(1, dtSubstitution.size());
 		List<ConstantTerm<Integer>> dtTerms = dtSubstitution.stream().findFirst().get();
 		Assert.assertEquals(6, dtTerms.size());
-		Assert.assertEquals(CoreConstantTerm.getInstance(2019), dtTerms.get(0));
-		Assert.assertEquals(CoreConstantTerm.getInstance(12), dtTerms.get(1));
-		Assert.assertEquals(CoreConstantTerm.getInstance(3), dtTerms.get(2));
-		Assert.assertEquals(CoreConstantTerm.getInstance(11), dtTerms.get(3));
-		Assert.assertEquals(CoreConstantTerm.getInstance(0), dtTerms.get(4));
-		Assert.assertEquals(CoreConstantTerm.getInstance(0), dtTerms.get(5));
+		Assert.assertEquals(Terms.newConstant(2019), dtTerms.get(0));
+		Assert.assertEquals(Terms.newConstant(12), dtTerms.get(1));
+		Assert.assertEquals(Terms.newConstant(3), dtTerms.get(2));
+		Assert.assertEquals(Terms.newConstant(11), dtTerms.get(3));
+		Assert.assertEquals(Terms.newConstant(0), dtTerms.get(4));
+		Assert.assertEquals(Terms.newConstant(0), dtTerms.get(5));
 	}
 
 	@Test
@@ -89,7 +89,7 @@ public class AspStandardLibraryTest {
 		List<ConstantTerm<Integer>> lengthTerms = result.stream().findFirst().get();
 		Assert.assertEquals(1, lengthTerms.size());
 		ConstantTerm<Integer> lenTerm = lengthTerms.get(0);
-		Assert.assertEquals(CoreConstantTerm.getInstance(21), lenTerm);
+		Assert.assertEquals(Terms.newConstant(21), lenTerm);
 	}
 
 	@Test
@@ -99,7 +99,7 @@ public class AspStandardLibraryTest {
 		List<ConstantTerm<String>> concatTerms = result.stream().findFirst().get();
 		Assert.assertEquals(1, concatTerms.size());
 		ConstantTerm<String> concat = concatTerms.get(0);
-		Assert.assertEquals(CoreConstantTerm.getInstance("Foobar"), concat);
+		Assert.assertEquals(Terms.newConstant("Foobar"), concat);
 	}
 
 }

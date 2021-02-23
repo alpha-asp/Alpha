@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha.core.grounder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 
 public class NogoodRegistry {

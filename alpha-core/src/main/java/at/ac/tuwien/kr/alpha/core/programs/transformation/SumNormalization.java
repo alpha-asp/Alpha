@@ -12,13 +12,13 @@ import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
+import at.ac.tuwien.kr.alpha.commons.Terms;
+import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
@@ -154,12 +154,12 @@ public class SumNormalization extends ProgramTransformation<ASPCore2Program, ASP
 			Unifier aggregateUnifier = new Unifier();
 			Collection<Term> globalVariables = CardinalityNormalization.getGlobalVariables(rewrittenBody, aggregateAtom);
 			if (globalVariables.isEmpty()) {
-				aggregateUnifier.put(VariableTermImpl.getInstance("AGGREGATE_ID"), CoreConstantTerm.getInstance(aggregateCount));
+				aggregateUnifier.put(VariableTermImpl.getInstance("AGGREGATE_ID"), Terms.newConstant(aggregateCount));
 			} else {
 				// In case some variables are not local to the aggregate, add them to the aggregate identifier
 				ArrayList<Term> globalVariableTermlist = new ArrayList<>(globalVariables);
-				globalVariableTermlist.add(CoreConstantTerm.getInstance(aggregateCount));
-				aggregateUnifier.put(VariableTermImpl.getInstance("AGGREGATE_ID"), FunctionTerm.getInstance("agg", globalVariableTermlist));
+				globalVariableTermlist.add(Terms.newConstant(aggregateCount));
+				aggregateUnifier.put(VariableTermImpl.getInstance("AGGREGATE_ID"), FunctionTermImpl.getInstance("agg", globalVariableTermlist));
 			}
 			aggregateUnifier.put(VariableTermImpl.getInstance("LOWER_BOUND"), aggregateAtom.getLowerBoundTerm());
 
@@ -170,7 +170,7 @@ public class SumNormalization extends ProgramTransformation<ASPCore2Program, ASP
 			for (AggregateAtom.AggregateElement aggregateElement : aggregateAtom.getAggregateElements()) {
 				// Prepare element substitution.
 				List<Term> elementTerms = aggregateElement.getElementTerms();
-				FunctionTerm elementTuple = FunctionTerm.getInstance("element_tuple", elementTerms);
+				FunctionTermImpl elementTuple = FunctionTermImpl.getInstance("element_tuple", elementTerms);
 				Unifier elementUnifier = new Unifier(aggregateUnifier);
 				elementUnifier.put(VariableTermImpl.getInstance("ELEMENT_TUPLE"), elementTuple);
 				elementUnifier.put(VariableTermImpl.getInstance("FIRST_VARIABLE"), elementTuple.getTerms().get(0));

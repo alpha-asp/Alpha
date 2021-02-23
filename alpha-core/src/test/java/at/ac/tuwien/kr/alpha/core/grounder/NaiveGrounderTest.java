@@ -49,12 +49,12 @@ import at.ac.tuwien.kr.alpha.api.program.CompiledProgram;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.Literals;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.instantiation.BindingResult;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramPartParser;
@@ -226,7 +226,7 @@ public class NaiveGrounderTest {
 
 		grounder.bootstrap();
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
-		final Substitution subst1 = SubstitutionImpl.specializeSubstitution(startingLiteral, new Instance(CoreConstantTerm.getInstance(1)), SubstitutionImpl.EMPTY_SUBSTITUTION);
+		final Substitution subst1 = SubstitutionImpl.specializeSubstitution(startingLiteral, new Instance(Terms.newConstant(1)), SubstitutionImpl.EMPTY_SUBSTITUTION);
 		final BindingResult bindingResult = grounder.getGroundInstantiations(nonGroundRule, groundingOrder, subst1, currentAssignment);
 
 		assertEquals(expectNoGoods, bindingResult.size() > 0);
@@ -285,7 +285,7 @@ public class NaiveGrounderTest {
 
 		grounder.bootstrap();
 		final CompiledRule nonGroundRule = grounder.getNonGroundRule(ruleID);
-		final Substitution substStartingLiteral = SubstitutionImpl.specializeSubstitution(startingLiteral, new Instance(CoreConstantTerm.getInstance(startingInstance)), SubstitutionImpl.EMPTY_SUBSTITUTION);
+		final Substitution substStartingLiteral = SubstitutionImpl.specializeSubstitution(startingLiteral, new Instance(Terms.newConstant(startingInstance)), SubstitutionImpl.EMPTY_SUBSTITUTION);
 		final BindingResult bindingResult = grounder.getGroundInstantiations(nonGroundRule, nonGroundRule.getGroundingInfo().orderStartingFrom(startingLiteral), substStartingLiteral, currentAssignment);
 		assertEquals(expectNoGoods, bindingResult.size() > 0);
 	}
@@ -396,7 +396,7 @@ public class NaiveGrounderTest {
 
 		grounder.bootstrap();
 		final CompiledRule nonGroundRule = grounder.getNonGroundRule(ruleID);
-		final Substitution substStartingLiteral = SubstitutionImpl.specializeSubstitution(startingLiteral, new Instance(CoreConstantTerm.getInstance(startingInstance)), SubstitutionImpl.EMPTY_SUBSTITUTION);
+		final Substitution substStartingLiteral = SubstitutionImpl.specializeSubstitution(startingLiteral, new Instance(Terms.newConstant(startingInstance)), SubstitutionImpl.EMPTY_SUBSTITUTION);
 		final BindingResult bindingResult = grounder.getGroundInstantiations(nonGroundRule, nonGroundRule.getGroundingInfo().orderStartingFrom(startingLiteral), substStartingLiteral, currentAssignment);
 		assertEquals(expectNoGoods, bindingResult.size() > 0);
 		if (bindingResult.size() > 0) {

@@ -28,11 +28,7 @@
 
 package at.ac.tuwien.kr.alpha.core.parser;
 
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
-import at.ac.tuwien.kr.alpha.api.program.Literal;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
+import java.util.Collections;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -40,7 +36,11 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
-import java.util.Collections;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 
 /**
  * A parser that, in contrast to {@link ProgramParserImpl}, does not parse full programs but only program parts like
@@ -49,9 +49,9 @@ import java.util.Collections;
 public class ProgramPartParser {
 	private final ParseTreeVisitor visitor = new ParseTreeVisitor(Collections.emptyMap(), true);
 
-	public CoreTerm parseTerm(String s) {
+	public Term parseTerm(String s) {
 		final ASPCore2Parser parser = getASPCore2Parser(s);
-		return (CoreTerm)parse(parser.term());
+		return (Term)parse(parser.term());
 	}
 
 	public BasicAtom parseBasicAtom(String s) {

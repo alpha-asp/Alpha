@@ -1,15 +1,16 @@
-package at.ac.tuwien.kr.alpha.core.common.terms;
+package at.ac.tuwien.kr.alpha.commons;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 
 /**
- * Convenience methods for {@link CoreTerm}s. The methods provided here are an
+ * Convenience methods for {@link Term}s. The methods provided here are an
  * attempt to avoid repeating commonly used code snippets, like wrapping sets of
- * values in {@link CoreTerm}s and creating lists of those terms, etc.
+ * values in {@link Term}s and creating lists of those terms, etc.
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
@@ -24,23 +25,38 @@ public final class Terms {
 		throw new AssertionError(Terms.class.getSimpleName() + " is a non-instantiable utility class!");
 	}
 
+	public static <T extends Comparable<T>> ConstantTerm<T> newConstant(T constantObject) {
+		return ConstantTermImpl.getInstance(constantObject);
+	}
+
+	public static ConstantTerm<String> newSymbolicConstant(String symbol) {
+		return ConstantTermImpl.getSymbolicInstance(symbol);
+	}
+	
+	public static VariableTerm newVariable(String varName) {
+		return VariableTermImpl.getInstance(varName);
+	}
+	
+	public static VariableTerm newAnonymousVariable() {
+		return VariableTermImpl.getAnonymousInstance();
+	}
+
 	@SafeVarargs
 	public static <T extends Comparable<T>> List<ConstantTerm<T>> asTermList(T... values) {
 		List<ConstantTerm<T>> retVal = new ArrayList<>();
 		for (T value : values) {
-			retVal.add(CoreConstantTerm.getInstance(value));
+			retVal.add(ConstantTermImpl.getInstance(value));
 		}
 		return retVal;
 	}
 
 	public static List<Term> renameTerms(List<Term> terms, String prefix, int counterStartingValue) {
 		List<Term> renamedTerms = new ArrayList<>(terms.size());
-		CoreTerm.RenameCounterImpl renameCounter = new CoreTerm.RenameCounterImpl(counterStartingValue);
+		AbstractTerm.RenameCounterImpl renameCounter = new AbstractTerm.RenameCounterImpl(counterStartingValue);
 		for (Term term : terms) {
 			renamedTerms.add(term.normalizeVariables(prefix, renameCounter));
 		}
 		return renamedTerms;
 	}
 
-	
 }

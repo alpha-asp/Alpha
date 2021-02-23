@@ -13,8 +13,8 @@ import java.util.stream.Stream;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 
 public class AnswerSetBuilder {
 	private boolean firstInstance = true;
@@ -76,7 +76,7 @@ public class AnswerSetBuilder {
 		// since we are only reading, not writing.
 		List<Term> termList = Stream
 				.of(terms)
-				.map(CoreConstantTerm::getInstance)
+				.map(Terms::newConstant)
 				.collect(Collectors.toList());
 
 		instances.add(new BasicAtom(predicate, termList));
@@ -90,7 +90,7 @@ public class AnswerSetBuilder {
 			predicates.add(predicate);
 		}
 
-		List<Term> termList = Stream.of(terms).map(CoreConstantTerm::getSymbolicInstance).collect(Collectors.toList());
+		List<Term> termList = Stream.of(terms).map(Terms::newSymbolicConstant).collect(Collectors.toList());
 		instances.add(new BasicAtom(predicate, termList));
 		return this;
 	}

@@ -38,10 +38,10 @@ import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
+import at.ac.tuwien.kr.alpha.commons.IntervalTerm;
+import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.atoms.IntervalAtom;
-import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
@@ -98,9 +98,9 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 				termList.set(i, replacementVariable);
 				didChange = true;
 			}
-			if (term instanceof FunctionTerm) {
+			if (term instanceof FunctionTermImpl) {
 				// Rewrite function terms recursively.
-				FunctionTerm rewrittenFunctionTerm = rewriteFunctionTerm((FunctionTerm) term, intervalReplacement);
+				FunctionTermImpl rewrittenFunctionTerm = rewriteFunctionTerm((FunctionTermImpl) term, intervalReplacement);
 				termList.set(i, rewrittenFunctionTerm);
 				didChange = true;
 			}
@@ -112,7 +112,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		return lit;
 	}
 
-	private static FunctionTerm rewriteFunctionTerm(FunctionTerm functionTerm, Map<VariableTerm, IntervalTerm> intervalReplacement) {
+	private static FunctionTermImpl rewriteFunctionTerm(FunctionTermImpl functionTerm, Map<VariableTerm, IntervalTerm> intervalReplacement) {
 		List<Term> termList = new ArrayList<>(functionTerm.getTerms());
 		boolean didChange = false;
 		for (int i = 0; i < termList.size(); i++) {
@@ -123,9 +123,9 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 				termList.set(i, replacementVariable);
 				didChange = true;
 			}
-			if (term instanceof FunctionTerm) {
+			if (term instanceof FunctionTermImpl) {
 				// Recursively rewrite function terms.
-				FunctionTerm rewrittenFunctionTerm = rewriteFunctionTerm((FunctionTerm) term, intervalReplacement);
+				FunctionTermImpl rewrittenFunctionTerm = rewriteFunctionTerm((FunctionTermImpl) term, intervalReplacement);
 				if (rewrittenFunctionTerm != term) {
 					termList.set(i, rewrittenFunctionTerm);
 					didChange = true;
@@ -133,7 +133,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 			}
 		}
 		if (didChange) {
-			return FunctionTerm.getInstance(functionTerm.getSymbol(), termList);
+			return FunctionTermImpl.getInstance(functionTerm.getSymbol(), termList);
 		}
 		return functionTerm;
 	}

@@ -35,8 +35,8 @@ import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 
 public class ChoiceAtom extends CoreAtom {
 
@@ -52,7 +52,7 @@ public class ChoiceAtom extends CoreAtom {
 	}
 
 	private ChoiceAtom(Predicate predicate, int id) {
-		this(predicate, CoreConstantTerm.getInstance(Integer.toString(id)));
+		this(predicate, Terms.newConstant(Integer.toString(id)));
 	}
 
 	public static ChoiceAtom on(int id) {

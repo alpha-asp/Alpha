@@ -27,7 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.atoms;
 
-import static at.ac.tuwien.kr.alpha.core.common.terms.ArithmeticTerm.evaluateGroundTerm;
+import static at.ac.tuwien.kr.alpha.commons.ArithmeticTerm.evaluateGroundTerm;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -39,10 +39,10 @@ import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.ArithmeticTerm;
+import at.ac.tuwien.kr.alpha.commons.Terms;
+import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
-import at.ac.tuwien.kr.alpha.core.common.terms.ArithmeticTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 
 /**
@@ -169,7 +169,7 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 			if (result == null) {
 				return Collections.emptyList();
 			}
-			resultTerm = CoreConstantTerm.getInstance(result);
+			resultTerm = Terms.newConstant(result);
 		} else {
 			// Ground term is another term (constant, or function term).
 			resultTerm = groundTerm;
@@ -192,7 +192,7 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 			if (result == null) {
 				return null;
 			}
-			return CoreConstantTerm.getInstance(result);
+			return Terms.newConstant(result);
 		}
 		return term;
 	}

@@ -32,12 +32,12 @@ import org.apache.commons.lang3.StringUtils;
 
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Terms;
+import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 
 /**
  * Provides utility methods for test cases
@@ -54,7 +54,7 @@ public class TestUtil {
 			if (StringUtils.isAllUpperCase(termString.substring(0, 1))) {
 				terms[i] = VariableTermImpl.getInstance(termString);
 			} else {
-				terms[i] = CoreConstantTerm.getInstance(termString);
+				terms[i] = Terms.newConstant(termString);
 			}
 		}
 		return new BasicAtom(CorePredicate.getInstance(predicateName, terms.length), terms);
@@ -63,7 +63,7 @@ public class TestUtil {
 	public static Atom atom(String predicateName, int... termInts) {
 		Term[] terms = new Term[termInts.length];
 		for (int i = 0; i < termInts.length; i++) {
-			terms[i] = CoreConstantTerm.getInstance(termInts[i]);
+			terms[i] = Terms.newConstant(termInts[i]);
 		}
 		return new BasicAtom(CorePredicate.getInstance(predicateName, terms.length), terms);
 	}

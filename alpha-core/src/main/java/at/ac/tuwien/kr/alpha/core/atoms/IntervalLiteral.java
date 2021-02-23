@@ -38,9 +38,9 @@ import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
+import at.ac.tuwien.kr.alpha.commons.IntervalTerm;
+import at.ac.tuwien.kr.alpha.commons.Terms;
+import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 
 /**
@@ -72,7 +72,7 @@ public class IntervalLiteral extends FixedInterpretationLiteral {
 			// Still a variable, generate all elements in the interval.
 			for (int i = intervalTerm.getLowerBound(); i <= intervalTerm.getUpperBound(); i++) {
 				Substitution ith = new SubstitutionImpl(partialSubstitution);
-				ith.put((VariableTermImpl) intervalRepresentingVariable, CoreConstantTerm.getInstance(i));
+				ith.put((VariableTermImpl) intervalRepresentingVariable, Terms.newConstant(i));
 				substitutions.add(ith);
 			}
 			return substitutions;
@@ -83,7 +83,8 @@ public class IntervalLiteral extends FixedInterpretationLiteral {
 				// Term is not bound to an integer constant, not in the interval.
 				return Collections.emptyList();
 			}
-			Integer integer = (Integer) ((CoreConstantTerm<?>) intervalRepresentingVariable).getObject();
+			// TODO to avoid that type of unchecked cast, we may want interval terms to not extend AbstractTerm
+			Integer integer = ((ConstantTerm<Integer>) intervalRepresentingVariable).getObject();
 			if (intervalTerm.getLowerBound() <= integer && integer <= intervalTerm.getUpperBound()) {
 				return Collections.singletonList(partialSubstitution);
 			}

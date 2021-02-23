@@ -7,10 +7,9 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.api.grounder.Instance;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
+import at.ac.tuwien.kr.alpha.commons.IntervalTerm;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 
 /**
  * Helper functions to evaluate facts potentially containing intervals.
@@ -27,7 +26,7 @@ public class FactIntervalEvaluator {
 	public static List<Instance> constructFactInstances(Atom fact) {
 		// Construct instance(s) from the fact.
 		int arity = fact.getPredicate().getArity();
-		Term[] currentTerms = new CoreTerm[arity];
+		Term[] currentTerms = new Term[arity];
 		boolean containsIntervals = false;
 		// Check if instance contains intervals at all.
 		for (int i = 0; i < arity; i++) {
@@ -35,7 +34,7 @@ public class FactIntervalEvaluator {
 			currentTerms[i] = term;
 			if (term instanceof IntervalTerm) {
 				containsIntervals = true;
-			} else if (term instanceof FunctionTerm && IntervalTerm.functionTermContainsIntervals((FunctionTerm) term)) {
+			} else if (term instanceof FunctionTermImpl && IntervalTerm.functionTermContainsIntervals((FunctionTermImpl) term)) {
 				containsIntervals = true;
 				throw new UnsupportedOperationException("Intervals inside function terms in facts are not supported yet. Try turning the fact into a rule.");
 			}
@@ -64,7 +63,7 @@ public class FactIntervalEvaluator {
 
 		for (int i = lower; i <= upper; i++) {
 			Term[] clonedTerms = currentTerms.clone();
-			clonedTerms[currentPosition] = CoreConstantTerm.getInstance(i);
+			clonedTerms[currentPosition] = Terms.newConstant(i);
 			instances.addAll(unrollInstances(clonedTerms, currentPosition + 1));
 		}
 		return instances;

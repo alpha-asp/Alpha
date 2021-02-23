@@ -23,7 +23,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.common.terms;
+package at.ac.tuwien.kr.alpha.commons;
 
 import static org.junit.Assert.assertEquals;
 
@@ -31,10 +31,8 @@ import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.Term.RenameCounter;
-import at.ac.tuwien.kr.alpha.core.common.terms.ArithmeticTerm.MinusTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm.RenameCounterImpl;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
+import at.ac.tuwien.kr.alpha.commons.AbstractTerm.RenameCounterImpl;
+import at.ac.tuwien.kr.alpha.commons.ArithmeticTerm.MinusTerm;
 
 /**
  * Tests {@link MinusTerm}
@@ -46,7 +44,7 @@ public class TestMinusTerm {
 
 	@Test
 	public void testNormalizeVariablesNoVariable() {
-		Term m2 = MinusTerm.getInstance(CoreConstantTerm.getInstance(2));
+		Term m2 = MinusTerm.getInstance(ConstantTermImpl.getInstance(2));
 		assertEquals(m2, m2.normalizeVariables(renamePrefix, counter));
 	}
 

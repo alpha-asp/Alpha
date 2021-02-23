@@ -25,10 +25,23 @@
  */
 package at.ac.tuwien.kr.alpha.core.externals;
 
-import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.*;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.reflections.Reflections;
+import org.reflections.scanners.MethodAnnotationsScanner;
+
+import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.externals.Predicate;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.BinaryPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.BindingMethodPredicateInterpretation;
@@ -37,13 +50,6 @@ import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.LongPredicateInter
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.MethodPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.SuppliedPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.UnaryPredicateInterpretation;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-
-import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-
-import java.lang.reflect.Method;
-import java.util.*;
 
 public final class Externals {
 
@@ -143,7 +149,7 @@ public final class Externals {
 		String name = javaName.substring(0, 1).toLowerCase() + javaName.substring(1); // Camel-cased, but starting with lower case letter.
 		for (T instance : extFacts) {
 			// TODO use properly wrapped BasicAtoms here
-			retVal.add(new BasicAtom(at.ac.tuwien.kr.alpha.core.common.CorePredicate.getInstance(name, 1), CoreConstantTerm.getInstance(instance)));
+			retVal.add(new BasicAtom(at.ac.tuwien.kr.alpha.core.common.CorePredicate.getInstance(name, 1), Terms.newConstant(instance)));
 		}
 		return retVal;
 	}

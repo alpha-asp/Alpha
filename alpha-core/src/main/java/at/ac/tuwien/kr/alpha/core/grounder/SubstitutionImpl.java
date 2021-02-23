@@ -38,12 +38,11 @@ import at.ac.tuwien.kr.alpha.api.grounder.Instance;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
+import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
+import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramPartParser;
 
 public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Substitution {
@@ -51,7 +50,7 @@ public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Subs
 	private static final ProgramPartParser PROGRAM_PART_PARSER = new ProgramPartParser();
 	public static final Substitution EMPTY_SUBSTITUTION = new SubstitutionImpl() {
 		@Override
-		public <T extends Comparable<T>> CoreTerm put(VariableTerm variableTerm, Term groundTerm) {
+		public <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term groundTerm) {
 			throw Util.oops("Should not be called on EMPTY_SUBSTITUTION");
 		}
 	};
@@ -101,7 +100,7 @@ public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Subs
 			if (termNonGround == termGround) {
 				// Both terms are either the same constant or the same variable term
 				return true;
-			} else if (termNonGround instanceof CoreConstantTerm) {
+			} else if (termNonGround instanceof ConstantTerm) {
 				// Since right term is ground, both terms differ
 				return false;
 			} else if (termNonGround instanceof VariableTermImpl) {
@@ -124,10 +123,10 @@ public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Subs
 				}
 				updatedSubstitution.put(variableTerm, termGround);
 				return true;
-			} else if (termNonGround instanceof FunctionTerm && termGround instanceof FunctionTerm) {
+			} else if (termNonGround instanceof FunctionTermImpl && termGround instanceof FunctionTermImpl) {
 				// Both terms are function terms
-				FunctionTerm ftNonGround = (FunctionTerm) termNonGround;
-				FunctionTerm ftGround = (FunctionTerm) termGround;
+				FunctionTermImpl ftNonGround = (FunctionTermImpl) termNonGround;
+				FunctionTermImpl ftGround = (FunctionTermImpl) termGround;
 
 				if (!(ftNonGround.getSymbol().equals(ftGround.getSymbol()))) {
 					return false;
@@ -168,7 +167,7 @@ public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Subs
 	}
 
 	/**
-	 * This method should be used to obtain the {@link CoreTerm} to be used in place of a given {@link VariableTermImpl} under this
+	 * This method should be used to obtain the {@link AbstractTerm} to be used in place of a given {@link VariableTermImpl} under this
 	 * substitution.
 	 *
 	 * @param variableTerm the variable term to substitute, if possible
@@ -231,7 +230,7 @@ public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Subs
 		for (String assignment : assignments) {
 			String[] keyVal = assignment.split("->");
 			VariableTermImpl variable = VariableTermImpl.getInstance(keyVal[0]);
-			CoreTerm assignedTerm = PROGRAM_PART_PARSER.parseTerm(keyVal[1]);
+			Term assignedTerm = PROGRAM_PART_PARSER.parseTerm(keyVal[1]);
 			ret.put(variable, assignedTerm);
 		}
 		return ret;

@@ -18,9 +18,9 @@ import at.ac.tuwien.kr.alpha.api.impl.AlphaImpl;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.externals.AspStandardLibrary;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
 
@@ -42,12 +42,12 @@ public class FixedInterpretationLiteralsTest {
 		List<ConstantTerm<String>> l1 = new ArrayList<>();
 		List<ConstantTerm<String>> l2 = new ArrayList<>();
 		List<ConstantTerm<String>> l3 = new ArrayList<>();
-		l1.add(CoreConstantTerm.getInstance("Klagenfurt"));
-		l1.add(CoreConstantTerm.getInstance("Villach"));
-		l2.add(CoreConstantTerm.getInstance("Klagenfurt"));
-		l2.add(CoreConstantTerm.getInstance("Graz"));
-		l3.add(CoreConstantTerm.getInstance("Villach"));
-		l3.add(CoreConstantTerm.getInstance("Salzburg"));
+		l1.add(Terms.newConstant("Klagenfurt"));
+		l1.add(Terms.newConstant("Villach"));
+		l2.add(Terms.newConstant("Klagenfurt"));
+		l2.add(Terms.newConstant("Graz"));
+		l3.add(Terms.newConstant("Villach"));
+		l3.add(Terms.newConstant("Salzburg"));
 		retVal.add(l1);
 		retVal.add(l2);
 		retVal.add(l3);
@@ -187,9 +187,9 @@ public class FixedInterpretationLiteralsTest {
 		Assert.assertTrue(answerSet.getPredicates().contains(pred));
 		Set<Atom> instances = answerSet.getPredicateInstances(pred);
 		Assert.assertEquals(3, instances.size());
-		Assert.assertTrue(instances.contains(new BasicAtom(pred, CoreConstantTerm.getInstance("Klagenfurt"), CoreConstantTerm.getInstance("Villach"))));
-		Assert.assertTrue(instances.contains(new BasicAtom(pred, CoreConstantTerm.getInstance("Klagenfurt"), CoreConstantTerm.getInstance("Graz"))));
-		Assert.assertTrue(instances.contains(new BasicAtom(pred, CoreConstantTerm.getInstance("Villach"), CoreConstantTerm.getInstance("Salzburg"))));
+		Assert.assertTrue(instances.contains(new BasicAtom(pred, Terms.newConstant("Klagenfurt"), Terms.newConstant("Villach"))));
+		Assert.assertTrue(instances.contains(new BasicAtom(pred, Terms.newConstant("Klagenfurt"), Terms.newConstant("Graz"))));
+		Assert.assertTrue(instances.contains(new BasicAtom(pred, Terms.newConstant("Villach"), Terms.newConstant("Salzburg"))));
 	}
 
 }

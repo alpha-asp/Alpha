@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.common;
+package at.ac.tuwien.kr.alpha.commons;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -15,13 +15,11 @@ import org.junit.Test;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
+// TODO maybe this should actually work against the AbstractTerm type since it tests properties of interned terms which is not part of the public Term interface
 public class TermTest {
 
 	@Test
@@ -29,26 +27,26 @@ public class TermTest {
 		// Terms must have a unique representation so that reference comparison is
 		// sufficient to check
 		// whether two terms are equal.
-		ConstantTerm<?> ta1 = CoreConstantTerm.getInstance("a");
-		ConstantTerm<?> ta2 = CoreConstantTerm.getInstance("a");
+		ConstantTerm<?> ta1 = Terms.newConstant("a");
+		ConstantTerm<?> ta2 = Terms.newConstant("a");
 		assertTrue("Two instances of ConstantTerms for the same term symbol must be the same object", ta1 == ta2);
 
 		List<Term> termList = new LinkedList<>();
 		termList.add(ta1);
 		termList.add(ta2);
-		FunctionTerm ft1 = FunctionTerm.getInstance("f", termList);
+		FunctionTermImpl ft1 = FunctionTermImpl.getInstance("f", termList);
 		List<Term> termList2 = new LinkedList<>();
 		termList2.add(ta1);
 		termList2.add(ta2);
-		FunctionTerm ft2 = FunctionTerm.getInstance("f", termList2);
+		FunctionTermImpl ft2 = FunctionTermImpl.getInstance("f", termList2);
 		assertTrue("Two instances of FunctionTerms for the same term symbol and equal term lists must be the same object", ft1 == ft2);
 	}
 
 	@Test
 	public void testTermVariableOccurrences() {
-		ConstantTerm<?> ta = CoreConstantTerm.getInstance("a");
+		ConstantTerm<?> ta = Terms.newConstant("a");
 		VariableTerm tx = VariableTermImpl.getInstance("X");
-		FunctionTerm tf = FunctionTerm.getInstance("f", ta, tx);
+		FunctionTermImpl tf = FunctionTermImpl.getInstance("f", ta, tx);
 		Set<VariableTerm> occurringVariables = tf.getOccurringVariables();
 
 		assertEquals("Variable occurring as subterm must be reported as occurring variable.", new ArrayList<>(occurringVariables).get(0), tx);
@@ -56,10 +54,10 @@ public class TermTest {
 
 	@Test
 	public void testTermOrdering() throws Exception {
-		Term cts = CoreConstantTerm.getInstance("abc");
-		Term cti = CoreConstantTerm.getInstance(2);
-		Term cto = CoreConstantTerm.getInstance(new UUID(0, 0));
-		Term ft = FunctionTerm.getInstance("f", CoreConstantTerm.getInstance("a"));
+		Term cts = Terms.newConstant("abc");
+		Term cti = Terms.newConstant(2);
+		Term cto = Terms.newConstant(new UUID(0, 0));
+		Term ft = FunctionTermImpl.getInstance("f", Terms.newConstant("a"));
 
 		assertTrue(cts.compareTo(cti) > 0);
 		assertTrue(cti.compareTo(cts) < 0);
@@ -77,12 +75,12 @@ public class TermTest {
 	@Test
 	public void testStringVsConstantSymbolEquality() {
 		String theString = "string";
-		ConstantTerm<String> stringConstant = CoreConstantTerm.getInstance(theString);
-		ConstantTerm<String> constantSymbol = CoreConstantTerm.getSymbolicInstance(theString);
+		ConstantTerm<String> stringConstant = Terms.newConstant(theString);
+		ConstantTerm<String> constantSymbol = Terms.newSymbolicConstant(theString);
 		// Reference equality must hold for both the string constant and the constant
 		// symbol.
-		Assert.assertTrue(stringConstant == CoreConstantTerm.getInstance(theString));
-		ConstantTerm<String> sameConstantSymbol = CoreConstantTerm.getSymbolicInstance(theString);
+		Assert.assertTrue(stringConstant == Terms.newConstant(theString));
+		ConstantTerm<String> sameConstantSymbol = Terms.newSymbolicConstant(theString);
 		Assert.assertTrue(constantSymbol == sameConstantSymbol);
 		// Make sure both hashCode and equals understand that stringConstant and
 		// constantSymbol are NOT the same thing!

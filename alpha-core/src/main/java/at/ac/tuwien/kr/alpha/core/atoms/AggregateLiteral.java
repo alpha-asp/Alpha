@@ -6,8 +6,8 @@ import java.util.Set;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 
 /**
  * Copyright (c) 2018, the Alpha Team.

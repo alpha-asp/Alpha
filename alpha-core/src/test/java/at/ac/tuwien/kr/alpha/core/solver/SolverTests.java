@@ -45,12 +45,12 @@ import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.common.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.core.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
@@ -75,7 +75,7 @@ public class SolverTests extends AbstractSolverTests {
 	public void testObjectProgram() throws IOException {
 		final Thingy thingy = new Thingy();
 
-		final Atom fact = new BasicAtom(CorePredicate.getInstance("foo", 1), CoreConstantTerm.getInstance(thingy));
+		final Atom fact = new BasicAtom(CorePredicate.getInstance("foo", 1), Terms.newConstant(thingy));
 
 		final InputProgram program = new InputProgram(
 			Collections.emptyList(),

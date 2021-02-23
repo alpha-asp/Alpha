@@ -67,13 +67,13 @@ import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.solver.heuristics.Heuristic;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.core.common.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.MethodPredicateInterpretation;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.externals.AspStandardLibrary;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
@@ -185,8 +185,8 @@ public class AlphaImplTest {
 		Alpha system = new AlphaImpl();
 		InputConfig inputCfg = InputConfig.forString("node(1). node(2). outgoing13(X) :- node(X), &getLargeGraphEdges(13,X).");
 		inputCfg.addPredicateMethod("getLargeGraphEdges",
-				Externals.processPredicate(() -> new HashSet<>(asList(asList(CoreConstantTerm.getInstance(1), CoreConstantTerm.getInstance(2)),
-						asList(CoreConstantTerm.getInstance(2), CoreConstantTerm.getInstance(1)), asList(CoreConstantTerm.getInstance(13), CoreConstantTerm.getInstance(1))))));
+				Externals.processPredicate(() -> new HashSet<>(asList(asList(Terms.newConstant(1), Terms.newConstant(2)),
+						asList(Terms.newConstant(2), Terms.newConstant(1)), asList(Terms.newConstant(13), Terms.newConstant(1))))));
 		ASPCore2Program program = system.readProgram(inputCfg);
 		Set<AnswerSet> actual = system.solve(program).collect(Collectors.toSet());
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ node(1), node(2), outgoing13(1) }");
@@ -197,7 +197,7 @@ public class AlphaImplTest {
 	public void supplier() throws Exception {
 		Alpha system = new AlphaImpl();
 		InputConfig cfg = InputConfig.forString("node(1). a :- &bestNode(X), node(X).");
-		cfg.addPredicateMethod("bestNode", Externals.processPredicate(() -> singleton(singletonList(CoreConstantTerm.getInstance(1)))));
+		cfg.addPredicateMethod("bestNode", Externals.processPredicate(() -> singleton(singletonList(Terms.newConstant(1)))));
 		ASPCore2Program prog = system.readProgram(cfg);
 
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ node(1), a }");
@@ -207,7 +207,7 @@ public class AlphaImplTest {
 
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static Set<List<ConstantTerm<?>>> bestNode() {
-		return singleton(singletonList(CoreConstantTerm.getInstance(1)));
+		return singleton(singletonList(Terms.newConstant(1)));
 	}
 
 	@Test
@@ -234,7 +234,7 @@ public class AlphaImplTest {
 
 	public static Set<List<ConstantTerm<Integer>>> neighbors(int node) {
 		if (node == 1) {
-			return new HashSet<>(asList(singletonList(CoreConstantTerm.getInstance(2)), singletonList(CoreConstantTerm.getInstance(3))));
+			return new HashSet<>(asList(singletonList(Terms.newConstant(2)), singletonList(Terms.newConstant(3))));
 		}
 		return emptySet();
 	}
@@ -316,9 +316,9 @@ public class AlphaImplTest {
 		SubThingy thingy = new SubThingy();
 
 		BasicRule rule = new BasicRule(
-				new NormalHeadImpl(new BasicAtom(CorePredicate.getInstance("p", 1), CoreConstantTerm.getInstance("x"))),
+				new NormalHeadImpl(new BasicAtom(CorePredicate.getInstance("p", 1), Terms.newConstant("x"))),
 				singletonList(new ExternalLiteral(new ExternalAtom(CorePredicate.getInstance("thinger", 1),
-						new MethodPredicateInterpretation(this.getClass().getMethod("thinger", Thingy.class)), singletonList(CoreConstantTerm.getInstance(thingy)),
+						new MethodPredicateInterpretation(this.getClass().getMethod("thinger", Thingy.class)), singletonList(Terms.newConstant(thingy)),
 						emptyList()), true)));
 
 		Alpha system = new AlphaImpl();

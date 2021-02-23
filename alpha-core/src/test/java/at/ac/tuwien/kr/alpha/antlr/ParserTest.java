@@ -52,15 +52,15 @@ import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
+import at.ac.tuwien.kr.alpha.commons.IntervalTerm;
+import at.ac.tuwien.kr.alpha.commons.Terms;
+import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
 /**
@@ -87,8 +87,8 @@ public class ParserTest {
 		assertEquals("Program contains one fact.", 1, parsedProgram.getFacts().size());
 		assertEquals("Predicate name of fact is p.", "p", parsedProgram.getFacts().get(0).getPredicate().getName());
 		assertEquals("Fact has two terms.", 2, parsedProgram.getFacts().get(0).getPredicate().getArity());
-		assertEquals("First term is function term f.", "f", ((FunctionTerm) parsedProgram.getFacts().get(0).getTerms().get(0)).getSymbol());
-		assertEquals("Second term is function term g.", "g", ((FunctionTerm) parsedProgram.getFacts().get(0).getTerms().get(1)).getSymbol());
+		assertEquals("First term is function term f.", "f", ((FunctionTermImpl) parsedProgram.getFacts().get(0).getTerms().get(0)).getSymbol());
+		assertEquals("Second term is function term g.", "g", ((FunctionTermImpl) parsedProgram.getFacts().get(0).getTerms().get(1)).getSymbol());
 	}
 
 	@Test
@@ -123,9 +123,9 @@ public class ParserTest {
 	public void parseInterval() throws IOException {
 		ASPCore2Program parsedProgram = parser.parse("fact(2..5). p(X) :- q(a, 3 .. X).");
 		IntervalTerm factInterval = (IntervalTerm) parsedProgram.getFacts().get(0).getTerms().get(0);
-		assertTrue(factInterval.equals(IntervalTerm.getInstance(CoreConstantTerm.getInstance(2), CoreConstantTerm.getInstance(5))));
+		assertTrue(factInterval.equals(IntervalTerm.getInstance(Terms.newConstant(2), Terms.newConstant(5))));
 		IntervalTerm bodyInterval = (IntervalTerm) ((Literal) parsedProgram.getRules().get(0).getBody().stream().findFirst().get()).getTerms().get(1);
-		assertTrue(bodyInterval.equals(IntervalTerm.getInstance(CoreConstantTerm.getInstance(3), VariableTermImpl.getInstance("X"))));
+		assertTrue(bodyInterval.equals(IntervalTerm.getInstance(Terms.newConstant(3), VariableTermImpl.getInstance("X"))));
 	}
 
 	@Test
@@ -150,9 +150,9 @@ public class ParserTest {
 		assertEquals(2, conditionalLiterals.size());
 		assertFalse(conditionalLiterals.get(0).isNegated());
 		assertTrue(conditionalLiterals.get(1).isNegated());
-		assertEquals(CoreConstantTerm.getInstance(1), choiceHead.getLowerBound());
+		assertEquals(Terms.newConstant(1), choiceHead.getLowerBound());
 		assertEquals(ComparisonOperatorImpl.LT, choiceHead.getLowerOperator());
-		assertEquals(CoreConstantTerm.getInstance(13), choiceHead.getUpperBound());
+		assertEquals(Terms.newConstant(13), choiceHead.getUpperBound());
 		assertEquals(ComparisonOperatorImpl.LE, choiceHead.getUpperOperator());
 	}
 

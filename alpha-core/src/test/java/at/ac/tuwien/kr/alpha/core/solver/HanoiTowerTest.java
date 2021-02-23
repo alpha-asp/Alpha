@@ -44,9 +44,9 @@ import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
 /**
@@ -118,7 +118,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 			if (atom.getPredicate().getName().equals(ongoal.getName()) && atom.getPredicate().getArity() == ongoal.getArity()) {
 				Term expectedTop = atom.getTerms().get(0);
 				Term expectedBottom = atom.getTerms().get(1);
-				Term expectedSteps = CoreConstantTerm.getInstance(steps);
+				Term expectedSteps = Terms.newConstant(steps);
 				Atom expectedAtom = new BasicAtom(on, expectedSteps, expectedBottom, expectedTop);
 				assertTrue("Answer set does not contain " + expectedAtom, onInstancesInAnswerSet.contains(expectedAtom));
 			}

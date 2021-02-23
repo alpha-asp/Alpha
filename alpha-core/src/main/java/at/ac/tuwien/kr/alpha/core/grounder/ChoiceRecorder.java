@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder;
 
+import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;

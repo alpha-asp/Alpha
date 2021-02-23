@@ -44,13 +44,13 @@ import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
+import at.ac.tuwien.kr.alpha.commons.Terms;
+import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
@@ -59,9 +59,9 @@ import at.ac.tuwien.kr.alpha.test.util.SubstitutionTestUtil;
 public class SubstitutionTest {
 	private static final ProgramParser PARSER = new ProgramParserImpl();
 
-	private static final ConstantTerm<?> A = CoreConstantTerm.getSymbolicInstance("a");
-	private static final ConstantTerm<?> B = CoreConstantTerm.getSymbolicInstance("b");
-	private static final ConstantTerm<?> C = CoreConstantTerm.getSymbolicInstance("c");
+	private static final ConstantTerm<String> A = Terms.newSymbolicConstant("a");
+	private static final ConstantTerm<String> B = Terms.newSymbolicConstant("b");
+	private static final ConstantTerm<String> C = Terms.newSymbolicConstant("c");
 
 	private static final VariableTerm X = VariableTermImpl.getInstance("X");
 	private static final VariableTerm Y = VariableTermImpl.getInstance("Y");
@@ -88,9 +88,9 @@ public class SubstitutionTest {
 		Substitution substitution = new SubstitutionImpl();
 		substitution.put(Y, A);
 
-		FunctionTerm groundFunctionTerm = FunctionTerm.getInstance("f", B, C);
+		FunctionTermImpl groundFunctionTerm = FunctionTermImpl.getInstance("f", B, C);
 		Instance qfBC = new Instance(groundFunctionTerm);
-		Term nongroundFunctionTerm = FunctionTerm.getInstance("f", B, X);
+		Term nongroundFunctionTerm = FunctionTermImpl.getInstance("f", B, X);
 		BasicAtom qfBX = new BasicAtom(CorePredicate.getInstance("q", 2), nongroundFunctionTerm);
 
 		Substitution substitution1 = SubstitutionImpl.specializeSubstitution(qfBX, qfBC, substitution);

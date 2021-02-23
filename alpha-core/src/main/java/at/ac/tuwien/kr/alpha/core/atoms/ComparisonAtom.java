@@ -35,8 +35,8 @@ import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
-import at.ac.tuwien.kr.alpha.core.common.terms.Terms;
 
 /**
  * Represents a builtin comparison atom according to the standard.

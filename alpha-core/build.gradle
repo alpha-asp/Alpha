@@ -21,7 +21,8 @@ configurations {
 
 dependencies {
 
-	api project(":alpha-api")
+	api project(":alpha-api") // TODO does it make more sense to use implementation scope?
+	api project(":alpha-commons") // TODO does it make more sense to use implementation scope?
 
     // We need to give the ANTLR Plugin a hint.
     antlr group: 'org.antlr', name: 'antlr4', version: "${antlrVersion}"

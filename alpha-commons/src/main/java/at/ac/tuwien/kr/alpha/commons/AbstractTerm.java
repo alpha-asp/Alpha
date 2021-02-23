@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.common.terms;
+package at.ac.tuwien.kr.alpha.commons;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,6 +6,7 @@ import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 
@@ -34,8 +35,9 @@ import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
  * Copyright (c) 2016-2020, the Alpha Team.
  */
 //@formatter:on
-public abstract class CoreTerm implements Term {
+abstract class AbstractTerm implements Term {
 
+	@Override
 	public abstract Set<VariableTerm> getOccurringVariables();
 
 	/**
@@ -44,16 +46,16 @@ public abstract class CoreTerm implements Term {
 	 * @param substitution the variable substitution to apply.
 	 * @return the non-substitute term where all variable substitutions have been applied.
 	 */
+	@Override
 	public abstract Term substitute(Substitution substitution);
 
 	// TODO change this to work on interfaces and break out of this class
 	private static int priority(Term term) {
-		final Class<?> clazz = term.getClass();
-		if (clazz.equals(CoreConstantTerm.class)) {
+		if (term instanceof ConstantTerm) {
 			return 1;
-		} else if (clazz.equals(FunctionTerm.class)) {
+		} else if (term instanceof FunctionTerm) {
 			return 2;
-		} else if (clazz.equals(VariableTermImpl.class)) {
+		} else if (term instanceof VariableTerm) {
 			return 3;
 		}
 		throw new UnsupportedOperationException("Can only compare constant term, function terms and variable terms among each other.");
@@ -64,6 +66,7 @@ public abstract class CoreTerm implements Term {
 		return o == null ? 1 : Integer.compare(priority(this), priority(o));
 	}
 
+	@Override
 	public abstract boolean isGround();
 
 	/**
@@ -72,8 +75,10 @@ public abstract class CoreTerm implements Term {
 	 * @param renamePrefix the name to prefix all occurring variables.
 	 * @return the term with all variables renamed.
 	 */
+	@Override
 	public abstract Term renameVariables(String renamePrefix);
 
+	@Override
 	public abstract Term normalizeVariables(String renamePrefix, Term.RenameCounter counter);
 
 	public static class RenameCounterImpl implements Term.RenameCounter {
@@ -85,10 +90,12 @@ public abstract class CoreTerm implements Term {
 			renamedVariables = new HashMap<>();
 		}
 		
+		@Override
 		public Map<VariableTerm, VariableTerm> getRenamedVariables() {
 			return renamedVariables;
 		}
 		
+		@Override
 		public int getAndIncrement() {
 			int retVal = counter;
 			counter++;

@@ -38,8 +38,8 @@ import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Instance;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -50,12 +50,12 @@ public class IndexedInstanceStorageTest {
 		IndexedInstanceStorage storage = new IndexedInstanceStorage(CorePredicate.getInstance("p", 4), true);
 		storage.addIndexPosition(0);
 		storage.addIndexPosition(2);
-		ConstantTerm<String> t0 = CoreConstantTerm.getInstance("0");
-		ConstantTerm<String> t1 = CoreConstantTerm.getInstance("1");
-		ConstantTerm<String> t2 = CoreConstantTerm.getInstance("2");
-		ConstantTerm<String> t3 = CoreConstantTerm.getInstance("3");
-		ConstantTerm<String> t4 = CoreConstantTerm.getInstance("4");
-		ConstantTerm<String> t5 = CoreConstantTerm.getInstance("5");
+		ConstantTerm<String> t0 = Terms.newConstant("0");
+		ConstantTerm<String> t1 = Terms.newConstant("1");
+		ConstantTerm<String> t2 = Terms.newConstant("2");
+		ConstantTerm<String> t3 = Terms.newConstant("3");
+		ConstantTerm<String> t4 = Terms.newConstant("4");
+		ConstantTerm<String> t5 = Terms.newConstant("5");
 
 		Instance badInst1 = new Instance(t1, t1, t0);
 		Instance badInst2 = new Instance(t5, t5, t5, t5, t5);

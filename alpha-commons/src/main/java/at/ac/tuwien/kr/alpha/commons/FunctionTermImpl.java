@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.common.terms;
+package at.ac.tuwien.kr.alpha.commons;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,21 +9,22 @@ import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.core.common.Interner;
+import at.ac.tuwien.kr.alpha.commons.util.Interner;
 
 /**
  * Copyright (c) 2016-2017, the Alpha Team.
  */
-public class FunctionTerm extends CoreTerm {
-	private static final Interner<FunctionTerm> INTERNER = new Interner<>();
+public class FunctionTermImpl extends AbstractTerm implements FunctionTerm {
+	private static final Interner<FunctionTermImpl> INTERNER = new Interner<>();
 
 	private final String symbol;
 	private final List<Term> terms;
 	private final boolean ground;
 
-	private FunctionTerm(String symbol, List<Term> terms) {
+	private FunctionTermImpl(String symbol, List<Term> terms) {
 		if (symbol == null) {
 			throw new IllegalArgumentException();
 		}
@@ -41,11 +42,11 @@ public class FunctionTerm extends CoreTerm {
 		this.ground = ground;
 	}
 
-	public static FunctionTerm getInstance(String functionSymbol, List<Term> termList) {
-		return INTERNER.intern(new FunctionTerm(functionSymbol, termList));
+	public static FunctionTermImpl getInstance(String functionSymbol, List<Term> termList) {
+		return INTERNER.intern(new FunctionTermImpl(functionSymbol, termList));
 	}
 
-	public static FunctionTerm getInstance(String functionSymbol, Term... terms) {
+	public static FunctionTermImpl getInstance(String functionSymbol, Term... terms) {
 		return getInstance(functionSymbol, Arrays.asList(terms));
 	}
 
@@ -72,12 +73,12 @@ public class FunctionTerm extends CoreTerm {
 	}
 
 	@Override
-	public FunctionTerm substitute(Substitution substitution) {
+	public FunctionTermImpl substitute(Substitution substitution) {
 		List<Term> groundTermList = new ArrayList<>(terms.size());
 		for (Term term : terms) {
 			groundTermList.add(term.substitute(substitution));
 		}
-		return FunctionTerm.getInstance(symbol, groundTermList);
+		return FunctionTermImpl.getInstance(symbol, groundTermList);
 	}
 
 	@Override
@@ -98,7 +99,7 @@ public class FunctionTerm extends CoreTerm {
 			return false;
 		}
 
-		FunctionTerm that = (FunctionTerm) o;
+		FunctionTermImpl that = (FunctionTermImpl) o;
 
 		if (!symbol.equals(that.symbol)) {
 			return false;
@@ -117,11 +118,11 @@ public class FunctionTerm extends CoreTerm {
 			return 0;
 		}
 
-		if (!(o instanceof FunctionTerm)) {
+		if (!(o instanceof FunctionTermImpl)) {
 			return super.compareTo(o);
 		}
 
-		FunctionTerm other = (FunctionTerm) o;
+		FunctionTermImpl other = (FunctionTermImpl) o;
 
 		if (terms.size() != other.terms.size()) {
 			return terms.size() - other.terms.size();
@@ -149,7 +150,7 @@ public class FunctionTerm extends CoreTerm {
 		for (Term term : terms) {
 			renamedTerms.add(term.renameVariables(renamePrefix));
 		}
-		return FunctionTerm.getInstance(symbol, renamedTerms);
+		return FunctionTermImpl.getInstance(symbol, renamedTerms);
 	}
 
 	@Override
@@ -158,6 +159,6 @@ public class FunctionTerm extends CoreTerm {
 		for (Term term : terms) {
 			normalizedTerms.add(term.normalizeVariables(renamePrefix, counter));
 		}
-		return FunctionTerm.getInstance(symbol, normalizedTerms);
+		return FunctionTermImpl.getInstance(symbol, normalizedTerms);
 	}
 }

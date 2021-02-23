@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.core.common;
 
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.commons.util.Interner;
 
 /**
  * A predicate as used by the Alpha solver internally.

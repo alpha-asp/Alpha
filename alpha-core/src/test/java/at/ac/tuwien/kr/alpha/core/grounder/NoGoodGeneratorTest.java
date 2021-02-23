@@ -38,11 +38,11 @@ import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.Terms;
+import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.Literals;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgram;
@@ -57,8 +57,8 @@ public class NoGoodGeneratorTest {
 	private static final ProgramParser PARSER = new ProgramParserImpl();
 	private static final NormalizeProgramTransformation NORMALIZE_TRANSFORM = new NormalizeProgramTransformation(false);
 
-	private static final ConstantTerm<?> A = CoreConstantTerm.getSymbolicInstance("a");
-	private static final ConstantTerm<?> B = CoreConstantTerm.getSymbolicInstance("b");
+	private static final ConstantTerm<String> A = Terms.newSymbolicConstant("a");
+	private static final ConstantTerm<String> B = Terms.newSymbolicConstant("b");
 
 	private static final VariableTerm X = VariableTermImpl.getInstance("X");
 	private static final VariableTerm Y = VariableTermImpl.getInstance("Y");

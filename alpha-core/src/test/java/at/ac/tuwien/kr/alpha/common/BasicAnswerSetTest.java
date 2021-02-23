@@ -17,10 +17,10 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.common.BasicAnswerSet;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -36,8 +36,8 @@ public class BasicAnswerSetTest {
 		Predicate p = CorePredicate.getInstance("p", 1);
 		SortedSet<Predicate> qAndP = new TreeSet<>(asList(q, p));
 
-		ConstantTerm<?> bar = CoreConstantTerm.getInstance("bar");
-		ConstantTerm<?> baz = CoreConstantTerm.getInstance("baz");
+		ConstantTerm<?> bar = Terms.newConstant("bar");
+		ConstantTerm<?> baz = Terms.newConstant("baz");
 
 		Map<Predicate, SortedSet<Atom>> inst1 = new HashMap<>();
 		inst1.put(a, new TreeSet<>(singleton(new BasicAtom(a))));
@@ -68,7 +68,7 @@ public class BasicAnswerSetTest {
 		inst4.put(foo, new TreeSet<>(asList(
 			new BasicAtom(foo, bar),
 			new BasicAtom(foo, baz),
-			new BasicAtom(foo, CoreConstantTerm.getInstance("batsinga"))
+			new BasicAtom(foo, Terms.newConstant("batsinga"))
 		)));
 		// as4 = { a, foo(bar), foo(baz), foo(batsinga) }
 

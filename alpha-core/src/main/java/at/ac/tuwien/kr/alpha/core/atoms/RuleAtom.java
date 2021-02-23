@@ -27,8 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.atoms;
 
-import static at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm.getInstance;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -38,6 +36,7 @@ import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 
 /**
@@ -59,8 +58,8 @@ public class RuleAtom extends CoreAtom {
 
 	public RuleAtom(CompiledRule nonGroundRule, Substitution substitution) {
 		this(Arrays.asList(
-				getInstance(Integer.toString(nonGroundRule.getRuleId())), 
-				getInstance(substitution.toString())
+				Terms.newConstant(Integer.toString(nonGroundRule.getRuleId())), 
+				Terms.newConstant(substitution.toString())
 				)
 			);
 	}

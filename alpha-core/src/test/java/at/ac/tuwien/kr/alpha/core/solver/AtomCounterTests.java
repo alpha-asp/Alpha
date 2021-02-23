@@ -39,6 +39,7 @@ import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom;
@@ -47,7 +48,6 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
@@ -103,13 +103,13 @@ public class AtomCounterTests {
 	}
 
 	private void createBasicAtom2() {
-		atomStore.putIfAbsent(new BasicAtom(CorePredicate.getInstance("q", 1), CoreConstantTerm.getInstance(1)));
+		atomStore.putIfAbsent(new BasicAtom(CorePredicate.getInstance("q", 1), Terms.newConstant(1)));
 	}
 
 	private void createAggregateAtom() {
-		final ConstantTerm<Integer> c1 = CoreConstantTerm.getInstance(1);
-		final ConstantTerm<Integer> c2 = CoreConstantTerm.getInstance(2);
-		final ConstantTerm<Integer> c3 = CoreConstantTerm.getInstance(3);
+		final ConstantTerm<Integer> c1 = Terms.newConstant(1);
+		final ConstantTerm<Integer> c2 = Terms.newConstant(2);
+		final ConstantTerm<Integer> c3 = Terms.newConstant(3);
 		List<Term> basicTerms = Arrays.asList(c1, c2, c3);
 		AggregateAtom.AggregateElement aggregateElement = new AggregateAtom.AggregateElement(basicTerms, Collections.singletonList(new BasicAtom(CorePredicate.getInstance("p", 3), c1, c2, c3).toLiteral()));
 		atomStore.putIfAbsent(new AggregateAtom(ComparisonOperatorImpl.LE, c1, null, null, AggregateAtom.AGGREGATEFUNCTION.COUNT, Collections.singletonList(aggregateElement)));

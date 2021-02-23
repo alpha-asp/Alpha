@@ -21,11 +21,11 @@ import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.program.CompiledProgram;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
+import at.ac.tuwien.kr.alpha.commons.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
@@ -178,13 +178,13 @@ public class StratifiedEvaluationRegressionTest {
 
 	private static void verifyProgramPositiveRecursive(CompiledProgram evaluated) {
 		Predicate num = CorePredicate.getInstance("num", 1);
-		TestUtils.assertFactsContainedInProgram(evaluated, new BasicAtom(CorePredicate.getInstance("max_num", 1), CoreConstantTerm.getInstance(10)),
-				new BasicAtom(num, CoreConstantTerm.getInstance(0)),
-				new BasicAtom(num, CoreConstantTerm.getInstance(1)), new BasicAtom(num, CoreConstantTerm.getInstance(2)),
-				new BasicAtom(num, CoreConstantTerm.getInstance(3)), new BasicAtom(num, CoreConstantTerm.getInstance(4)),
-				new BasicAtom(num, CoreConstantTerm.getInstance(5)), new BasicAtom(num, CoreConstantTerm.getInstance(6)),
-				new BasicAtom(num, CoreConstantTerm.getInstance(7)), new BasicAtom(num, CoreConstantTerm.getInstance(8)),
-				new BasicAtom(num, CoreConstantTerm.getInstance(9)), new BasicAtom(num, CoreConstantTerm.getInstance(10)));
+		TestUtils.assertFactsContainedInProgram(evaluated, new BasicAtom(CorePredicate.getInstance("max_num", 1), Terms.newConstant(10)),
+				new BasicAtom(num, Terms.newConstant(0)),
+				new BasicAtom(num, Terms.newConstant(1)), new BasicAtom(num, Terms.newConstant(2)),
+				new BasicAtom(num, Terms.newConstant(3)), new BasicAtom(num, Terms.newConstant(4)),
+				new BasicAtom(num, Terms.newConstant(5)), new BasicAtom(num, Terms.newConstant(6)),
+				new BasicAtom(num, Terms.newConstant(7)), new BasicAtom(num, Terms.newConstant(8)),
+				new BasicAtom(num, Terms.newConstant(9)), new BasicAtom(num, Terms.newConstant(10)));
 		LOGGER.debug("Recursive program evaluated is:\n{}", evaluated.toString());
 		Assert.assertEquals(0, evaluated.getRules().size());
 	}
@@ -262,9 +262,9 @@ public class StratifiedEvaluationRegressionTest {
 
 	private static void verifyProgramEqualityWithVar(CompiledProgram evaluated) {
 		Assert.assertEquals(0, evaluated.getRules().size());
-		Assert.assertTrue(evaluated.getFacts().contains(new BasicAtom(CorePredicate.getInstance("a", 1), CoreConstantTerm.getInstance(1))));
-		Assert.assertTrue(evaluated.getFacts().contains(new BasicAtom(CorePredicate.getInstance("c", 1), CoreConstantTerm.getInstance(2))));
-		Assert.assertTrue(evaluated.getFacts().contains(new BasicAtom(CorePredicate.getInstance("d", 1), CoreConstantTerm.getInstance(3))));
+		Assert.assertTrue(evaluated.getFacts().contains(new BasicAtom(CorePredicate.getInstance("a", 1), Terms.newConstant(1))));
+		Assert.assertTrue(evaluated.getFacts().contains(new BasicAtom(CorePredicate.getInstance("c", 1), Terms.newConstant(2))));
+		Assert.assertTrue(evaluated.getFacts().contains(new BasicAtom(CorePredicate.getInstance("d", 1), Terms.newConstant(3))));
 	}
 
 	private static void verifyAnswerSetsEqualityWithVar(Set<AnswerSet> answerSets) {

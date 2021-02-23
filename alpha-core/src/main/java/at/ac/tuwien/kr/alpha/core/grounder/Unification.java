@@ -34,8 +34,8 @@ import java.util.Set;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
+import at.ac.tuwien.kr.alpha.commons.FunctionTermImpl;
+import at.ac.tuwien.kr.alpha.commons.VariableTermImpl;
 
 /**
  * Copyright (c) 2017, the Alpha Team.
@@ -95,9 +95,9 @@ public class Unification {
 			currentSubstitution.put((VariableTermImpl) rightSubs, leftSubs);
 			return true;
 		}
-		if (leftSubs instanceof FunctionTerm && rightSubs instanceof FunctionTerm) {
-			final FunctionTerm leftFunction = (FunctionTerm) leftSubs;
-			final FunctionTerm rightFunction = (FunctionTerm) rightSubs;
+		if (leftSubs instanceof FunctionTermImpl && rightSubs instanceof FunctionTermImpl) {
+			final FunctionTermImpl leftFunction = (FunctionTermImpl) leftSubs;
+			final FunctionTermImpl rightFunction = (FunctionTermImpl) rightSubs;
 			if (!leftFunction.getSymbol().equals(rightFunction.getSymbol())
 				|| leftFunction.getTerms().size() != rightFunction.getTerms().size()) {
 				return false;

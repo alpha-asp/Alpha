@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.common.terms;
+package at.ac.tuwien.kr.alpha.commons;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -7,14 +7,14 @@ import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.core.common.Interner;
+import at.ac.tuwien.kr.alpha.commons.util.Interner;
 
 /**
  * An IntervalTerm represents the shorthand notation for a set of rules where all elements in this interval occur once, e.g., fact(2..5).
  * An IntervalTerm is a meta-term and the grounder must replace it with its corresponding set of facts or rules.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class IntervalTerm extends CoreTerm {
+public class IntervalTerm extends AbstractTerm {
 	private static final Interner<IntervalTerm> INTERNER = new Interner<>();
 	private final Term lowerBoundTerm;
 	private final Term upperBoundTerm;
@@ -139,20 +139,20 @@ public class IntervalTerm extends CoreTerm {
 	public static boolean termContainsIntervalTerm(Term term) {
 		if (term instanceof IntervalTerm) {
 			return true;
-		} else if (term instanceof FunctionTerm) {
-			return functionTermContainsIntervals((FunctionTerm) term);
+		} else if (term instanceof FunctionTermImpl) {
+			return functionTermContainsIntervals((FunctionTermImpl) term);
 		} else {
 			return false;
 		}
 	}
 
-	public static boolean functionTermContainsIntervals(FunctionTerm functionTerm) {
+	public static boolean functionTermContainsIntervals(FunctionTermImpl functionTerm) {
 		// Test whether a function term contains an interval term (recursively).
 		for (Term term : functionTerm.getTerms()) {
 			if (term instanceof IntervalTerm) {
 				return true;
 			}
-			if (term instanceof FunctionTerm && functionTermContainsIntervals((FunctionTerm) term)) {
+			if (term instanceof FunctionTermImpl && functionTermContainsIntervals((FunctionTermImpl) term)) {
 				return true;
 			}
 		}
