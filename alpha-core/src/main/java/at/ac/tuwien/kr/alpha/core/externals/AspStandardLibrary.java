@@ -33,7 +33,7 @@ import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.externals.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.commons.Terms;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
 /**
  * Collection of methods that can be used as external atoms from ASP programs.

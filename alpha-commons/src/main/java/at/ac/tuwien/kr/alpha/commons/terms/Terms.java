@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.commons;
+package at.ac.tuwien.kr.alpha.commons.terms;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +9,7 @@ import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.ArithmeticTermImpl.MinusTerm;
+import at.ac.tuwien.kr.alpha.commons.terms.ArithmeticTermImpl.MinusTerm;
 
 /**
  * Convenience methods for {@link Term}s. The methods provided here are an

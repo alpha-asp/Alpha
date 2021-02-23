@@ -23,7 +23,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.commons;
+package at.ac.tuwien.kr.alpha.commons.terms;
 
 import static org.junit.Assert.assertEquals;
 
@@ -31,8 +31,10 @@ import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.Term.RenameCounter;
-import at.ac.tuwien.kr.alpha.commons.AbstractTerm.RenameCounterImpl;
-import at.ac.tuwien.kr.alpha.commons.ArithmeticTermImpl.MinusTerm;
+import at.ac.tuwien.kr.alpha.commons.terms.ConstantTermImpl;
+import at.ac.tuwien.kr.alpha.commons.terms.VariableTermImpl;
+import at.ac.tuwien.kr.alpha.commons.terms.AbstractTerm.RenameCounterImpl;
+import at.ac.tuwien.kr.alpha.commons.terms.ArithmeticTermImpl.MinusTerm;
 
 /**
  * Tests {@link MinusTerm}

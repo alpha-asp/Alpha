@@ -38,8 +38,8 @@ import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.IntervalTerm;
-import at.ac.tuwien.kr.alpha.commons.Terms;
+import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 
 /**

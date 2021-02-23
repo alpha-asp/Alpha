@@ -38,7 +38,7 @@ import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.Terms;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 

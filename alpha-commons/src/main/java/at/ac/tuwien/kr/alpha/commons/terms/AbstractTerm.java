@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.commons;
+package at.ac.tuwien.kr.alpha.commons.terms;
 
 import java.util.HashMap;
 import java.util.Map;

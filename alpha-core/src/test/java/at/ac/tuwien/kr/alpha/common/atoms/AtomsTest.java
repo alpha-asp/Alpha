@@ -16,7 +16,7 @@ import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.commons.Terms;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;

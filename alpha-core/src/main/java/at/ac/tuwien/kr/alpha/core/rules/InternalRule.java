@@ -39,7 +39,7 @@ import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.Terms;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingInfoImpl;

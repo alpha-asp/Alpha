@@ -67,7 +67,7 @@ import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.solver.heuristics.Heuristic;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.commons.Terms;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.ExternalLiteral;

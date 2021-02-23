@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.commons;
+package at.ac.tuwien.kr.alpha.commons.terms;
 
 import java.util.Collections;
 import java.util.Set;

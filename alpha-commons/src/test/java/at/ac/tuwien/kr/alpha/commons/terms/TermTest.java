@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.commons;
+package at.ac.tuwien.kr.alpha.commons.terms;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -15,6 +15,9 @@ import org.junit.Test;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.terms.FunctionTermImpl;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.terms.VariableTermImpl;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
