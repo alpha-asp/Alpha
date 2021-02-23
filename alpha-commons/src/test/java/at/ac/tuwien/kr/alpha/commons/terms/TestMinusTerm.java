@@ -31,8 +31,6 @@ import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.Term.RenameCounter;
-import at.ac.tuwien.kr.alpha.commons.terms.ConstantTermImpl;
-import at.ac.tuwien.kr.alpha.commons.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.commons.terms.AbstractTerm.RenameCounterImpl;
 import at.ac.tuwien.kr.alpha.commons.terms.ArithmeticTermImpl.MinusTerm;
 
