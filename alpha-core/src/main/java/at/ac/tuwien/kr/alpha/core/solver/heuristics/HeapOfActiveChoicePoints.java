@@ -34,8 +34,8 @@ import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.core.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.api.Util.oops;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
 
 /**
  * Extends {@code HeapOfActiveAtoms} by a mechanism that,

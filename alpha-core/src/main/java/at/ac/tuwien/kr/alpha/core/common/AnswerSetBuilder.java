@@ -10,11 +10,11 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 
 public class AnswerSetBuilder {
 	private boolean firstInstance = true;
@@ -42,7 +42,7 @@ public class AnswerSetBuilder {
 		if (firstInstance) {
 			predicate = CorePredicate.getInstance(predicateSymbol, 0);
 			predicates.add(predicate);
-			predicateInstances.put(predicate, new TreeSet<>(singletonList(new BasicAtom(predicate))));
+			predicateInstances.put(predicate, new TreeSet<>(singletonList(Atoms.newBasicAtom(predicate))));
 		} else {
 			SortedSet<Atom> atoms = predicateInstances.get(predicate);
 			if (atoms == null) {
@@ -79,7 +79,7 @@ public class AnswerSetBuilder {
 				.map(Terms::newConstant)
 				.collect(Collectors.toList());
 
-		instances.add(new BasicAtom(predicate, termList));
+		instances.add(Atoms.newBasicAtom(predicate, termList));
 		return this;
 	}
 
@@ -91,7 +91,7 @@ public class AnswerSetBuilder {
 		}
 
 		List<Term> termList = Stream.of(terms).map(Terms::newSymbolicConstant).collect(Collectors.toList());
-		instances.add(new BasicAtom(predicate, termList));
+		instances.add(Atoms.newBasicAtom(predicate, termList));
 		return this;
 	}
 

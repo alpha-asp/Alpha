@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.api.program;
+package at.ac.tuwien.kr.alpha.api.programs;
 
 import java.util.Map;
 

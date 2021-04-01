@@ -25,7 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
-import static at.ac.tuwien.kr.alpha.core.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -37,8 +37,8 @@ import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 
-import at.ac.tuwien.kr.alpha.api.program.CompiledProgram;
-import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.programs.CompiledProgram;
+import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;

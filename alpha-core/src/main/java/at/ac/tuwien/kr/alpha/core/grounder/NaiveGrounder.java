@@ -28,7 +28,7 @@
 package at.ac.tuwien.kr.alpha.core.grounder;
 
 import static at.ac.tuwien.kr.alpha.api.Util.oops;
-import static at.ac.tuwien.kr.alpha.core.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,13 +54,14 @@ import at.ac.tuwien.kr.alpha.api.grounder.Instance;
 import at.ac.tuwien.kr.alpha.api.grounder.RuleGroundingOrder;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.grounder.heuristics.GrounderHeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.CompiledProgram;
-import at.ac.tuwien.kr.alpha.api.program.Literal;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.CompiledProgram;
+import at.ac.tuwien.kr.alpha.api.programs.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
 import at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
@@ -278,7 +279,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			predicateInstances.putIfAbsent(factPredicate, new TreeSet<>());
 			for (Instance factInstance : facts.getValue()) {
 				SortedSet<Atom> instances = predicateInstances.get(factPredicate);
-				instances.add(new BasicAtom(factPredicate, factInstance.terms));
+				instances.add(Atoms.newBasicAtom(factPredicate, factInstance.terms));
 			}
 		}
 

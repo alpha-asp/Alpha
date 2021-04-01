@@ -31,10 +31,11 @@ import static at.ac.tuwien.kr.alpha.api.Util.oops;
 
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 
 /**
  * Copyright (c) 2017, the Alpha Team.

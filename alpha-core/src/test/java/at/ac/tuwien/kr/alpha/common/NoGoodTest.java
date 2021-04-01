@@ -10,7 +10,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import at.ac.tuwien.kr.alpha.core.common.Literals;
+import at.ac.tuwien.kr.alpha.core.atoms.Literals;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 
 public class NoGoodTest {

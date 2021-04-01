@@ -31,11 +31,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 
@@ -43,7 +44,7 @@ import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
  * Atoms corresponding to rule bodies use this predicate, first term is rule number,
  * second is a term containing variable substitutions.
  */
-public class RuleAtom extends CoreAtom {
+public class RuleAtom extends AbstractAtom {
 	public static final Predicate PREDICATE = CorePredicate.getInstance("_R_", 2, true, true);
 
 	private final List<ConstantTerm<String>> terms;
@@ -86,7 +87,7 @@ public class RuleAtom extends CoreAtom {
 	}
 
 	@Override
-	public CoreAtom substitute(Substitution substitution) {
+	public AbstractAtom substitute(Substitution substitution) {
 		return this;
 	}
 

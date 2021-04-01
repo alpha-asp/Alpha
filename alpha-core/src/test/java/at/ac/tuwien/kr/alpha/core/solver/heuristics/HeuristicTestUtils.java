@@ -30,8 +30,8 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
+import at.ac.tuwien.kr.alpha.core.atoms.Literals;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-import at.ac.tuwien.kr.alpha.core.common.Literals;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.solver.NoGoodStoreAlphaRoaming;
 import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;

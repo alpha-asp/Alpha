@@ -35,20 +35,21 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
@@ -99,11 +100,11 @@ public class AtomCounterTests {
 	}
 
 	private void createBasicAtom1() {
-		atomStore.putIfAbsent(new BasicAtom(CorePredicate.getInstance("p", 0)));
+		atomStore.putIfAbsent(Atoms.newBasicAtom(CorePredicate.getInstance("p", 0)));
 	}
 
 	private void createBasicAtom2() {
-		atomStore.putIfAbsent(new BasicAtom(CorePredicate.getInstance("q", 1), Terms.newConstant(1)));
+		atomStore.putIfAbsent(Atoms.newBasicAtom(CorePredicate.getInstance("q", 1), Terms.newConstant(1)));
 	}
 
 	private void createAggregateAtom() {
@@ -111,7 +112,7 @@ public class AtomCounterTests {
 		final ConstantTerm<Integer> c2 = Terms.newConstant(2);
 		final ConstantTerm<Integer> c3 = Terms.newConstant(3);
 		List<Term> basicTerms = Arrays.asList(c1, c2, c3);
-		AggregateAtom.AggregateElement aggregateElement = new AggregateAtom.AggregateElement(basicTerms, Collections.singletonList(new BasicAtom(CorePredicate.getInstance("p", 3), c1, c2, c3).toLiteral()));
+		AggregateAtom.AggregateElement aggregateElement = new AggregateAtom.AggregateElement(basicTerms, Collections.singletonList(new BasicAtomImpl(CorePredicate.getInstance("p", 3), c1, c2, c3).toLiteral()));
 		atomStore.putIfAbsent(new AggregateAtom(ComparisonOperatorImpl.LE, c1, null, null, AggregateAtom.AGGREGATEFUNCTION.COUNT, Collections.singletonList(aggregateElement)));
 	}
 
@@ -120,8 +121,8 @@ public class AtomCounterTests {
 	}
 
 	private void createRuleAtom() {
-		Atom atomAA = new BasicAtom(CorePredicate.getInstance("aa", 0));
-		CompiledRule ruleAA = new InternalRule(new NormalHeadImpl(atomAA), Collections.singletonList(new BasicAtom(CorePredicate.getInstance("bb", 0)).toLiteral(false)));
+		Atom atomAA = Atoms.newBasicAtom(CorePredicate.getInstance("aa", 0));
+		CompiledRule ruleAA = new InternalRule(new NormalHeadImpl(atomAA), Collections.singletonList(new BasicAtomImpl(CorePredicate.getInstance("bb", 0)).toLiteral(false)));
 		atomStore.putIfAbsent(new RuleAtom(ruleAA, new SubstitutionImpl()));
 	}
 

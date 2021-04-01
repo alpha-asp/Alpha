@@ -33,14 +33,15 @@ import java.util.Set;
 import org.apache.commons.collections4.SetUtils;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.Literal;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
 
 /**
- * A potentially negated {@link CoreAtom}
+ * A potentially negated {@link AbstractAtom}
  *
  * Copyright (c) 2017-2018, the Alpha Team.
  */
@@ -82,7 +83,7 @@ public abstract class CoreLiteral implements Literal {
 	}
 
 	/**
-	 * @see CoreAtom#getPredicate()
+	 * @see AbstractAtom#getPredicate()
 	 */
 	@Override
 	public Predicate getPredicate() {
@@ -90,7 +91,7 @@ public abstract class CoreLiteral implements Literal {
 	}
 
 	/**
-	 * @see CoreAtom#getTerms()
+	 * @see AbstractAtom#getTerms()
 	 */
 	@Override
 	public List<Term> getTerms() {
@@ -98,7 +99,7 @@ public abstract class CoreLiteral implements Literal {
 	}
 
 	/**
-	 * @see CoreAtom#isGround()
+	 * @see AbstractAtom#isGround()
 	 */
 	@Override
 	public boolean isGround() {

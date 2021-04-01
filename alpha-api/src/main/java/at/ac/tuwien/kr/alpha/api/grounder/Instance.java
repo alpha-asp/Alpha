@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.Util;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 
 /**

@@ -6,8 +6,8 @@ import java.util.SortedSet;
 import java.util.stream.Collectors;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 
 public class SimpleAnswerSetFormatter implements AnswerSetFormatter<String> {
 

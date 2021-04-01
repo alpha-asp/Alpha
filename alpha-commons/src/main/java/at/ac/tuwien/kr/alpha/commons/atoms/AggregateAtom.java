@@ -25,7 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.atoms;
+package at.ac.tuwien.kr.alpha.commons.atoms;
 
 import static at.ac.tuwien.kr.alpha.api.Util.join;
 import static at.ac.tuwien.kr.alpha.api.Util.oops;
@@ -34,24 +34,26 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 
-public class AggregateAtom extends CoreAtom {
+public class AggregateAtom extends AbstractAtom {
 
-	private final ComparisonOperatorImpl lowerBoundOperator;
+	private final ComparisonOperator lowerBoundOperator;
 	private final Term lowerBoundTerm;
-	private final ComparisonOperatorImpl upperBoundOperator;
+	private final ComparisonOperator upperBoundOperator;
 	private final Term upperBoundTerm;
 	private final AGGREGATEFUNCTION aggregatefunction;
 	private final List<AggregateElement> aggregateElements;
 
-	public AggregateAtom(ComparisonOperatorImpl lowerBoundOperator, Term lowerBoundTerm, ComparisonOperatorImpl upperBoundOperator, Term upperBoundTerm,
+	public AggregateAtom(ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, ComparisonOperator upperBoundOperator, Term upperBoundTerm,
 			AGGREGATEFUNCTION aggregatefunction, List<AggregateElement> aggregateElements) {
 		this.lowerBoundOperator = lowerBoundOperator;
 		this.lowerBoundTerm = lowerBoundTerm;
@@ -59,7 +61,7 @@ public class AggregateAtom extends CoreAtom {
 		this.upperBoundTerm = upperBoundTerm;
 		this.aggregatefunction = aggregatefunction;
 		this.aggregateElements = aggregateElements;
-		if (upperBoundOperator != null || lowerBoundOperator != ComparisonOperatorImpl.LE || lowerBoundTerm == null) {
+		if (upperBoundOperator != null || lowerBoundOperator != ComparisonOperator.LE || lowerBoundTerm == null) {
 			throw new UnsupportedOperationException("Aggregate construct not yet supported: " + this);
 		}
 	}

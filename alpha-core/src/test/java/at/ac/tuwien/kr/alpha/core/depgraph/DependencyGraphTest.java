@@ -7,9 +7,9 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
-import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;

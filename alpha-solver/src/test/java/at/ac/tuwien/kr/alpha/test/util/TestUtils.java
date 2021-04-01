@@ -12,11 +12,11 @@ import java.util.StringJoiner;
 import org.junit.Assert;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.programs.AbstractProgram;
 import at.ac.tuwien.kr.alpha.core.util.AnswerSetsParser;
@@ -85,7 +85,7 @@ public class TestUtils {
 		for (String str : terms) {
 			trms.add(Terms.newConstant(str));
 		}
-		return new BasicAtom(pred, trms);
+		return Atoms.newBasicAtom(pred, trms);
 	}
 
 	public static Atom basicAtomWithSymbolicTerms(String predicate, String... constantSymbols) {
@@ -94,7 +94,7 @@ public class TestUtils {
 		for (String str : constantSymbols) {
 			trms.add(Terms.newSymbolicConstant(str));
 		}
-		return new BasicAtom(pred, trms);
+		return Atoms.newBasicAtom(pred, trms);
 	}
 
 }

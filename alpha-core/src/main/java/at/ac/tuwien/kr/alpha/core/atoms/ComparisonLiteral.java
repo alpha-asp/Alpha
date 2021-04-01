@@ -34,13 +34,14 @@ import java.util.List;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
+import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
-import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 
 /**
  * Contains a potentially negated {@link ComparisonAtom}.
@@ -73,7 +74,7 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 	}
 
 	/**
-	 * @see CoreAtom#substitute(SubstitutionImpl)
+	 * @see AbstractAtom#substitute(SubstitutionImpl)
 	 */
 	@Override
 	public ComparisonLiteral substitute(Substitution substitution) {

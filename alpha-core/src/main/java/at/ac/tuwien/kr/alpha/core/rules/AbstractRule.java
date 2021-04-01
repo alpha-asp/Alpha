@@ -9,7 +9,7 @@ import java.util.Set;
 import org.apache.commons.collections4.SetUtils;
 
 import at.ac.tuwien.kr.alpha.api.Util;
-import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 

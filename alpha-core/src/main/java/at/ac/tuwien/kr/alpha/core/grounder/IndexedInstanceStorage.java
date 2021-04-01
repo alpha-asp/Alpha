@@ -37,8 +37,8 @@ import java.util.Map;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Instance;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 
 /**

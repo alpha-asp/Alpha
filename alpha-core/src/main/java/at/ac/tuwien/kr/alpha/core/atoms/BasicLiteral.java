@@ -32,16 +32,18 @@ import java.util.HashSet;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
 
 /**
- * Contains a potentially negated {@link BasicAtom}.
+ * Contains a potentially negated {@link BasicAtomImpl}.
  *
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public class BasicLiteral extends CoreLiteral {
+public class BasicLiteral extends CoreLiteral { // TODO could we parameterize Literal with Atom type?
 
 	public BasicLiteral(BasicAtom atom, boolean positive) {
 		super(atom, positive);
@@ -61,11 +63,11 @@ public class BasicLiteral extends CoreLiteral {
 	}
 
 	/**
-	 * @see CoreAtom#substitute(SubstitutionImpl)
+	 * @see AbstractAtom#substitute(SubstitutionImpl)
 	 */
 	@Override
 	public BasicLiteral substitute(Substitution substitution) {
-		return new BasicLiteral(getAtom().substitute(substitution), positive);
+		return new BasicLiteral((BasicAtom) getAtom().substitute(substitution), positive);
 	}
 
 	/**

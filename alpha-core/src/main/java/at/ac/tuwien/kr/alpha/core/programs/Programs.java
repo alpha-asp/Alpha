@@ -7,7 +7,7 @@ import java.util.Map;
 import org.antlr.v4.runtime.CharStreams;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
 public class Programs {

@@ -30,7 +30,8 @@ package at.ac.tuwien.kr.alpha.core.atoms;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
+import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
 
 /**
  * Represents a literal whose ground truth value(s) are independent of the
@@ -41,7 +42,7 @@ import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
  */
 public abstract class FixedInterpretationLiteral extends CoreLiteral {
 
-	public FixedInterpretationLiteral(CoreAtom atom, boolean positive) {
+	public FixedInterpretationLiteral(AbstractAtom atom, boolean positive) {
 		super(atom, positive);
 	}
 

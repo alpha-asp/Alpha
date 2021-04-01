@@ -25,7 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.grounder;
+package at.ac.tuwien.kr.alpha.commons.substitutions;
 
 import java.util.List;
 import java.util.Map;
@@ -36,18 +36,15 @@ import java.util.TreeMap;
 import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.grounder.Instance;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramPartParser;
 
 public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Substitution {
 
-	private static final ProgramPartParser PROGRAM_PART_PARSER = new ProgramPartParser();
 	public static final Substitution EMPTY_SUBSTITUTION = new SubstitutionImpl() {
 		@Override
 		public <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term groundTerm) {
@@ -223,19 +220,6 @@ public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Subs
 		}
 		ret.append("}");
 		return ret.toString();
-	}
-
-	public static SubstitutionImpl fromString(String substitution) {
-		String bare = substitution.substring(1, substitution.length() - 1);
-		String[] assignments = bare.split(",");
-		SubstitutionImpl ret = new SubstitutionImpl();
-		for (String assignment : assignments) {
-			String[] keyVal = assignment.split("->");
-			VariableTerm variable = Terms.newVariable(keyVal[0]);
-			Term assignedTerm = PROGRAM_PART_PARSER.parseTerm(keyVal[1]);
-			ret.put(variable, assignedTerm);
-		}
-		return ret;
 	}
 
 	@Override

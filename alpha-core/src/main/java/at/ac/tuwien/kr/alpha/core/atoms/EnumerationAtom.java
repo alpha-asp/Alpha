@@ -5,12 +5,13 @@ import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.atoms.BasicAtomImpl;
+import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 
 /**
  * Represents a ground-instance enumeration atom of form:
@@ -23,7 +24,7 @@ import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
  *
  * Copyright (c) 2017, the Alpha Team.
  */
-public class EnumerationAtom extends BasicAtom {
+public class EnumerationAtom extends BasicAtomImpl {
 	public static final Predicate ENUMERATION_PREDICATE = CorePredicate.getInstance("_Enumeration", 3);
 	private static final HashMap<Term, HashMap<Term, Integer>> ENUMERATIONS = new HashMap<>();
 

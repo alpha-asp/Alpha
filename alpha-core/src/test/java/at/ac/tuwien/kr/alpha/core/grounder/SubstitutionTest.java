@@ -35,9 +35,11 @@ import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Instance;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.program.Literal;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
-import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.programs.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
@@ -45,14 +47,16 @@ import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
+import at.ac.tuwien.kr.alpha.core.util.Substitutions;
 import at.ac.tuwien.kr.alpha.test.util.SubstitutionTestUtil;
 
 public class SubstitutionTest {
@@ -64,8 +68,8 @@ public class SubstitutionTest {
 
 	private static final VariableTerm X = Terms.newVariable("X");
 	private static final VariableTerm Y = Terms.newVariable("Y");
-	private static final BasicAtom PX = new BasicAtom(CorePredicate.getInstance("p", 1), X);
-	private static final BasicAtom PY = new BasicAtom(CorePredicate.getInstance("p", 1), Y);
+	private static final BasicAtom PX = Atoms.newBasicAtom(CorePredicate.getInstance("p", 1), X);
+	private static final BasicAtom PY = Atoms.newBasicAtom(CorePredicate.getInstance("p", 1), Y);
 	private static final Instance PA = new Instance(A);
 	private static final Instance PB = new Instance(B);
 
@@ -90,7 +94,7 @@ public class SubstitutionTest {
 		FunctionTerm groundFunctionTerm = Terms.newFunctionTerm("f", B, C);
 		Instance qfBC = new Instance(groundFunctionTerm);
 		Term nongroundFunctionTerm = Terms.newFunctionTerm("f", B, X);
-		BasicAtom qfBX = new BasicAtom(CorePredicate.getInstance("q", 2), nongroundFunctionTerm);
+		BasicAtom qfBX = Atoms.newBasicAtom(CorePredicate.getInstance("q", 2), nongroundFunctionTerm);
 
 		Substitution substitution1 = SubstitutionImpl.specializeSubstitution(qfBX, qfBC, substitution);
 
@@ -121,10 +125,10 @@ public class SubstitutionTest {
 	@Test
 	public void specializeBasicAtom() {
 		Predicate p = CorePredicate.getInstance("p", 2);
-		BasicAtom atom = new BasicAtom(p, Arrays.asList(X, Y));
+		BasicAtom atom = Atoms.newBasicAtom(p, Arrays.asList(X, Y));
 		Instance instance = new Instance(A, B);
 		Substitution substitution = SubstitutionImpl.specializeSubstitution(atom, instance, SubstitutionImpl.EMPTY_SUBSTITUTION);
-		BasicAtom substituted = atom.substitute(substitution);
+		Atom substituted = atom.substitute(substitution);
 		assertEquals(p, substituted.getPredicate());
 		assertEquals(A, substituted.getTerms().get(0));
 		assertEquals(B, substituted.getTerms().get(1));
@@ -132,7 +136,7 @@ public class SubstitutionTest {
 
 	private void substituteBasicAtomLiteral(boolean negated) {
 		Predicate p = CorePredicate.getInstance("p", 2);
-		BasicAtom atom = new BasicAtom(p, Arrays.asList(X, Y));
+		BasicAtom atom = Atoms.newBasicAtom(p, Arrays.asList(X, Y));
 		Literal literal = new BasicLiteral(atom, !negated);
 		Substitution substitution = new SubstitutionImpl();
 		substitution.put(X, A);
@@ -156,7 +160,7 @@ public class SubstitutionTest {
 
 	private void groundLiteralToString(boolean negated) {
 		Predicate p = CorePredicate.getInstance("p", 2);
-		BasicAtom atom = new BasicAtom(p, Arrays.asList(X, Y));
+		BasicAtom atom = Atoms.newBasicAtom(p, Arrays.asList(X, Y));
 		Substitution substitution1 = SubstitutionImpl.specializeSubstitution(PX, PA, SubstitutionImpl.EMPTY_SUBSTITUTION);
 		Substitution substitution = SubstitutionImpl.specializeSubstitution(PY, PB, substitution1);
 		String printedString = SubstitutionTestUtil.groundLiteralToString(atom.toLiteral(!negated), substitution, true);
@@ -171,7 +175,7 @@ public class SubstitutionTest {
 		Substitution substitution = SubstitutionImpl.specializeSubstitution(PY, PB, substitution1);
 		RuleAtom ruleAtom = new RuleAtom(nonGroundRule, substitution);
 		String substitutionString = (String) ((ConstantTerm<?>) ruleAtom.getTerms().get(1)).getObject();
-		Substitution fromString = SubstitutionImpl.fromString(substitutionString);
+		Substitution fromString = Substitutions.fromString(substitutionString);
 		assertEquals(substitution, fromString);
 	}
 }

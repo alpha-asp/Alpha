@@ -27,8 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha.core.common;
 
-import static at.ac.tuwien.kr.alpha.core.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.core.common.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isNegated;
 
 import java.util.Set;
 

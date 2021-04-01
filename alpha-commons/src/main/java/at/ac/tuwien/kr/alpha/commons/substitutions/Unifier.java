@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.grounder;
+package at.ac.tuwien.kr.alpha.commons.substitutions;
 
 import static at.ac.tuwien.kr.alpha.api.Util.oops;
 

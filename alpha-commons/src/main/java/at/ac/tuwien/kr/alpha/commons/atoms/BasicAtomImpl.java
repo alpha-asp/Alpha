@@ -25,7 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.atoms;
+package at.ac.tuwien.kr.alpha.commons.atoms;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,15 +34,18 @@ import java.util.stream.Collectors;
 
 import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
 /**
  * Represents ordinary ASP atoms.
  */
-public class BasicAtom extends CoreAtom implements VariableNormalizableAtom {
+class BasicAtomImpl extends AbstractAtom implements BasicAtom {
 	private final Predicate predicate;
 	private final List<Term> terms;
 	private final boolean ground;
@@ -53,7 +56,7 @@ public class BasicAtom extends CoreAtom implements VariableNormalizableAtom {
 	 * @param predicate
 	 * @param terms
 	 */
-	public BasicAtom(Predicate predicate, List<Term> terms) {
+	BasicAtomImpl(Predicate predicate, List<Term> terms) {
 		this.predicate = predicate;
 		this.terms = terms;
 
@@ -68,11 +71,11 @@ public class BasicAtom extends CoreAtom implements VariableNormalizableAtom {
 		this.ground = ground;
 	}
 
-	public BasicAtom(Predicate predicate, Term... terms) {
+	BasicAtomImpl(Predicate predicate, Term... terms) {
 		this(predicate, Arrays.asList(terms));
 	}
 
-	public BasicAtom(Predicate predicate) {
+	BasicAtomImpl(Predicate predicate) {
 		this(predicate, Collections.emptyList());
 	}
 
@@ -92,21 +95,21 @@ public class BasicAtom extends CoreAtom implements VariableNormalizableAtom {
 	}
 
 	@Override
-	public BasicAtom substitute(Substitution substitution) {
-		return new BasicAtom(predicate, terms.stream()
+	public BasicAtomImpl substitute(Substitution substitution) {
+		return new BasicAtomImpl(predicate, terms.stream()
 				.map(t -> t.substitute(substitution))
 				.collect(Collectors.toList()));
 	}
 
 	@Override
-	public BasicAtom normalizeVariables(String prefix, int counterStartingValue) {
+	public BasicAtomImpl normalizeVariables(String prefix, int counterStartingValue) {
 		List<Term> renamedTerms = Terms.renameTerms(terms, prefix, counterStartingValue);
-		return new BasicAtom(predicate, renamedTerms);
+		return new BasicAtomImpl(predicate, renamedTerms);
 	}
 
 	@Override
-	public CoreLiteral toLiteral(boolean positive) {
-		return new BasicLiteral(this, positive);
+	public Literal toLiteral(boolean positive) {
+		return Literals.fromAtom(this, positive);
 	}
 
 	@Override
@@ -150,7 +153,7 @@ public class BasicAtom extends CoreAtom implements VariableNormalizableAtom {
 			return false;
 		}
 
-		BasicAtom that = (BasicAtom) o;
+		BasicAtomImpl that = (BasicAtomImpl) o;
 
 		return predicate.equals(that.predicate) && terms.equals(that.terms);
 	}
@@ -162,6 +165,6 @@ public class BasicAtom extends CoreAtom implements VariableNormalizableAtom {
 
 	@Override
 	public Atom withTerms(List<Term> terms) {
-		return new BasicAtom(predicate, terms);
+		return new BasicAtomImpl(predicate, terms);
 	}
 }

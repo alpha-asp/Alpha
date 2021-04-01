@@ -27,8 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static at.ac.tuwien.kr.alpha.core.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.core.common.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isPositive;
 
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;

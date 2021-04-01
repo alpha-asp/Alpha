@@ -14,11 +14,11 @@ import java.util.TreeSet;
 import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.common.BasicAnswerSet;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 
@@ -40,35 +40,35 @@ public class BasicAnswerSetTest {
 		ConstantTerm<?> baz = Terms.newConstant("baz");
 
 		Map<Predicate, SortedSet<Atom>> inst1 = new HashMap<>();
-		inst1.put(a, new TreeSet<>(singleton(new BasicAtom(a))));
+		inst1.put(a, new TreeSet<>(singleton(Atoms.newBasicAtom(a))));
 		inst1.put(foo, new TreeSet<>(asList(
-			new BasicAtom(foo, bar),
-			new BasicAtom(foo, baz)
+			Atoms.newBasicAtom(foo, bar),
+			Atoms.newBasicAtom(foo, baz)
 		)));
 		// as1 = { a, foo(bar), foo(baz) }
 
 		Map<Predicate, SortedSet<Atom>> inst2 = new HashMap<>();
-		inst2.put(a, new TreeSet<>(singleton(new BasicAtom(a))));
+		inst2.put(a, new TreeSet<>(singleton(Atoms.newBasicAtom(a))));
 		inst2.put(foo, new TreeSet<>(asList(
-			new BasicAtom(foo, baz),
-			new BasicAtom(foo, bar)
+			Atoms.newBasicAtom(foo, baz),
+			Atoms.newBasicAtom(foo, bar)
 		)));
 		// as1 = { a, foo(baz), foo(bar) }
 
 		Map<Predicate, SortedSet<Atom>> inst3 = new HashMap<>();
-		inst3.put(q, new TreeSet<>(singleton(new BasicAtom(q))));
+		inst3.put(q, new TreeSet<>(singleton(Atoms.newBasicAtom(q))));
 		inst3.put(p, new TreeSet<>(asList(
-			new BasicAtom(p, bar),
-			new BasicAtom(p, baz)
+			Atoms.newBasicAtom(p, bar),
+			Atoms.newBasicAtom(p, baz)
 		)));
 		// as3 = { q, p(bar), p(baz) }
 
 		Map<Predicate, SortedSet<Atom>> inst4 = new HashMap<>();
-		inst4.put(a, new TreeSet<>(singleton(new BasicAtom(a))));
+		inst4.put(a, new TreeSet<>(singleton(Atoms.newBasicAtom(a))));
 		inst4.put(foo, new TreeSet<>(asList(
-			new BasicAtom(foo, bar),
-			new BasicAtom(foo, baz),
-			new BasicAtom(foo, Terms.newConstant("batsinga"))
+			Atoms.newBasicAtom(foo, bar),
+			Atoms.newBasicAtom(foo, baz),
+			Atoms.newBasicAtom(foo, Terms.newConstant("batsinga"))
 		)));
 		// as4 = { a, foo(bar), foo(baz), foo(batsinga) }
 

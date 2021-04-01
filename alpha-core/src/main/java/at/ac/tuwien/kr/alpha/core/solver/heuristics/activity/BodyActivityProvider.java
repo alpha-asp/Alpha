@@ -27,7 +27,7 @@ package at.ac.tuwien.kr.alpha.core.solver.heuristics.activity;
 
 import org.apache.commons.collections4.MultiValuedMap;
 
-import static at.ac.tuwien.kr.alpha.core.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
 
 import java.util.Map;
 

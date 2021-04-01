@@ -2,7 +2,7 @@ package at.ac.tuwien.kr.alpha.core.common;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.Util;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 
 public enum ComparisonOperatorImpl implements ComparisonOperator {
 	EQ("="),

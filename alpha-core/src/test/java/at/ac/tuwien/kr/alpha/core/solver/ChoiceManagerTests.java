@@ -25,7 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static at.ac.tuwien.kr.alpha.core.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
@@ -33,8 +33,8 @@ import java.util.Collection;
 import org.junit.Before;
 import org.junit.Test;
 
-import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
-import at.ac.tuwien.kr.alpha.api.program.CompiledProgram;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;

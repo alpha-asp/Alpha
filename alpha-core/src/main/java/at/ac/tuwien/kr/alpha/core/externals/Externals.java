@@ -39,10 +39,10 @@ import org.reflections.scanners.MethodAnnotationsScanner;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.externals.Predicate;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.BinaryPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.BindingMethodPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.IntPredicateInterpretation;
@@ -148,8 +148,7 @@ public final class Externals {
 		String javaName = classOfExtFacts.getSimpleName();
 		String name = javaName.substring(0, 1).toLowerCase() + javaName.substring(1); // Camel-cased, but starting with lower case letter.
 		for (T instance : extFacts) {
-			// TODO use properly wrapped BasicAtoms here
-			retVal.add(new BasicAtom(at.ac.tuwien.kr.alpha.core.common.CorePredicate.getInstance(name, 1), Terms.newConstant(instance)));
+			retVal.add(Atoms.newBasicAtom(at.ac.tuwien.kr.alpha.core.common.CorePredicate.getInstance(name, 1), Terms.newConstant(instance)));
 		}
 		return retVal;
 	}

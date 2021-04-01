@@ -7,10 +7,10 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.core.atoms.VariableNormalizableAtom;
+import at.ac.tuwien.kr.alpha.api.programs.VariableNormalizableAtom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.core.grounder.Unification;
-import at.ac.tuwien.kr.alpha.core.grounder.Unifier;
 
 /**
  * Copyright (c) 2018, the Alpha Team.

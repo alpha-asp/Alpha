@@ -47,10 +47,10 @@ import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.InlineDirectives;
-import at.ac.tuwien.kr.alpha.api.program.Literal;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
+import at.ac.tuwien.kr.alpha.api.programs.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead;
 import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead.ChoiceElement;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
@@ -60,11 +60,11 @@ import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.commons.atoms.BasicAtomImpl;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.ComparisonLiteral;
@@ -274,7 +274,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public ChoiceHead.ChoiceElement visitChoice_element(ASPCore2Parser.Choice_elementContext ctx) {
 		// choice_element : classical_literal (COLON naf_literals?)?;
-		BasicAtom atom = (BasicAtom) visitClassical_literal(ctx.classical_literal());
+		BasicAtomImpl atom = (BasicAtomImpl) visitClassical_literal(ctx.classical_literal());
 		if (ctx.naf_literals() != null) {
 			return new ChoiceElementImpl(atom, visitNaf_literals(ctx.naf_literals()));
 		} else {
@@ -471,14 +471,14 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public BasicAtom visitClassical_literal(ASPCore2Parser.Classical_literalContext ctx) {
+	public BasicAtomImpl visitClassical_literal(ASPCore2Parser.Classical_literalContext ctx) {
 		// classical_literal : MINUS? ID (PAREN_OPEN terms PAREN_CLOSE)?;
 		if (ctx.MINUS() != null) {
 			throw notSupported(ctx);
 		}
 
 		final List<Term> terms = visitTerms(ctx.terms());
-		return new BasicAtom(CorePredicate.getInstance(ctx.ID().getText(), terms.size()), terms);
+		return new BasicAtomImpl(CorePredicate.getInstance(ctx.ID().getText(), terms.size()), terms);
 	}
 
 	@Override

@@ -48,9 +48,11 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
@@ -89,9 +91,9 @@ public class DummyGrounder implements Grounder {
 	private final AtomStore atomStore;
 	private final java.util.function.Predicate<Predicate> filter;
 	private byte[] currentTruthValues = new byte[]{-2, -1, -1, -1, -1};
-	private static Atom atomAA = new BasicAtom(CorePredicate.getInstance("a", 0));
-	private static Atom atomBB = new BasicAtom(CorePredicate.getInstance("b", 0));
-	private static Atom atomCC = new BasicAtom(CorePredicate.getInstance("c", 0));
+	private static Atom atomAA = Atoms.newBasicAtom(CorePredicate.getInstance("a", 0));
+	private static Atom atomBB = Atoms.newBasicAtom(CorePredicate.getInstance("b", 0));
+	private static Atom atomCC = Atoms.newBasicAtom(CorePredicate.getInstance("c", 0));
 	private static BasicRule ruleABC = new BasicRule(new NormalHeadImpl(atomCC), Arrays.asList(atomAA.toLiteral(), atomBB.toLiteral()));
 	private static Atom rule1 = new RuleAtom(InternalRule.fromNormalRule(NormalRule.fromBasicRule(ruleABC)), new SubstitutionImpl());
 	private Set<Integer> returnedNogoods = new HashSet<>();
@@ -144,7 +146,7 @@ public class DummyGrounder implements Grounder {
 		// Add the atom instances
 		Map<Predicate, SortedSet<Atom>> predicateInstances = new HashMap<>();
 		for (Predicate trueAtomPredicate : trueAtomPredicates) {
-			BasicAtom internalBasicAtom = new BasicAtom(trueAtomPredicate);
+			BasicAtom internalBasicAtom = Atoms.newBasicAtom(trueAtomPredicate);
 			predicateInstances.put(trueAtomPredicate, new TreeSet<>(singleton(internalBasicAtom)));
 		}
 

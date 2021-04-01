@@ -17,20 +17,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Instance;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.CompiledProgram;
-import at.ac.tuwien.kr.alpha.api.program.Literal;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.CompiledProgram;
+import at.ac.tuwien.kr.alpha.api.programs.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.core.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.grounder.Unification;
-import at.ac.tuwien.kr.alpha.core.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
 
 /**
@@ -114,8 +115,7 @@ public class AnalyzeUnjustified {
 		// Construct set of all 'rules' such that head unifies with p.
 		List<RuleAndUnifier> rulesUnifyingWithP = rulesHeadUnifyingWith(p);
 		log("Rules unifying with {} are {}", p, rulesUnifyingWithP);
-		rulesLoop:
-		for (RuleAndUnifier ruleUnifier : rulesUnifyingWithP) {
+		rulesLoop: for (RuleAndUnifier ruleUnifier : rulesUnifyingWithP) {
 			Unifier sigma = ruleUnifier.unifier;
 			Set<Literal> bodyR = ruleUnifier.ruleBody;
 			Atom sigmaHr = ruleUnifier.originalHead.substitute(sigma);
@@ -222,8 +222,7 @@ public class AnalyzeUnjustified {
 
 			log("Checking atoms over predicate: {}", b.getPredicate());
 			AssignedAtomsIterator assignedAtomsOverPredicate = getAssignedAtomsOverPredicate(b.getPredicate());
-			atomLoop:
-			while (assignedAtomsOverPredicate.hasNext()) {
+			atomLoop: while (assignedAtomsOverPredicate.hasNext()) {
 				Atom atom = assignedAtomsOverPredicate.next();
 				// Check that atom is justified/true.
 				log("Checking atom: {}", atom);
@@ -249,7 +248,7 @@ public class AnalyzeUnjustified {
 					for (Unifier sigmaN : vN) {
 						ArrayList<Term> occurringVariables = new ArrayList<>(variablesOccurringInSigma);
 						occurringVariables.addAll(sigmaN.getMappedVariables());
-						BasicAtom genericAtom = new BasicAtom(CorePredicate.getInstance("_", occurringVariables.size(), true), occurringVariables);
+						BasicAtom genericAtom = Atoms.newBasicAtom(CorePredicate.getInstance("_", occurringVariables.size(), true), occurringVariables);
 						Atom genericSubstituted = genericAtom.substitute(sigmaN).renameVariables("_analyzeTest");
 						if (Unification.instantiate(genericSubstituted, genericAtom.substitute(sigma)) != null) {
 							log("Atom {} is excluded by: {} via {}", genericSubstituted, sigmaN, sigma);
@@ -322,7 +321,7 @@ public class AnalyzeUnjustified {
 				return assignedAtomsIterator.next();
 			}
 			if (factsIterator.hasNext()) {
-				return new BasicAtom(predicate, factsIterator.next().terms);
+				return Atoms.newBasicAtom(predicate, factsIterator.next().terms);
 			}
 			throw new NoSuchElementException();
 		}
@@ -359,7 +358,7 @@ public class AnalyzeUnjustified {
 				headAtom = rule.getHeadAtom();
 			} else {
 				// Create atom and empty rule body out of instance.
-				headAtom = new BasicAtom(p.getPredicate(), factOrNonGroundRule.factInstance.terms);
+				headAtom = Atoms.newBasicAtom(p.getPredicate(), factOrNonGroundRule.factInstance.terms);
 				renamedBody = Collections.emptySet();
 			}
 			// Unify rule head with literal to justify.

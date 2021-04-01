@@ -32,10 +32,10 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Instance;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.Literal;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.api.programs.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
 
 /**
  * Abstract base implementation of {@link LiteralInstantiationStrategy} that outlines a basic workflow for
@@ -114,7 +114,7 @@ public abstract class AbstractLiteralInstantiationStrategy implements LiteralIns
 			}
 			// At this point, we know that the substitution works out.
 			// Now check whether the resulting Atom has an acceptable AssignmentStatus.
-			atomForCurrentInstance = new BasicAtom(atomToSubstitute.getPredicate(), atomToSubstitute.getTerms())
+			atomForCurrentInstance = Atoms.newBasicAtom(atomToSubstitute.getPredicate(), atomToSubstitute.getTerms())
 					.substitute(currentInstanceSubstitution);
 			AssignmentStatus assignmentStatus = this.getAssignmentStatusForAtom(atomForCurrentInstance);
 			if (!this.assignmentStatusAccepted(assignmentStatus)) {

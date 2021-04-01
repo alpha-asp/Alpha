@@ -3,7 +3,7 @@ package at.ac.tuwien.kr.alpha.core.parser;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import at.ac.tuwien.kr.alpha.api.program.InlineDirectives;
+import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 
 /**
  * Stores directives appearing in the ASP program. Each directive starts with # and ends with .

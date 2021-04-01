@@ -7,18 +7,19 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
-import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
-import at.ac.tuwien.kr.alpha.core.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
@@ -175,7 +176,7 @@ public class SumNormalization extends ProgramTransformation<ASPCore2Program, ASP
 				elementUnifier.put(Terms.newVariable("FIRST_VARIABLE"), elementTuple.getTerms().get(0));
 
 				// Create new rule for input.
-				BasicAtom inputHeadAtom = aggregateInputAtom.substitute(elementUnifier);
+				Atom inputHeadAtom = aggregateInputAtom.substitute(elementUnifier);
 				List<Literal> elementLiterals = new ArrayList<>(aggregateElement.getElementLiterals());
 
 				// If there are global variables used inside the aggregate, add original rule body (minus the aggregate itself) to input rule.
@@ -187,7 +188,7 @@ public class SumNormalization extends ProgramTransformation<ASPCore2Program, ASP
 			}
 
 			// Create lower bound for the aggregate.
-			BasicAtom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateUnifier);
+			Atom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateUnifier);
 			List<Literal> lowerBoundBody = rewrittenBody; // Note: this is only correct if no other aggregate occurs in the rule.
 			additionalRules.add(new BasicRule(new NormalHeadImpl(lowerBoundHeadAtom), lowerBoundBody));
 		}

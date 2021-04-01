@@ -27,21 +27,29 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.core.common.Assignment;
-import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-import at.ac.tuwien.kr.alpha.core.common.IntIterator;
+import static at.ac.tuwien.kr.alpha.api.Util.arrayGrowthSize;
+import static at.ac.tuwien.kr.alpha.api.Util.oops;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.core.solver.Atoms.isAtom;
+import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.TRUE;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-
-import static at.ac.tuwien.kr.alpha.core.common.Literals.*;
-import static at.ac.tuwien.kr.alpha.core.solver.Atoms.isAtom;
-import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.*;
-import static at.ac.tuwien.kr.alpha.api.Util.arrayGrowthSize;
-import static at.ac.tuwien.kr.alpha.api.Util.oops;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.core.common.Assignment;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.IntIterator;
 
 /**
  * An implementation of Assignment using a trail (of literals) and arrays as underlying structures for storing

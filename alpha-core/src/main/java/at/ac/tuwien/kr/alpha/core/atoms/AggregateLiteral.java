@@ -6,6 +6,8 @@ import java.util.Set;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
+import at.ac.tuwien.kr.alpha.commons.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 
 /**
@@ -27,7 +29,7 @@ public class AggregateLiteral extends CoreLiteral {
 	}
 
 	/**
-	 * @see CoreAtom#substitute(Substitution)
+	 * @see AbstractAtom#substitute(Substitution)
 	 */
 	@Override
 	public AggregateLiteral substitute(Substitution substitution) {

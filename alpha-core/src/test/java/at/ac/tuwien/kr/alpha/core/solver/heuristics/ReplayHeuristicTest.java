@@ -25,7 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
-import static at.ac.tuwien.kr.alpha.core.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToLiteral;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;

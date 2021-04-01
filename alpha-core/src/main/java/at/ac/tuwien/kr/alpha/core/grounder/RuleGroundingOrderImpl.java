@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.grounder.RuleGroundingOrder;
-import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.Literal;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 
 /**
@@ -67,6 +67,7 @@ public class RuleGroundingOrderImpl implements RuleGroundingOrder{
 	 * @param orderPosition zero-based index into list of literals except the starting literal
 	 * @return the literal at the given position, or {@code null} if it is already known that this literal is not able to yield new bindings
 	 */
+	@Override
 	public Literal getLiteralAtOrderPosition(int orderPosition) {
 		if (orderPosition >= stopBindingAtOrderPosition) {
 			return null;
@@ -77,6 +78,7 @@ public class RuleGroundingOrderImpl implements RuleGroundingOrder{
 	/**
 	 * @return the zero-based position from which on all variables are bound in list of literals except the starting literal
 	 */
+	@Override
 	public int getPositionFromWhichAllVarsAreBound() {
 		return positionLastVarBound + 1;
 	}
@@ -113,6 +115,7 @@ public class RuleGroundingOrderImpl implements RuleGroundingOrder{
 	 * @return a new grounding order in which the atom is pushed back,
 	 * or {@code null} if the position of the grounding order after which no new bindings can be found has been reached.
 	 */
+	@Override
 	public RuleGroundingOrderImpl pushBack(int orderPosition) {
 		if (orderPosition >= stopBindingAtOrderPosition - 1) {
 			return null;
@@ -122,10 +125,12 @@ public class RuleGroundingOrderImpl implements RuleGroundingOrder{
 		return reorderedGroundingOrder;
 	}
 	
+	@Override
 	public void considerUntilCurrentEnd() {
 		this.stopBindingAtOrderPosition = this.otherLiterals.size();
 	}
 
+	@Override
 	public Literal getStartingLiteral() {
 		return this.startingLiteral;
 	}

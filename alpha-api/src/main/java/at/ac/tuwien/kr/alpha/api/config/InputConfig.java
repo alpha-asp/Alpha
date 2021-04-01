@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.api.config;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 
 import java.util.*;
 

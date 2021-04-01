@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 
-import static at.ac.tuwien.kr.alpha.core.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
 
 import java.util.ArrayList;
 import java.util.Collections;

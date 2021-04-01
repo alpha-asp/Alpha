@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.core.rules.heads;
 
-import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
 
 /**

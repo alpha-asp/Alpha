@@ -34,11 +34,12 @@ import java.util.List;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
+import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
 
 /**
  * Contains a potentially negated {@link ExternalAtom}.
@@ -64,7 +65,7 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 	}
 
 	/**
-	 * @see CoreAtom#substitute(SubstitutionImpl)
+	 * @see AbstractAtom#substitute(SubstitutionImpl)
 	 */
 	@Override
 	public ExternalLiteral substitute(Substitution substitution) {

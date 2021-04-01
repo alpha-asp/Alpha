@@ -32,16 +32,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.VariableNormalizableAtom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 
 /**
  * Represents a builtin comparison atom according to the standard.
  */
-public class ComparisonAtom extends CoreAtom implements VariableNormalizableAtom {
+public class ComparisonAtom extends AbstractAtom implements VariableNormalizableAtom {
 	private final Predicate predicate;
 	final ComparisonOperatorImpl operator;
 	private final List<Term> terms;

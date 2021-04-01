@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 
 /**
  * Copyright (c) 2016, the Alpha Team.

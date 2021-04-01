@@ -30,10 +30,10 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
-import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
@@ -56,7 +56,7 @@ public class TestUtil {
 				terms[i] = Terms.newConstant(termString);
 			}
 		}
-		return new BasicAtom(CorePredicate.getInstance(predicateName, terms.length), terms);
+		return Atoms.newBasicAtom(CorePredicate.getInstance(predicateName, terms.length), terms);
 	}
 
 	public static Atom atom(String predicateName, int... termInts) {
@@ -64,7 +64,7 @@ public class TestUtil {
 		for (int i = 0; i < termInts.length; i++) {
 			terms[i] = Terms.newConstant(termInts[i]);
 		}
-		return new BasicAtom(CorePredicate.getInstance(predicateName, terms.length), terms);
+		return Atoms.newBasicAtom(CorePredicate.getInstance(predicateName, terms.length), terms);
 	}
 	
 	public static void printNoGoods(AtomStore atomStore, Collection<NoGood> noGoods) {

@@ -27,11 +27,11 @@
  */
 package at.ac.tuwien.kr.alpha.core.common;
 
-import static at.ac.tuwien.kr.alpha.core.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.core.common.Literals.isNegated;
-import static at.ac.tuwien.kr.alpha.core.common.Literals.isPositive;
-import static at.ac.tuwien.kr.alpha.core.common.Literals.negateLiteral;
-import static at.ac.tuwien.kr.alpha.core.common.Literals.positiveLiteral;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.negateLiteral;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.positiveLiteral;
 import static at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type.INTERNAL;
 import static at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type.LEARNT;
 import static at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type.STATIC;

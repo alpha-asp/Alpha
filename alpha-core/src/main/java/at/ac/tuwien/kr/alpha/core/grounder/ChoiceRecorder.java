@@ -39,7 +39,7 @@ import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom.off;
 import static at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom.on;
-import static at.ac.tuwien.kr.alpha.core.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.*;
 import static java.util.Collections.emptyList;
 
 public class ChoiceRecorder {

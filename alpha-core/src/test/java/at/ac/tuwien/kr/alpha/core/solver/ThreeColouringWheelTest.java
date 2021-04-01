@@ -35,12 +35,12 @@ import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
-import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
@@ -119,7 +119,7 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 		for (String colour : colours) {
 			List<Term> terms = new ArrayList<>(1);
 			terms.add(Terms.newConstant(colour));
-			facts.add(new BasicAtom(predicate, terms));
+			facts.add(Atoms.newBasicAtom(predicate, terms));
 		}
 		return facts;
 	}
@@ -150,6 +150,6 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 		for (int i : iTerms) {
 			terms.add(Terms.newConstant(i));
 		}
-		return new BasicAtom(predicate, terms);
+		return Atoms.newBasicAtom(predicate, terms);
 	}
 }

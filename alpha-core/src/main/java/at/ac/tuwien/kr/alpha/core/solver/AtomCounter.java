@@ -31,11 +31,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 
 /**
- * Counts the number of ground atoms stored for each type (i.e., subclass of {@link CoreAtom}.
+ * Counts the number of ground atoms stored for each type (i.e., subclass of {@link AbstractAtom}.
  * For every atom, only the counter for one class (the most specific one) is incremented,
  * not the counters for more general classes of which the atom is also an instance.
  */

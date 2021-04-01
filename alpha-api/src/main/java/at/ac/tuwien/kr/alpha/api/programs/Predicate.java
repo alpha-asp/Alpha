@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.api.program;
+package at.ac.tuwien.kr.alpha.api.programs;
 
 public interface Predicate extends Comparable<Predicate> {
 	String getName();

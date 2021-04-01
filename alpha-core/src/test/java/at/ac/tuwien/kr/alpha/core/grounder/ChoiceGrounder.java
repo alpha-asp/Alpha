@@ -48,9 +48,11 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
 import at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.AnswerSetBuilder;
@@ -112,10 +114,10 @@ public class ChoiceGrounder implements Grounder {
 		entry(ATOM_BR1, ATOM_DIS_BR1),
 		entry(ATOM_BR2, ATOM_DIS_BR2)
 	).collect(entriesToMap());
-	private static Atom atomAA = new BasicAtom(CorePredicate.getInstance("aa", 0));
-	private static Atom atomBB = new BasicAtom(CorePredicate.getInstance("bb", 0));
-	private static BasicRule ruleAA = new BasicRule(new NormalHeadImpl(atomAA), Collections.singletonList(new BasicAtom(CorePredicate.getInstance("bb", 0)).toLiteral(false)));
-	private static BasicRule ruleBB = new BasicRule(new NormalHeadImpl(atomBB), Collections.singletonList(new BasicAtom(CorePredicate.getInstance("aa", 0)).toLiteral(false)));
+	private static Atom atomAA = Atoms.newBasicAtom(CorePredicate.getInstance("aa", 0));
+	private static Atom atomBB = Atoms.newBasicAtom(CorePredicate.getInstance("bb", 0));
+	private static BasicRule ruleAA = new BasicRule(new NormalHeadImpl(atomAA), Collections.singletonList(Atoms.newBasicAtom(CorePredicate.getInstance("bb", 0)).toLiteral(false)));
+	private static BasicRule ruleBB = new BasicRule(new NormalHeadImpl(atomBB), Collections.singletonList(Atoms.newBasicAtom(CorePredicate.getInstance("aa", 0)).toLiteral(false)));
 	private static Atom rule1 = new RuleAtom(InternalRule.fromNormalRule(NormalRule.fromBasicRule(ruleAA)), new SubstitutionImpl());
 	private static Atom rule2 = new RuleAtom(InternalRule.fromNormalRule(NormalRule.fromBasicRule(ruleBB)), new SubstitutionImpl());
 	private static Atom atomEnBR1 = ChoiceAtom.on(1);
@@ -154,7 +156,7 @@ public class ChoiceGrounder implements Grounder {
 		// Add the atom instances
 		Map<Predicate, SortedSet<Atom>> predicateInstances = new HashMap<>();
 		for (Predicate trueAtomPredicate : trueAtomPredicates) {
-			BasicAtom basicAtom = new BasicAtom(trueAtomPredicate);
+			BasicAtom basicAtom = Atoms.newBasicAtom(trueAtomPredicate);
 			predicateInstances.put(trueAtomPredicate, new TreeSet<>(singleton(basicAtom)));
 		}
 

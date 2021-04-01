@@ -42,11 +42,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import static at.ac.tuwien.kr.alpha.core.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.core.common.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.core.common.Literals.isNegated;
-import static at.ac.tuwien.kr.alpha.core.common.Literals.isPositive;
-import static at.ac.tuwien.kr.alpha.core.common.Literals.literalToString;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.literalToString;
 import static at.ac.tuwien.kr.alpha.core.common.NoGood.HEAD;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.MBT;

@@ -1,8 +1,8 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 
@@ -15,7 +15,7 @@ public class AtomStoreTest {
 	public static void fillAtomStore(AtomStore atomStore, int numberOfAtomsToFill) {
 		Predicate predA = CorePredicate.getInstance("a", 1);
 		for (int i = 0; i < numberOfAtomsToFill; i++) {
-			atomStore.putIfAbsent(new BasicAtom(predA, Terms.newConstant(i)));
+			atomStore.putIfAbsent(Atoms.newBasicAtom(predA, Terms.newConstant(i)));
 		}
 	}
 }

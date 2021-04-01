@@ -39,10 +39,9 @@ import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.grounder.RuleGroundingInfo;
 import at.ac.tuwien.kr.alpha.api.grounder.RuleGroundingOrder;
-import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 
 /**
  * Provides the grounder with information on the order to ground the literals in the body of a rule.
@@ -107,15 +106,23 @@ public class RuleGroundingInfoImpl implements RuleGroundingInfo {
 			if (literal.getNonBindingVariables().size() != 0) {
 				continue;
 			}
-
-			if (literal.getAtom() instanceof BasicAtom && !literal.isNegated()) {
-				// Positive BasicAtom is the main/ordinary case.
+			if(literal.getBindingVariables().size() > 0) {
+				// Literals that can bind variables (i.e. positive basic literals) are the most common case
 				ordinaryStartingLiterals.add(literal);
 			} else {
-				// If literal is no positive BasicAtom but requires no bound variables,
-				// it can be the starting literal for some (fixed) instantiation.
+				// Literal does not need any variables bound (i.e. is ground or has a fixed interpretation),
+				// it is therefore an eligible starting literal for a fixed grounding order
 				fixedStartingLiterals.add(literal);
 			}
+			// TODO make sure above if is correct, then remove this
+//			if (literal.getAtom() instanceof BasicAtom && !literal.isNegated()) {
+//				// Positive BasicAtom is the main/ordinary case.
+//				ordinaryStartingLiterals.add(literal);
+//			} else {
+//				// If literal is no positive BasicAtom but requires no bound variables,
+//				// it can be the starting literal for some (fixed) instantiation.
+//				fixedStartingLiterals.add(literal);
+//			}
 		}
 		// If there are no positive BasicAtoms, the rule only contains fixed ground
 		// instantiation literals and those are starting for the one-time grounding.
@@ -130,6 +137,7 @@ public class RuleGroundingInfoImpl implements RuleGroundingInfo {
 		}
 	}
 
+	@Override
 	public List<Literal> getStartingLiterals() {
 		return Collections.unmodifiableList(startingLiterals);
 	}
@@ -138,6 +146,7 @@ public class RuleGroundingInfoImpl implements RuleGroundingInfo {
 		// TODO: add old selectivity (with a decay factor) and new selectivity.
 	}
 
+	@Override
 	public RuleGroundingOrderImpl orderStartingFrom(Literal startingLiteral) {
 		return groundingOrders.get(startingLiteral);
 	}
@@ -157,6 +166,7 @@ public class RuleGroundingInfoImpl implements RuleGroundingInfo {
 		return fixedGroundingInstantiation;
 	}
 
+	@Override
 	public void computeGroundingOrders() {
 		if (fixedGroundingInstantiation) {
 			// Fixed grounding is only evaluated once and not depending on a starting variable, just use the first.

@@ -1,6 +1,6 @@
-package at.ac.tuwien.kr.alpha.core.atoms;
+package at.ac.tuwien.kr.alpha.api.programs;
 
-import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 
 /**
  * Interface for atom whose variables can be normalized, i.e., enumerated from

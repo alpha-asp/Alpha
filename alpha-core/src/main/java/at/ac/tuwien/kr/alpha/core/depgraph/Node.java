@@ -25,7 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.depgraph;
 
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 
 /**
  * A node in a dependency graph. One node references exactly one predicate. This means that all rule heads deriving the

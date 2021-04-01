@@ -35,12 +35,14 @@ import java.util.stream.Collectors;
 import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.VariableNormalizableAtom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
-public class ExternalAtom extends CoreAtom implements VariableNormalizableAtom {
+public class ExternalAtom extends AbstractAtom implements VariableNormalizableAtom {
 
 	private final List<Term> input;
 	private final List<Term> output;

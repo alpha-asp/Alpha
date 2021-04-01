@@ -20,17 +20,17 @@ import at.ac.tuwien.kr.alpha.api.grounder.Instance;
 import at.ac.tuwien.kr.alpha.api.grounder.RuleGroundingInfo;
 import at.ac.tuwien.kr.alpha.api.grounder.RuleGroundingOrder;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.api.program.Literal;
-import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
 import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph;
 import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph.SCComponent;
 import at.ac.tuwien.kr.alpha.core.depgraph.Node;
 import at.ac.tuwien.kr.alpha.core.depgraph.StratificationAlgorithm;
 import at.ac.tuwien.kr.alpha.core.grounder.IndexedInstanceStorage;
-import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.WorkingMemory;
 import at.ac.tuwien.kr.alpha.core.grounder.instantiation.AssignmentStatus;
 import at.ac.tuwien.kr.alpha.core.grounder.instantiation.LiteralInstantiationResult;
@@ -116,7 +116,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			for (IndexedInstanceStorage instanceStorage : workingMemory.modified()) {
 				// Directly record all newly derived instances as additional facts.
 				for (Instance recentlyAddedInstance : instanceStorage.getRecentlyAddedInstances()) {
-					additionalFacts.add(new BasicAtom(instanceStorage.getPredicate(), recentlyAddedInstance.terms));
+					additionalFacts.add(Atoms.newBasicAtom(instanceStorage.getPredicate(), recentlyAddedInstance.terms));
 				}
 				instanceStorage.markRecentlyAddedInstancesDone();
 			}
@@ -136,7 +136,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 				for (IndexedInstanceStorage instanceStorage : workingMemory.modified()) {
 					// Directly record all newly derived instances as additional facts.
 					for (Instance recentlyAddedInstance : instanceStorage.getRecentlyAddedInstances()) {
-						additionalFacts.add(new BasicAtom(instanceStorage.getPredicate(), recentlyAddedInstance.terms));
+						additionalFacts.add(Atoms.newBasicAtom(instanceStorage.getPredicate(), recentlyAddedInstance.terms));
 					}
 					modifiedInLastEvaluationRun.putIfAbsent(instanceStorage.getPredicate(), new LinkedHashSet<>());
 					modifiedInLastEvaluationRun.get(instanceStorage.getPredicate()).addAll(instanceStorage.getRecentlyAddedInstances());

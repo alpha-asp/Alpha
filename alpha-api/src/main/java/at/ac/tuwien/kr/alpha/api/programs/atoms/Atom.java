@@ -1,13 +1,16 @@
-package at.ac.tuwien.kr.alpha.api.program;
+package at.ac.tuwien.kr.alpha.api.programs.atoms;
 
 import java.util.List;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.programs.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 
 public interface Atom extends Comparable<Atom> {
+	
 	Predicate getPredicate();
 
 	List<Term> getTerms();
@@ -31,7 +34,7 @@ public interface Atom extends Comparable<Atom> {
 	
 	Set<VariableTerm> getOccurringVariables();
 	
-	Atom substitute(Substitution substitution);
+	Atom substitute(Substitution substitution); // Introduce parameterized interface Substituable<A extends Atom> to get atom types right?
 	
 	Atom renameVariables(String newVariablePrefix);
 	
