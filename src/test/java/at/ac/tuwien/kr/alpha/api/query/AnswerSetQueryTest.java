@@ -80,7 +80,7 @@ public class AnswerSetQueryTest {
 		};
 		AnswerSetQuery evenIntegers = AnswerSetQuery.forPredicate(Predicate.getInstance("p", 1))
 				.withFilter(0, isInteger.and(
-						(term) -> (Integer.valueOf(((ConstantTerm<?>) term).getObject().toString()) % 2 == 0)));
+						(term) -> Integer.valueOf(((ConstantTerm<?>) term).getObject().toString()) % 2 == 0));
 		List<Atom> queryResult = as.query(evenIntegers);
 		Assert.assertEquals(2, queryResult.size());
 		for (Atom atom : queryResult) {
