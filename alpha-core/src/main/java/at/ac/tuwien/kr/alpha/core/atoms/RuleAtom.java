@@ -28,7 +28,9 @@
 package at.ac.tuwien.kr.alpha.core.atoms;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
@@ -36,7 +38,7 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 
@@ -44,7 +46,7 @@ import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
  * Atoms corresponding to rule bodies use this predicate, first term is rule number,
  * second is a term containing variable substitutions.
  */
-public class RuleAtom extends AbstractAtom {
+public class RuleAtom implements Atom {
 	public static final Predicate PREDICATE = CorePredicate.getInstance("_R_", 2, true, true);
 
 	private final List<ConstantTerm<String>> terms;
@@ -59,10 +61,8 @@ public class RuleAtom extends AbstractAtom {
 
 	public RuleAtom(CompiledRule nonGroundRule, Substitution substitution) {
 		this(Arrays.asList(
-				Terms.newConstant(Integer.toString(nonGroundRule.getRuleId())), 
-				Terms.newConstant(substitution.toString())
-				)
-			);
+				Terms.newConstant(Integer.toString(nonGroundRule.getRuleId())),
+				Terms.newConstant(substitution.toString())));
 	}
 
 	@Override
@@ -80,14 +80,14 @@ public class RuleAtom extends AbstractAtom {
 		// NOTE: Both terms are ConstantTerms, which are ground by definition.
 		return true;
 	}
-	
+
 	@Override
 	public CoreLiteral toLiteral(boolean positive) {
 		throw new UnsupportedOperationException("RuleAtom cannot be literalized");
 	}
 
 	@Override
-	public AbstractAtom substitute(Substitution substitution) {
+	public Atom substitute(Substitution substitution) {
 		return this;
 	}
 
@@ -118,5 +118,16 @@ public class RuleAtom extends AbstractAtom {
 	@Override
 	public Atom withTerms(List<Term> terms) {
 		throw new UnsupportedOperationException("RuleAtoms do not support setting of terms!");
+	}
+
+	@Override
+	public Set<VariableTerm> getOccurringVariables() {
+		// RuleAtom has 2 terms which are both constants
+		return Collections.emptySet();
+	}
+
+	@Override
+	public Atom renameVariables(String newVariablePrefix) {
+		throw new UnsupportedOperationException("RuleAtom does not have any variables to rename!");
 	}
 }

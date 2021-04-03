@@ -42,13 +42,13 @@ import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
@@ -123,7 +123,7 @@ public class AtomCounterTests {
 	private void createRuleAtom() {
 		Atom atomAA = Atoms.newBasicAtom(CorePredicate.getInstance("aa", 0));
 		CompiledRule ruleAA = new InternalRule(new NormalHeadImpl(atomAA), Collections.singletonList(Atoms.newBasicAtom(CorePredicate.getInstance("bb", 0)).toLiteral(false)));
-		atomStore.putIfAbsent(new RuleAtom(ruleAA, new SubstitutionImpl()));
+		atomStore.putIfAbsent(new RuleAtom(ruleAA, new BasicSubstitution()));
 	}
 
 	private void expectGetNumberOfAtoms(AtomCounter atomCounter, Class<? extends Atom> classOfAtoms, int expectedNumber) {

@@ -61,7 +61,7 @@ import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
@@ -306,7 +306,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		for (CompiledRule nonGroundRule : fixedRules) {
 			// Generate NoGoods for all rules that have a fixed grounding.
 			RuleGroundingOrder groundingOrder = nonGroundRule.getGroundingInfo().getFixedGroundingOrder();
-			BindingResult bindingResult = getGroundInstantiations(nonGroundRule, groundingOrder, new SubstitutionImpl(), null);
+			BindingResult bindingResult = getGroundInstantiations(nonGroundRule, groundingOrder, new BasicSubstitution(), null);
 			groundAndRegister(nonGroundRule, bindingResult.getGeneratedSubstitutions(), groundNogoods);
 		}
 
@@ -344,8 +344,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				for (Instance instance : modifiedWorkingMemory.getRecentlyAddedInstances()) {
 					// Check instance if it matches with the atom.
 
-					final Substitution unifier = SubstitutionImpl.specializeSubstitution(firstBindingAtom.startingLiteral, instance,
-							SubstitutionImpl.EMPTY_SUBSTITUTION);
+					final Substitution unifier = BasicSubstitution.specializeSubstitution(firstBindingAtom.startingLiteral, instance,
+							BasicSubstitution.EMPTY_SUBSTITUTION);
 
 					if (unifier == null) {
 						continue;
@@ -439,9 +439,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	/**
-	 * Helper method used by {@link NaiveGrounder#bindNextAtomInRule(RuleGroundingOrderImpl, int, int, int, SubstitutionImpl)}.
+	 * Helper method used by {@link NaiveGrounder#bindNextAtomInRule(RuleGroundingOrderImpl, int, int, int, BasicSubstitution)}.
 	 *
-	 * Takes an <code>ImmutablePair</code> of a {@link SubstitutionImpl} and an accompanying {@link AssignmentStatus} and calls
+	 * Takes an <code>ImmutablePair</code> of a {@link BasicSubstitution} and an accompanying {@link AssignmentStatus} and calls
 	 * <code>bindNextAtomInRule</code> for the next literal in the grounding order.
 	 * If the assignment status for the last bound literal was {@link AssignmentStatus#UNASSIGNED}, the <code>remainingTolerance</code>
 	 * parameter is decreased by 1. If the remaining tolerance drops below zero, this method returns an empty {@link BindingResult}.
@@ -496,7 +496,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	//@formatter:off
 
 	/**
-	 * Computes ground substitutions for a literal based on a {@link RuleGroundingOrderImpl} and a {@link SubstitutionImpl}.
+	 * Computes ground substitutions for a literal based on a {@link RuleGroundingOrderImpl} and a {@link BasicSubstitution}.
 	 *
 	 * Computes ground substitutions for the literal at position <code>orderPosition</code> of <code>groundingOrder</code>
 	 * Actual substitutions are computed by this grounder's {@link LiteralInstantiator}. 

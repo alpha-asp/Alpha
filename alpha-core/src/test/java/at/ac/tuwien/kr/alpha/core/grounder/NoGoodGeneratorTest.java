@@ -38,7 +38,7 @@ import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.Literals;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
@@ -79,7 +79,7 @@ public class NoGoodGeneratorTest {
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
 		NoGoodGenerator noGoodGenerator = ((NaiveGrounder) grounder).noGoodGenerator;
-		Substitution substitution = new SubstitutionImpl();
+		Substitution substitution = new BasicSubstitution();
 		substitution.put(X, A);
 		substitution.put(Y, B);
 		List<Integer> collectedNeg = noGoodGenerator.collectNegLiterals(rule, substitution);

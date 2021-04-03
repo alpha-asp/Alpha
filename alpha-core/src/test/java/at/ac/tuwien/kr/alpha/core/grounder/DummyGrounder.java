@@ -52,7 +52,7 @@ import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
@@ -95,7 +95,7 @@ public class DummyGrounder implements Grounder {
 	private static Atom atomBB = Atoms.newBasicAtom(CorePredicate.getInstance("b", 0));
 	private static Atom atomCC = Atoms.newBasicAtom(CorePredicate.getInstance("c", 0));
 	private static BasicRule ruleABC = new BasicRule(new NormalHeadImpl(atomCC), Arrays.asList(atomAA.toLiteral(), atomBB.toLiteral()));
-	private static Atom rule1 = new RuleAtom(InternalRule.fromNormalRule(NormalRule.fromBasicRule(ruleABC)), new SubstitutionImpl());
+	private static Atom rule1 = new RuleAtom(InternalRule.fromNormalRule(NormalRule.fromBasicRule(ruleABC)), new BasicSubstitution());
 	private Set<Integer> returnedNogoods = new HashSet<>();
 
 	public DummyGrounder(AtomStore atomStore) {

@@ -9,7 +9,7 @@ import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.atoms.BasicAtomImpl;
-import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 
@@ -71,7 +71,7 @@ public class EnumerationAtom extends BasicAtomImpl {
 			throw new RuntimeException("Enumeration term is not ground after substitution. Should not happen.");
 		}
 		Integer enumerationIndex = getEnumerationIndex(idTerm, enumerationTerm);
-		SubstitutionImpl retVal = new SubstitutionImpl(substitution);
+		BasicSubstitution retVal = new BasicSubstitution(substitution);
 		retVal.put((VariableTerm) getTerms().get(2), Terms.newConstant(enumerationIndex));
 		return retVal;
 	}

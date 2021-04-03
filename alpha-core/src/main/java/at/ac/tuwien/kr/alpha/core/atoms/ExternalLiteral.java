@@ -39,7 +39,7 @@ import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
-import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 
 /**
  * Contains a potentially negated {@link ExternalAtom}.
@@ -65,7 +65,7 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 	}
 
 	/**
-	 * @see AbstractAtom#substitute(SubstitutionImpl)
+	 * @see AbstractAtom#substitute(BasicSubstitution)
 	 */
 	@Override
 	public ExternalLiteral substitute(Substitution substitution) {
@@ -194,7 +194,7 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 						"Predicate " + getPredicate().getName() + " returned " + bindings.size() + " terms when at least " + externalAtomOutputTerms.size()
 								+ " were expected.");
 			}
-			SubstitutionImpl ith = new SubstitutionImpl(partialSubstitution);
+			BasicSubstitution ith = new BasicSubstitution(partialSubstitution);
 			boolean skip = false;
 			for (int i = 0; i < externalAtomOutputTerms.size(); i++) {
 				Term out = externalAtomOutputTerms.get(i);

@@ -14,7 +14,7 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
@@ -114,7 +114,7 @@ public class LiteralInstantiationStrategyTest {
 		strategy.setCurrentAssignment(null);
 
 		List<ImmutablePair<Substitution, AssignmentStatus>> result = strategy.getAcceptedSubstitutions(new BasicLiteral(nonGroundAtom, true),
-				new SubstitutionImpl());
+				new BasicSubstitution());
 		Assert.assertEquals(1, result.size());
 		ImmutablePair<Substitution, AssignmentStatus> substitutionInfo = result.get(0);
 		Substitution substitution = substitutionInfo.left;
@@ -279,7 +279,7 @@ public class LiteralInstantiationStrategyTest {
 		strategy.setCurrentAssignment(assignment);
 
 		List<ImmutablePair<Substitution, AssignmentStatus>> result = strategy.getAcceptedSubstitutions(new BasicLiteral(nonGroundAtom, true),
-				new SubstitutionImpl());
+				new BasicSubstitution());
 		Assert.assertEquals(1, result.size());
 		ImmutablePair<Substitution, AssignmentStatus> substitutionInfo = result.get(0);
 		Substitution substitution = substitutionInfo.left;
@@ -322,7 +322,7 @@ public class LiteralInstantiationStrategyTest {
 		strategy.setCurrentAssignment(assignment);
 
 		List<ImmutablePair<Substitution, AssignmentStatus>> result = strategy.getAcceptedSubstitutions(new BasicLiteral(nonGroundAtom, true),
-				new SubstitutionImpl());
+				new BasicSubstitution());
 		Assert.assertEquals(1, result.size());
 		ImmutablePair<Substitution, AssignmentStatus> substitutionInfo = result.get(0);
 		Substitution substitution = substitutionInfo.left;
@@ -363,7 +363,7 @@ public class LiteralInstantiationStrategyTest {
 		strategy.setCurrentAssignment(assignment);
 
 		List<ImmutablePair<Substitution, AssignmentStatus>> result = strategy.getAcceptedSubstitutions(new BasicLiteral(nonGroundAtom, true),
-				new SubstitutionImpl());
+				new BasicSubstitution());
 		Assert.assertTrue(result.isEmpty());
 
 		Assert.assertEquals(1, staleSet.size());

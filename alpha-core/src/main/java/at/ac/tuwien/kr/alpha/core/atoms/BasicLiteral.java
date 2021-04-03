@@ -36,7 +36,7 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 
 /**
  * Contains a potentially negated {@link BasicAtomImpl}.
@@ -63,7 +63,7 @@ public class BasicLiteral extends CoreLiteral { // TODO could we parameterize Li
 	}
 
 	/**
-	 * @see AbstractAtom#substitute(SubstitutionImpl)
+	 * @see AbstractAtom#substitute(BasicSubstitution)
 	 */
 	@Override
 	public BasicLiteral substitute(Substitution substitution) {

@@ -38,7 +38,7 @@ import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
@@ -70,7 +70,7 @@ public class IntervalLiteral extends FixedInterpretationLiteral {
 		if (intervalRepresentingVariable instanceof VariableTerm) {
 			// Still a variable, generate all elements in the interval.
 			for (int i = intervalTerm.getLowerBound(); i <= intervalTerm.getUpperBound(); i++) {
-				Substitution ith = new SubstitutionImpl(partialSubstitution);
+				Substitution ith = new BasicSubstitution(partialSubstitution);
 				ith.put((VariableTerm) intervalRepresentingVariable, Terms.newConstant(i));
 				substitutions.add(ith);
 			}

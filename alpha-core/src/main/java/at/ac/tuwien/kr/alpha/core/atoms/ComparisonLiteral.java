@@ -40,7 +40,7 @@ import at.ac.tuwien.kr.alpha.api.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
-import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
 /**
@@ -74,7 +74,7 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 	}
 
 	/**
-	 * @see AbstractAtom#substitute(SubstitutionImpl)
+	 * @see AbstractAtom#substitute(BasicSubstitution)
 	 */
 	@Override
 	public ComparisonLiteral substitute(Substitution substitution) {
@@ -172,7 +172,7 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 			// Ground term is another term (constant, or function term).
 			resultTerm = groundTerm;
 		}
-		SubstitutionImpl extendedSubstitution = new SubstitutionImpl(partialSubstitution);
+		BasicSubstitution extendedSubstitution = new BasicSubstitution(partialSubstitution);
 		extendedSubstitution.put(variable, resultTerm);
 		return Collections.singletonList(extendedSubstitution);
 	}

@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.core.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.ExternalLiteral;
@@ -65,7 +65,7 @@ public class LiteralInstantiator {
 	}
 
 	/**
-	 * Instantiates a literal using an existing {@link SubstitutionImpl} as starting point.
+	 * Instantiates a literal using an existing {@link BasicSubstitution} as starting point.
 	 *
 	 * This method is intended to be called as part of a larger rule instantiation (i.e. grounding) workflow in order to find ground
 	 * instantiations of literals, i.e. extensions of the given partial substitution that yield useable ground instances for the given literal.
@@ -112,7 +112,7 @@ public class LiteralInstantiator {
 	}
 
 	/**
-	 * Calculates a substitution that adds an enumeration index (see {@link EnumerationLiteral#addEnumerationIndexToSubstitution(SubstitutionImpl)})
+	 * Calculates a substitution that adds an enumeration index (see {@link EnumerationLiteral#addEnumerationIndexToSubstitution(BasicSubstitution)})
 	 * to the given partial substitution. Due to the special nature of enumeration literals, this method will always return
 	 * {@link LiteralInstantiationResult.Type#CONTINUE} as its result type. This method assumes that the partial substitution has
 	 * <emph>not</emph> been applied to the passed literal.

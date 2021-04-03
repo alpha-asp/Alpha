@@ -25,7 +25,7 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph;
 import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph.SCComponent;
 import at.ac.tuwien.kr.alpha.core.depgraph.Node;
@@ -201,7 +201,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		LOGGER.debug("Is fixed rule? {}", rule.getGroundingInfo().hasFixedInstantiation());
 		if (groundingOrders.hasFixedInstantiation()) {
 			RuleGroundingOrder fixedGroundingOrder = groundingOrders.getFixedGroundingOrder();
-			return calcSubstitutionsWithGroundingOrder(fixedGroundingOrder, Collections.singletonList(new SubstitutionImpl()));
+			return calcSubstitutionsWithGroundingOrder(fixedGroundingOrder, Collections.singletonList(new BasicSubstitution()));
 		}
 
 		List<Literal> startingLiterals = groundingOrders.getStartingLiterals();
@@ -238,7 +238,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			return Collections.emptyList();
 		}
 		for (Instance instance : instances) {
-			Substitution unifyingSubstitution = SubstitutionImpl.specializeSubstitution(lit, instance, SubstitutionImpl.EMPTY_SUBSTITUTION);
+			Substitution unifyingSubstitution = BasicSubstitution.specializeSubstitution(lit, instance, BasicSubstitution.EMPTY_SUBSTITUTION);
 			if (unifyingSubstitution != null) {
 				retVal.add(unifyingSubstitution);
 			}

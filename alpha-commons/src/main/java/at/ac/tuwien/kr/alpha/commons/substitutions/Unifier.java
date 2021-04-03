@@ -18,7 +18,7 @@ import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
  * resolved automatically, i.e., adding the substitutions (X -> A) and (A -> d) results in (X -> d), (A -> d).
  * Copyright (c) 2018-2020, the Alpha Team.
  */
-public class Unifier extends SubstitutionImpl {
+public class Unifier extends BasicSubstitution {
 
 	private final TreeMap<VariableTerm, List<VariableTerm>> rightHandVariableOccurrences;
 
@@ -42,7 +42,7 @@ public class Unifier extends SubstitutionImpl {
 		this(new TreeMap<>(clone.getSubstitution()), new TreeMap<>());
 	}
 
-	public Unifier extendWith(SubstitutionImpl extension) {
+	public Unifier extendWith(BasicSubstitution extension) {
 		for (Map.Entry<VariableTerm, Term> extensionVariable : extension.substitution.entrySet()) {
 			this.put(extensionVariable.getKey(), extensionVariable.getValue());
 		}

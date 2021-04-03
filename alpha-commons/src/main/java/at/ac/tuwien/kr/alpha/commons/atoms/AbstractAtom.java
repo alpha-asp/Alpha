@@ -85,14 +85,6 @@ abstract class AbstractAtom implements Atom {
 	@Override
 	public abstract boolean isGround();
 
-	/**
-	 * Creates a non-negated literal containing this atom.
-	 */
-	@Override
-	public Literal toLiteral() {
-		return toLiteral(true);
-	}
-
 	@Override
 	public abstract Literal toLiteral(boolean positive);
 
@@ -104,35 +96,6 @@ abstract class AbstractAtom implements Atom {
 			renamingSubstitution.put(variable, Terms.newVariable(newVariablePrefix + counter++));
 		}
 		return this.substitute(renamingSubstitution);
-	}
-
-	@Override
-	public int compareTo(Atom o) {
-		if (o == null) {
-			return 1;
-		}
-
-		final List<Term> aTerms = this.getTerms();
-		final List<Term> bTerms = o.getTerms();
-
-		if (aTerms.size() != bTerms.size()) {
-			return Integer.compare(aTerms.size(), bTerms.size());
-		}
-
-		int result = this.getPredicate().compareTo(o.getPredicate());
-
-		if (result != 0) {
-			return result;
-		}
-
-		for (int i = 0; i < aTerms.size(); i++) {
-			result = aTerms.get(i).compareTo(o.getTerms().get(i));
-			if (result != 0) {
-				return result;
-			}
-		}
-
-		return 0;
 	}
 
 	@Override

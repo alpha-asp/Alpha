@@ -35,12 +35,12 @@ import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 
 /**
  * Abstract base implementation of {@link LiteralInstantiationStrategy} that outlines a basic workflow for
  * {@link LiteralInstantiationStrategy#getTruthForGroundLiteral(Literal)} and
- * {@link LiteralInstantiationStrategy#getAcceptedSubstitutions(Literal, SubstitutionImpl)} while leaving details of when an atom is true and
+ * {@link LiteralInstantiationStrategy#getAcceptedSubstitutions(Literal, BasicSubstitution)} while leaving details of when an atom is true and
  * which {@link AssignmentStatus}es to consider valid for <code>getAcceptedSubstitutions</code> to implementations.
  * 
  * Copyright (c) 2020, the Alpha Team.
@@ -64,7 +64,7 @@ public abstract class AbstractLiteralInstantiationStrategy implements LiteralIns
 	}
 
 	/**
-	 * See {@link LiteralInstantiationStrategy#getAcceptedSubstitutions(Literal, SubstitutionImpl)}.
+	 * See {@link LiteralInstantiationStrategy#getAcceptedSubstitutions(Literal, BasicSubstitution)}.
 	 * 
 	 * A very general implementation of the basic steps needed to obtain ground substitutions for a positive literal.
 	 * Potentially valid ground instances are obtained using {@link AbstractLiteralInstantiationStrategy#computeCandidateInstances(Atom)}, then
@@ -107,7 +107,7 @@ public abstract class AbstractLiteralInstantiationStrategy implements LiteralIns
 		Substitution currentInstanceSubstitution;
 		Atom atomForCurrentInstance;
 		for (Instance instance : candidateInstances) {
-			currentInstanceSubstitution = SubstitutionImpl.specializeSubstitution(atomToSubstitute, instance, partialSubstitution);
+			currentInstanceSubstitution = BasicSubstitution.specializeSubstitution(atomToSubstitute, instance, partialSubstitution);
 			if (currentInstanceSubstitution == null) {
 				// Instance does not unify with partialSubstitution, move on to the next instance.
 				continue;

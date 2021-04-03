@@ -48,7 +48,7 @@ import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
@@ -75,20 +75,20 @@ public class SubstitutionTest {
 
 	@Test
 	public void putSimpleBinding() {
-		Substitution substitution = new SubstitutionImpl();
+		Substitution substitution = new BasicSubstitution();
 		substitution.put(Y, A);
 		assertEquals(A, substitution.eval(Y));
 	}
 
 	@Test
 	public void specializeTermsSimpleBinding() {
-		Substitution substitution = SubstitutionImpl.specializeSubstitution(PY, PA, SubstitutionImpl.EMPTY_SUBSTITUTION);
+		Substitution substitution = BasicSubstitution.specializeSubstitution(PY, PA, BasicSubstitution.EMPTY_SUBSTITUTION);
 		assertEquals(A, substitution.eval(Y));
 	}
 
 	@Test
 	public void specializeTermsFunctionTermBinding() {
-		Substitution substitution = new SubstitutionImpl();
+		Substitution substitution = new BasicSubstitution();
 		substitution.put(Y, A);
 
 		FunctionTerm groundFunctionTerm = Terms.newFunctionTerm("f", B, C);
@@ -96,7 +96,7 @@ public class SubstitutionTest {
 		Term nongroundFunctionTerm = Terms.newFunctionTerm("f", B, X);
 		BasicAtom qfBX = Atoms.newBasicAtom(CorePredicate.getInstance("q", 2), nongroundFunctionTerm);
 
-		Substitution substitution1 = SubstitutionImpl.specializeSubstitution(qfBX, qfBC, substitution);
+		Substitution substitution1 = BasicSubstitution.specializeSubstitution(qfBX, qfBC, substitution);
 
 		assertEquals(C, substitution1.eval(X));
 		assertEquals(A, substitution1.eval(Y));
@@ -116,8 +116,8 @@ public class SubstitutionTest {
 	public void groundAndPrintRule() {
 		Rule<Head> rule = PARSER.parse("x :- p(X,Y), not q(X,Y).").getRules().get(0);
 		CompiledRule nonGroundRule = InternalRule.fromNormalRule(NormalRule.fromBasicRule(rule));
-		Substitution substitution1 = SubstitutionImpl.specializeSubstitution(PX, PA, SubstitutionImpl.EMPTY_SUBSTITUTION);
-		Substitution substitution2 = SubstitutionImpl.specializeSubstitution(PY, PB, substitution1);
+		Substitution substitution1 = BasicSubstitution.specializeSubstitution(PX, PA, BasicSubstitution.EMPTY_SUBSTITUTION);
+		Substitution substitution2 = BasicSubstitution.specializeSubstitution(PY, PB, substitution1);
 		String printedString = SubstitutionTestUtil.groundAndPrintRule(nonGroundRule, substitution2);
 		assertEquals("x :- p(a, b), not q(a, b).", printedString);
 	}
@@ -127,7 +127,7 @@ public class SubstitutionTest {
 		Predicate p = CorePredicate.getInstance("p", 2);
 		BasicAtom atom = Atoms.newBasicAtom(p, Arrays.asList(X, Y));
 		Instance instance = new Instance(A, B);
-		Substitution substitution = SubstitutionImpl.specializeSubstitution(atom, instance, SubstitutionImpl.EMPTY_SUBSTITUTION);
+		Substitution substitution = BasicSubstitution.specializeSubstitution(atom, instance, BasicSubstitution.EMPTY_SUBSTITUTION);
 		Atom substituted = atom.substitute(substitution);
 		assertEquals(p, substituted.getPredicate());
 		assertEquals(A, substituted.getTerms().get(0));
@@ -138,7 +138,7 @@ public class SubstitutionTest {
 		Predicate p = CorePredicate.getInstance("p", 2);
 		BasicAtom atom = Atoms.newBasicAtom(p, Arrays.asList(X, Y));
 		Literal literal = new BasicLiteral(atom, !negated);
-		Substitution substitution = new SubstitutionImpl();
+		Substitution substitution = new BasicSubstitution();
 		substitution.put(X, A);
 		substitution.put(Y, B);
 		literal = literal.substitute(substitution);
@@ -161,8 +161,8 @@ public class SubstitutionTest {
 	private void groundLiteralToString(boolean negated) {
 		Predicate p = CorePredicate.getInstance("p", 2);
 		BasicAtom atom = Atoms.newBasicAtom(p, Arrays.asList(X, Y));
-		Substitution substitution1 = SubstitutionImpl.specializeSubstitution(PX, PA, SubstitutionImpl.EMPTY_SUBSTITUTION);
-		Substitution substitution = SubstitutionImpl.specializeSubstitution(PY, PB, substitution1);
+		Substitution substitution1 = BasicSubstitution.specializeSubstitution(PX, PA, BasicSubstitution.EMPTY_SUBSTITUTION);
+		Substitution substitution = BasicSubstitution.specializeSubstitution(PY, PB, substitution1);
 		String printedString = SubstitutionTestUtil.groundLiteralToString(atom.toLiteral(!negated), substitution, true);
 		assertEquals((negated ? "not " : "") + "p(a, b)", printedString);
 	}
@@ -171,8 +171,8 @@ public class SubstitutionTest {
 	public void substitutionFromString() {
 		Rule<Head> rule = PARSER.parse("x :- p(X,Y), not q(X,Y).").getRules().get(0);
 		CompiledRule nonGroundRule = InternalRule.fromNormalRule(NormalRule.fromBasicRule(rule));
-		Substitution substitution1 = SubstitutionImpl.specializeSubstitution(PX, PA, SubstitutionImpl.EMPTY_SUBSTITUTION);
-		Substitution substitution = SubstitutionImpl.specializeSubstitution(PY, PB, substitution1);
+		Substitution substitution1 = BasicSubstitution.specializeSubstitution(PX, PA, BasicSubstitution.EMPTY_SUBSTITUTION);
+		Substitution substitution = BasicSubstitution.specializeSubstitution(PY, PB, substitution1);
 		RuleAtom ruleAtom = new RuleAtom(nonGroundRule, substitution);
 		String substitutionString = (String) ((ConstantTerm<?>) ruleAtom.getTerms().get(1)).getObject();
 		Substitution fromString = Substitutions.fromString(substitutionString);

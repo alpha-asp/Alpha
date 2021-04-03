@@ -31,11 +31,11 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 
 /**
- * A {@link LiteralInstantiationStrategy} finds and validates {@link SubstitutionImpl}s for {@link Literal}s based on a specific definition of
- * when a {@link SubstitutionImpl} is valid, i.e. what makes a literal "true", "false" or "unassigned".
+ * A {@link LiteralInstantiationStrategy} finds and validates {@link BasicSubstitution}s for {@link Literal}s based on a specific definition of
+ * when a {@link BasicSubstitution} is valid, i.e. what makes a literal "true", "false" or "unassigned".
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
@@ -50,9 +50,9 @@ public interface LiteralInstantiationStrategy {
 	AssignmentStatus getTruthForGroundLiteral(Literal groundLiteral);
 
 	/**
-	 * Computes {@link SubstitutionImpl}s that yield ground instances for a given literal and starting substitution along with the
+	 * Computes {@link BasicSubstitution}s that yield ground instances for a given literal and starting substitution along with the
 	 * {@link AssignmentStatus} of respective ground instances. Note that in all implementations it must hold that an {@link AssignmentStatus}
-	 * AS for a {@link SubstitutionImpl} S as yielded by this method for a {@link Literal} lit is the same as the result of calling
+	 * AS for a {@link BasicSubstitution} S as yielded by this method for a {@link Literal} lit is the same as the result of calling
 	 * <code>getTruthForGroundLiteral(lit.substitute(S))</code>, i.e. both methods must yield the same assignment status for the same ground
 	 * literal.
 	 * 

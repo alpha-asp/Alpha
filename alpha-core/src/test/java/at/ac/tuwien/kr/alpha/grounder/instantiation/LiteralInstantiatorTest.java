@@ -14,7 +14,7 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
-import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
+import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.ComparisonAtom;
@@ -34,7 +34,7 @@ public class LiteralInstantiatorTest {
 	public void instantiateSatisfiedFixedInterpretationLiteral() {
 		ComparisonAtom equalsThree = new ComparisonAtom(Terms.newConstant(3), Terms.newVariable("THREE"), ComparisonOperators.EQ);
 		Literal lit = new ComparisonLiteral(equalsThree, true);
-		Substitution substitution = new SubstitutionImpl();
+		Substitution substitution = new BasicSubstitution();
 		LiteralInstantiator instantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(null));
 		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution);
 		Assert.assertEquals(LiteralInstantiationResult.Type.CONTINUE, result.getType());
@@ -50,7 +50,7 @@ public class LiteralInstantiatorTest {
 	public void instantiateUnsatisfiedFixedInterpretationLiteral() {
 		ComparisonAtom fiveEqualsThree = new ComparisonAtom(Terms.newVariable("FIVE"), Terms.newVariable("THREE"), ComparisonOperators.EQ);
 		Literal lit = new ComparisonLiteral(fiveEqualsThree, true);
-		Substitution substitution = new SubstitutionImpl();
+		Substitution substitution = new BasicSubstitution();
 		substitution.put(Terms.newVariable("FIVE"), Terms.newConstant(5));
 		substitution.put(Terms.newVariable("THREE"), Terms.newConstant(3));
 		LiteralInstantiator instantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(null));
@@ -69,7 +69,7 @@ public class LiteralInstantiatorTest {
 		termList.add(indexTerm);
 		EnumerationAtom enumAtom = new EnumerationAtom(termList);
 		EnumerationLiteral lit = new EnumerationLiteral(enumAtom);
-		Substitution substitution = new SubstitutionImpl();
+		Substitution substitution = new BasicSubstitution();
 		substitution.put(enumTerm, Terms.newSymbolicConstant("enum1"));
 		substitution.put(idTerm, Terms.newSymbolicConstant("someElement"));
 		LiteralInstantiator instantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(null));
@@ -90,7 +90,7 @@ public class LiteralInstantiatorTest {
 		VariableTerm x = Terms.newVariable("X");
 		VariableTerm y = Terms.newVariable("Y");
 		Literal lit = new BasicLiteral(Atoms.newBasicAtom(p, x, y), true);
-		Substitution substitution = new SubstitutionImpl();
+		Substitution substitution = new BasicSubstitution();
 		substitution.put(x, Terms.newSymbolicConstant("x"));
 		substitution.put(y, Terms.newSymbolicConstant("y"));
 		LiteralInstantiator instantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(workingMemory));
@@ -113,7 +113,7 @@ public class LiteralInstantiatorTest {
 		VariableTerm x = Terms.newVariable("X");
 		VariableTerm y = Terms.newVariable("Y");
 		Literal lit = new BasicLiteral(Atoms.newBasicAtom(p, x, y), true);
-		Substitution substitution = new SubstitutionImpl();
+		Substitution substitution = new BasicSubstitution();
 		substitution.put(x, Terms.newSymbolicConstant("x"));
 		substitution.put(y, Terms.newSymbolicConstant("y"));
 		LiteralInstantiator instantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(workingMemory));
@@ -134,7 +134,7 @@ public class LiteralInstantiatorTest {
 		VariableTerm x = Terms.newVariable("X");
 		VariableTerm y = Terms.newVariable("Y");
 		Literal lit = new BasicLiteral(Atoms.newBasicAtom(p, x, y), true);
-		Substitution substitution = new SubstitutionImpl();
+		Substitution substitution = new BasicSubstitution();
 		substitution.put(x, Terms.newSymbolicConstant("x"));
 		LiteralInstantiator instantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(workingMemory));
 		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution);

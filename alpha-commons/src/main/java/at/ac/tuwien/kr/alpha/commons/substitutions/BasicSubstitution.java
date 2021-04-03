@@ -43,9 +43,9 @@ import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 
-public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Substitution {
+public class BasicSubstitution implements at.ac.tuwien.kr.alpha.api.grounder.Substitution {
 
-	public static final Substitution EMPTY_SUBSTITUTION = new SubstitutionImpl() {
+	public static final Substitution EMPTY_SUBSTITUTION = new BasicSubstitution() {
 		@Override
 		public <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term groundTerm) {
 			throw Util.oops("Should not be called on EMPTY_SUBSTITUTION");
@@ -54,18 +54,18 @@ public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Subs
 
 	protected TreeMap<VariableTerm, Term> substitution;
 
-	private SubstitutionImpl(TreeMap<VariableTerm, Term> substitution) {
+	private BasicSubstitution(TreeMap<VariableTerm, Term> substitution) {
 		if (substitution == null) {
 			throw Util.oops("Substitution is null.");
 		}
 		this.substitution = substitution;
 	}
 
-	public SubstitutionImpl() {
+	public BasicSubstitution() {
 		this(new TreeMap<>());
 	}
 
-	public SubstitutionImpl(Substitution clone) {
+	public BasicSubstitution(Substitution clone) {
 		this(new TreeMap<>(clone.getSubstitution()));
 	}
 
@@ -116,7 +116,7 @@ public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Subs
 				// Record new variable binding.
 				if (updatedSubstitution == null) {
 					// Clone substitution if it was not yet updated.
-					updatedSubstitution = new SubstitutionImpl(partialSubstitution);
+					updatedSubstitution = new BasicSubstitution(partialSubstitution);
 				}
 				updatedSubstitution.put(variableTerm, termGround);
 				return true;
@@ -231,7 +231,7 @@ public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Subs
 			return false;
 		}
 
-		SubstitutionImpl that = (SubstitutionImpl) o;
+		BasicSubstitution that = (BasicSubstitution) o;
 
 		return Objects.equals(substitution, that.substitution);
 	}

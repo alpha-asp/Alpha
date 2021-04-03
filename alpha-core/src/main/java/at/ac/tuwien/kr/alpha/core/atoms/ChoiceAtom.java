@@ -29,27 +29,29 @@ package at.ac.tuwien.kr.alpha.core.atoms;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 
-public class ChoiceAtom extends AbstractAtom {
+public class ChoiceAtom implements Atom {
 
 	public static final Predicate ON = CorePredicate.getInstance("ChoiceOn", 1, true, true);
 	public static final Predicate OFF = CorePredicate.getInstance("ChoiceOff", 1, true, true);
 
 	private final Predicate predicate;
-	private final List<Term> terms;
+	private final ConstantTerm<String> term;
 
-	private ChoiceAtom(Predicate predicate, Term term) {
+	private ChoiceAtom(Predicate predicate, ConstantTerm<String> term) {
 		this.predicate = predicate;
-		this.terms = Collections.singletonList(term);
+		this.term = term;
 	}
 
 	private ChoiceAtom(Predicate predicate, int id) {
@@ -71,7 +73,7 @@ public class ChoiceAtom extends AbstractAtom {
 
 	@Override
 	public List<Term> getTerms() {
-		return terms;
+		return Collections.singletonList(term);
 	}
 
 	@Override
@@ -86,13 +88,13 @@ public class ChoiceAtom extends AbstractAtom {
 	}
 
 	@Override
-	public AbstractAtom substitute(Substitution substitution) {
+	public ChoiceAtom substitute(Substitution substitution) {
 		return this;
 	}
 
 	@Override
 	public String toString() {
-		return Util.join(predicate.getName() + "(", terms, ")");
+		return Util.join(predicate.getName() + "(", getTerms(), ")");
 	}
 
 	@Override
@@ -105,7 +107,7 @@ public class ChoiceAtom extends AbstractAtom {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((this.predicate == null) ? 0 : this.predicate.hashCode());
-		result = prime * result + ((this.terms == null) ? 0 : this.terms.hashCode());
+		result = prime * result + ((this.getTerms() == null) ? 0 : this.getTerms().hashCode());
 		return result;
 	}
 
@@ -128,13 +130,23 @@ public class ChoiceAtom extends AbstractAtom {
 		} else if (!this.predicate.equals(other.predicate)) {
 			return false;
 		}
-		if (this.terms == null) {
-			if (other.terms != null) {
+		if (this.getTerms() == null) {
+			if (other.getTerms() != null) {
 				return false;
 			}
-		} else if (!this.terms.equals(other.terms)) {
+		} else if (!this.getTerms().equals(other.getTerms())) {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	public Set<VariableTerm> getOccurringVariables() {
+		return Collections.emptySet();
+	}
+
+	@Override
+	public Atom renameVariables(String newVariablePrefix) {
+		throw new UnsupportedOperationException("ChoiceAtom does not have any variables to rename!");
 	}
 }
