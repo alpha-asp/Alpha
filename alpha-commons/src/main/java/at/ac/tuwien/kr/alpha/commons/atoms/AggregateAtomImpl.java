@@ -36,32 +36,34 @@ import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.programs.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.literals.Literals;
 
-public class AggregateAtom extends AbstractAtom {
+class AggregateAtomImpl extends AbstractAtom implements AggregateAtom {
 
 	private final ComparisonOperator lowerBoundOperator;
 	private final Term lowerBoundTerm;
 	private final ComparisonOperator upperBoundOperator;
 	private final Term upperBoundTerm;
-	private final AGGREGATEFUNCTION aggregatefunction;
+	private final AggregateFunction aggregatefunction;
 	private final List<AggregateElement> aggregateElements;
 
-	public AggregateAtom(ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, ComparisonOperator upperBoundOperator, Term upperBoundTerm,
-			AGGREGATEFUNCTION aggregatefunction, List<AggregateElement> aggregateElements) {
+	AggregateAtomImpl(ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, ComparisonOperator upperBoundOperator, Term upperBoundTerm,
+			AggregateFunction aggregatefunction, List<AggregateElement> aggregateElements) {
 		this.lowerBoundOperator = lowerBoundOperator;
 		this.lowerBoundTerm = lowerBoundTerm;
 		this.upperBoundOperator = upperBoundOperator;
 		this.upperBoundTerm = upperBoundTerm;
 		this.aggregatefunction = aggregatefunction;
 		this.aggregateElements = aggregateElements;
-		if (upperBoundOperator != null || lowerBoundOperator != ComparisonOperator.LE || lowerBoundTerm == null) {
+		if (upperBoundOperator != null || lowerBoundOperator != ComparisonOperators.LE || lowerBoundTerm == null) {
 			throw new UnsupportedOperationException("Aggregate construct not yet supported: " + this);
 		}
 	}
@@ -82,7 +84,7 @@ public class AggregateAtom extends AbstractAtom {
 
 	@Override
 	public AggregateLiteral toLiteral(boolean positive) {
-		return new AggregateLiteral(this, positive);
+		return Literals.fromAtom(this, positive);
 	}
 
 	@Override
@@ -96,7 +98,7 @@ public class AggregateAtom extends AbstractAtom {
 	}
 
 	@Override
-	public CorePredicate getPredicate() {
+	public Predicate getPredicate() {
 		throw oops("Aggregate atom cannot report predicate.");
 	}
 
@@ -105,6 +107,7 @@ public class AggregateAtom extends AbstractAtom {
 	 * 
 	 * @return each variable occurring in some aggregate element.
 	 */
+	@Override
 	public List<VariableTerm> getAggregateVariables() {
 		List<VariableTerm> occurringVariables = new LinkedList<>();
 		for (AggregateElement aggregateElement : aggregateElements) {
@@ -114,7 +117,7 @@ public class AggregateAtom extends AbstractAtom {
 	}
 
 	@Override
-	public AggregateAtom substitute(Substitution substitution) {
+	public AggregateAtomImpl substitute(Substitution substitution) {
 		throw new UnsupportedOperationException("Cannot substitute AggregateAtom!");
 	}
 
@@ -127,7 +130,7 @@ public class AggregateAtom extends AbstractAtom {
 			return false;
 		}
 
-		AggregateAtom that = (AggregateAtom) o;
+		AggregateAtomImpl that = (AggregateAtomImpl) o;
 
 		if (lowerBoundOperator != that.lowerBoundOperator) {
 			return false;
@@ -165,54 +168,56 @@ public class AggregateAtom extends AbstractAtom {
 		return result;
 	}
 
-	public ComparisonOperatorImpl getLowerBoundOperator() {
+	@Override
+	public ComparisonOperator getLowerBoundOperator() {
 		return lowerBoundOperator;
 	}
 
+	@Override
 	public Term getLowerBoundTerm() {
 		return lowerBoundTerm;
 	}
 
-	public ComparisonOperatorImpl getUpperBoundOperator() {
+	@Override
+	public ComparisonOperator getUpperBoundOperator() {
 		return upperBoundOperator;
 	}
 
+	@Override
 	public Term getUpperBoundTerm() {
 		return upperBoundTerm;
 	}
 
-	public AGGREGATEFUNCTION getAggregatefunction() {
-		return aggregatefunction;
+	@Override
+	public AggregateFunction getAggregateFunction() {
+		return this.aggregatefunction;
 	}
 
+	@Override
 	public List<AggregateElement> getAggregateElements() {
 		return Collections.unmodifiableList(aggregateElements);
 	}
 
-	public enum AGGREGATEFUNCTION {
-		COUNT,
-		MAX,
-		MIN,
-		SUM
-	}
-
-	public static class AggregateElement {
+	static class AggregateElementImpl implements AggregateElement {
 		final List<Term> elementTerms;
 		final List<Literal> elementLiterals;
 
-		public AggregateElement(List<Term> elementTerms, List<Literal> elementLiterals) {
+		public AggregateElementImpl(List<Term> elementTerms, List<Literal> elementLiterals) {
 			this.elementTerms = elementTerms;
 			this.elementLiterals = elementLiterals;
 		}
 
+		@Override
 		public List<Term> getElementTerms() {
 			return elementTerms;
 		}
 
+		@Override
 		public List<Literal> getElementLiterals() {
 			return elementLiterals;
 		}
 
+		@Override
 		public boolean isGround() {
 			for (Term elementTerm : elementTerms) {
 				if (!elementTerm.isGround()) {
@@ -227,6 +232,7 @@ public class AggregateAtom extends AbstractAtom {
 			return true;
 		}
 
+		@Override
 		public List<VariableTerm> getOccurringVariables() {
 			List<VariableTerm> occurringVariables = new LinkedList<>();
 			for (Term term : elementTerms) {
@@ -250,7 +256,7 @@ public class AggregateAtom extends AbstractAtom {
 				return false;
 			}
 
-			AggregateElement that = (AggregateElement) o;
+			AggregateElementImpl that = (AggregateElementImpl) o;
 
 			if (elementTerms != null ? !elementTerms.equals(that.elementTerms) : that.elementTerms != null) {
 				return false;

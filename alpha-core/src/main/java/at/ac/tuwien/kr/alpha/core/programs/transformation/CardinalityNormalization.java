@@ -9,14 +9,14 @@ import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
-import at.ac.tuwien.kr.alpha.api.programs.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.commons.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
@@ -125,7 +125,7 @@ public class CardinalityNormalization extends ProgramTransformation<ASPCore2Prog
 			for (Literal lit : rule.getBody()) {
 				if (lit instanceof AggregateLiteral) {
 					AggregateAtom aggregateAtom = ((AggregateLiteral) lit).getAtom();
-					if (aggregateAtom.getAggregatefunction() == AggregateAtom.AGGREGATEFUNCTION.COUNT) {
+					if (aggregateAtom.getAggregateFunction() == AggregateAtom.AggregateFunction.COUNT) {
 						return true;
 					}
 				}
@@ -175,15 +175,15 @@ public class CardinalityNormalization extends ProgramTransformation<ASPCore2Prog
 
 			// Check that aggregate is limited to what we currently can deal with.
 			if (aggregateLiteral.isNegated() || aggregateAtom.getUpperBoundOperator() != null
-					|| (aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.COUNT
-							&& aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.SUM)
+					|| (aggregateAtom.getAggregateFunction() != AggregateAtom.AggregateFunction.COUNT
+							&& aggregateAtom.getAggregateFunction() != AggregateAtom.AggregateFunction.SUM)
 					|| aggregatesInRule++ > 0) {
 				throw new UnsupportedOperationException(
 						"Only limited #count/#sum aggregates without upper bound are currently supported." + "No rule may have more than one aggregate.");
 			}
 
 			// Only treat count aggregates.
-			if (aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.COUNT) {
+			if (aggregateAtom.getAggregateFunction() != AggregateAtom.AggregateFunction.COUNT) {
 				continue;
 			}
 			// Remove aggregate from rule body.

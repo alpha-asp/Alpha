@@ -3,12 +3,12 @@ package at.ac.tuwien.kr.alpha.core.atoms;
 import java.util.HashSet;
 import java.util.Set;
 
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
-import at.ac.tuwien.kr.alpha.commons.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 
 /**
  * Copyright (c) 2018, the Alpha Team.
@@ -33,7 +33,9 @@ public class AggregateLiteral extends CoreLiteral {
 	 */
 	@Override
 	public AggregateLiteral substitute(Substitution substitution) {
-		return new AggregateLiteral(getAtom().substitute(substitution), positive);
+		//return new AggregateLiteral(getAtom().substitute(substitution), positive);
+		// TODO either remove substitute method from abstract type or don't extend
+		throw new UnsupportedOperationException("Cannot substitute AggregateLiteral!");
 	}
 
 	@Override
@@ -55,8 +57,8 @@ public class AggregateLiteral extends CoreLiteral {
 		throw new UnsupportedOperationException();
 	}
 
-	private static VariableTerm boundBindingVariable(ComparisonOperatorImpl op, Term bound, boolean positive) {
-		boolean isNormalizedEquality = op == ComparisonOperatorImpl.EQ && positive || op == ComparisonOperatorImpl.NE && !positive;
+	private static VariableTerm boundBindingVariable(ComparisonOperator op, Term bound, boolean positive) {
+		boolean isNormalizedEquality = op == ComparisonOperators.EQ && positive || op == ComparisonOperators.NE && !positive;
 		if (isNormalizedEquality &&  bound instanceof VariableTerm) {
 			return (VariableTerm) bound;
 		}

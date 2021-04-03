@@ -47,13 +47,13 @@ import org.junit.Test;
 import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
-import at.ac.tuwien.kr.alpha.api.programs.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.commons.atoms.AggregateAtomImpl;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
@@ -205,10 +205,10 @@ public class ParserTest {
 		VariableTerm y = Terms.newVariable("Y");
 		VariableTerm z = Terms.newVariable("Z");
 		List<Term> basicTerms = Arrays.asList(x, y, z);
-		AggregateAtom.AggregateElement aggregateElement = new AggregateAtom.AggregateElement(basicTerms,
+		AggregateElementImpl.AggregateElement aggregateElement = new AggregateElementImpl.AggregateElement(basicTerms,
 				Collections.singletonList(Atoms.newBasicAtom(CorePredicate.getInstance("p", 3), x, y, z).toLiteral()));
-		AggregateAtom expectedAggregate = new AggregateAtom(ComparisonOperatorImpl.LE, Terms.newVariable("K"), null, null,
-				AggregateAtom.AGGREGATEFUNCTION.COUNT, Collections.singletonList(aggregateElement));
+		AggregateAtomImpl expectedAggregate = new AggregateAtomImpl(ComparisonOperatorImpl.LE, Terms.newVariable("K"), null, null,
+				AggregateAtomImpl.AGGREGATEFUNCTION.COUNT, Collections.singletonList(aggregateElement));
 		assertEquals(expectedAggregate, parsedAggregate.getAtom());
 	}
 

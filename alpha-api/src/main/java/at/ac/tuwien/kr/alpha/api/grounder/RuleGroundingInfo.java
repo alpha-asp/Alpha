@@ -2,7 +2,7 @@ package at.ac.tuwien.kr.alpha.api.grounder;
 
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.api.programs.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 
 public interface RuleGroundingInfo {
 	

@@ -35,12 +35,12 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.commons.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
@@ -112,8 +112,8 @@ public class AtomCounterTests {
 		final ConstantTerm<Integer> c2 = Terms.newConstant(2);
 		final ConstantTerm<Integer> c3 = Terms.newConstant(3);
 		List<Term> basicTerms = Arrays.asList(c1, c2, c3);
-		AggregateAtom.AggregateElement aggregateElement = new AggregateAtom.AggregateElement(basicTerms, Collections.singletonList(new BasicAtomImpl(CorePredicate.getInstance("p", 3), c1, c2, c3).toLiteral()));
-		atomStore.putIfAbsent(new AggregateAtom(ComparisonOperatorImpl.LE, c1, null, null, AggregateAtom.AGGREGATEFUNCTION.COUNT, Collections.singletonList(aggregateElement)));
+		AggregateAtom.AggregateElement aggregateElement = Atoms.newAggregateElement(basicTerms, Collections.singletonList(Atoms.newBasicAtom(CorePredicate.getInstance("p", 3), c1, c2, c3).toLiteral()));
+		atomStore.putIfAbsent(Atoms.newAggregateAtom(ComparisonOperators.LE, c1, null, null, AggregateAtom.AggregateFunction.COUNT, Collections.singletonList(aggregateElement)));
 	}
 
 	private void createChoiceAtom() {
@@ -122,7 +122,7 @@ public class AtomCounterTests {
 
 	private void createRuleAtom() {
 		Atom atomAA = Atoms.newBasicAtom(CorePredicate.getInstance("aa", 0));
-		CompiledRule ruleAA = new InternalRule(new NormalHeadImpl(atomAA), Collections.singletonList(new BasicAtomImpl(CorePredicate.getInstance("bb", 0)).toLiteral(false)));
+		CompiledRule ruleAA = new InternalRule(new NormalHeadImpl(atomAA), Collections.singletonList(Atoms.newBasicAtom(CorePredicate.getInstance("bb", 0)).toLiteral(false)));
 		atomStore.putIfAbsent(new RuleAtom(ruleAA, new SubstitutionImpl()));
 	}
 

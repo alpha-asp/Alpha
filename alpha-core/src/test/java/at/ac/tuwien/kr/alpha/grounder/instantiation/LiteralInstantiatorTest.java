@@ -8,11 +8,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.programs.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
@@ -20,7 +21,6 @@ import at.ac.tuwien.kr.alpha.core.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationLiteral;
-import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.grounder.WorkingMemory;
 import at.ac.tuwien.kr.alpha.core.grounder.instantiation.AssignmentStatus;
@@ -32,7 +32,7 @@ public class LiteralInstantiatorTest {
 
 	@Test
 	public void instantiateSatisfiedFixedInterpretationLiteral() {
-		ComparisonAtom equalsThree = new ComparisonAtom(Terms.newConstant(3), Terms.newVariable("THREE"), ComparisonOperatorImpl.EQ);
+		ComparisonAtom equalsThree = new ComparisonAtom(Terms.newConstant(3), Terms.newVariable("THREE"), ComparisonOperators.EQ);
 		Literal lit = new ComparisonLiteral(equalsThree, true);
 		Substitution substitution = new SubstitutionImpl();
 		LiteralInstantiator instantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(null));
@@ -48,7 +48,7 @@ public class LiteralInstantiatorTest {
 
 	@Test
 	public void instantiateUnsatisfiedFixedInterpretationLiteral() {
-		ComparisonAtom fiveEqualsThree = new ComparisonAtom(Terms.newVariable("FIVE"), Terms.newVariable("THREE"), ComparisonOperatorImpl.EQ);
+		ComparisonAtom fiveEqualsThree = new ComparisonAtom(Terms.newVariable("FIVE"), Terms.newVariable("THREE"), ComparisonOperators.EQ);
 		Literal lit = new ComparisonLiteral(fiveEqualsThree, true);
 		Substitution substitution = new SubstitutionImpl();
 		substitution.put(Terms.newVariable("FIVE"), Terms.newConstant(5));

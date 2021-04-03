@@ -26,8 +26,8 @@
 package at.ac.tuwien.kr.alpha.core.grounder.instantiation;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Instance;
-import at.ac.tuwien.kr.alpha.api.programs.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.core.grounder.WorkingMemory;
 
 /**

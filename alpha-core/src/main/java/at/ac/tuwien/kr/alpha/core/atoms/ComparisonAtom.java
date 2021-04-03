@@ -31,30 +31,29 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.VariableNormalizableAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 
 /**
  * Represents a builtin comparison atom according to the standard.
  */
 public class ComparisonAtom extends AbstractAtom implements VariableNormalizableAtom {
 	private final Predicate predicate;
-	final ComparisonOperatorImpl operator;
+	final ComparisonOperator operator;
 	private final List<Term> terms;
 
-	private ComparisonAtom(List<Term> terms, ComparisonOperatorImpl operator) {
+	private ComparisonAtom(List<Term> terms, ComparisonOperator operator) {
 		this.terms = terms;
 		this.operator = operator;
-		this.predicate = operator.predicate();
+		this.predicate = operator.toPredicate();
 	}
 
-	public ComparisonAtom(Term term1, Term term2, ComparisonOperatorImpl operator) {
+	public ComparisonAtom(Term term1, Term term2, ComparisonOperator operator) {
 		this(Arrays.asList(term1, term2), operator);
 	}
 

@@ -46,11 +46,14 @@ import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
-import at.ac.tuwien.kr.alpha.api.programs.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead;
 import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead.ChoiceElement;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
@@ -60,8 +63,8 @@ import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.commons.atoms.BasicAtomImpl;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
@@ -244,9 +247,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	public Head visitChoice(ASPCore2Parser.ChoiceContext ctx) {
 		// choice : (lt=term lop=binop)? CURLY_OPEN choice_elements? CURLY_CLOSE (uop=binop ut=term)?;
 		Term lt = null;
-		ComparisonOperatorImpl lop = null;
+		ComparisonOperator lop = null;
 		Term ut = null;
-		ComparisonOperatorImpl uop = null;
+		ComparisonOperator uop = null;
 		if (ctx.lt != null) {
 			lt = (Term) visit(ctx.lt);
 			lop = visitBinop(ctx.lop);
@@ -274,7 +277,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public ChoiceHead.ChoiceElement visitChoice_element(ASPCore2Parser.Choice_elementContext ctx) {
 		// choice_element : classical_literal (COLON naf_literals?)?;
-		BasicAtomImpl atom = (BasicAtomImpl) visitClassical_literal(ctx.classical_literal());
+		BasicAtom atom = (BasicAtom) visitClassical_literal(ctx.classical_literal());
 		if (ctx.naf_literals() != null) {
 			return new ChoiceElementImpl(atom, visitNaf_literals(ctx.naf_literals()));
 		} else {
@@ -327,9 +330,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		// aggregate : NAF? (lt=term lop=binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (uop=binop ut=term)?;
 		boolean isPositive = ctx.NAF() == null;
 		Term lt = null;
-		ComparisonOperatorImpl lop = null;
+		ComparisonOperator lop = null;
 		Term ut = null;
-		ComparisonOperatorImpl uop = null;
+		ComparisonOperator uop = null;
 		if (ctx.lt != null) {
 			lt = (Term) visit(ctx.lt);
 			lop = visitBinop(ctx.lop);
@@ -338,9 +341,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			ut = (Term) visit(ctx.ut);
 			uop = visitBinop(ctx.uop);
 		}
-		AggregateAtom.AGGREGATEFUNCTION aggregateFunction = visitAggregate_function(ctx.aggregate_function());
+		AggregateAtom.AggregateFunction aggregateFunction = visitAggregate_function(ctx.aggregate_function());
 		List<AggregateAtom.AggregateElement> aggregateElements = visitAggregate_elements(ctx.aggregate_elements());
-		return new AggregateAtom(lop, lt, uop, ut, aggregateFunction, aggregateElements).toLiteral(isPositive);
+		return Atoms.newAggregateAtom(lop, lt, uop, ut, aggregateFunction, aggregateElements).toLiteral(isPositive);
 	}
 
 	@Override
@@ -359,9 +362,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		// aggregate_element : basic_terms? (COLON naf_literals?)?;
 		List<Term> basicTerms = ctx.basic_terms() != null ? visitBasic_terms(ctx.basic_terms()) : null;
 		if (ctx.naf_literals() != null) {
-			return new AggregateAtom.AggregateElement(basicTerms, visitNaf_literals(ctx.naf_literals()));
+			return Atoms.newAggregateElement(basicTerms, visitNaf_literals(ctx.naf_literals()));
 		}
-		return new AggregateAtom.AggregateElement(basicTerms, Collections.emptyList());
+		return Atoms.newAggregateElement(basicTerms, Collections.emptyList());
 	}
 
 	@Override
@@ -412,36 +415,36 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public AggregateAtom.AGGREGATEFUNCTION visitAggregate_function(ASPCore2Parser.Aggregate_functionContext ctx) {
+	public AggregateAtom.AggregateFunction visitAggregate_function(ASPCore2Parser.Aggregate_functionContext ctx) {
 		// aggregate_function : AGGREGATE_COUNT | AGGREGATE_MAX | AGGREGATE_MIN | AGGREGATE_SUM;
 		if (ctx.AGGREGATE_COUNT() != null) {
-			return AggregateAtom.AGGREGATEFUNCTION.COUNT;
+			return AggregateAtom.AggregateFunction.COUNT;
 		} else if (ctx.AGGREGATE_MAX() != null) {
-			return AggregateAtom.AGGREGATEFUNCTION.MAX;
+			return AggregateAtom.AggregateFunction.MAX;
 		} else if (ctx.AGGREGATE_MIN() != null) {
-			return AggregateAtom.AGGREGATEFUNCTION.MIN;
+			return AggregateAtom.AggregateFunction.MIN;
 		} else if (ctx.AGGREGATE_SUM() != null) {
-			return AggregateAtom.AGGREGATEFUNCTION.SUM;
+			return AggregateAtom.AggregateFunction.SUM;
 		} else {
 			throw notSupported(ctx);
 		}
 	}
 
 	@Override
-	public ComparisonOperatorImpl visitBinop(ASPCore2Parser.BinopContext ctx) {
+	public ComparisonOperator visitBinop(ASPCore2Parser.BinopContext ctx) {
 		// binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
 		if (ctx.EQUAL() != null) {
-			return ComparisonOperatorImpl.EQ;
+			return ComparisonOperators.EQ;
 		} else if (ctx.UNEQUAL() != null) {
-			return ComparisonOperatorImpl.NE;
+			return ComparisonOperators.NE;
 		} else if (ctx.LESS() != null) {
-			return ComparisonOperatorImpl.LT;
+			return ComparisonOperators.LT;
 		} else if (ctx.LESS_OR_EQ() != null) {
-			return ComparisonOperatorImpl.LE;
+			return ComparisonOperators.LE;
 		} else if (ctx.GREATER() != null) {
-			return ComparisonOperatorImpl.GT;
+			return ComparisonOperators.GT;
 		} else if (ctx.GREATER_OR_EQ() != null) {
-			return ComparisonOperatorImpl.GE;
+			return ComparisonOperators.GE;
 		} else {
 			throw notSupported(ctx);
 		}
@@ -471,14 +474,14 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public BasicAtomImpl visitClassical_literal(ASPCore2Parser.Classical_literalContext ctx) {
+	public BasicAtom visitClassical_literal(ASPCore2Parser.Classical_literalContext ctx) {
 		// classical_literal : MINUS? ID (PAREN_OPEN terms PAREN_CLOSE)?;
 		if (ctx.MINUS() != null) {
 			throw notSupported(ctx);
 		}
 
 		final List<Term> terms = visitTerms(ctx.terms());
-		return new BasicAtomImpl(CorePredicate.getInstance(ctx.ID().getText(), terms.size()), terms);
+		return Atoms.newBasicAtom(CorePredicate.getInstance(ctx.ID().getText(), terms.size()), terms);
 	}
 
 	@Override

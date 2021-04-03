@@ -33,15 +33,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.programs.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.substitutions.SubstitutionImpl;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 
 /**
  * Contains a potentially negated {@link ComparisonAtom}.
@@ -51,9 +51,9 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 
 	public ComparisonLiteral(ComparisonAtom atom, boolean positive) {
 		super(atom, positive);
-		final ComparisonOperatorImpl operator = getAtom().operator;
-		isNormalizedEquality = (positive && operator == ComparisonOperatorImpl.EQ)
-			|| (!positive && operator == ComparisonOperatorImpl.NE);
+		final ComparisonOperator operator = getAtom().operator;
+		isNormalizedEquality = (positive && operator == ComparisonOperators.EQ)
+			|| (!positive && operator == ComparisonOperators.NE);
 	}
 	
 	@Override
@@ -196,23 +196,10 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 	}
 
 	private boolean compare(Term x, Term y) {
-		final int comparisonResult = x.compareTo(y);
-		ComparisonOperatorImpl operator = isNegated() ? getAtom().operator.getNegation() : getAtom().operator;
-		switch (operator) {
-			case EQ:
-				return comparisonResult ==  0;
-			case LT:
-				return comparisonResult < 0;
-			case GT:
-				return comparisonResult > 0;
-			case LE:
-				return comparisonResult <= 0;
-			case GE:
-				return comparisonResult >= 0;
-			case NE:
-				return comparisonResult != 0;
-			default:
-				throw new UnsupportedOperationException("Unknown comparison operator requested!");
+		if(this.isNegated()) {
+			return getAtom().operator.negate().compare(x, y);
+		} else {
+			return getAtom().operator.compare(x, y);
 		}
 	}
 
