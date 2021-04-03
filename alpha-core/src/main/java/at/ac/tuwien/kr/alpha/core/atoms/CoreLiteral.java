@@ -38,7 +38,6 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
 
 /**
  * A potentially negated {@link AbstractAtom}
@@ -68,10 +67,13 @@ public abstract class CoreLiteral implements Literal {
 	@Override
 	public abstract Literal negate();
 
+	@Override
 	public abstract Literal substitute(Substitution substitution);
 
+	@Override
 	public abstract Set<VariableTerm> getBindingVariables();
 
+	@Override
 	public abstract Set<VariableTerm> getNonBindingVariables();
 
 	/**
