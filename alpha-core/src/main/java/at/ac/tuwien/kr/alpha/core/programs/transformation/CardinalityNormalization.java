@@ -103,7 +103,7 @@ public class CardinalityNormalization extends ProgramTransformation<ASPCore2Prog
 		// sorting_network_index(A, X, I)."
 		Rule<Head> tmpEnumRule = PredicateInternalizer.makePredicatesInternal(parse(
 				"sorting_network_input_number(A, I) :- sorting_network_input(A, X).")).getRules().get(0);
-		EnumerationAtom enumerationAtom = new EnumerationAtom(parse("sorting_network_index(A, X, I).").getFacts().get(0).getTerms());
+		EnumerationAtom enumerationAtom = new EnumerationAtom(Terms.newVariable("A"), Terms.newVariable("X"), Terms.newVariable("I"));
 		List<Literal> enumerationRuleBody = new ArrayList<>(tmpEnumRule.getBody());
 		enumerationRuleBody.add(enumerationAtom.toLiteral());
 		BasicRule enumerationRule = new BasicRule(tmpEnumRule.getHead(), enumerationRuleBody);

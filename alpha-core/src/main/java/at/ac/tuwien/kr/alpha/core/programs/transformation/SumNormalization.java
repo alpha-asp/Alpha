@@ -64,7 +64,7 @@ public class SumNormalization extends ProgramTransformation<ASPCore2Program, ASP
 		// Add enumeration rule that uses the special EnumerationAtom.
 		// The enumeration rule is: "input_number_with_first(A, I, F) :- input_with_first(A, X, F), _index(A, X, I)."
 		Rule<Head> tmpEnumRule = makePredicatesInternal(parse("input_number_with_first(A, I, F) :- input_with_first(A, X, F).")).getRules().get(0);
-		EnumerationAtom enumerationAtom = new EnumerationAtom(parse("index(A, X, I).").getFacts().get(0).getTerms());
+		EnumerationAtom enumerationAtom = new EnumerationAtom(Terms.newVariable("A"), Terms.newVariable("X"), Terms.newVariable("I"));
 		List<Literal> enumerationRuleBody = new ArrayList<>(tmpEnumRule.getBody());
 		enumerationRuleBody.add(enumerationAtom.toLiteral());
 		BasicRule enumerationRule = new BasicRule(tmpEnumRule.getHead(), enumerationRuleBody);
@@ -114,14 +114,14 @@ public class SumNormalization extends ProgramTransformation<ASPCore2Program, ASP
 
 		// Create interface atoms to the aggregate encoding.
 		final BasicAtom aggregateOutputAtom = (BasicAtom) makePredicatesInternal(parse(
-			"output(aggregate(AGGREGATE_ID), LOWER_BOUND).")).getFacts().get(0);
+				"output(aggregate(AGGREGATE_ID), LOWER_BOUND).")).getFacts().get(0);
 		final BasicAtom aggregateInputAtom = (BasicAtom) makePredicatesInternal(parse(
-			"input_with_first(aggregate(AGGREGATE_ID), ELEMENT_TUPLE, FIRST_VARIABLE).")).getFacts().get(0);
+				"input_with_first(aggregate(AGGREGATE_ID), ELEMENT_TUPLE, FIRST_VARIABLE).")).getFacts().get(0);
 		final BasicAtom lowerBoundAtom = (BasicAtom) makePredicatesInternal(parse(
-			"bound(aggregate(AGGREGATE_ID), LOWER_BOUND).")).getFacts().get(0);
+				"bound(aggregate(AGGREGATE_ID), LOWER_BOUND).")).getFacts().get(0);
 
 		ArrayList<Literal> aggregateOutputAtoms = new ArrayList<>();
-		int aggregatesInRule = 0;	// Only needed for limited rewriting.
+		int aggregatesInRule = 0; // Only needed for limited rewriting.
 		ArrayList<Rule<Head>> additionalRules = new ArrayList<>();
 
 		List<Literal> rewrittenBody = new ArrayList<>(rule.getBody());
@@ -137,9 +137,10 @@ public class SumNormalization extends ProgramTransformation<ASPCore2Program, ASP
 			// Check that aggregate is limited to what we currently can deal with.
 			if (aggregateLiteral.isNegated() || aggregateAtom.getUpperBoundOperator() != null
 					|| (aggregateAtom.getAggregateFunction() != AggregateAtom.AggregateFunction.COUNT
-						&& aggregateAtom.getAggregateFunction() != AggregateAtom.AggregateFunction.SUM)
+							&& aggregateAtom.getAggregateFunction() != AggregateAtom.AggregateFunction.SUM)
 					|| aggregatesInRule++ > 0) {
-				throw new UnsupportedOperationException("Only limited #count/#sum aggregates without upper bound are currently supported." + "No rule may have more than one aggregate.");
+				throw new UnsupportedOperationException(
+						"Only limited #count/#sum aggregates without upper bound are currently supported." + "No rule may have more than one aggregate.");
 			}
 
 			// Only treat sum aggregates.

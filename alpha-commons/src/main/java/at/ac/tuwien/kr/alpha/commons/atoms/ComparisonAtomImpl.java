@@ -25,7 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.atoms;
+package at.ac.tuwien.kr.alpha.commons.atoms;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,26 +34,29 @@ import java.util.stream.Collectors;
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.VariableNormalizableAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
 /**
  * Represents a builtin comparison atom according to the standard.
  */
-public class ComparisonAtom extends AbstractAtom implements VariableNormalizableAtom {
+class ComparisonAtomImpl extends AbstractAtom implements ComparisonAtom {
+
 	private final Predicate predicate;
-	final ComparisonOperator operator;
+	private final ComparisonOperator operator;
 	private final List<Term> terms;
 
-	private ComparisonAtom(List<Term> terms, ComparisonOperator operator) {
+	private ComparisonAtomImpl(List<Term> terms, ComparisonOperator operator) {
 		this.terms = terms;
 		this.operator = operator;
 		this.predicate = operator.toPredicate();
 	}
 
-	public ComparisonAtom(Term term1, Term term2, ComparisonOperator operator) {
+	public ComparisonAtomImpl(Term term1, Term term2, ComparisonOperator operator) {
 		this(Arrays.asList(term1, term2), operator);
 	}
 
@@ -75,12 +78,12 @@ public class ComparisonAtom extends AbstractAtom implements VariableNormalizable
 	@Override
 	public ComparisonAtom substitute(Substitution substitution) {
 		List<Term> substitutedTerms = getTerms().stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
-		return new ComparisonAtom(substitutedTerms, operator);
+		return new ComparisonAtomImpl(substitutedTerms, operator);
 	}
 
 	@Override
 	public ComparisonLiteral toLiteral(boolean positive) {
-		return new ComparisonLiteral(this, positive);
+		return Literals.fromAtom(this, positive);
 	}
 
 	@Override
@@ -103,7 +106,7 @@ public class ComparisonAtom extends AbstractAtom implements VariableNormalizable
 			return false;
 		}
 
-		ComparisonAtom that = (ComparisonAtom) o;
+		ComparisonAtomImpl that = (ComparisonAtomImpl) o;
 
 		if (operator != that.operator) {
 			return false;
@@ -117,14 +120,19 @@ public class ComparisonAtom extends AbstractAtom implements VariableNormalizable
 	}
 
 	@Override
-	public ComparisonAtom normalizeVariables(String prefix, int counterStartingValue) {
+	public ComparisonAtomImpl normalizeVariables(String prefix, int counterStartingValue) {
 		List<Term> renamedTerms = Terms.renameTerms(terms, prefix, counterStartingValue);
-		return new ComparisonAtom(renamedTerms.get(0), renamedTerms.get(1), operator);
+		return new ComparisonAtomImpl(renamedTerms.get(0), renamedTerms.get(1), operator);
 	}
 
 	@Override
 	public Atom withTerms(List<Term> terms) {
-		return new ComparisonAtom(terms, operator);
+		return new ComparisonAtomImpl(terms, operator);
+	}
+
+	@Override
+	public ComparisonOperator getOperator() {
+		return this.operator;
 	}
 
 }

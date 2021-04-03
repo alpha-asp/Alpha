@@ -30,7 +30,7 @@ package at.ac.tuwien.kr.alpha.core.atoms;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 
 /**
@@ -42,7 +42,7 @@ import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
  */
 public abstract class FixedInterpretationLiteral extends CoreLiteral {
 
-	public FixedInterpretationLiteral(AbstractAtom atom, boolean positive) {
+	public FixedInterpretationLiteral(Atom atom, boolean positive) {
 		super(atom, positive);
 	}
 

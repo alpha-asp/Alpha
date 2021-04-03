@@ -36,7 +36,6 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
 /**
@@ -90,12 +89,7 @@ abstract class AbstractAtom implements Atom {
 
 	@Override
 	public Atom renameVariables(String newVariablePrefix) {
-		Unifier renamingSubstitution = new Unifier();
-		int counter = 0;
-		for (VariableTerm variable : getOccurringVariables()) {
-			renamingSubstitution.put(variable, Terms.newVariable(newVariablePrefix + counter++));
-		}
-		return this.substitute(renamingSubstitution);
+		return this.substitute(Terms.renameVariables(getOccurringVariables(), newVariablePrefix));
 	}
 
 	@Override

@@ -2,13 +2,16 @@ package at.ac.tuwien.kr.alpha.commons.terms;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.ArithmeticOperator;
 import at.ac.tuwien.kr.alpha.api.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.ArithmeticTermImpl.MinusTerm;
 
 /**
@@ -80,6 +83,21 @@ public final class Terms {
 		return renamedTerms;
 	}
 
+	/**
+	 * Renames variables in given set of terms.
+	 * @param varNamePrefix
+	 * @return
+	 */
+	public static Substitution renameVariables(Set<VariableTerm> terms, String varNamePrefix) {
+		Unifier renamingSubstitution = new Unifier();
+		int counter = 0;
+		for (VariableTerm variable : terms) {
+			renamingSubstitution.put(variable, Terms.newVariable(varNamePrefix + counter++));
+		}
+		return renamingSubstitution;
+	}
+	
+	// TODO break this into separate class to avoid cyclic dependency Terms <-> ArithmeticTermImpl
 	public static Integer evaluateGroundTerm(Term term) {
 		if (!term.isGround()) {
 			throw new RuntimeException("Cannot evaluate arithmetic term since it is not ground: " + term);
@@ -87,6 +105,7 @@ public final class Terms {
 		return evaluateGroundTermHelper(term);
 	}
 
+	// TODO break this into separate class to avoid cyclic dependency Terms <-> ArithmeticTermImpl	
 	static Integer evaluateGroundTermHelper(Term term) {
 		if (term instanceof ConstantTerm
 				&& ((ConstantTerm<?>) term).getObject() instanceof Integer) {

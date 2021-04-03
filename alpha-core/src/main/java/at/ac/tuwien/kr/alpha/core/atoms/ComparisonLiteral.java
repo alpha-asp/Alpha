@@ -35,6 +35,7 @@ import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
@@ -44,21 +45,21 @@ import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
 /**
- * Contains a potentially negated {@link ComparisonAtom}.
+ * Contains a potentially negated {@link ComparisonAtomImpl}.
  */
 public class ComparisonLiteral extends FixedInterpretationLiteral {
 	private final boolean isNormalizedEquality;
 
 	public ComparisonLiteral(ComparisonAtom atom, boolean positive) {
 		super(atom, positive);
-		final ComparisonOperator operator = getAtom().operator;
+		final ComparisonOperator operator = getAtom().getOperator();
 		isNormalizedEquality = (positive && operator == ComparisonOperators.EQ)
 			|| (!positive && operator == ComparisonOperators.NE);
 	}
 	
 	@Override
 	public ComparisonAtom getAtom() {
-		return (ComparisonAtom)atom;
+		return (ComparisonAtom) atom;
 	}
 	
 	public boolean isNormalizedEquality() {
@@ -78,7 +79,7 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 	 */
 	@Override
 	public ComparisonLiteral substitute(Substitution substitution) {
-		return new ComparisonLiteral(getAtom().substitute(substitution), positive);
+		return (ComparisonLiteral) getAtom().substitute(substitution).toLiteral(positive);
 	}
 
 	private boolean assignable(Term term) {
@@ -197,9 +198,9 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 
 	private boolean compare(Term x, Term y) {
 		if(this.isNegated()) {
-			return getAtom().operator.negate().compare(x, y);
+			return getAtom().getOperator().negate().compare(x, y);
 		} else {
-			return getAtom().operator.compare(x, y);
+			return getAtom().getOperator().compare(x, y);
 		}
 	}
 

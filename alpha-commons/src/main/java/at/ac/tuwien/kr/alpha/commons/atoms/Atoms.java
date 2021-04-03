@@ -10,6 +10,7 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunction;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.atoms.AggregateAtomImpl.AggregateElementImpl;
@@ -42,9 +43,13 @@ public final class Atoms {
 			Term upperBoundTerm, AggregateFunction aggregatefunction, List<AggregateElement> aggregateElements) {
 		return new AggregateAtomImpl(lowerBoundOperator, lowerBoundTerm, upperBoundOperator, upperBoundTerm, aggregatefunction, aggregateElements);
 	}
-	
-	public static AggregateAtom.AggregateElement newAggregateElement(List<Term> elementTerms, List<Literal> elementLiterals){
+
+	public static AggregateAtom.AggregateElement newAggregateElement(List<Term> elementTerms, List<Literal> elementLiterals) {
 		return new AggregateElementImpl(elementTerms, elementLiterals);
+	}
+
+	public static ComparisonAtom newComparsionAtom(Term term1, Term term2, ComparisonOperator operator) {
+		return new ComparisonAtomImpl(term1, term2, operator);
 	}
 
 }

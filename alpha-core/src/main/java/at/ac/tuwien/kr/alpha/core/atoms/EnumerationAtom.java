@@ -1,14 +1,17 @@
 package at.ac.tuwien.kr.alpha.core.atoms;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.atoms.BasicAtomImpl;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
@@ -24,18 +27,18 @@ import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
  *
  * Copyright (c) 2017, the Alpha Team.
  */
-public class EnumerationAtom extends BasicAtomImpl {
+public class EnumerationAtom implements BasicAtom {
 	public static final Predicate ENUMERATION_PREDICATE = CorePredicate.getInstance("_Enumeration", 3);
 	private static final HashMap<Term, HashMap<Term, Integer>> ENUMERATIONS = new HashMap<>();
 
-	public EnumerationAtom(List<Term> terms) {
-		super(ENUMERATION_PREDICATE, terms);
-		if (terms.size() != 3) {
-			throw new RuntimeException("EnumerationAtom must have arity three. Given terms are of wrong size: " + terms);
-		}
-		if (!(getTerms().get(2) instanceof VariableTerm)) {
-			throw new RuntimeException("Third parameter of EnumerationAtom must be a variable: " + terms);
-		}
+	private final Term enumIdTerm;
+	private final Term valueTerm;
+	private final VariableTerm indexTerm;
+
+	public EnumerationAtom(Term enumIdTerm, Term valueTerm, VariableTerm indexTerm) {
+		this.enumIdTerm = enumIdTerm;
+		this.valueTerm = valueTerm;
+		this.indexTerm = indexTerm;
 	}
 
 	public static void resetEnumerations() {
@@ -78,7 +81,9 @@ public class EnumerationAtom extends BasicAtomImpl {
 
 	@Override
 	public EnumerationAtom substitute(Substitution substitution) {
-		return new EnumerationAtom(super.substitute(substitution).getTerms());
+		// TODO shouldn't even have the method in the interface!
+		throw new UnsupportedOperationException("EnumerationAtom does not support substituting! Use addEnumerationIndexToSubstitution for instantiating!");
+		// return new EnumerationAtom(super.substitute(substitution).getTerms());
 	}
 
 	@Override
@@ -92,5 +97,53 @@ public class EnumerationAtom extends BasicAtomImpl {
 	@Override
 	public EnumerationLiteral toLiteral() {
 		return toLiteral(true);
+	}
+
+	@Override
+	public Predicate getPredicate() {
+		return ENUMERATION_PREDICATE;
+	}
+
+	@Override
+	public List<Term> getTerms() {
+		List<Term> lst = new ArrayList<>();
+		lst.add(enumIdTerm);
+		lst.add(valueTerm);
+		lst.add(indexTerm);
+		return lst;
+	}
+
+	@Override
+	public boolean isGround() {
+		// An enumeration atom always has a variable as its third argument which represents the internal index of the atom (i.e. enumeration value).
+		// It is therefore, by definition, not ground.
+		return false;
+	}
+
+	@Override
+	public Set<VariableTerm> getOccurringVariables() {
+		return toLiteral().getOccurringVariables();
+	}
+
+	@Override
+	public Atom renameVariables(String newVariablePrefix) {
+		return this.substitute(Terms.renameVariables(getOccurringVariables(), newVariablePrefix));
+	}
+
+	@Override
+	public EnumerationAtom withTerms(List<Term> terms) {
+		if (terms.size() != 3) {
+			throw new IllegalArgumentException("EnumerationAtom must have exactly 3 terms!");
+		}
+		if (!(terms.get(2) instanceof VariableTerm)) {
+			throw new IllegalArgumentException("Third argument of EnumerationAtom must be a variable!");
+		}
+		return new EnumerationAtom(terms.get(0), terms.get(1), (VariableTerm) terms.get(2));
+	}
+
+	@Override
+	public Atom normalizeVariables(String prefix, int counterStartingValue) {
+		List<Term> renamedTerms = Terms.renameTerms(getTerms(), prefix, counterStartingValue);
+		return withTerms(renamedTerms);
 	}
 }

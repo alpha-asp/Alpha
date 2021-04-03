@@ -1,6 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.instantiation;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -9,15 +8,14 @@ import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationLiteral;
@@ -32,7 +30,7 @@ public class LiteralInstantiatorTest {
 
 	@Test
 	public void instantiateSatisfiedFixedInterpretationLiteral() {
-		ComparisonAtom equalsThree = new ComparisonAtom(Terms.newConstant(3), Terms.newVariable("THREE"), ComparisonOperators.EQ);
+		ComparisonAtom equalsThree = Atoms.newComparsionAtom(Terms.newConstant(3), Terms.newVariable("THREE"), ComparisonOperators.EQ);
 		Literal lit = new ComparisonLiteral(equalsThree, true);
 		Substitution substitution = new BasicSubstitution();
 		LiteralInstantiator instantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(null));
@@ -48,7 +46,7 @@ public class LiteralInstantiatorTest {
 
 	@Test
 	public void instantiateUnsatisfiedFixedInterpretationLiteral() {
-		ComparisonAtom fiveEqualsThree = new ComparisonAtom(Terms.newVariable("FIVE"), Terms.newVariable("THREE"), ComparisonOperators.EQ);
+		ComparisonAtom fiveEqualsThree = Atoms.newComparsionAtom(Terms.newVariable("FIVE"), Terms.newVariable("THREE"), ComparisonOperators.EQ);
 		Literal lit = new ComparisonLiteral(fiveEqualsThree, true);
 		Substitution substitution = new BasicSubstitution();
 		substitution.put(Terms.newVariable("FIVE"), Terms.newConstant(5));
@@ -63,11 +61,7 @@ public class LiteralInstantiatorTest {
 		VariableTerm enumTerm = Terms.newVariable("E");
 		VariableTerm idTerm = Terms.newVariable("X");
 		VariableTerm indexTerm = Terms.newVariable("I");
-		List<Term> termList = new ArrayList<>();
-		termList.add(enumTerm);
-		termList.add(idTerm);
-		termList.add(indexTerm);
-		EnumerationAtom enumAtom = new EnumerationAtom(termList);
+		EnumerationAtom enumAtom = new EnumerationAtom(enumTerm, idTerm, indexTerm);
 		EnumerationLiteral lit = new EnumerationLiteral(enumAtom);
 		Substitution substitution = new BasicSubstitution();
 		substitution.put(enumTerm, Terms.newSymbolicConstant("enum1"));

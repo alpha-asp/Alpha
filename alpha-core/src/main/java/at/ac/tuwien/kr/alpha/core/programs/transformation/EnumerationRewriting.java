@@ -14,6 +14,8 @@ import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
@@ -79,8 +81,12 @@ public class EnumerationRewriting extends ProgramTransformation<ASPCore2Program,
 				if (!basicLiteral.getPredicate().equals(enumPredicate)) {
 					continue;
 				}
+				// basicLiteral is an enumeration literal (i.e. predicate is marked as enum using directive)
 				rit.remove();
-				rewrittenLiterals.add(new EnumerationAtom(basicLiteral.getAtom().getTerms()).toLiteral());
+				Term enumIdTerm = basicLiteral.getAtom().getTerms().get(0);
+				Term valueTerm = basicLiteral.getAtom().getTerms().get(1);
+				VariableTerm indexTerm = (VariableTerm) basicLiteral.getAtom().getTerms().get(2);
+				rewrittenLiterals.add(new EnumerationAtom(enumIdTerm, valueTerm, indexTerm).toLiteral());
 			}
 			modifiedBodyLiterals.addAll(rewrittenLiterals);
 			rewrittenRules.add(new BasicRule(rule.getHead(), modifiedBodyLiterals));
