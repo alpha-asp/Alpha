@@ -44,9 +44,9 @@ import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
 /**
@@ -110,8 +110,8 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	 * fact in the input there is a corresponding on/3 atom in the output.
 	 */
 	private void checkGoal(ASPCore2Program parsedProgram, AnswerSet answerSet) {
-		Predicate ongoal = CorePredicate.getInstance("ongoal", 2);
-		Predicate on = CorePredicate.getInstance("on", 3);
+		Predicate ongoal = Predicates.getPredicate("ongoal", 2);
+		Predicate on = Predicates.getPredicate("on", 3);
 		int steps = getSteps(parsedProgram);
 		SortedSet<Atom> onInstancesInAnswerSet = answerSet.getPredicateInstances(on);
 		for (Atom atom : parsedProgram.getFacts()) {
@@ -126,7 +126,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	}
 
 	private int getSteps(ASPCore2Program parsedProgram) {
-		Predicate steps = CorePredicate.getInstance("steps", 1);
+		Predicate steps = Predicates.getPredicate("steps", 1);
 		for (Atom atom : parsedProgram.getFacts()) {
 			if (atom.getPredicate().getName().equals(steps.getName()) && atom.getPredicate().getArity() == steps.getArity()) {
 				return Integer.valueOf(atom.getTerms().get(0).toString());

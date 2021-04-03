@@ -41,9 +41,9 @@ import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
@@ -181,7 +181,7 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 		for (String colour : colours) {
 			List<Term> terms = new ArrayList<>(1);
 			terms.add(Terms.newConstant(colour));
-			facts.add(Atoms.newBasicAtom(CorePredicate.getInstance("c", 1), terms));
+			facts.add(Atoms.newBasicAtom(Predicates.getPredicate("c", 1), terms));
 		}
 		return facts;
 	}
@@ -223,7 +223,7 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 
 	private Atom fact(String predicateName, int... iTerms) {
 		List<Term> terms = new ArrayList<>(iTerms.length);
-		Predicate predicate = CorePredicate.getInstance(predicateName, iTerms.length);
+		Predicate predicate = Predicates.getPredicate(predicateName, iTerms.length);
 		for (int i : iTerms) {
 			terms.add(Terms.newConstant(i));
 		}

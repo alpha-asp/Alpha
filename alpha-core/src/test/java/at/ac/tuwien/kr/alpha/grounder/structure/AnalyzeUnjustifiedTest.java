@@ -43,11 +43,11 @@ import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
@@ -79,12 +79,12 @@ public class AnalyzeUnjustifiedTest {
 		NaiveGrounder grounder = new NaiveGrounder(internalProgram, atomStore, true);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
-		int rId = atomStore.get(Atoms.newBasicAtom(CorePredicate.getInstance("r", 0)));
-		int nrId = atomStore.get(Atoms.newBasicAtom(CorePredicate.getInstance("nr", 0)));
+		int rId = atomStore.get(Atoms.newBasicAtom(Predicates.getPredicate("r", 0)));
+		int nrId = atomStore.get(Atoms.newBasicAtom(Predicates.getPredicate("nr", 0)));
 		assignment.growForMaxAtomId();
 		assignment.assign(rId, ThriceTruth.FALSE);
 		assignment.assign(nrId, ThriceTruth.TRUE);
-		BasicAtom p5 = Atoms.newBasicAtom(CorePredicate.getInstance("p", 1), Collections.singletonList(Terms.newConstant(5)));
+		BasicAtom p5 = Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Collections.singletonList(Terms.newConstant(5)));
 		assignment.assign(atomStore.get(p5), ThriceTruth.MBT);
 		Set<Literal> reasons = grounder.justifyAtom(atomStore.get(p5), assignment);
 		assertFalse(reasons.isEmpty());
@@ -159,7 +159,7 @@ public class AnalyzeUnjustifiedTest {
 		assignment.assign(qdId, ThriceTruth.FALSE);
 		assignment.assign(qeId, ThriceTruth.FALSE);
 
-		Predicate nq = CorePredicate.getInstance("_nq", 2, true);
+		Predicate nq = Predicates.getPredicate("_nq", 2, true);
 		Atom nqa = Atoms.newBasicAtom(nq, Arrays.asList(Terms.newConstant("1"), Terms.newSymbolicConstant("a")));
 		Atom nqb = Atoms.newBasicAtom(nq, Arrays.asList(Terms.newConstant("1"), Terms.newSymbolicConstant("b")));
 		Atom nqc = Atoms.newBasicAtom(nq, Arrays.asList(Terms.newConstant("1"), Terms.newSymbolicConstant("c")));
@@ -197,18 +197,18 @@ public class AnalyzeUnjustifiedTest {
 		NaiveGrounder grounder = new NaiveGrounder(internalProgram, atomStore, true);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
-		int rId = atomStore.get(Atoms.newBasicAtom(CorePredicate.getInstance("r", 0)));
-		int nrId = atomStore.get(Atoms.newBasicAtom(CorePredicate.getInstance("nr", 0)));
+		int rId = atomStore.get(Atoms.newBasicAtom(Predicates.getPredicate("r", 0)));
+		int nrId = atomStore.get(Atoms.newBasicAtom(Predicates.getPredicate("nr", 0)));
 		assignment.growForMaxAtomId();
 		assignment.assign(rId, ThriceTruth.FALSE);
 		assignment.assign(nrId, ThriceTruth.TRUE);
-		BasicAtom p5 = Atoms.newBasicAtom(CorePredicate.getInstance("p", 1), Collections.singletonList(Terms.newConstant(5)));
+		BasicAtom p5 = Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Collections.singletonList(Terms.newConstant(5)));
 		assignment.assign(atomStore.get(p5), ThriceTruth.MBT);
 		Set<Literal> reasons = grounder.justifyAtom(atomStore.get(p5), assignment);
 		assertFalse(reasons.isEmpty());
 		for (Literal literal : reasons) {
 			// Check that facts are not present in justification.
-			assertNotEquals(literal.getPredicate(), CorePredicate.getInstance("forbidden", 2));
+			assertNotEquals(literal.getPredicate(), Predicates.getPredicate("forbidden", 2));
 		}
 	}
 }

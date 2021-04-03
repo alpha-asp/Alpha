@@ -41,6 +41,7 @@ import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpreta
 import at.ac.tuwien.kr.alpha.api.externals.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.BinaryPredicateInterpretation;
@@ -148,7 +149,7 @@ public final class Externals {
 		String javaName = classOfExtFacts.getSimpleName();
 		String name = javaName.substring(0, 1).toLowerCase() + javaName.substring(1); // Camel-cased, but starting with lower case letter.
 		for (T instance : extFacts) {
-			retVal.add(Atoms.newBasicAtom(at.ac.tuwien.kr.alpha.core.common.CorePredicate.getInstance(name, 1), Terms.newConstant(instance)));
+			retVal.add(Atoms.newBasicAtom(Predicates.getPredicate(name, 1), Terms.newConstant(instance)));
 		}
 		return retVal;
 	}

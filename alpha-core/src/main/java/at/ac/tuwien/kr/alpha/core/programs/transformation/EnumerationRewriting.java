@@ -17,8 +17,8 @@ import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
@@ -40,7 +40,7 @@ public class EnumerationRewriting extends ProgramTransformation<ASPCore2Program,
 			// Directive not set, nothing to rewrite.
 			return inputProgram;
 		}
-		CorePredicate enumPredicate = CorePredicate.getInstance(enumDirective, 3);
+		Predicate enumPredicate = Predicates.getPredicate(enumDirective, 3);
 
 		InputProgram.Builder programBuilder = InputProgram.builder().addInlineDirectives(inputProgram.getInlineDirectives());
 

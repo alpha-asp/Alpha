@@ -17,10 +17,10 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.BasicAnswerSet;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -28,12 +28,12 @@ import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 public class BasicAnswerSetTest {
 	@Test
 	public void areAnswerSetsEqual() throws Exception {
-		Predicate a = CorePredicate.getInstance("a", 0);
-		Predicate foo = CorePredicate.getInstance("foo", 1);
+		Predicate a = Predicates.getPredicate("a", 0);
+		Predicate foo = Predicates.getPredicate("foo", 1);
 		SortedSet<Predicate> fooAndA = new TreeSet<>(asList(foo, a));
 
-		Predicate q = CorePredicate.getInstance("q", 0);
-		Predicate p = CorePredicate.getInstance("p", 1);
+		Predicate q = Predicates.getPredicate("q", 0);
+		Predicate p = Predicates.getPredicate("p", 1);
 		SortedSet<Predicate> qAndP = new TreeSet<>(asList(q, p));
 
 		ConstantTerm<?> bar = Terms.newConstant("bar");

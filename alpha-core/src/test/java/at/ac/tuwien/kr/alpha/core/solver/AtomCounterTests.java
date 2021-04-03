@@ -37,10 +37,10 @@ import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
@@ -49,7 +49,6 @@ import at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
@@ -66,10 +65,10 @@ public class AtomCounterTests {
 	public void testGetNumberOfAtoms() throws NoSuchMethodException {
 		final AtomCounter atomCounter = atomStore.getAtomCounter();
 
-		expectGetNumberOfAtoms(atomCounter, BasicAtom.class, 0);
-		expectGetNumberOfAtoms(atomCounter, AggregateAtom.class, 0);
-		expectGetNumberOfAtoms(atomCounter, ChoiceAtom.class, 0);
-		expectGetNumberOfAtoms(atomCounter, RuleAtom.class, 0);
+		expectGetNumberOfAtoms(atomCounter, "BasicAtomImpl", 0);
+		expectGetNumberOfAtoms(atomCounter, "AggregateAtomImpl", 0);
+		expectGetNumberOfAtoms(atomCounter, "ChoiceAtom", 0);
+		expectGetNumberOfAtoms(atomCounter, "RuleAtom", 0);
 
 		createBasicAtom1();
 		createBasicAtom2();
@@ -77,10 +76,10 @@ public class AtomCounterTests {
 		createChoiceAtom();
 		createRuleAtom();
 
-		expectGetNumberOfAtoms(atomCounter, BasicAtom.class, 2);
-		expectGetNumberOfAtoms(atomCounter, AggregateAtom.class, 1);
-		expectGetNumberOfAtoms(atomCounter, ChoiceAtom.class, 1);
-		expectGetNumberOfAtoms(atomCounter, RuleAtom.class, 1);
+		expectGetNumberOfAtoms(atomCounter, "BasicAtomImpl", 2);
+		expectGetNumberOfAtoms(atomCounter, "AggregateAtomImpl", 1);
+		expectGetNumberOfAtoms(atomCounter, "ChoiceAtom", 1);
+		expectGetNumberOfAtoms(atomCounter, "RuleAtom", 1);
 	}
 
 	@Test
@@ -93,18 +92,18 @@ public class AtomCounterTests {
 		createChoiceAtom();
 		createRuleAtom();
 
-		expectGetStatsByType(atomCounter, BasicAtom.class, 2);
-		expectGetStatsByType(atomCounter, AggregateAtom.class, 1);
-		expectGetStatsByType(atomCounter, ChoiceAtom.class, 1);
-		expectGetStatsByType(atomCounter, RuleAtom.class, 1);
+		expectGetStatsByType(atomCounter, "BasicAtomImpl", 2);
+		expectGetStatsByType(atomCounter, "AggregateAtomImpl", 1);
+		expectGetStatsByType(atomCounter, "ChoiceAtom", 1);
+		expectGetStatsByType(atomCounter, "RuleAtom", 1);
 	}
 
 	private void createBasicAtom1() {
-		atomStore.putIfAbsent(Atoms.newBasicAtom(CorePredicate.getInstance("p", 0)));
+		atomStore.putIfAbsent(Atoms.newBasicAtom(Predicates.getPredicate("p", 0)));
 	}
 
 	private void createBasicAtom2() {
-		atomStore.putIfAbsent(Atoms.newBasicAtom(CorePredicate.getInstance("q", 1), Terms.newConstant(1)));
+		atomStore.putIfAbsent(Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newConstant(1)));
 	}
 
 	private void createAggregateAtom() {
@@ -112,8 +111,10 @@ public class AtomCounterTests {
 		final ConstantTerm<Integer> c2 = Terms.newConstant(2);
 		final ConstantTerm<Integer> c3 = Terms.newConstant(3);
 		List<Term> basicTerms = Arrays.asList(c1, c2, c3);
-		AggregateAtom.AggregateElement aggregateElement = Atoms.newAggregateElement(basicTerms, Collections.singletonList(Atoms.newBasicAtom(CorePredicate.getInstance("p", 3), c1, c2, c3).toLiteral()));
-		atomStore.putIfAbsent(Atoms.newAggregateAtom(ComparisonOperators.LE, c1, null, null, AggregateAtom.AggregateFunction.COUNT, Collections.singletonList(aggregateElement)));
+		AggregateAtom.AggregateElement aggregateElement = Atoms.newAggregateElement(basicTerms,
+				Collections.singletonList(Atoms.newBasicAtom(Predicates.getPredicate("p", 3), c1, c2, c3).toLiteral()));
+		atomStore.putIfAbsent(Atoms.newAggregateAtom(ComparisonOperators.LE, c1, null, null, AggregateAtom.AggregateFunction.COUNT,
+				Collections.singletonList(aggregateElement)));
 	}
 
 	private void createChoiceAtom() {
@@ -121,17 +122,19 @@ public class AtomCounterTests {
 	}
 
 	private void createRuleAtom() {
-		Atom atomAA = Atoms.newBasicAtom(CorePredicate.getInstance("aa", 0));
-		CompiledRule ruleAA = new InternalRule(new NormalHeadImpl(atomAA), Collections.singletonList(Atoms.newBasicAtom(CorePredicate.getInstance("bb", 0)).toLiteral(false)));
+		Atom atomAA = Atoms.newBasicAtom(Predicates.getPredicate("aa", 0));
+		CompiledRule ruleAA = new InternalRule(new NormalHeadImpl(atomAA),
+				Collections.singletonList(Atoms.newBasicAtom(Predicates.getPredicate("bb", 0)).toLiteral(false)));
 		atomStore.putIfAbsent(new RuleAtom(ruleAA, new BasicSubstitution()));
 	}
 
-	private void expectGetNumberOfAtoms(AtomCounter atomCounter, Class<? extends Atom> classOfAtoms, int expectedNumber) {
-		assertEquals("Unexpected number of " + classOfAtoms.getSimpleName() + "s", expectedNumber, atomCounter.getNumberOfAtoms(classOfAtoms));
+	private void expectGetNumberOfAtoms(AtomCounter atomCounter, String classOfAtoms, int expectedNumber) {
+		assertEquals("Unexpected number of " + classOfAtoms + "s", expectedNumber, atomCounter.getNumberOfAtoms(classOfAtoms));
 	}
 
-	private void expectGetStatsByType(AtomCounter atomCounter, Class<? extends Atom> classOfAtoms, int expectedNumber) {
-		assertTrue("Expected number of " + classOfAtoms.getSimpleName() + "s not contained in stats string", atomCounter.getStatsByType().contains(classOfAtoms.getSimpleName() + ": " + expectedNumber));
+	private void expectGetStatsByType(AtomCounter atomCounter, String classOfAtoms, int expectedNumber) {
+		assertTrue("Expected number of " + classOfAtoms + "s not contained in stats string",
+				atomCounter.getStatsByType().contains(classOfAtoms + ": " + expectedNumber));
 	}
 
 }

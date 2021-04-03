@@ -39,10 +39,10 @@ import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 import at.ac.tuwien.kr.alpha.core.rules.heads.ChoiceHeadImpl;
@@ -96,7 +96,7 @@ public class ChoiceHeadToNormal extends ProgramTransformation<ASPCore2Program, A
 				// Construct head atom for the choice.
 				Predicate headPredicate = head.getPredicate();
 
-				Predicate negPredicate = CorePredicate.getInstance(PREDICATE_NEGATION_PREFIX + headPredicate.getName(), headPredicate.getArity() + 1, true);
+				Predicate negPredicate = Predicates.getPredicate(PREDICATE_NEGATION_PREFIX + headPredicate.getName(), headPredicate.getArity() + 1, true);
 				List<Term> headTerms = new ArrayList<>(head.getTerms());
 				headTerms.add(0, Terms.newConstant("1")); // FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for
 																	// classical negative atoms.

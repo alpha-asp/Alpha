@@ -17,9 +17,9 @@ import at.ac.tuwien.kr.alpha.api.programs.Program;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.util.AnswerSetsParser;
 
 public class TestUtils {
@@ -81,7 +81,7 @@ public class TestUtils {
 	}
 
 	public static BasicAtom basicAtomWithStringTerms(String predicate, String... terms) {
-		Predicate pred = CorePredicate.getInstance(predicate, terms.length);
+		Predicate pred = Predicates.getPredicate(predicate, terms.length);
 		List<Term> trms = new ArrayList<>();
 		for (String str : terms) {
 			trms.add(Terms.newConstant(str));
@@ -90,7 +90,7 @@ public class TestUtils {
 	}
 
 	public static BasicAtom basicAtomWithSymbolicTerms(String predicate, String... constantSymbols) {
-		Predicate pred = CorePredicate.getInstance(predicate, constantSymbols.length);
+		Predicate pred = Predicates.getPredicate(predicate, constantSymbols.length);
 		List<Term> trms = new ArrayList<>();
 		for (String str : constantSymbols) {
 			trms.add(Terms.newSymbolicConstant(str));

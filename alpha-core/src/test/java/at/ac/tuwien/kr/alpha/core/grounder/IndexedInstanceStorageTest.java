@@ -38,8 +38,8 @@ import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Instance;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -47,7 +47,7 @@ import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 public class IndexedInstanceStorageTest {
 	@Test
 	public void testIndexedInstanceStorage() {
-		IndexedInstanceStorage storage = new IndexedInstanceStorage(CorePredicate.getInstance("p", 4), true);
+		IndexedInstanceStorage storage = new IndexedInstanceStorage(Predicates.getPredicate("p", 4), true);
 		storage.addIndexPosition(0);
 		storage.addIndexPosition(2);
 		ConstantTerm<String> t0 = Terms.newConstant("0");

@@ -67,11 +67,11 @@ import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.solver.heuristics.Heuristic;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.AnswerSetBuilder;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.MethodPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.core.externals.AspStandardLibrary;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
@@ -315,8 +315,8 @@ public class AlphaImplTest {
 		SubThingy thingy = new SubThingy();
 
 		BasicRule rule = new BasicRule(
-				new NormalHeadImpl(Atoms.newBasicAtom(CorePredicate.getInstance("p", 1), Terms.newConstant("x"))),
-				singletonList(Literals.fromAtom(Atoms.newExternalAtom(CorePredicate.getInstance("thinger", 1),
+				new NormalHeadImpl(Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newConstant("x"))),
+				singletonList(Literals.fromAtom(Atoms.newExternalAtom(Predicates.getPredicate("thinger", 1),
 						new MethodPredicateInterpretation(this.getClass().getMethod("thinger", Thingy.class)), singletonList(Terms.newConstant(thingy)),
 						emptyList()), true)));
 
@@ -427,7 +427,7 @@ public class AlphaImplTest {
 		Set<AnswerSet> answerSets = alpha.solve(prog).collect(Collectors.toSet());
 		// Verify every result string has length 6 and contains "foo"
 		for (AnswerSet as : answerSets) {
-			for (Atom atom : as.getPredicateInstances(CorePredicate.getInstance("resultstring", 1))) {
+			for (Atom atom : as.getPredicateInstances(Predicates.getPredicate("resultstring", 1))) {
 				String resultstring = ((ConstantTerm<String>) atom.getTerms().get(0)).getObject();
 				Assert.assertEquals(6, resultstring.length());
 				Assert.assertTrue(resultstring.contains("foo"));
@@ -444,7 +444,7 @@ public class AlphaImplTest {
 		Assert.assertEquals(31, answerSets.size());
 		// Verify every result string has length 6 and contains "foo"
 		for (AnswerSet as : answerSets) {
-			for (Atom atom : as.getPredicateInstances(CorePredicate.getInstance("resultstring", 1))) {
+			for (Atom atom : as.getPredicateInstances(Predicates.getPredicate("resultstring", 1))) {
 				String resultstring = ((ConstantTerm<String>) atom.getTerms().get(0)).getObject();
 				LOGGER.debug("ResultString is {}", resultstring);
 				Assert.assertEquals(6, resultstring.length());
@@ -477,7 +477,7 @@ public class AlphaImplTest {
 		String progstr = "a. b. c. d :- c. e(a, b) :- d.";
 		Alpha system = new AlphaImpl();
 		ASPCore2Program prog = system.readProgramString(progstr);
-		Set<AnswerSet> actual = system.solve(prog, (p) -> p.equals(CorePredicate.getInstance("a", 0)) || p.equals(CorePredicate.getInstance("e", 2)))
+		Set<AnswerSet> actual = system.solve(prog, (p) -> p.equals(Predicates.getPredicate("a", 0)) || p.equals(Predicates.getPredicate("e", 2)))
 				.collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").predicate("e").symbolicInstance("a", "b").build()));
 		assertEquals(expected, actual);

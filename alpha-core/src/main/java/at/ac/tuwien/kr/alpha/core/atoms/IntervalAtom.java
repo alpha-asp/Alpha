@@ -36,10 +36,10 @@ import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.VariableNormalizableAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 
 /**
  * Helper for treating IntervalTerms in rules.
@@ -54,7 +54,7 @@ import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class IntervalAtom extends AbstractAtom implements VariableNormalizableAtom {
-	private static final CorePredicate PREDICATE = CorePredicate.getInstance("_interval", 2, true);
+	private static final Predicate PREDICATE = Predicates.getPredicate("_interval", 2, true);
 
 	private final List<Term> terms;
 

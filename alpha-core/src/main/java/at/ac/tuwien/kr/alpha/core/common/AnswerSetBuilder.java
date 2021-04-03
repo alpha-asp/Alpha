@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
@@ -40,7 +41,7 @@ public class AnswerSetBuilder {
 
 	private void flush() {
 		if (firstInstance) {
-			predicate = CorePredicate.getInstance(predicateSymbol, 0);
+			predicate = Predicates.getPredicate(predicateSymbol, 0);
 			predicates.add(predicate);
 			predicateInstances.put(predicate, new TreeSet<>(singletonList(Atoms.newBasicAtom(predicate))));
 		} else {
@@ -68,7 +69,7 @@ public class AnswerSetBuilder {
 	public final <T extends Comparable<T>> AnswerSetBuilder instance(final T... terms) {
 		if (firstInstance) {
 			firstInstance = false;
-			predicate = CorePredicate.getInstance(predicateSymbol, terms.length);
+			predicate = Predicates.getPredicate(predicateSymbol, terms.length);
 			predicates.add(predicate);
 		}
 
@@ -86,7 +87,7 @@ public class AnswerSetBuilder {
 	public AnswerSetBuilder symbolicInstance(String... terms) {
 		if (firstInstance) {
 			firstInstance = false;
-			predicate = CorePredicate.getInstance(predicateSymbol, terms.length);
+			predicate = Predicates.getPredicate(predicateSymbol, terms.length);
 			predicates.add(predicate);
 		}
 

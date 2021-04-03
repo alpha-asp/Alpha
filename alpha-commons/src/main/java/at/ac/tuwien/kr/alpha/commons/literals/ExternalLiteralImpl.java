@@ -54,7 +54,7 @@ class ExternalLiteralImpl extends AbstractLiteral implements ExternalLiteral {
 
 	@Override
 	public ExternalAtom getAtom() {
-		return (ExternalAtom) this.getAtom();
+		return (ExternalAtom) super.getAtom();
 	}
 
 	/**

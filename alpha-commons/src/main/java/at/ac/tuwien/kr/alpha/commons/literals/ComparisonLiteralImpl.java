@@ -64,6 +64,7 @@ class ComparisonLiteralImpl extends AbstractLiteral implements ComparisonLiteral
 		return (ComparisonAtom) atom;
 	}
 
+	@Override
 	public boolean isNormalizedEquality() {
 		return isNormalizedEquality;
 	}

@@ -39,6 +39,7 @@ import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.grounder.RuleGroundingInfo;
 import at.ac.tuwien.kr.alpha.api.grounder.RuleGroundingOrder;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
@@ -106,23 +107,15 @@ public class RuleGroundingInfoImpl implements RuleGroundingInfo {
 			if (literal.getNonBindingVariables().size() != 0) {
 				continue;
 			}
-			if(literal.getBindingVariables().size() > 0) {
-				// Literals that can bind variables (i.e. positive basic literals) are the most common case
+			// TODO make sure above if is correct, then remove this
+			if (literal.getAtom() instanceof BasicAtom && !literal.isNegated()) {
+				// Positive BasicAtom is the main/ordinary case.
 				ordinaryStartingLiterals.add(literal);
 			} else {
-				// Literal does not need any variables bound (i.e. is ground or has a fixed interpretation),
-				// it is therefore an eligible starting literal for a fixed grounding order
+				// If literal is no positive BasicAtom but requires no bound variables,
+				// it can be the starting literal for some (fixed) instantiation.
 				fixedStartingLiterals.add(literal);
 			}
-			// TODO make sure above if is correct, then remove this
-//			if (literal.getAtom() instanceof BasicAtom && !literal.isNegated()) {
-//				// Positive BasicAtom is the main/ordinary case.
-//				ordinaryStartingLiterals.add(literal);
-//			} else {
-//				// If literal is no positive BasicAtom but requires no bound variables,
-//				// it can be the starting literal for some (fixed) instantiation.
-//				fixedStartingLiterals.add(literal);
-//			}
 		}
 		// If there are no positive BasicAtoms, the rule only contains fixed ground
 		// instantiation literals and those are starting for the one-time grounding.

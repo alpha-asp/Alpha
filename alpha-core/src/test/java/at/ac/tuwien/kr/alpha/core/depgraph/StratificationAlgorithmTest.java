@@ -11,7 +11,7 @@ import org.junit.Test;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph.SCComponent;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
@@ -48,8 +48,8 @@ public class StratificationAlgorithmTest {
 		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
 		List<SCComponent> strata = StratificationAlgorithm.calculateStratification(cg);
 
-		Predicate a = CorePredicate.getInstance("a", 0);
-		Predicate b = CorePredicate.getInstance("b", 0);
+		Predicate a = Predicates.getPredicate("a", 0);
+		Predicate b = Predicates.getPredicate("b", 0);
 
 		assertEquals(2, strata.size());
 		assertTrue(predicateIsBeforePredicateInOrder(b, a, strata));
@@ -67,9 +67,9 @@ public class StratificationAlgorithmTest {
 		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
 		List<SCComponent> strata = StratificationAlgorithm.calculateStratification(cg);
 
-		Predicate a = CorePredicate.getInstance("a", 0);
-		Predicate b = CorePredicate.getInstance("b", 0);
-		Predicate c = CorePredicate.getInstance("c", 0);
+		Predicate a = Predicates.getPredicate("a", 0);
+		Predicate b = Predicates.getPredicate("b", 0);
+		Predicate c = Predicates.getPredicate("c", 0);
 
 		assertEquals(3, strata.size());
 		assertTrue(predicateIsBeforePredicateInOrder(a, b, strata));
@@ -91,11 +91,11 @@ public class StratificationAlgorithmTest {
 		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
 		List<SCComponent> strata = StratificationAlgorithm.calculateStratification(cg);
 
-		Predicate a = CorePredicate.getInstance("a", 0);
-		Predicate b = CorePredicate.getInstance("b", 0);
-		Predicate c = CorePredicate.getInstance("c", 0);
-		Predicate d = CorePredicate.getInstance("d", 0);
-		Predicate e = CorePredicate.getInstance("e", 0);
+		Predicate a = Predicates.getPredicate("a", 0);
+		Predicate b = Predicates.getPredicate("b", 0);
+		Predicate c = Predicates.getPredicate("c", 0);
+		Predicate d = Predicates.getPredicate("d", 0);
+		Predicate e = Predicates.getPredicate("e", 0);
 
 		assertEquals(5, strata.size());
 		assertTrue(predicateIsBeforePredicateInOrder(a, b, strata));
@@ -116,8 +116,8 @@ public class StratificationAlgorithmTest {
 		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
 		List<SCComponent> strata = StratificationAlgorithm.calculateStratification(cg);
 
-		Predicate ancestorOf = CorePredicate.getInstance("ancestor_of", 2);
-		Predicate parentOf = CorePredicate.getInstance("parent_of", 2);
+		Predicate ancestorOf = Predicates.getPredicate("ancestor_of", 2);
+		Predicate parentOf = Predicates.getPredicate("parent_of", 2);
 
 		assertEquals(2, strata.size());
 		assertTrue(predicateIsBeforePredicateInOrder(parentOf, ancestorOf, strata));
@@ -148,13 +148,13 @@ public class StratificationAlgorithmTest {
 		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
 		List<SCComponent> strata = StratificationAlgorithm.calculateStratification(cg);
 
-		Predicate a = CorePredicate.getInstance("a", 0);
-		Predicate b = CorePredicate.getInstance("b", 0);
-		Predicate c = CorePredicate.getInstance("c", 0);
-		Predicate d = CorePredicate.getInstance("d", 0);
-		Predicate e = CorePredicate.getInstance("e", 0);
-		Predicate f = CorePredicate.getInstance("f", 0);
-		Predicate h = CorePredicate.getInstance("h", 0);
+		Predicate a = Predicates.getPredicate("a", 0);
+		Predicate b = Predicates.getPredicate("b", 0);
+		Predicate c = Predicates.getPredicate("c", 0);
+		Predicate d = Predicates.getPredicate("d", 0);
+		Predicate e = Predicates.getPredicate("e", 0);
+		Predicate f = Predicates.getPredicate("f", 0);
+		Predicate h = Predicates.getPredicate("h", 0);
 
 		assertTrue(predicateIsBeforePredicateInOrder(a, h, strata));
 		assertTrue(predicateIsBeforePredicateInOrder(b, h, strata));
@@ -192,13 +192,13 @@ public class StratificationAlgorithmTest {
 		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
 		List<SCComponent> strata = StratificationAlgorithm.calculateStratification(cg);
 
-		Predicate a = CorePredicate.getInstance("a", 0);
-		Predicate b = CorePredicate.getInstance("b", 0);
-		Predicate c = CorePredicate.getInstance("c", 0);
-		Predicate d = CorePredicate.getInstance("d", 0);
-		Predicate e = CorePredicate.getInstance("e", 0);
-		Predicate f = CorePredicate.getInstance("f", 0);
-		Predicate h = CorePredicate.getInstance("h", 0);
+		Predicate a = Predicates.getPredicate("a", 0);
+		Predicate b = Predicates.getPredicate("b", 0);
+		Predicate c = Predicates.getPredicate("c", 0);
+		Predicate d = Predicates.getPredicate("d", 0);
+		Predicate e = Predicates.getPredicate("e", 0);
+		Predicate f = Predicates.getPredicate("f", 0);
+		Predicate h = Predicates.getPredicate("h", 0);
 
 
 		assertEquals(7, strata.size());
@@ -225,9 +225,9 @@ public class StratificationAlgorithmTest {
 		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
 		List<SCComponent> strata = StratificationAlgorithm.calculateStratification(cg);
 
-		Predicate a = CorePredicate.getInstance("a", 0);
-		Predicate b = CorePredicate.getInstance("b", 0);
-		Predicate c = CorePredicate.getInstance("c", 0);
+		Predicate a = Predicates.getPredicate("a", 0);
+		Predicate b = Predicates.getPredicate("b", 0);
+		Predicate c = Predicates.getPredicate("c", 0);
 
 		assertTrue(predicateIsBeforePredicateInOrder(a, b, strata));
 		assertTrue(predicateIsBeforePredicateInOrder(b, c, strata));

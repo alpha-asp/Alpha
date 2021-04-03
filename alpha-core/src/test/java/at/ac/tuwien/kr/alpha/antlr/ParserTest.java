@@ -47,19 +47,19 @@ import org.junit.Test;
 import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.atoms.AggregateAtomImpl;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.literals.AggregateLiteralImpl;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
 /**
@@ -150,9 +150,9 @@ public class ParserTest {
 		assertFalse(conditionalLiterals.get(0).isNegated());
 		assertTrue(conditionalLiterals.get(1).isNegated());
 		assertEquals(Terms.newConstant(1), choiceHead.getLowerBound());
-		assertEquals(ComparisonOperatorImpl.LT, choiceHead.getLowerOperator());
+		assertEquals(ComparisonOperators.LT, choiceHead.getLowerOperator());
 		assertEquals(Terms.newConstant(13), choiceHead.getUpperBound());
-		assertEquals(ComparisonOperatorImpl.LE, choiceHead.getUpperOperator());
+		assertEquals(ComparisonOperators.LE, choiceHead.getUpperOperator());
 	}
 
 	@Test
@@ -197,18 +197,18 @@ public class ParserTest {
 	@Test
 	public void cardinalityAggregate() throws IOException {
 		ASPCore2Program parsedProgram = parser.parse("num(K) :-  K <= #count {X,Y,Z : p(X,Y,Z) }, dom(K).");
-		Optional<Literal> optionalBodyElement = parsedProgram.getRules().get(0).getBody().stream().filter((lit) -> lit instanceof AggregateLiteralImpl).findFirst();
+		Optional<Literal> optionalBodyElement = parsedProgram.getRules().get(0).getBody().stream().filter((lit) -> lit instanceof AggregateLiteral).findFirst();
 		assertTrue(optionalBodyElement.isPresent());
 		Literal bodyElement = optionalBodyElement.get();
-		AggregateLiteralImpl parsedAggregate = (AggregateLiteralImpl) bodyElement;
+		AggregateLiteral parsedAggregate = (AggregateLiteral) bodyElement;
 		VariableTerm x = Terms.newVariable("X");
 		VariableTerm y = Terms.newVariable("Y");
 		VariableTerm z = Terms.newVariable("Z");
 		List<Term> basicTerms = Arrays.asList(x, y, z);
-		AggregateElementImpl.AggregateElement aggregateElement = new AggregateElementImpl.AggregateElement(basicTerms,
-				Collections.singletonList(Atoms.newBasicAtom(CorePredicate.getInstance("p", 3), x, y, z).toLiteral()));
-		AggregateAtomImpl expectedAggregate = new AggregateAtomImpl(ComparisonOperatorImpl.LE, Terms.newVariable("K"), null, null,
-				AggregateAtomImpl.AGGREGATEFUNCTION.COUNT, Collections.singletonList(aggregateElement));
+		AggregateAtom.AggregateElement aggregateElement = Atoms.newAggregateElement(basicTerms,
+				Collections.singletonList(Atoms.newBasicAtom(Predicates.getPredicate("p", 3), x, y, z).toLiteral()));
+		AggregateAtom expectedAggregate = Atoms.newAggregateAtom(ComparisonOperators.LE, Terms.newVariable("K"), null, null,
+				AggregateAtom.AggregateFunction.COUNT, Collections.singletonList(aggregateElement));
 		assertEquals(expectedAggregate, parsedAggregate.getAtom());
 	}
 

@@ -40,11 +40,11 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 
 /**
  * Internal representation of an {@link at.ac.tuwien.kr.alpha.core.programs.InternalProgram}'s dependency graph. The dependency graph tracks dependencies
- * between rules of a program. Each {@link Node} of the graph represents a {@link CorePredicate} occurring in the program. A node has an incoming {@link Edge} for
+ * between rules of a program. Each {@link Node} of the graph represents a {@link PredicateImpl} occurring in the program. A node has an incoming {@link Edge} for
  * every {@link Literal} in some rule body that depends on it, i.e. the predicate of the literal in question is the same as that of the node. The "sign" flag of
  * an {@link Edge} indicates whether the dependency is a positive or negative one, i.e. if the atom in question is preceded by a "not".
  * 
@@ -75,7 +75,7 @@ public final class DependencyGraph {
 		return new DependencyGraph.Builder(nonGroundRules.values()).build();
 	}
 
-	public Node getNodeForPredicate(CorePredicate p) {
+	public Node getNodeForPredicate(Predicate p) {
 		return nodesByPredicate.get(p);
 	}
 
@@ -165,7 +165,7 @@ public final class DependencyGraph {
 		}
 
 		private Predicate generateConstraintDummyPredicate() {
-			return CorePredicate.getInstance(String.format(DependencyGraph.Builder.CONSTRAINT_PREDICATE_FORMAT, ++constraintNumber), 0);
+			return Predicates.getPredicate(String.format(DependencyGraph.Builder.CONSTRAINT_PREDICATE_FORMAT, ++constraintNumber), 0);
 		}
 	}
 }

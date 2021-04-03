@@ -11,6 +11,7 @@ import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.literals.Literals;
@@ -18,7 +19,6 @@ import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationLiteral;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.grounder.WorkingMemory;
 import at.ac.tuwien.kr.alpha.core.grounder.instantiation.AssignmentStatus;
 import at.ac.tuwien.kr.alpha.core.grounder.instantiation.LiteralInstantiationResult;
@@ -76,7 +76,7 @@ public class LiteralInstantiatorTest {
 
 	@Test
 	public void workingMemoryBasedVerifyPositiveGroundLiteralSatisfied() {
-		Predicate p = CorePredicate.getInstance("p", 2);
+		Predicate p = Predicates.getPredicate("p", 2);
 		WorkingMemory workingMemory = new WorkingMemory();
 		workingMemory.initialize(p);
 		workingMemory.addInstance(Atoms.newBasicAtom(p, Terms.newSymbolicConstant("x"), Terms.newSymbolicConstant("y")), true);
@@ -100,7 +100,7 @@ public class LiteralInstantiatorTest {
 
 	@Test
 	public void workingMemoryBasedVerifyPositiveGroundLiteralUnsatisfied() {
-		Predicate p = CorePredicate.getInstance("p", 2);
+		Predicate p = Predicates.getPredicate("p", 2);
 		WorkingMemory workingMemory = new WorkingMemory();
 		workingMemory.initialize(p);
 		VariableTerm x = Terms.newVariable("X");
@@ -119,7 +119,7 @@ public class LiteralInstantiatorTest {
 
 	@Test
 	public void workingMemoryBasedInstantiatePositiveBasicLiteral() {
-		Predicate p = CorePredicate.getInstance("p", 2);
+		Predicate p = Predicates.getPredicate("p", 2);
 		WorkingMemory workingMemory = new WorkingMemory();
 		workingMemory.initialize(p);
 		workingMemory.addInstance(Atoms.newBasicAtom(p, Terms.newSymbolicConstant("x"), Terms.newSymbolicConstant("y")), true);

@@ -40,15 +40,15 @@ import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 
 /**
  * Atoms corresponding to rule bodies use this predicate, first term is rule number,
  * second is a term containing variable substitutions.
  */
 public class RuleAtom implements Atom {
-	public static final Predicate PREDICATE = CorePredicate.getInstance("_R_", 2, true, true);
+	public static final Predicate PREDICATE = Predicates.getPredicate("_R_", 2, true, true);
 
 	private final List<ConstantTerm<String>> terms;
 

@@ -51,11 +51,11 @@ import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
@@ -89,7 +89,7 @@ public class StratifiedEvaluationTest {
 		String aspStr = "p(a). p(b). q(b). q(X) :- p(X).";
 		CompiledProgram evaluated = parseAndEvaluate.apply(aspStr);
 		Instance qOfB = new Instance(TestUtils.basicAtomWithSymbolicTerms("q", "b").getTerms());
-		Set<Instance> facts = evaluated.getFactsByPredicate().get(CorePredicate.getInstance("q", 1));
+		Set<Instance> facts = evaluated.getFactsByPredicate().get(Predicates.getPredicate("q", 1));
 		int numQOfB = 0;
 		for (Instance at : facts) {
 			if (at.equals(qOfB)) {
@@ -248,7 +248,7 @@ public class StratifiedEvaluationTest {
 				"	R = K + 1.";
 		//@formatter:on
 		CompiledProgram evaluated = parseAndEvaluate.apply(asp);
-		Predicate rank = CorePredicate.getInstance("thing_rank", 2);
+		Predicate rank = Predicates.getPredicate("thing_rank", 2);
 		BasicAtom rank1 = Atoms.newBasicAtom(rank, Terms.newSymbolicConstant("a"), Terms.newConstant(1));
 		BasicAtom rank2 = Atoms.newBasicAtom(rank, Terms.newSymbolicConstant("b"), Terms.newConstant(2));
 		BasicAtom rank3 = Atoms.newBasicAtom(rank, Terms.newSymbolicConstant("c"), Terms.newConstant(3));

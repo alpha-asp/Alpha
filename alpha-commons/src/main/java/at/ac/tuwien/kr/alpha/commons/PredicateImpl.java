@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.common;
+package at.ac.tuwien.kr.alpha.commons;
 
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.commons.util.Interner;
@@ -8,32 +8,32 @@ import at.ac.tuwien.kr.alpha.commons.util.Interner;
  * 
  * Copyright (c) 2016-2020, the Alpha Team.
  */
-public class CorePredicate implements Predicate {
+class PredicateImpl implements Predicate {
 	
-	private static final Interner<CorePredicate> INTERNER = new Interner<>();
+	private static final Interner<PredicateImpl> INTERNER = new Interner<>();
 
 	private final String name;
 	private final int arity;
 	private final boolean internal;
 	private final boolean solverInternal;
 
-	protected CorePredicate(String name, int arity, boolean internal, boolean solverInternal) {
+	PredicateImpl(String name, int arity, boolean internal, boolean solverInternal) {
 		this.name = name;
 		this.arity = arity;
 		this.internal = internal;
 		this.solverInternal = solverInternal;
 	}
 
-	public static CorePredicate getInstance(String symbol, int arity) {
+	static PredicateImpl getInstance(String symbol, int arity) {
 		return getInstance(symbol, arity, false, false);
 	}
 
-	public static CorePredicate getInstance(String symbol, int arity, boolean internal) {
+	static PredicateImpl getInstance(String symbol, int arity, boolean internal) {
 		return getInstance(symbol, arity, internal, false);
 	}
 
-	public static CorePredicate getInstance(String symbol, int arity, boolean internal, boolean solverInternal) {
-		return INTERNER.intern(new CorePredicate(symbol, arity, internal, solverInternal));
+	static PredicateImpl getInstance(String symbol, int arity, boolean internal, boolean solverInternal) {
+		return INTERNER.intern(new PredicateImpl(symbol, arity, internal, solverInternal));
 	}
 
 	@Override
@@ -50,11 +50,11 @@ public class CorePredicate implements Predicate {
 			return true;
 		}
 
-		if (!(o instanceof CorePredicate)) {
+		if (!(o instanceof PredicateImpl)) {
 			return false;
 		}
 
-		CorePredicate predicate = (CorePredicate) o;
+		PredicateImpl predicate = (PredicateImpl) o;
 
 		if (arity != predicate.arity) {
 			return false;
@@ -71,6 +71,7 @@ public class CorePredicate implements Predicate {
 	 * Marks internal predicates that should not be shown/printed in answer sets.
 	 * @return true iff this Predicate should be omitted from answer sets.
 	 */
+	@Override
 	public boolean isInternal() {
 		return internal;
 	}
@@ -80,6 +81,7 @@ public class CorePredicate implements Predicate {
 	 * predicates are guaranteed to not occur in any rule bodies and hence are ignored by the grounder.
 	 * @return true iff this Predicate is internal to the solver component.
 	 */
+	@Override
 	public boolean isSolverInternal() {
 		return solverInternal;
 	}

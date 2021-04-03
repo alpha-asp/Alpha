@@ -67,7 +67,6 @@ import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.BasicAnswerSet;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.IntIterator;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.common.NoGoodInterface;
@@ -622,7 +621,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	/**
 	 * Checks that every nogood not marked as {@link NoGoodInterface.Type#INTERNAL} contains only
-	 * atoms which are not {@link CorePredicate#isSolverInternal()} (except {@link RuleAtom}s, which are allowed).
+	 * atoms which are not {@link PredicateImpl#isSolverInternal()} (except {@link RuleAtom}s, which are allowed).
 	 *
 	 * @param newNoGoods
 	 */

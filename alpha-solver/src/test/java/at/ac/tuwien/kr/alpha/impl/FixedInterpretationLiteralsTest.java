@@ -18,9 +18,9 @@ import at.ac.tuwien.kr.alpha.api.impl.AlphaImpl;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.externals.AspStandardLibrary;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
 
@@ -87,7 +87,7 @@ public class FixedInterpretationLiteralsTest {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
 		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertTrue(answerSet.getPredicates().contains(CorePredicate.getInstance("positive_numeric_comparison", 0)));
+		Assert.assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("positive_numeric_comparison", 0)));
 	}
 
 	@Test
@@ -95,7 +95,7 @@ public class FixedInterpretationLiteralsTest {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
 		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertTrue(answerSet.getPredicates().contains(CorePredicate.getInstance("negative_numeric_comparison", 0)));
+		Assert.assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("negative_numeric_comparison", 0)));
 	}
 
 	@Test
@@ -103,7 +103,7 @@ public class FixedInterpretationLiteralsTest {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
 		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertTrue(answerSet.getPredicates().contains(CorePredicate.getInstance("positive_unary_external", 0)));
+		Assert.assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("positive_unary_external", 0)));
 	}
 
 	@Test
@@ -111,7 +111,7 @@ public class FixedInterpretationLiteralsTest {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
 		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertTrue(answerSet.getPredicates().contains(CorePredicate.getInstance("negative_unary_external", 0)));
+		Assert.assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("negative_unary_external", 0)));
 	}
 
 	@Test
@@ -119,7 +119,7 @@ public class FixedInterpretationLiteralsTest {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
 		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertTrue(answerSet.getPredicates().contains(CorePredicate.getInstance("positive_external_with_output", 0)));
+		Assert.assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("positive_external_with_output", 0)));
 	}
 
 	@Test
@@ -127,7 +127,7 @@ public class FixedInterpretationLiteralsTest {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
 		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertFalse(answerSet.getPredicates().contains(CorePredicate.getInstance("positive_external_with_output_dontfire", 0)));
+		Assert.assertFalse(answerSet.getPredicates().contains(Predicates.getPredicate("positive_external_with_output_dontfire", 0)));
 	}
 
 	@Test
@@ -135,7 +135,7 @@ public class FixedInterpretationLiteralsTest {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
 		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertTrue(answerSet.getPredicates().contains(CorePredicate.getInstance("negative_external_with_output", 0)));
+		Assert.assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("negative_external_with_output", 0)));
 	}
 
 	@Test
@@ -143,7 +143,7 @@ public class FixedInterpretationLiteralsTest {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
 		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertFalse(answerSet.getPredicates().contains(CorePredicate.getInstance("negative_external_with_output_dontfire", 0)));
+		Assert.assertFalse(answerSet.getPredicates().contains(Predicates.getPredicate("negative_external_with_output_dontfire", 0)));
 	}
 
 	@Test
@@ -151,7 +151,7 @@ public class FixedInterpretationLiteralsTest {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
 		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertTrue(answerSet.getPredicates().contains(CorePredicate.getInstance("negative_external_multioutput", 0)));
+		Assert.assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("negative_external_multioutput", 0)));
 	}
 
 	@Test
@@ -159,7 +159,7 @@ public class FixedInterpretationLiteralsTest {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
 		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertFalse(answerSet.getPredicates().contains(CorePredicate.getInstance("negative_external_multioutput_dontfire", 0)));
+		Assert.assertFalse(answerSet.getPredicates().contains(Predicates.getPredicate("negative_external_multioutput_dontfire", 0)));
 	}
 
 	@Test
@@ -167,7 +167,7 @@ public class FixedInterpretationLiteralsTest {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
 		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertTrue(answerSet.getPredicates().contains(CorePredicate.getInstance("positive_external_multioutput", 0)));
+		Assert.assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("positive_external_multioutput", 0)));
 	}
 
 	@Test
@@ -175,7 +175,7 @@ public class FixedInterpretationLiteralsTest {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
 		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertFalse(answerSet.getPredicates().contains(CorePredicate.getInstance("positive_external_multioutput_dontfire", 0)));
+		Assert.assertFalse(answerSet.getPredicates().contains(Predicates.getPredicate("positive_external_multioutput_dontfire", 0)));
 	}
 
 	@Test
@@ -183,7 +183,7 @@ public class FixedInterpretationLiteralsTest {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
 		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Predicate pred = CorePredicate.getInstance("positive_external_binding_output", 2);
+		Predicate pred = Predicates.getPredicate("positive_external_binding_output", 2);
 		Assert.assertTrue(answerSet.getPredicates().contains(pred));
 		Set<Atom> instances = answerSet.getPredicateInstances(pred);
 		Assert.assertEquals(3, instances.size());

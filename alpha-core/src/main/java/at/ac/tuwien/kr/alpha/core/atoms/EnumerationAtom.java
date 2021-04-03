@@ -12,9 +12,10 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 
 /**
  * Represents a ground-instance enumeration atom of form:
@@ -27,8 +28,8 @@ import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
  *
  * Copyright (c) 2017, the Alpha Team.
  */
-public class EnumerationAtom implements BasicAtom {
-	public static final Predicate ENUMERATION_PREDICATE = CorePredicate.getInstance("_Enumeration", 3);
+public class EnumerationAtom extends AbstractAtom implements BasicAtom {
+	public static final Predicate ENUMERATION_PREDICATE = Predicates.getPredicate("_Enumeration", 3);
 	private static final HashMap<Term, HashMap<Term, Integer>> ENUMERATIONS = new HashMap<>();
 
 	private final Term enumIdTerm;
@@ -40,7 +41,7 @@ public class EnumerationAtom implements BasicAtom {
 		this.valueTerm = valueTerm;
 		this.indexTerm = indexTerm;
 	}
-
+	
 	public static void resetEnumerations() {
 		ENUMERATIONS.clear();
 	}
@@ -81,9 +82,10 @@ public class EnumerationAtom implements BasicAtom {
 
 	@Override
 	public EnumerationAtom substitute(Substitution substitution) {
-		// TODO shouldn't even have the method in the interface!
-		throw new UnsupportedOperationException("EnumerationAtom does not support substituting! Use addEnumerationIndexToSubstitution for instantiating!");
-		// return new EnumerationAtom(super.substitute(substitution).getTerms());
+		Term substEnumIdTerm = enumIdTerm.substitute(substitution);
+		Term substValueTerm = valueTerm.substitute(substitution);
+		Term substIndexTerm = indexTerm.substitute(substitution);
+		return new EnumerationAtom(substEnumIdTerm, substValueTerm, (VariableTerm) substIndexTerm);
 	}
 
 	@Override
@@ -146,4 +148,24 @@ public class EnumerationAtom implements BasicAtom {
 		List<Term> renamedTerms = Terms.renameTerms(getTerms(), prefix, counterStartingValue);
 		return withTerms(renamedTerms);
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		EnumerationAtom that = (EnumerationAtom) o;
+
+		return ENUMERATION_PREDICATE.equals(that.getPredicate()) && this.getTerms().equals(that.getTerms());
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 * ENUMERATION_PREDICATE.hashCode() + getTerms().hashCode();
+	}
+	
 }

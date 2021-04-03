@@ -21,11 +21,11 @@ import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
@@ -177,8 +177,8 @@ public class StratifiedEvaluationRegressionTest {
 	}
 
 	private static void verifyProgramPositiveRecursive(CompiledProgram evaluated) {
-		Predicate num = CorePredicate.getInstance("num", 1);
-		TestUtils.assertFactsContainedInProgram(evaluated, Atoms.newBasicAtom(CorePredicate.getInstance("max_num", 1), Terms.newConstant(10)),
+		Predicate num = Predicates.getPredicate("num", 1);
+		TestUtils.assertFactsContainedInProgram(evaluated, Atoms.newBasicAtom(Predicates.getPredicate("max_num", 1), Terms.newConstant(10)),
 				Atoms.newBasicAtom(num, Terms.newConstant(0)),
 				Atoms.newBasicAtom(num, Terms.newConstant(1)), Atoms.newBasicAtom(num, Terms.newConstant(2)),
 				Atoms.newBasicAtom(num, Terms.newConstant(3)), Atoms.newBasicAtom(num, Terms.newConstant(4)),
@@ -262,9 +262,9 @@ public class StratifiedEvaluationRegressionTest {
 
 	private static void verifyProgramEqualityWithVar(CompiledProgram evaluated) {
 		Assert.assertEquals(0, evaluated.getRules().size());
-		Assert.assertTrue(evaluated.getFacts().contains(Atoms.newBasicAtom(CorePredicate.getInstance("a", 1), Terms.newConstant(1))));
-		Assert.assertTrue(evaluated.getFacts().contains(Atoms.newBasicAtom(CorePredicate.getInstance("c", 1), Terms.newConstant(2))));
-		Assert.assertTrue(evaluated.getFacts().contains(Atoms.newBasicAtom(CorePredicate.getInstance("d", 1), Terms.newConstant(3))));
+		Assert.assertTrue(evaluated.getFacts().contains(Atoms.newBasicAtom(Predicates.getPredicate("a", 1), Terms.newConstant(1))));
+		Assert.assertTrue(evaluated.getFacts().contains(Atoms.newBasicAtom(Predicates.getPredicate("c", 1), Terms.newConstant(2))));
+		Assert.assertTrue(evaluated.getFacts().contains(Atoms.newBasicAtom(Predicates.getPredicate("d", 1), Terms.newConstant(3))));
 	}
 
 	private static void verifyAnswerSetsEqualityWithVar(Set<AnswerSet> answerSets) {

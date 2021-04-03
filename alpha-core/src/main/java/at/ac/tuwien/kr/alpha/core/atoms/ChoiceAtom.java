@@ -39,13 +39,13 @@ import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 
 public class ChoiceAtom implements Atom {
 
-	public static final Predicate ON = CorePredicate.getInstance("ChoiceOn", 1, true, true);
-	public static final Predicate OFF = CorePredicate.getInstance("ChoiceOff", 1, true, true);
+	public static final Predicate ON = Predicates.getPredicate("ChoiceOn", 1, true, true);
+	public static final Predicate OFF = Predicates.getPredicate("ChoiceOff", 1, true, true);
 
 	private final Predicate predicate;
 	private final ConstantTerm<String> term;

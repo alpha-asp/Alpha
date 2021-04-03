@@ -21,16 +21,16 @@ import at.ac.tuwien.kr.alpha.api.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.literals.ComparisonLiteralImpl;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.grounder.Unification;
 import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
 
@@ -208,7 +208,7 @@ public class AnalyzeUnjustified {
 		int chosenLiteralPos = 0;
 		// Find a body literal that is not a ComparisonLiteral, because these do not generate/have atoms assigned.
 		for (int i = 0; i < vB.size(); i++) {
-			if (!(vB.get(i) instanceof ComparisonLiteralImpl)) {
+			if (!(vB.get(i) instanceof ComparisonLiteral)) { // TODO: Should this be FixedInterpretationLiteral instead??
 				chosenLiteralPos = i;
 				break;
 			}
@@ -248,7 +248,7 @@ public class AnalyzeUnjustified {
 					for (Unifier sigmaN : vN) {
 						ArrayList<Term> occurringVariables = new ArrayList<>(variablesOccurringInSigma);
 						occurringVariables.addAll(sigmaN.getMappedVariables());
-						BasicAtom genericAtom = Atoms.newBasicAtom(CorePredicate.getInstance("_", occurringVariables.size(), true), occurringVariables);
+						BasicAtom genericAtom = Atoms.newBasicAtom(Predicates.getPredicate("_", occurringVariables.size(), true), occurringVariables);
 						Atom genericSubstituted = genericAtom.substitute(sigmaN).renameVariables("_analyzeTest");
 						if (Unification.instantiate(genericSubstituted, genericAtom.substitute(sigma)) != null) {
 							log("Atom {} is excluded by: {} via {}", genericSubstituted, sigmaN, sigma);

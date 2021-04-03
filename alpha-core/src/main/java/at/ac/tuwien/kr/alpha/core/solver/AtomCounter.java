@@ -40,17 +40,17 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
  */
 public class AtomCounter {
 
-	private final Map<Class<? extends Atom>, Integer> countByType = new HashMap<>();
+	private final Map<String, Integer> countByType = new HashMap<>();
 
 	public void add(Atom atom) {
-		countByType.compute(atom.getClass(), (k, v) -> (v == null) ? 1 : v + 1);
+		countByType.compute(atom.getClass().getSimpleName(), (k, v) -> (v == null) ? 1 : v + 1);
 	}
 
 	/**
 	 * @param type the class of atoms to count
 	 * @return the number of atoms of the given type
 	 */
-	public int getNumberOfAtoms(Class<? extends Atom> type) {
+	public int getNumberOfAtoms(String type) {
 		return countByType.getOrDefault(type, 0);
 	}
 
@@ -59,8 +59,8 @@ public class AtomCounter {
 	 */
 	public String getStatsByType() {
 		List<String> statsList = new ArrayList<>();
-		for (Map.Entry<Class<? extends Atom>, Integer> entry : countByType.entrySet()) {
-			statsList.add(entry.getKey().getSimpleName() + ": " + entry.getValue());
+		for (Map.Entry<String, Integer> entry : countByType.entrySet()) {
+			statsList.add(entry.getKey() + ": " + entry.getValue());
 		}
 		Collections.sort(statsList);
 		return String.join(" ", statsList);

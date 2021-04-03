@@ -10,7 +10,7 @@ import org.junit.Test;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgram;
@@ -52,7 +52,7 @@ public class DependencyGraphTest {
 
 	@Test
 	public void edgesEqualTest() {
-		Predicate testPredicate = CorePredicate.getInstance("test", 2, false, false);
+		Predicate testPredicate = Predicates.getPredicate("test", 2, false, false);
 		Edge e1 = new Edge(new Node(testPredicate), true);
 		Edge e2 = new Edge(new Node(testPredicate), true);
 		Assert.assertEquals(e1, e2);
@@ -65,10 +65,10 @@ public class DependencyGraphTest {
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
 
-		Node a = dg.getNodeForPredicate(CorePredicate.getInstance("a", 0));
-		Node b = dg.getNodeForPredicate(CorePredicate.getInstance("b", 0));
+		Node a = dg.getNodeForPredicate(Predicates.getPredicate("a", 0));
+		Node b = dg.getNodeForPredicate(Predicates.getPredicate("b", 0));
 
-		Node nonExistent = new Node(CorePredicate.getInstance("notHere", 0));
+		Node nonExistent = new Node(Predicates.getPredicate("notHere", 0));
 
 		Assert.assertTrue(DependencyGraphUtils.isReachableFrom(a, a, dg));
 		Assert.assertTrue(DependencyGraphUtils.isReachableFrom(b, a, dg));
@@ -88,10 +88,10 @@ public class DependencyGraphTest {
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
-		Node a = dg.getNodeForPredicate(CorePredicate.getInstance("a", 0));
-		Node b = dg.getNodeForPredicate(CorePredicate.getInstance("b", 0));
-		Node c = dg.getNodeForPredicate(CorePredicate.getInstance("c", 0));
-		Node d = dg.getNodeForPredicate(CorePredicate.getInstance("d", 0));
+		Node a = dg.getNodeForPredicate(Predicates.getPredicate("a", 0));
+		Node b = dg.getNodeForPredicate(Predicates.getPredicate("b", 0));
+		Node c = dg.getNodeForPredicate(Predicates.getPredicate("c", 0));
+		Node d = dg.getNodeForPredicate(Predicates.getPredicate("d", 0));
 
 		Assert.assertTrue(DependencyGraphUtils.isReachableFrom(d, a, dg));
 		Assert.assertTrue(DependencyGraphUtils.isReachableFrom(c, a, dg));
@@ -123,13 +123,13 @@ public class DependencyGraphTest {
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
-		Node a = dg.getNodeForPredicate(CorePredicate.getInstance("a", 0));
-		Node b = dg.getNodeForPredicate(CorePredicate.getInstance("b", 0));
-		Node c = dg.getNodeForPredicate(CorePredicate.getInstance("c", 0));
-		Node d = dg.getNodeForPredicate(CorePredicate.getInstance("d", 0));
-		Node f1 = dg.getNodeForPredicate(CorePredicate.getInstance("f1", 0));
-		Node x = dg.getNodeForPredicate(CorePredicate.getInstance("x", 0));
-		Node notInGraph = new Node(CorePredicate.getInstance("notInGraph", 0));
+		Node a = dg.getNodeForPredicate(Predicates.getPredicate("a", 0));
+		Node b = dg.getNodeForPredicate(Predicates.getPredicate("b", 0));
+		Node c = dg.getNodeForPredicate(Predicates.getPredicate("c", 0));
+		Node d = dg.getNodeForPredicate(Predicates.getPredicate("d", 0));
+		Node f1 = dg.getNodeForPredicate(Predicates.getPredicate("f1", 0));
+		Node x = dg.getNodeForPredicate(Predicates.getPredicate("x", 0));
+		Node notInGraph = new Node(Predicates.getPredicate("notInGraph", 0));
 
 		Assert.assertTrue(DependencyGraphUtils.isReachableFrom(d, a, dg));
 		Assert.assertTrue(DependencyGraphUtils.isReachableFrom(c, a, dg));
@@ -163,8 +163,8 @@ public class DependencyGraphTest {
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
-		Node a = dg.getNodeForPredicate(CorePredicate.getInstance("a", 0));
-		Node b = dg.getNodeForPredicate(CorePredicate.getInstance("b", 0));
+		Node a = dg.getNodeForPredicate(Predicates.getPredicate("a", 0));
+		Node b = dg.getNodeForPredicate(Predicates.getPredicate("b", 0));
 
 		List<Node> componentA = new ArrayList<>();
 		componentA.add(a);
@@ -202,17 +202,17 @@ public class DependencyGraphTest {
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
 
-		Node f0 = dg.getNodeForPredicate(CorePredicate.getInstance("f0", 0));
-		Node f1 = dg.getNodeForPredicate(CorePredicate.getInstance("f1", 0));
-		Node f2 = dg.getNodeForPredicate(CorePredicate.getInstance("f2", 0));
-		Node f3 = dg.getNodeForPredicate(CorePredicate.getInstance("f3", 0));
-		Node a = dg.getNodeForPredicate(CorePredicate.getInstance("a", 0));
-		Node b = dg.getNodeForPredicate(CorePredicate.getInstance("b", 0));
-		Node c = dg.getNodeForPredicate(CorePredicate.getInstance("c", 0));
-		Node d = dg.getNodeForPredicate(CorePredicate.getInstance("d", 0));
-		Node x = dg.getNodeForPredicate(CorePredicate.getInstance("x", 0));
-		Node y = dg.getNodeForPredicate(CorePredicate.getInstance("y", 0));
-		Node z = dg.getNodeForPredicate(CorePredicate.getInstance("z", 0));
+		Node f0 = dg.getNodeForPredicate(Predicates.getPredicate("f0", 0));
+		Node f1 = dg.getNodeForPredicate(Predicates.getPredicate("f1", 0));
+		Node f2 = dg.getNodeForPredicate(Predicates.getPredicate("f2", 0));
+		Node f3 = dg.getNodeForPredicate(Predicates.getPredicate("f3", 0));
+		Node a = dg.getNodeForPredicate(Predicates.getPredicate("a", 0));
+		Node b = dg.getNodeForPredicate(Predicates.getPredicate("b", 0));
+		Node c = dg.getNodeForPredicate(Predicates.getPredicate("c", 0));
+		Node d = dg.getNodeForPredicate(Predicates.getPredicate("d", 0));
+		Node x = dg.getNodeForPredicate(Predicates.getPredicate("x", 0));
+		Node y = dg.getNodeForPredicate(Predicates.getPredicate("y", 0));
+		Node z = dg.getNodeForPredicate(Predicates.getPredicate("z", 0));
 
 		StronglyConnectedComponentsAlgorithm.SccResult sccResult = StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg);
 		Map<Node, Integer> nodesByComponent = sccResult.nodesByComponentId;
