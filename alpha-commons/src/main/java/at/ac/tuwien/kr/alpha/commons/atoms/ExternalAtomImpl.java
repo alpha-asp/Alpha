@@ -25,8 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.atoms;
-
+package at.ac.tuwien.kr.alpha.commons.atoms;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,13 +35,14 @@ import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.VariableNormalizableAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
+import at.ac.tuwien.kr.alpha.commons.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
-public class ExternalAtom extends AbstractAtom implements VariableNormalizableAtom {
+class ExternalAtomImpl extends AbstractAtom implements ExternalAtom {
 
 	private final List<Term> input;
 	private final List<Term> output;
@@ -50,7 +50,7 @@ public class ExternalAtom extends AbstractAtom implements VariableNormalizableAt
 	protected final Predicate predicate;
 	protected final PredicateInterpretation interpretation;
 
-	public ExternalAtom(Predicate predicate, PredicateInterpretation interpretation, List<Term> input, List<Term> output) {
+	ExternalAtomImpl(Predicate predicate, PredicateInterpretation interpretation, List<Term> input, List<Term> output) {
 		if (predicate == null) {
 			throw new IllegalArgumentException("predicate must not be null!");
 		}
@@ -69,6 +69,7 @@ public class ExternalAtom extends AbstractAtom implements VariableNormalizableAt
 		this.output = output;
 	}
 
+	@Override
 	public boolean hasOutput() {
 		return !output.isEmpty();
 	}
@@ -78,14 +79,17 @@ public class ExternalAtom extends AbstractAtom implements VariableNormalizableAt
 		return predicate;
 	}
 
+	@Override
 	public PredicateInterpretation getInterpretation() {
 		return interpretation;
 	}
 
+	@Override
 	public List<Term> getInput() {
 		return Collections.unmodifiableList(input);
 	}
 
+	@Override
 	public List<Term> getOutput() {
 		return Collections.unmodifiableList(output);
 	}
@@ -111,15 +115,15 @@ public class ExternalAtom extends AbstractAtom implements VariableNormalizableAt
 	}
 
 	@Override
-	public ExternalAtom substitute(Substitution substitution) {
+	public ExternalAtomImpl substitute(Substitution substitution) {
 		List<Term> substitutedInput = this.input.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
 		List<Term> substitutedOutput = this.output.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
-		return new ExternalAtom(predicate, interpretation, substitutedInput, substitutedOutput);
+		return new ExternalAtomImpl(predicate, interpretation, substitutedInput, substitutedOutput);
 	}
 
 	@Override
 	public ExternalLiteral toLiteral(boolean positive) {
-		return new ExternalLiteral(this, positive);
+		return Literals.fromAtom(this, positive);
 	}
 
 	@Override
@@ -157,10 +161,10 @@ public class ExternalAtom extends AbstractAtom implements VariableNormalizableAt
 		if (obj == null) {
 			return false;
 		}
-		if (!(obj instanceof ExternalAtom)) {
+		if (!(obj instanceof ExternalAtomImpl)) {
 			return false;
 		}
-		ExternalAtom other = (ExternalAtom) obj;
+		ExternalAtomImpl other = (ExternalAtomImpl) obj;
 		if (!this.input.equals(other.input)) {
 			return false;
 		}
@@ -174,10 +178,10 @@ public class ExternalAtom extends AbstractAtom implements VariableNormalizableAt
 	}
 
 	@Override
-	public ExternalAtom normalizeVariables(String prefix, int counterStartingValue) {
+	public ExternalAtomImpl normalizeVariables(String prefix, int counterStartingValue) {
 		List<Term> renamedInput = Terms.renameTerms(this.input, prefix + "_IN_", counterStartingValue);
 		List<Term> renamedOutput = Terms.renameTerms(this.output, prefix + "_OUT_", counterStartingValue);
-		return new ExternalAtom(this.predicate, this.interpretation, renamedInput, renamedOutput);
+		return new ExternalAtomImpl(this.predicate, this.interpretation, renamedInput, renamedOutput);
 	}
 
 }

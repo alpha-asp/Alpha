@@ -34,15 +34,15 @@ import java.util.List;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 
 /**
- * Contains a potentially negated {@link ExternalAtom}.
+ * Contains a potentially negated {@link ExternalAtomImpl}.
  */
 public class ExternalLiteral extends FixedInterpretationLiteral {
 
@@ -69,7 +69,7 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 	 */
 	@Override
 	public ExternalLiteral substitute(Substitution substitution) {
-		return new ExternalLiteral(getAtom().substitute(substitution), positive);
+		return new ExternalLiteral((ExternalAtom) getAtom().substitute(substitution), positive);
 	}
 
 	@Override

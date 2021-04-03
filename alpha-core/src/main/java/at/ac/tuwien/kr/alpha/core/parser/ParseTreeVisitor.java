@@ -53,6 +53,8 @@ import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead;
 import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead.ChoiceElement;
@@ -64,7 +66,6 @@ import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.atoms.ComparisonAtomImpl;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
@@ -72,10 +73,8 @@ import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.core.common.BasicAnswerSet;
-import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
@@ -451,7 +450,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public ComparisonAtomImpl visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
+	public ComparisonAtom visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
 		// builtin_atom : term binop term;
 		return Atoms.newComparsionAtom(
 				(Term) visit(ctx.term(0)),
@@ -561,7 +560,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 		List<Term> outputTerms = visitTerms(ctx.output);
 
-		return new ExternalAtom(
+		return Atoms.newExternalAtom(
 				CorePredicate.getInstance(predicateName, outputTerms.size()),
 				interpretation,
 				visitTerms(ctx.input),

@@ -56,7 +56,7 @@ class ComparisonAtomImpl extends AbstractAtom implements ComparisonAtom {
 		this.predicate = operator.toPredicate();
 	}
 
-	public ComparisonAtomImpl(Term term1, Term term2, ComparisonOperator operator) {
+	ComparisonAtomImpl(Term term1, Term term2, ComparisonOperator operator) {
 		this(Arrays.asList(term1, term2), operator);
 	}
 

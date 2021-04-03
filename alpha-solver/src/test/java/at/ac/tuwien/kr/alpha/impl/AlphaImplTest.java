@@ -69,7 +69,6 @@ import at.ac.tuwien.kr.alpha.api.solver.heuristics.Heuristic;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.core.common.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
@@ -317,7 +316,7 @@ public class AlphaImplTest {
 
 		BasicRule rule = new BasicRule(
 				new NormalHeadImpl(Atoms.newBasicAtom(CorePredicate.getInstance("p", 1), Terms.newConstant("x"))),
-				singletonList(new ExternalLiteral(new ExternalAtom(CorePredicate.getInstance("thinger", 1),
+				singletonList(new ExternalLiteral(Atoms.newExternalAtom(CorePredicate.getInstance("thinger", 1),
 						new MethodPredicateInterpretation(this.getClass().getMethod("thinger", Thingy.class)), singletonList(Terms.newConstant(thingy)),
 						emptyList()), true)));
 
