@@ -14,9 +14,9 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
@@ -39,10 +39,10 @@ public class LiteralInstantiationStrategyTest {
 		workingMemory.initialize(p);
 		workingMemory.addInstance(Atoms.newBasicAtom(p, Terms.newSymbolicConstant("a")), true);
 		LiteralInstantiationStrategy strategy = new WorkingMemoryBasedInstantiationStrategy(workingMemory);
-		Literal positiveAcceptedLiteral = new BasicLiteral(
+		Literal positiveAcceptedLiteral = Literals.fromAtom(
 				Atoms.newBasicAtom(p, Terms.newSymbolicConstant("a")), true);
 		Assert.assertEquals(AssignmentStatus.TRUE, strategy.getTruthForGroundLiteral(positiveAcceptedLiteral));
-		Literal negativeAcceptedLiteral = new BasicLiteral(
+		Literal negativeAcceptedLiteral = Literals.fromAtom(
 				Atoms.newBasicAtom(p, Terms.newSymbolicConstant("b")), false);
 		Assert.assertEquals(AssignmentStatus.TRUE, strategy.getTruthForGroundLiteral(negativeAcceptedLiteral));
 	}
@@ -54,10 +54,10 @@ public class LiteralInstantiationStrategyTest {
 		workingMemory.initialize(p);
 		workingMemory.addInstance(Atoms.newBasicAtom(p, Terms.newSymbolicConstant("a")), true);
 		LiteralInstantiationStrategy strategy = new WorkingMemoryBasedInstantiationStrategy(workingMemory);
-		Literal positiveRejectedLiteral = new BasicLiteral(
+		Literal positiveRejectedLiteral = Literals.fromAtom(
 				Atoms.newBasicAtom(p, Terms.newSymbolicConstant("b")), true);
 		Assert.assertEquals(AssignmentStatus.FALSE, strategy.getTruthForGroundLiteral(positiveRejectedLiteral));
-		Literal negativeRejectedLiteral = new BasicLiteral(
+		Literal negativeRejectedLiteral = Literals.fromAtom(
 				Atoms.newBasicAtom(p, Terms.newSymbolicConstant("a")), false);
 		Assert.assertEquals(AssignmentStatus.FALSE, strategy.getTruthForGroundLiteral(negativeRejectedLiteral));
 	}
@@ -84,7 +84,7 @@ public class LiteralInstantiationStrategyTest {
 		strategy.setCurrentAssignment(null);
 		
 
-		AssignmentStatus assignmentStatus = strategy.getTruthForGroundLiteral(new BasicLiteral(pOfA, true));
+		AssignmentStatus assignmentStatus = strategy.getTruthForGroundLiteral(Literals.fromAtom(pOfA, true));
 		Assert.assertEquals(AssignmentStatus.TRUE, assignmentStatus);
 		Assert.assertTrue(staleSet.isEmpty());
 	}
@@ -113,7 +113,7 @@ public class LiteralInstantiationStrategyTest {
 		strategy.setStaleWorkingMemoryEntries(staleSet);
 		strategy.setCurrentAssignment(null);
 
-		List<ImmutablePair<Substitution, AssignmentStatus>> result = strategy.getAcceptedSubstitutions(new BasicLiteral(nonGroundAtom, true),
+		List<ImmutablePair<Substitution, AssignmentStatus>> result = strategy.getAcceptedSubstitutions(Literals.fromAtom(nonGroundAtom, true),
 				new BasicSubstitution());
 		Assert.assertEquals(1, result.size());
 		ImmutablePair<Substitution, AssignmentStatus> substitutionInfo = result.get(0);
@@ -148,7 +148,7 @@ public class LiteralInstantiationStrategyTest {
 		strategy.setStaleWorkingMemoryEntries(staleSet);
 		strategy.setCurrentAssignment(assignment);
 
-		AssignmentStatus assignmentStatus = strategy.getTruthForGroundLiteral(new BasicLiteral(pOfA, true));
+		AssignmentStatus assignmentStatus = strategy.getTruthForGroundLiteral(Literals.fromAtom(pOfA, true));
 		Assert.assertEquals(AssignmentStatus.UNASSIGNED, assignmentStatus);
 
 		Assert.assertEquals(1, staleSet.size());
@@ -181,7 +181,7 @@ public class LiteralInstantiationStrategyTest {
 		strategy.setStaleWorkingMemoryEntries(staleSet);
 		strategy.setCurrentAssignment(assignment);
 
-		AssignmentStatus assignmentStatus = strategy.getTruthForGroundLiteral(new BasicLiteral(pOfA, true));
+		AssignmentStatus assignmentStatus = strategy.getTruthForGroundLiteral(Literals.fromAtom(pOfA, true));
 		Assert.assertEquals(AssignmentStatus.FALSE, assignmentStatus);
 
 		Assert.assertEquals(1, staleSet.size());
@@ -214,7 +214,7 @@ public class LiteralInstantiationStrategyTest {
 		strategy.setStaleWorkingMemoryEntries(staleSet);
 		strategy.setCurrentAssignment(assignment);
 		
-		AssignmentStatus assignmentStatus = strategy.getTruthForGroundLiteral(new BasicLiteral(pOfA, true));
+		AssignmentStatus assignmentStatus = strategy.getTruthForGroundLiteral(Literals.fromAtom(pOfA, true));
 		Assert.assertEquals(AssignmentStatus.TRUE, assignmentStatus);
 
 		Assert.assertTrue(staleSet.isEmpty());
@@ -246,7 +246,7 @@ public class LiteralInstantiationStrategyTest {
 		strategy.setStaleWorkingMemoryEntries(staleSet);
 		strategy.setCurrentAssignment(assignment);
 
-		AssignmentStatus assignmentStatus = strategy.getTruthForGroundLiteral(new BasicLiteral(pOfA, true));
+		AssignmentStatus assignmentStatus = strategy.getTruthForGroundLiteral(Literals.fromAtom(pOfA, true));
 		Assert.assertEquals(AssignmentStatus.TRUE, assignmentStatus);
 
 		Assert.assertTrue(staleSet.isEmpty());
@@ -278,7 +278,7 @@ public class LiteralInstantiationStrategyTest {
 		strategy.setStaleWorkingMemoryEntries(staleSet);
 		strategy.setCurrentAssignment(assignment);
 
-		List<ImmutablePair<Substitution, AssignmentStatus>> result = strategy.getAcceptedSubstitutions(new BasicLiteral(nonGroundAtom, true),
+		List<ImmutablePair<Substitution, AssignmentStatus>> result = strategy.getAcceptedSubstitutions(Literals.fromAtom(nonGroundAtom, true),
 				new BasicSubstitution());
 		Assert.assertEquals(1, result.size());
 		ImmutablePair<Substitution, AssignmentStatus> substitutionInfo = result.get(0);
@@ -321,7 +321,7 @@ public class LiteralInstantiationStrategyTest {
 		strategy.setStaleWorkingMemoryEntries(staleSet);
 		strategy.setCurrentAssignment(assignment);
 
-		List<ImmutablePair<Substitution, AssignmentStatus>> result = strategy.getAcceptedSubstitutions(new BasicLiteral(nonGroundAtom, true),
+		List<ImmutablePair<Substitution, AssignmentStatus>> result = strategy.getAcceptedSubstitutions(Literals.fromAtom(nonGroundAtom, true),
 				new BasicSubstitution());
 		Assert.assertEquals(1, result.size());
 		ImmutablePair<Substitution, AssignmentStatus> substitutionInfo = result.get(0);
@@ -362,7 +362,7 @@ public class LiteralInstantiationStrategyTest {
 		strategy.setStaleWorkingMemoryEntries(staleSet);
 		strategy.setCurrentAssignment(assignment);
 
-		List<ImmutablePair<Substitution, AssignmentStatus>> result = strategy.getAcceptedSubstitutions(new BasicLiteral(nonGroundAtom, true),
+		List<ImmutablePair<Substitution, AssignmentStatus>> result = strategy.getAcceptedSubstitutions(Literals.fromAtom(nonGroundAtom, true),
 				new BasicSubstitution());
 		Assert.assertTrue(result.isEmpty());
 

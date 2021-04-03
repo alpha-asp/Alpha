@@ -7,11 +7,12 @@ import java.util.Set;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.literals.AbstractLiteral;
 
 /**
  * Copyright (c) 2018, the Alpha Team.
  */
-public class EnumerationLiteral extends BasicLiteral {
+public class EnumerationLiteral extends AbstractLiteral {
 
 	public EnumerationLiteral(EnumerationAtom atom) {
 		super(atom, true);
@@ -34,7 +35,7 @@ public class EnumerationLiteral extends BasicLiteral {
 
 	@Override
 	public Set<VariableTerm> getBindingVariables() {
-		return Collections.singleton((VariableTerm)getTerms().get(2));
+		return Collections.singleton((VariableTerm) getTerms().get(2));
 	}
 
 	@Override
@@ -51,7 +52,7 @@ public class EnumerationLiteral extends BasicLiteral {
 		return ret;
 
 	}
-	
+
 	public Substitution addEnumerationIndexToSubstitution(Substitution partialSubstitution) {
 		return this.getAtom().addEnumerationIndexToSubstitution(partialSubstitution);
 	}

@@ -13,10 +13,9 @@ import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationLiteral;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
@@ -31,7 +30,7 @@ public class LiteralInstantiatorTest {
 	@Test
 	public void instantiateSatisfiedFixedInterpretationLiteral() {
 		ComparisonAtom equalsThree = Atoms.newComparsionAtom(Terms.newConstant(3), Terms.newVariable("THREE"), ComparisonOperators.EQ);
-		Literal lit = new ComparisonLiteral(equalsThree, true);
+		Literal lit = Literals.fromAtom(equalsThree, true);
 		Substitution substitution = new BasicSubstitution();
 		LiteralInstantiator instantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(null));
 		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution);
@@ -47,7 +46,7 @@ public class LiteralInstantiatorTest {
 	@Test
 	public void instantiateUnsatisfiedFixedInterpretationLiteral() {
 		ComparisonAtom fiveEqualsThree = Atoms.newComparsionAtom(Terms.newVariable("FIVE"), Terms.newVariable("THREE"), ComparisonOperators.EQ);
-		Literal lit = new ComparisonLiteral(fiveEqualsThree, true);
+		Literal lit = Literals.fromAtom(fiveEqualsThree, true);
 		Substitution substitution = new BasicSubstitution();
 		substitution.put(Terms.newVariable("FIVE"), Terms.newConstant(5));
 		substitution.put(Terms.newVariable("THREE"), Terms.newConstant(3));
@@ -83,7 +82,7 @@ public class LiteralInstantiatorTest {
 		workingMemory.addInstance(Atoms.newBasicAtom(p, Terms.newSymbolicConstant("x"), Terms.newSymbolicConstant("y")), true);
 		VariableTerm x = Terms.newVariable("X");
 		VariableTerm y = Terms.newVariable("Y");
-		Literal lit = new BasicLiteral(Atoms.newBasicAtom(p, x, y), true);
+		Literal lit = Literals.fromAtom(Atoms.newBasicAtom(p, x, y), true);
 		Substitution substitution = new BasicSubstitution();
 		substitution.put(x, Terms.newSymbolicConstant("x"));
 		substitution.put(y, Terms.newSymbolicConstant("y"));
@@ -106,7 +105,7 @@ public class LiteralInstantiatorTest {
 		workingMemory.initialize(p);
 		VariableTerm x = Terms.newVariable("X");
 		VariableTerm y = Terms.newVariable("Y");
-		Literal lit = new BasicLiteral(Atoms.newBasicAtom(p, x, y), true);
+		Literal lit = Literals.fromAtom(Atoms.newBasicAtom(p, x, y), true);
 		Substitution substitution = new BasicSubstitution();
 		substitution.put(x, Terms.newSymbolicConstant("x"));
 		substitution.put(y, Terms.newSymbolicConstant("y"));
@@ -127,7 +126,7 @@ public class LiteralInstantiatorTest {
 		workingMemory.addInstance(Atoms.newBasicAtom(p, Terms.newSymbolicConstant("x"), Terms.newSymbolicConstant("z")), true);
 		VariableTerm x = Terms.newVariable("X");
 		VariableTerm y = Terms.newVariable("Y");
-		Literal lit = new BasicLiteral(Atoms.newBasicAtom(p, x, y), true);
+		Literal lit = Literals.fromAtom(Atoms.newBasicAtom(p, x, y), true);
 		Substitution substitution = new BasicSubstitution();
 		substitution.put(x, Terms.newSymbolicConstant("x"));
 		LiteralInstantiator instantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(workingMemory));

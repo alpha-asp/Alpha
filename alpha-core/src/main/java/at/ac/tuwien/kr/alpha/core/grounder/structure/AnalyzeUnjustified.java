@@ -26,8 +26,8 @@ import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.literals.ComparisonLiteralImpl;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
-import at.ac.tuwien.kr.alpha.core.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
@@ -208,7 +208,7 @@ public class AnalyzeUnjustified {
 		int chosenLiteralPos = 0;
 		// Find a body literal that is not a ComparisonLiteral, because these do not generate/have atoms assigned.
 		for (int i = 0; i < vB.size(); i++) {
-			if (!(vB.get(i) instanceof ComparisonLiteral)) {
+			if (!(vB.get(i) instanceof ComparisonLiteralImpl)) {
 				chosenLiteralPos = i;
 				break;
 			}

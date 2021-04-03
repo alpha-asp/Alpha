@@ -48,9 +48,9 @@ import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
@@ -137,7 +137,7 @@ public class SubstitutionTest {
 	private void substituteBasicAtomLiteral(boolean negated) {
 		Predicate p = CorePredicate.getInstance("p", 2);
 		BasicAtom atom = Atoms.newBasicAtom(p, Arrays.asList(X, Y));
-		Literal literal = new BasicLiteral(atom, !negated);
+		Literal literal = Literals.fromAtom(atom, !negated);
 		Substitution substitution = new BasicSubstitution();
 		substitution.put(X, A);
 		substitution.put(Y, B);

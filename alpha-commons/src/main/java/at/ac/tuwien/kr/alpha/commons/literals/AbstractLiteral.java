@@ -25,7 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.atoms;
+package at.ac.tuwien.kr.alpha.commons.literals;
 
 import java.util.List;
 import java.util.Set;
@@ -44,12 +44,12 @@ import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
  *
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public abstract class CoreLiteral implements Literal {
+public abstract class AbstractLiteral implements Literal {
 
 	protected final Atom atom;
 	protected final boolean positive;
 
-	public CoreLiteral(Atom atom, boolean positive) {
+	public AbstractLiteral(Atom atom, boolean positive) {
 		this.atom = atom;
 		this.positive = positive;
 	}

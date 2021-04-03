@@ -55,10 +55,10 @@ import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.commons.atoms.ComparisonAtomImpl;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
@@ -375,7 +375,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			// Find ground literals in the body that have been assigned false and justify those.
 			for (Literal bodyLiteral : nonGroundRule.getBody()) {
 				Atom groundAtom = bodyLiteral.getAtom().substitute(groundingSubstitution);
-				if (groundAtom instanceof ComparisonAtomImpl || analyzingGrounder.isFact(groundAtom)) {
+				if (groundAtom instanceof ComparisonAtom || analyzingGrounder.isFact(groundAtom)) {
 					// Facts and ComparisonAtoms are always true, no justification needed.
 					continue;
 				}

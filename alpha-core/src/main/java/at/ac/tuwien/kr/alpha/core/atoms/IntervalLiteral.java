@@ -35,9 +35,11 @@ import java.util.Set;
 import com.google.common.collect.Sets;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.programs.literals.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.literals.AbstractLiteral;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
@@ -45,7 +47,7 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 /**
  * @see IntervalAtom
  */
-public class IntervalLiteral extends FixedInterpretationLiteral {
+public class IntervalLiteral extends AbstractLiteral implements FixedInterpretationLiteral {
 
 	public IntervalLiteral(IntervalAtom atom) {
 		super(atom, true);
@@ -55,7 +57,7 @@ public class IntervalLiteral extends FixedInterpretationLiteral {
 	public IntervalAtom getAtom() {
 		return (IntervalAtom) atom;
 	}
-	
+
 	@Override
 	public IntervalLiteral negate() {
 		throw new UnsupportedOperationException("IntervalLiteral cannot be negated");

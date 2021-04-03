@@ -35,6 +35,7 @@ import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
@@ -83,7 +84,7 @@ public class ChoiceAtom implements Atom {
 	}
 
 	@Override
-	public CoreLiteral toLiteral(boolean negated) {
+	public Literal toLiteral(boolean negated) {
 		throw new UnsupportedOperationException("ChoiceAtom cannot be literalized");
 	}
 

@@ -55,9 +55,9 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.atoms.AggregateAtomImpl;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.literals.AggregateLiteralImpl;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperatorImpl;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
@@ -197,10 +197,10 @@ public class ParserTest {
 	@Test
 	public void cardinalityAggregate() throws IOException {
 		ASPCore2Program parsedProgram = parser.parse("num(K) :-  K <= #count {X,Y,Z : p(X,Y,Z) }, dom(K).");
-		Optional<Literal> optionalBodyElement = parsedProgram.getRules().get(0).getBody().stream().filter((lit) -> lit instanceof AggregateLiteral).findFirst();
+		Optional<Literal> optionalBodyElement = parsedProgram.getRules().get(0).getBody().stream().filter((lit) -> lit instanceof AggregateLiteralImpl).findFirst();
 		assertTrue(optionalBodyElement.isPresent());
 		Literal bodyElement = optionalBodyElement.get();
-		AggregateLiteral parsedAggregate = (AggregateLiteral) bodyElement;
+		AggregateLiteralImpl parsedAggregate = (AggregateLiteralImpl) bodyElement;
 		VariableTerm x = Terms.newVariable("X");
 		VariableTerm y = Terms.newVariable("Y");
 		VariableTerm z = Terms.newVariable("Z");

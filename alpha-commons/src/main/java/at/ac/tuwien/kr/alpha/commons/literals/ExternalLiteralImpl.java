@@ -25,7 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.atoms;
+package at.ac.tuwien.kr.alpha.commons.literals;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,24 +35,26 @@ import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 
 /**
  * Contains a potentially negated {@link ExternalAtomImpl}.
  */
-public class ExternalLiteral extends FixedInterpretationLiteral {
+class ExternalLiteralImpl extends AbstractLiteral implements ExternalLiteral {
 
-	public ExternalLiteral(ExternalAtom atom, boolean positive) {
+	ExternalLiteralImpl(ExternalAtom atom, boolean positive) {
 		super(atom, positive);
 	}
 
 	@Override
 	public ExternalAtom getAtom() {
-		return (ExternalAtom) atom;
+		return (ExternalAtom) this.getAtom();
 	}
 
 	/**
@@ -60,16 +62,16 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 	 * is inverted
 	 */
 	@Override
-	public ExternalLiteral negate() {
-		return new ExternalLiteral(getAtom(), !positive);
+	public ExternalLiteralImpl negate() {
+		return new ExternalLiteralImpl(getAtom(), this.isNegated());
 	}
 
 	/**
 	 * @see AbstractAtom#substitute(BasicSubstitution)
 	 */
 	@Override
-	public ExternalLiteral substitute(Substitution substitution) {
-		return new ExternalLiteral((ExternalAtom) getAtom().substitute(substitution), positive);
+	public ExternalLiteralImpl substitute(Substitution substitution) {
+		return new ExternalLiteralImpl((ExternalAtom) getAtom().substitute(substitution), !this.isNegated());
 	}
 
 	@Override
@@ -78,7 +80,7 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 		// and there are no binding variables (like for ordinary atoms).
 		// If the external atom is positive, then variables of output are binding.
 
-		if (!positive) {
+		if (this.isNegated()) {
 			return Collections.emptySet();
 		}
 
@@ -109,7 +111,7 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 
 		// If the external atom is negative, then all variables of input and output are
 		// non-binding.
-		if (!positive) {
+		if (this.isNegated()) {
 			for (Term out : output) {
 				if (out instanceof VariableTerm) {
 					nonbindingVariables.add((VariableTerm) out);

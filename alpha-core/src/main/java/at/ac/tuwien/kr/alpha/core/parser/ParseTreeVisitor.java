@@ -55,6 +55,7 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead;
 import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead.ChoiceElement;
@@ -67,13 +68,9 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.ComparisonLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.core.common.BasicAnswerSet;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
@@ -459,15 +456,15 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public CoreLiteral visitNaf_literal(ASPCore2Parser.Naf_literalContext ctx) {
+	public Literal visitNaf_literal(ASPCore2Parser.Naf_literalContext ctx) {
 		// naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
 		boolean isCurrentLiteralNegated = ctx.NAF() != null;
 		if (ctx.builtin_atom() != null) {
-			return new ComparisonLiteral(visitBuiltin_atom(ctx.builtin_atom()), !isCurrentLiteralNegated);
+			return Literals.fromAtom(visitBuiltin_atom(ctx.builtin_atom()), !isCurrentLiteralNegated);
 		} else if (ctx.classical_literal() != null) {
-			return new BasicLiteral(visitClassical_literal(ctx.classical_literal()), !isCurrentLiteralNegated);
+			return Literals.fromAtom(visitClassical_literal(ctx.classical_literal()), !isCurrentLiteralNegated);
 		} else if (ctx.external_atom() != null) {
-			return new ExternalLiteral(visitExternal_atom(ctx.external_atom()), !isCurrentLiteralNegated);
+			return Literals.fromAtom(visitExternal_atom(ctx.external_atom()), !isCurrentLiteralNegated);
 		}
 		throw notSupported(ctx);
 	}

@@ -25,7 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.atoms;
+package at.ac.tuwien.kr.alpha.commons.literals;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -36,10 +36,12 @@ import java.util.Set;
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
@@ -47,21 +49,21 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 /**
  * Contains a potentially negated {@link ComparisonAtomImpl}.
  */
-public class ComparisonLiteral extends FixedInterpretationLiteral {
+class ComparisonLiteralImpl extends AbstractLiteral implements ComparisonLiteral {
 	private final boolean isNormalizedEquality;
 
-	public ComparisonLiteral(ComparisonAtom atom, boolean positive) {
+	ComparisonLiteralImpl(ComparisonAtom atom, boolean positive) {
 		super(atom, positive);
 		final ComparisonOperator operator = getAtom().getOperator();
 		isNormalizedEquality = (positive && operator == ComparisonOperators.EQ)
-			|| (!positive && operator == ComparisonOperators.NE);
+				|| (!positive && operator == ComparisonOperators.NE);
 	}
-	
+
 	@Override
 	public ComparisonAtom getAtom() {
 		return (ComparisonAtom) atom;
 	}
-	
+
 	public boolean isNormalizedEquality() {
 		return isNormalizedEquality;
 	}
@@ -70,16 +72,16 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 	 * Returns a new copy of this literal whose {@link Literal#isNegated()} status is inverted
 	 */
 	@Override
-	public ComparisonLiteral negate() {
-		return new ComparisonLiteral(getAtom(), !positive);
+	public ComparisonLiteralImpl negate() {
+		return new ComparisonLiteralImpl(getAtom(), !positive);
 	}
 
 	/**
 	 * @see AbstractAtom#substitute(BasicSubstitution)
 	 */
 	@Override
-	public ComparisonLiteral substitute(Substitution substitution) {
-		return (ComparisonLiteral) getAtom().substitute(substitution).toLiteral(positive);
+	public ComparisonLiteralImpl substitute(Substitution substitution) {
+		return (ComparisonLiteralImpl) getAtom().substitute(substitution).toLiteral(positive);
 	}
 
 	private boolean assignable(Term term) {
@@ -177,7 +179,8 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 		extendedSubstitution.put(variable, resultTerm);
 		return Collections.singletonList(extendedSubstitution);
 	}
-	
+
+	@Override
 	public boolean isLeftOrRightAssigning() {
 		final Term left = getTerms().get(0);
 		final Term right = getTerms().get(1);
@@ -197,7 +200,7 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 	}
 
 	private boolean compare(Term x, Term y) {
-		if(this.isNegated()) {
+		if (this.isNegated()) {
 			return getAtom().getOperator().negate().compare(x, y);
 		} else {
 			return getAtom().getOperator().compare(x, y);

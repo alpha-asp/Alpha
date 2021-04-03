@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.atoms;
+package at.ac.tuwien.kr.alpha.commons.literals;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -6,15 +6,18 @@ import java.util.Set;
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 
 /**
  * Copyright (c) 2018, the Alpha Team.
  */
-public class AggregateLiteral extends CoreLiteral {
-	public AggregateLiteral(AggregateAtom atom, boolean positive) {
+class AggregateLiteralImpl extends AbstractLiteral implements AggregateLiteral {
+	
+	AggregateLiteralImpl(AggregateAtom atom, boolean positive) {
 		super(atom, positive);
 	}
 
@@ -24,15 +27,15 @@ public class AggregateLiteral extends CoreLiteral {
 	}
 
 	@Override
-	public AggregateLiteral negate() {
-		return new AggregateLiteral(getAtom(), !positive);
+	public AggregateLiteralImpl negate() {
+		return new AggregateLiteralImpl(getAtom(), !positive);
 	}
 
 	/**
 	 * @see AbstractAtom#substitute(Substitution)
 	 */
 	@Override
-	public AggregateLiteral substitute(Substitution substitution) {
+	public AggregateLiteralImpl substitute(Substitution substitution) {
 		//return new AggregateLiteral(getAtom().substitute(substitution), positive);
 		// TODO either remove substitute method from abstract type or don't extend
 		throw new UnsupportedOperationException("Cannot substitute AggregateLiteral!");

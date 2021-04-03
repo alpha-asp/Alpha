@@ -41,7 +41,8 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 /**
  * An Atom is the common superclass of all representations of ASP atoms used by Alpha.
  */
-abstract class AbstractAtom implements Atom {
+// TODO make public as implementation template?
+public abstract class AbstractAtom implements Atom {
 
 	/**
 	 * Creates a new Atom that represents this Atom, but has the given term list instead.

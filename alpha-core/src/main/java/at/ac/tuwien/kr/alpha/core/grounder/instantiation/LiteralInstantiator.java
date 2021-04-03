@@ -32,12 +32,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
+import at.ac.tuwien.kr.alpha.api.programs.literals.ExternalLiteral;
+import at.ac.tuwien.kr.alpha.api.programs.literals.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
-import at.ac.tuwien.kr.alpha.core.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.ExternalLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.IntervalLiteral;
 
 /**
