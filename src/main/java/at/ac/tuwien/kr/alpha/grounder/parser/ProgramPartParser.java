@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020, the Alpha Team.
+ * Copyright (c) 2018-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 
 import at.ac.tuwien.kr.alpha.antlr.AlphaASPLexer;
 import at.ac.tuwien.kr.alpha.antlr.AlphaASPParser;
+import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -61,6 +62,11 @@ public class ProgramPartParser {
 	public Literal parseLiteral(String s) {
 		final AlphaASPParser parser = getParser(s);
 		return (Literal)parse(parser.naf_literal());
+	}
+
+	public HeuristicDirective parseHeuristicDirective(String s) {
+		final AlphaASPParser parser = getParser(s);
+		return (HeuristicDirective)parse(parser.directive_heuristic());
 	}
 
 	private AlphaASPParser getParser(String s) {

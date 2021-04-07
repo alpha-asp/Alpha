@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Siemens AG
+ * Copyright (c) 2020-2021 Siemens AG
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@ import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.junit.Test;
 
@@ -38,16 +39,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.asSet;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 /**
- * Tests {@link HeuristicDirectiveEliminateAnySignConditions}.
+ * Tests {@link SignSetTransformation}.
  */
-public class HeuristicDirectiveEliminateAnySignConditionsTest {
+public class SignSetTransformationTest {
 	private final ProgramParser parser = new ProgramParser();
 
 	@Test
@@ -59,7 +58,7 @@ public class HeuristicDirectiveEliminateAnySignConditionsTest {
 		final Collection<Directive> directivesBeforeTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
 		assertEquals(1, directivesBeforeTransformation.size());
 		final HeuristicDirective originalHeuristicDirective = (HeuristicDirective) directivesBeforeTransformation.iterator().next();
-		program = new HeuristicDirectiveEliminateAnySignConditions().apply(program);
+		program = new SignSetTransformation().apply(program);
 		final Collection<Directive> directivesAfterTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
 		assertEquals(2, directivesAfterTransformation.size());
 		final Set<Set<ThriceTruth>> newSignSets = new HashSet<>();
@@ -82,7 +81,7 @@ public class HeuristicDirectiveEliminateAnySignConditionsTest {
 		final Collection<Directive> directivesBeforeTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
 		assertEquals(1, directivesBeforeTransformation.size());
 		final HeuristicDirective originalHeuristicDirective = (HeuristicDirective) directivesBeforeTransformation.iterator().next();
-		program = new HeuristicDirectiveEliminateAnySignConditions().apply(program);
+		program = new SignSetTransformation().apply(program);
 
 		final Collection<Directive> directivesAfterTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
 		assertEquals(1, directivesAfterTransformation.size());
@@ -105,9 +104,17 @@ public class HeuristicDirectiveEliminateAnySignConditionsTest {
 		final Collection<Directive> directivesBeforeTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
 		assertEquals(1, directivesBeforeTransformation.size());
 		final HeuristicDirective originalHeuristicDirective = (HeuristicDirective) directivesBeforeTransformation.iterator().next();
-		program = new HeuristicDirectiveEliminateAnySignConditions().apply(program);
+		program = new SignSetTransformation().apply(program);
 		final Collection<Directive> directivesAfterTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
 		assertEquals(4, directivesAfterTransformation.size());
+
+		final ProgramPartParser programPartParser = new ProgramPartParser();
+		final Collection<Directive> expected = new HashSet<>();
+		expected.add(programPartParser.parseHeuristicDirective("#heuristic b(N) : MT a(N), MT a(Nm1), Nm1=N-1. [N@2]"));
+		expected.add(programPartParser.parseHeuristicDirective("#heuristic b(N) : MT a(N), F  a(Nm1), Nm1=N-1. [N@2]"));
+		expected.add(programPartParser.parseHeuristicDirective("#heuristic b(N) : F  a(N), MT a(Nm1), Nm1=N-1. [N@2]"));
+		expected.add(programPartParser.parseHeuristicDirective("#heuristic b(N) : F  a(N), F  a(Nm1), Nm1=N-1. [N@2]"));
+		assertEquals(expected, new HashSet<>(directivesAfterTransformation));
 	}
 
 	@Test
@@ -118,13 +125,56 @@ public class HeuristicDirectiveEliminateAnySignConditionsTest {
 
 		final Collection<Directive> directivesBeforeTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
 		assertEquals(1, directivesBeforeTransformation.size());
-		program = new HeuristicDirectiveEliminateAnySignConditions().apply(program);
+		program = new SignSetTransformation().apply(program);
 
 		final Collection<Directive> directivesAfterTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
 		assertEquals(1, directivesAfterTransformation.size());
 		final HeuristicDirective heuristicDirective = (HeuristicDirective) directivesAfterTransformation.iterator().next();
 		assertEquals(4, heuristicDirective.getBody().getBodyAtomsNegative().size());
 		assertEquals("TM a(N), Nm1 = N - 1, not TM b(N), not F b(N), not TM b(Nm1), not F b(Nm1)", heuristicDirective.getBody().toString());
+	}
+
+	/**
+	 * Tests Example 7 from our paper "Domain-Specific Heuristics in Answer Set Programming: A Declarative Non-Monotonic Approach"
+	 */
+	@Test
+	public void testExample7() {
+		InputProgram program = parser.parse("#heuristic h : FMT a, not FT b.");
+
+		final Collection<Directive> directivesBeforeTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
+		assertEquals(1, directivesBeforeTransformation.size());
+		program = new SignSetTransformation().apply(program);
+
+		final Collection<Directive> directivesAfterTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
+		assertEquals(2, directivesAfterTransformation.size());
+
+		final ProgramPartParser programPartParser = new ProgramPartParser();
+		final Collection<Directive> expected = new HashSet<>();
+		expected.add(programPartParser.parseHeuristicDirective("#heuristic h : F a, not F b, not T b."));
+		expected.add(programPartParser.parseHeuristicDirective("#heuristic h : MT a, not F b, not T b."));
+		assertEquals(expected, new HashSet<>(directivesAfterTransformation));
+	}
+
+	/**
+	 * Tests Example 8 from our paper "Domain-Specific Heuristics in Answer Set Programming: A Declarative Non-Monotonic Approach"
+	 */
+	@Test
+	public void testExample8() {
+		InputProgram program = parser.parse("#heuristic h : M a, not M b.");
+
+		final Collection<Directive> directivesBeforeTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
+		assertEquals(1, directivesBeforeTransformation.size());
+		program = new SignSetTransformation().apply(program);
+
+		final Collection<Directive> directivesAfterTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
+		assertEquals(3, directivesAfterTransformation.size());
+
+		final ProgramPartParser programPartParser = new ProgramPartParser();
+		final Collection<Directive> expected = new HashSet<>();
+		expected.add(programPartParser.parseHeuristicDirective("#heuristic h : MT a, F b, not T a."));
+		expected.add(programPartParser.parseHeuristicDirective("#heuristic h : MT a, T b, not T a."));
+		expected.add(programPartParser.parseHeuristicDirective("#heuristic h : MT a, not T a, not F b, not MT b."));
+		assertEquals(expected, new HashSet<>(directivesAfterTransformation));
 	}
 
 }

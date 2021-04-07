@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2020 Siemens AG
+ *  Copyright (c) 2021 Siemens AG
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -41,10 +41,10 @@ public class HeuristicSignSetUtil {
 
 	public static final int NUM_SIGN_SETS = 4;
 
-	private static final Set<ThriceTruth> SET_T = asSet(TRUE);
-	private static final Set<ThriceTruth> SET_TM = asSet(TRUE, MBT);
-	private static final Set<ThriceTruth> SET_M = asSet(MBT);
-	private static final Set<ThriceTruth> SET_F = asSet(FALSE);
+	public static final Set<ThriceTruth> SET_T = asSet(TRUE);
+	public static final Set<ThriceTruth> SET_TM = asSet(TRUE, MBT);
+	public static final Set<ThriceTruth> SET_M = asSet(MBT);
+	public static final Set<ThriceTruth> SET_F = asSet(FALSE);
 
 	private static final String NAME_SIGN_SET_T = "t";
 	private static final String NAME_SIGN_SET_TM = "tm";
@@ -85,6 +85,24 @@ public class HeuristicSignSetUtil {
 
 	public static String toName(Set<ThriceTruth> signSet) {
 		return SIGN_SET_TO_NAME.get(signSet);
+	}
+
+	/**
+	 * Transforms the given sign set to its canonical string representation.
+	 * In contrast to {@link #toName(Set)}, this works for arbitrary sign sets, not only for the standard ones.
+	 */
+	public static String toString(Set<ThriceTruth> signSet) {
+		final StringBuilder string = new StringBuilder();
+		if (signSet.contains(FALSE)) {
+			string.append(NAME_SIGN_SET_F);
+		}
+		if (signSet.contains(MBT)) {
+			string.append(NAME_SIGN_SET_M);
+		}
+		if (signSet.contains(TRUE)) {
+			string.append(NAME_SIGN_SET_T);
+		}
+		return string.toString();
 	}
 
 	public static Set<ThriceTruth> toSignSet(String name) {

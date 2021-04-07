@@ -70,18 +70,16 @@ public class GroundingOfHeuristicsTest {
 
 	@Test
 	public void testGenerateHeuristicNoGoods_GeneralCase() {
-		final InputProgram inputProgram = PROGRAM_PARSER.parse("{ a(0); a(1); a(2); a(3); a(4); a(5); a(6); a(7) }."
+		final InputProgram inputProgram = PROGRAM_PARSER.parse("{ a(0); a(1); a(2); a(3); a(4); a(5) }."
 				+ "{ b(N) } :- a(N)."
-				+ "#heuristic b(1) : T a(0), MT a(1), M a(2), F a(3), not T a(4), not MT a(5), not M a(6), not F a(7). [3@2]");
+				+ "#heuristic b(1) : T a(0), MT a(1), F a(2), not T a(3), not MT a(4), not F a(5). [3@2]");
 		final Set<String> expectedNoGoodsToString = asSet(
 				"*{-(HeuOn(\"0\", \"t\")), +(a(0))}",
 				"*{-(HeuOn(\"0\", \"tm\")), +(a(1))}",
-				"*{-(HeuOn(\"0\", \"m\")), +(a(2))}",
-				"*{-(HeuOn(\"0\", \"f\")), -(a(3))}",
-				"*{-(HeuOff(\"0\", \"t\")), +(a(4))}",
-				"*{-(HeuOff(\"0\", \"tm\")), +(a(5))}",
-				"*{-(HeuOff(\"0\", \"m\")), +(a(6))}",
-				"*{-(HeuOff(\"0\", \"f\")), -(a(7))}"
+				"*{-(HeuOn(\"0\", \"f\")), -(a(2))}",
+				"*{-(HeuOff(\"0\", \"t\")), +(a(3))}",
+				"*{-(HeuOff(\"0\", \"tm\")), +(a(4))}",
+				"*{-(HeuOff(\"0\", \"f\")), -(a(5))}"
 		);
 		testGenerateHeuristicNoGoods(inputProgram, expectedNoGoodsToString);
 	}
@@ -101,7 +99,7 @@ public class GroundingOfHeuristicsTest {
 	public void testGenerateHeuristicNoGoods_HandlingOfFacts_SkipLiteralPositiveM() {
 		final InputProgram inputProgram = PROGRAM_PARSER.parse("fact(1). fact(2)."
 				+ "{ guess(N) } :- fact(N)."
-				+ "#heuristic guess(2) : guess(1), M fact(1).");
+				+ "#heuristic guess(2) : guess(1), T fact(1).");
 		final Set<String> expectedNoGoodsToString = asSet(
 				"*{-(HeuOn(\"0\", \"tm\")), +(guess(1))}"
 		);
@@ -141,7 +139,7 @@ public class GroundingOfHeuristicsTest {
 	public void testGenerateHeuristicNoGoods_HandlingOfFacts_SkipRuleNegativeM() {
 		final InputProgram inputProgram = PROGRAM_PARSER.parse("fact(1). fact(2)."
 				+ "{ guess(N) } :- fact(N)."
-				+ "#heuristic guess(2) : guess(1), not M fact(1).");
+				+ "#heuristic guess(2) : guess(1), not T fact(1).");
 		final Set<String> expectedNoGoodsToString = Collections.emptySet();
 		testGenerateHeuristicNoGoods(inputProgram, expectedNoGoodsToString);
 	}
@@ -219,7 +217,7 @@ public class GroundingOfHeuristicsTest {
 	public void testGenerateHeuristicNoGoods_HandlingOfUnderivableAtoms_SkipLiteralNegativeM() {
 		final InputProgram inputProgram = PROGRAM_PARSER.parse("fact(1). fact(2)."
 				+ "{ guess(N) } :- fact(N)."
-				+ "#heuristic guess(2) : guess(1), not M fact(0).");
+				+ "#heuristic guess(2) : guess(1), not T fact(0).");
 		final Set<String> expectedNoGoodsToString = asSet(
 				"*{-(HeuOn(\"0\", \"tm\")), +(guess(1))}"
 		);

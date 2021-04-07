@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2020, the Alpha Team.
+ * Copyright (c) 2017-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -62,7 +62,7 @@ import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.isF;
 import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.isProcessable;
 import static at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom.off;
 import static at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom.on;
-import static at.ac.tuwien.kr.alpha.grounder.transformation.HeuristicDirectiveEliminateAnySignConditions.SET_F;
+import static at.ac.tuwien.kr.alpha.grounder.transformation.SignSetTransformation.SET_F;
 import static java.util.Collections.emptyList;
 
 public class ChoiceRecorder {

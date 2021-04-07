@@ -157,11 +157,11 @@ public class HeuristicInfluenceManager extends InfluenceManager {
 		 * 	<li>enabler[T] is assigned TRUE</li>
 		 * 	<li>enabler[TM] is assigned TRUE or MBT</li>
 		 * 	<li>enabler[M] is assigned MBT</li>
-		 * 	<li>enabler[F] is assigned FALSE</li>
+		 * 	<li>enabler[F] is assigned TRUE</li>
 		 * 	<li>disabler[T] is not assigned TRUE</li>
 		 * 	<li>disabler[TM] is assigned neither TRUE nor MBT</li>
 		 * 	<li>disabler[M] is not assigned MBT</li>
-		 * 	<li>disabler[F] is not assigned F.</li>
+		 * 	<li>disabler[F] is not assigned TRUE.</li>
 		 * </ul>
 		 * @return {@code true} iff all the above conditions hold and the heuristic's head atom is unassigned or assigned MBT.
 		 */

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2020 Siemens AG
+ *  Copyright (c) 2021 Siemens AG
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.common.heuristics;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,7 +41,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
-public class HeuristicDirectiveAtom {
+public class HeuristicDirectiveAtom implements Comparable<HeuristicDirectiveAtom> {
 
 	public static final ThriceTruth DEFAULT_HEAD_SIGN = TRUE;
 	public static final Set<ThriceTruth> DEFAULT_BODY_SIGNS = new HashSet<>(Arrays.asList(TRUE, MBT));
@@ -93,8 +94,11 @@ public class HeuristicDirectiveAtom {
 			return false;
 		}
 		HeuristicDirectiveAtom that = (HeuristicDirectiveAtom) o;
-		return signs.equals(that.signs) &&
-				atom.equals(that.atom);
+		if (this.signs == null || that.signs == null) {
+			return this.signs == that.signs && this.atom.equals(that.atom);
+		}
+		return HeuristicSignSetUtil.toString(this.signs).equals(HeuristicSignSetUtil.toString(that.signs)) &&
+				this.atom.equals(that.atom);
 	}
 
 	@Override
@@ -117,5 +121,17 @@ public class HeuristicDirectiveAtom {
 		}
 		sb.append(atom);
 		return sb.toString();
+	}
+
+	@Override
+	public int compareTo(HeuristicDirectiveAtom that) {
+		final String strSigns1 = this.signs == null ? null : HeuristicSignSetUtil.toString(this.signs);
+		final String strSigns2 = that.signs == null ? null : HeuristicSignSetUtil.toString(that.signs);
+		final int diffSignSets = StringUtils.compare(strSigns1, strSigns2);
+		if (diffSignSets != 0) {
+			return diffSignSets;
+		}
+		// transforming atoms to strings for comparison due to limitations of Term#priority (TODO: why these limitations?)
+		return StringUtils.compare(this.atom.toString(), that.atom.toString());
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020, the Alpha Team.
+ * Copyright (c) 2016-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -300,6 +300,9 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 	@Override
 	public Object visitDirective_enumeration(AlphaASPParser.Directive_enumerationContext ctx) {
 		// directive_enumeration : SHARP 'enum_predicate_is' ID DOT;
+		if (inlineDirectives == null) {
+			inlineDirectives = new InlineDirectives();
+		}
 		inlineDirectives.addDirective(InlineDirectives.DIRECTIVE.enum_predicate_is, new EnumerationDirective(ctx.ID().getText()));
 		return null;
 	}
@@ -614,8 +617,12 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 		final HeuristicDirectiveAtom head = visitHeuristic_head_atom(ctx.heuristic_head_atom());
 		final HeuristicDirectiveBody body = visitHeuristic_body(ctx.heuristic_body());
 		final WeightAtLevel weightAtLevel = visitHeuristic_weight_annotation(ctx.heuristic_weight_annotation());
-		inlineDirectives.addDirective(DIRECTIVE.heuristic, new HeuristicDirective(head, body, weightAtLevel));
-		return null;
+		if (inlineDirectives == null) {
+			inlineDirectives = new InlineDirectives();
+		}
+		HeuristicDirective heuristicDirective = new HeuristicDirective(head, body, weightAtLevel);
+		inlineDirectives.addDirective(DIRECTIVE.heuristic, heuristicDirective);
+		return heuristicDirective;
 	}
 
 	@Override

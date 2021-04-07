@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2020, the Alpha Team.
+ * Copyright (c) 2017-2021, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -44,6 +44,7 @@ import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -193,7 +194,7 @@ public class HeuristicAtom extends Atom {
 		);
 	}
 
-	private static FunctionTerm conditionToFunctionTerm(List<HeuristicDirectiveAtom> heuristicDirectiveAtoms, String topLevelFunctionName) {
+	private static FunctionTerm conditionToFunctionTerm(Collection<HeuristicDirectiveAtom> heuristicDirectiveAtoms, String topLevelFunctionName) {
 		final List<Term> terms = new ArrayList<>(heuristicDirectiveAtoms.size());
 		for (HeuristicDirectiveAtom heuristicDirectiveAtom : heuristicDirectiveAtoms) {
 			final Atom atom = heuristicDirectiveAtom.getAtom();
