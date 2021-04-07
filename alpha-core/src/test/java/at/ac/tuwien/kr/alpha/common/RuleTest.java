@@ -11,7 +11,7 @@ import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
-import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
+import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 
 /**
  * Copyright (c) 2018, the Alpha Team.
@@ -24,10 +24,10 @@ public class RuleTest {
 	public void renameVariables() {
 		String originalRule = "p(X,Y) :- a, f(Z) = 1, q(X,g(Y),Z), dom(A).";
 		Rule<Head> rule = parser.parse(originalRule).getRules().get(0);
-		CompiledRule normalRule = InternalRule.fromNormalRule(NormalRule.fromBasicRule(rule));
+		CompiledRule normalRule = InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(rule));
 		CompiledRule renamedRule = normalRule.renameVariables("_13");
 		Rule<Head> expectedRenamedRule = parser.parse("p(X_13, Y_13) :- a, f(Z_13) = 1, q(X_13, g(Y_13), Z_13), dom(A_13).").getRules().get(0);
-		CompiledRule expectedRenamedNormalRule = InternalRule.fromNormalRule(NormalRule.fromBasicRule(expectedRenamedRule));
+		CompiledRule expectedRenamedNormalRule = InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(expectedRenamedRule));
 		assertEquals(expectedRenamedNormalRule.toString(), renamedRule.toString());
 	}
 

@@ -11,10 +11,8 @@ import at.ac.tuwien.kr.alpha.api.config.InputConfig;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.CompiledProgram;
+import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.Program;
-import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
 
 public interface Alpha {
 
@@ -32,7 +30,7 @@ public interface Alpha {
 
 	Stream<AnswerSet> solve(ASPCore2Program program, java.util.function.Predicate<Predicate> filter);
 
-	Program<Rule<NormalHead>> normalizeProgram(ASPCore2Program program);
+	NormalProgram normalizeProgram(ASPCore2Program program);
 	
 	SystemConfig getConfig();
 	

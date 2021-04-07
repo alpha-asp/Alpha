@@ -50,7 +50,7 @@ import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
  * Represents a normal rule or a constraint for the semi-naive grounder.
  * A normal rule has no head atom if it represents a constraint, otherwise it has one atom in its head.
  */
-public class InternalRule extends NormalRule implements CompiledRule {
+public class InternalRule extends NormalRuleImpl implements CompiledRule {
 
 	private static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
 

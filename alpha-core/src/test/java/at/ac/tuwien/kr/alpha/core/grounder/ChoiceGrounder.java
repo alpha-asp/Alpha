@@ -64,7 +64,7 @@ import at.ac.tuwien.kr.alpha.core.common.IntIterator;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
-import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
+import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
@@ -118,8 +118,8 @@ public class ChoiceGrounder implements Grounder {
 	private static Atom atomBB = Atoms.newBasicAtom(Predicates.getPredicate("bb", 0));
 	private static BasicRule ruleAA = new BasicRule(new NormalHeadImpl(atomAA), Collections.singletonList(Atoms.newBasicAtom(Predicates.getPredicate("bb", 0)).toLiteral(false)));
 	private static BasicRule ruleBB = new BasicRule(new NormalHeadImpl(atomBB), Collections.singletonList(Atoms.newBasicAtom(Predicates.getPredicate("aa", 0)).toLiteral(false)));
-	private static Atom rule1 = new RuleAtom(InternalRule.fromNormalRule(NormalRule.fromBasicRule(ruleAA)), new BasicSubstitution());
-	private static Atom rule2 = new RuleAtom(InternalRule.fromNormalRule(NormalRule.fromBasicRule(ruleBB)), new BasicSubstitution());
+	private static Atom rule1 = new RuleAtom(InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(ruleAA)), new BasicSubstitution());
+	private static Atom rule2 = new RuleAtom(InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(ruleBB)), new BasicSubstitution());
 	private static Atom atomEnBR1 = ChoiceAtom.on(1);
 	private static Atom atomEnBR2 = ChoiceAtom.on(2);
 	private static Atom atomDisBR1 = ChoiceAtom.off(3);

@@ -38,7 +38,7 @@ import at.ac.tuwien.kr.alpha.api.rules.Rule;
  * Represents a non-ground rule or a constraint. A {@link BasicRule} has a general {@link Head}, meaning both choice heads and disjunctive
  * heads are permissible.
  * This implementation represents a rule after being parsed from a given ASP program, but before being transformed into a
- * {@link NormalRule}.
+ * {@link NormalRuleImpl}.
  */
 public class BasicRule extends AbstractRule<Head> implements Rule<Head> {
 

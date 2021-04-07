@@ -32,18 +32,19 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.IntervalAtom;
-import at.ac.tuwien.kr.alpha.core.programs.NormalProgram;
-import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
+import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
+import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
@@ -59,7 +60,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 	 * 
 	 * @return true if some interval occurs in the rule.
 	 */
-	private static Rule<NormalHead> rewriteIntervalSpecifications(Rule<NormalHead> rule) {
+	private static NormalRule rewriteIntervalSpecifications(NormalRule rule) {
 		// Collect all intervals and replace them with variables.
 		Map<VariableTerm, IntervalTerm> intervalReplacements = new LinkedHashMap<>();
 
@@ -80,7 +81,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		for (Map.Entry<VariableTerm, IntervalTerm> interval : intervalReplacements.entrySet()) {
 			rewrittenBody.add(new IntervalAtom(interval.getValue(), interval.getKey()).toLiteral());
 		}
-		return new NormalRule(rewrittenHead, rewrittenBody);
+		return new NormalRuleImpl(rewrittenHead, rewrittenBody);
 	}
 
 	/**
@@ -141,9 +142,9 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 	@Override
 	public NormalProgram apply(NormalProgram inputProgram) {
 		boolean didChange = false;
-		List<Rule<NormalHead>> rewrittenRules = new ArrayList<>();
-		for (Rule<NormalHead> rule : inputProgram.getRules()) {
-			Rule<NormalHead> rewrittenRule = rewriteIntervalSpecifications(rule);
+		List<NormalRule> rewrittenRules = new ArrayList<>();
+		for (NormalRule rule : inputProgram.getRules()) {
+			NormalRule rewrittenRule = rewriteIntervalSpecifications(rule);
 			rewrittenRules.add(rewrittenRule);
 
 			// If no rewriting occurred, the output rule is the same as the input to the rewriting.
@@ -155,6 +156,6 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		if (!didChange) {
 			return inputProgram;
 		}
-		return new NormalProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+		return new NormalProgramImpl(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
 	}
 }

@@ -4,11 +4,9 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
-import at.ac.tuwien.kr.alpha.api.programs.Program;
+import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
-import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph;
 import at.ac.tuwien.kr.alpha.core.depgraph.DependencyGraph;
 import at.ac.tuwien.kr.alpha.core.depgraph.StronglyConnectedComponentsAlgorithm;
@@ -30,7 +28,7 @@ public class AnalyzedProgram extends InternalProgram {
 		componentGraph = buildComponentGraph(dependencyGraph);
 	}
 
-	public static AnalyzedProgram analyzeNormalProgram(Program<Rule<NormalHead>> prog) {
+	public static AnalyzedProgram analyzeNormalProgram(NormalProgram prog) {
 		ImmutablePair<List<CompiledRule>, List<Atom>> rulesAndFacts = InternalProgram.internalizeRulesAndFacts(prog);
 		return new AnalyzedProgram(rulesAndFacts.left, rulesAndFacts.right);
 	}

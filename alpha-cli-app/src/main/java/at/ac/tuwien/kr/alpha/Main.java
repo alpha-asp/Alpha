@@ -51,9 +51,7 @@ import at.ac.tuwien.kr.alpha.api.config.InputConfig;
 import at.ac.tuwien.kr.alpha.api.impl.AlphaImpl;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.CompiledProgram;
-import at.ac.tuwien.kr.alpha.api.programs.Program;
-import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.app.ComponentGraphWriter;
 import at.ac.tuwien.kr.alpha.app.DependencyGraphWriter;
 import at.ac.tuwien.kr.alpha.app.config.CommandLineParser;
@@ -100,7 +98,7 @@ public class Main {
 			Main.bailOut("Failed to parse program.", e);
 		}
 
-		Program<Rule<NormalHead>> normalized = alpha.normalizeProgram(program);
+		NormalProgram normalized = alpha.normalizeProgram(program);
 		CompiledProgram preprocessed;
 		InputConfig inputCfg = cfg.getInputConfig();
 		if (!(inputCfg.isWriteDependencyGraph() || inputCfg.isWriteComponentGraph())) {

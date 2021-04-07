@@ -5,7 +5,6 @@ import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
-import at.ac.tuwien.kr.alpha.api.programs.Program;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
@@ -17,7 +16,7 @@ import at.ac.tuwien.kr.alpha.api.rules.Rule;
  *            implementation permits
  *            Copyright (c) 2019, the Alpha Team.
  */
-public abstract class AbstractProgram<R extends Rule<? extends Head>> implements Program<R> {
+public abstract class AbstractProgram<R extends Rule<? extends Head>> {
 
 	private final List<R> rules;
 	private final List<Atom> facts;
@@ -29,17 +28,14 @@ public abstract class AbstractProgram<R extends Rule<? extends Head>> implements
 		this.inlineDirectives = inlineDirectives;
 	}
 
-	@Override
 	public List<R> getRules() {
 		return Collections.unmodifiableList(rules);
 	}
 
-	@Override
 	public List<Atom> getFacts() {
 		return Collections.unmodifiableList(facts);
 	}
 
-	@Override
 	public InlineDirectives getInlineDirectives() {
 		return inlineDirectives;
 	}

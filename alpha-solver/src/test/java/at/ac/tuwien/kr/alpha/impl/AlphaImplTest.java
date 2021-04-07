@@ -60,11 +60,9 @@ import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.impl.AlphaImpl;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.CompiledProgram;
-import at.ac.tuwien.kr.alpha.api.programs.Program;
+import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.solver.heuristics.Heuristic;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
@@ -493,7 +491,7 @@ public class AlphaImplTest {
 		cfg.setEvaluateStratifiedPart(false);
 		Alpha system = new AlphaImpl(cfg);
 		ASPCore2Program input = system.readProgramString(progstr);
-		Program<Rule<NormalHead>> normal = system.normalizeProgram(input);
+		NormalProgram normal = system.normalizeProgram(input);
 		CompiledProgram preprocessed = system.performProgramPreprocessing(InternalProgram.fromNormalProgram(normal));
 		Assert.assertFalse("Preprocessed program contains fact derived from stratifiable rule, but should not!",
 				preprocessed.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("q", "a")));
@@ -508,7 +506,7 @@ public class AlphaImplTest {
 		SystemConfig cfg = new SystemConfig();
 		Alpha system = new AlphaImpl(cfg);
 		ASPCore2Program input = system.readProgramString(progstr);
-		Program<Rule<NormalHead>> normal = system.normalizeProgram(input);
+		NormalProgram normal = system.normalizeProgram(input);
 		CompiledProgram preprocessed = system.performProgramPreprocessing(InternalProgram.fromNormalProgram(normal));
 		Assert.assertTrue("Preprocessed program does not contain fact derived from stratifiable rule, but should!",
 				preprocessed.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("q", "a")));

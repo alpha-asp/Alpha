@@ -53,11 +53,9 @@ import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.CompiledProgram;
+import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
-import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
@@ -131,12 +129,13 @@ public class AlphaImpl implements Alpha {
 		return readProgramString(aspString, Collections.emptyMap());
 	}
 
-	// TODO make sure to adapt this without exposing internal imnplementation types
-	public Program<Rule<NormalHead>> normalizeProgram(ASPCore2Program program) {
+	@Override
+	public NormalProgram normalizeProgram(ASPCore2Program program) {
 		return new NormalizeProgramTransformation(config.isUseNormalizationGrid()).apply(program);
 	}
 
-	// TODO make sure to adapt this without exposing internal imnplementation types
+	// TODO make sure to adapt this without exposing internal implementation types
+	@Override
 	public CompiledProgram performProgramPreprocessing(CompiledProgram program) {
 		LOGGER.debug("Preprocessing InternalProgram!");
 		CompiledProgram retVal = program;
@@ -147,7 +146,7 @@ public class AlphaImpl implements Alpha {
 		return retVal;
 	}
 
-	// TODO make sure to adapt this without exposing internal imnplementation types
+	// TODO make sure to adapt this without exposing internal implementation types
 	public InternalProgram performProgramPreprocessing(AnalyzedProgram program) {
 		LOGGER.debug("Preprocessing AnalyzedProgram!");
 		InternalProgram retVal = program;
@@ -172,7 +171,7 @@ public class AlphaImpl implements Alpha {
 	 */
 	@Override
 	public Stream<AnswerSet> solve(ASPCore2Program program, java.util.function.Predicate<Predicate> filter) {
-		Program<Rule<NormalHead>> normalized = normalizeProgram(program);
+		NormalProgram normalized = normalizeProgram(program);
 		return solve(normalized, filter);
 	}
 
@@ -180,7 +179,7 @@ public class AlphaImpl implements Alpha {
 	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the
 	 * program analysis aren't of interest.
 	 */
-	public Stream<AnswerSet> solve(Program<Rule<NormalHead>> program, java.util.function.Predicate<Predicate> filter) {
+	public Stream<AnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
 		CompiledProgram preprocessed = performProgramPreprocessing(InternalProgram.fromNormalProgram(program));
 		return solve(preprocessed, filter);
 	}
@@ -217,6 +216,7 @@ public class AlphaImpl implements Alpha {
 	 *                set stream from the solver.
 	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program.
 	 */
+	@Override
 	public Solver prepareSolverFor(CompiledProgram program, java.util.function.Predicate<Predicate> filter) {
 		String grounderName = config.getGrounderName();
 		boolean doDebugChecks = config.isDebugInternalChecks();
@@ -231,6 +231,7 @@ public class AlphaImpl implements Alpha {
 		return SolverFactory.getInstance(config, atomStore, grounder);
 	}
 
+	@Override
 	public SystemConfig getConfig() {
 		return config;
 	}

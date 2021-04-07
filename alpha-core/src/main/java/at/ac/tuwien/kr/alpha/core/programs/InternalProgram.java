@@ -11,8 +11,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Instance;
 import at.ac.tuwien.kr.alpha.api.programs.CompiledProgram;
+import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.Program;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
@@ -40,7 +40,7 @@ public class InternalProgram extends AbstractProgram<CompiledRule> implements Co
 		recordRules(rules);
 	}
 
-	static ImmutablePair<List<CompiledRule>, List<Atom>> internalizeRulesAndFacts(Program<Rule<NormalHead>> normalProgram) {
+	static ImmutablePair<List<CompiledRule>, List<Atom>> internalizeRulesAndFacts(NormalProgram normalProgram) {
 		List<CompiledRule> internalRules = new ArrayList<>();
 		List<Atom> facts = new ArrayList<>(normalProgram.getFacts());
 		for (Rule<NormalHead> r : normalProgram.getRules()) {
@@ -56,7 +56,7 @@ public class InternalProgram extends AbstractProgram<CompiledRule> implements Co
 		return new ImmutablePair<>(internalRules, facts);
 	}
 
-	public static CompiledProgram fromNormalProgram(Program<Rule<NormalHead>> normalProgram) {
+	public static CompiledProgram fromNormalProgram(NormalProgram normalProgram) {
 		ImmutablePair<List<CompiledRule>, List<Atom>> rulesAndFacts = InternalProgram.internalizeRulesAndFacts(normalProgram);
 		return new InternalProgram(rulesAndFacts.left, rulesAndFacts.right);
 	}

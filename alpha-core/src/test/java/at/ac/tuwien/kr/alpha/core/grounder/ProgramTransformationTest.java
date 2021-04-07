@@ -15,7 +15,7 @@ import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.NormalProgram;
+import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.ChoiceHeadToNormal;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.IntervalTermToIntervalAtom;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
@@ -67,7 +67,7 @@ public class ProgramTransformationTest {
 
 	@Test
 	public void intervalTermToIntervalAtomSimpleTest() {
-		this.genericTransformationTest(this.intervalRewriting, NormalProgram::fromInputProgram, "interval.1");
+		this.genericTransformationTest(this.intervalRewriting, NormalProgramImpl::fromInputProgram, "interval.1");
 	}
 
 }
