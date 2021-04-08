@@ -120,7 +120,7 @@ public class Main {
 
 	/**
 	 * Writes the given {@link DependencyGraph} to the destination passed as the second parameter
-	 *
+	 * 
 	 * @param dg   the dependency graph to write
 	 * @param path the path to write the graph to
 	 */
@@ -135,7 +135,7 @@ public class Main {
 
 	/**
 	 * Writes the given {@link ComponentGraph} to the destination passed as the second parameter
-	 *
+	 * 
 	 * @param cg   the component graph to write
 	 * @param path the path to write the graph to
 	 */
@@ -151,7 +151,7 @@ public class Main {
 
 	/**
 	 * Writes the given {@link InternalProgram} to the destination passed as the second parameter
-	 *
+	 * 
 	 * @param prg   the program to write
 	 * @param path the path to write the program to
 	 */
