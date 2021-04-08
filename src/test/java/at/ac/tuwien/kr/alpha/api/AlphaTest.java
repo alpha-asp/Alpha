@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2018, the Alpha Team.
+/*
+ * Copyright (c) 2017-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -122,7 +122,7 @@ public class AlphaTest {
 	@Test
 	public void smallGraph() throws Exception {
 		Alpha system = new Alpha();
-		InputConfig inputCfg = InputConfig.forString("node(1). node(2). node(3). a :- &connected[1,2].");
+		InputConfig inputCfg = InputConfig.forString("node(1). node(2). node(3). a :- &connected[1,2]. #heuristic node(1).");
 		inputCfg.addPredicateMethod("connected", Externals.processPredicate((Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3)));
 		InputProgram program = system.readProgram(inputCfg);
 
