@@ -463,7 +463,7 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 
 	@Override
 	public Literal visitNaf_literal(AlphaASPParser.Naf_literalContext ctx) {
-		// naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
+		// naf_literal : NAF? atom;
 		boolean isCurrentLiteralNegated = ctx.NAF() != null;
 		Atom atom = visitAtom(ctx.atom());
 		if (atom instanceof ComparisonAtom) {
@@ -478,6 +478,7 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 
 	@Override
 	public Atom visitAtom(AlphaASPParser.AtomContext ctx) {
+		// atom : (external_atom | classical_literal | builtin_atom);
 		if (ctx.builtin_atom() != null) {
 			return visitBuiltin_atom(ctx.builtin_atom());
 		} else if (ctx.classical_literal() != null) {
