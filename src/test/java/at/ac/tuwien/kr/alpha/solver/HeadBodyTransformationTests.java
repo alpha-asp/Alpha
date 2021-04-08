@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017, 2019 Siemens AG
+ * Copyright (c) 2017 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
