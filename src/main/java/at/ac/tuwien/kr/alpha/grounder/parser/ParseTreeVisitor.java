@@ -465,12 +465,13 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 	public Literal visitNaf_literal(AlphaASPParser.Naf_literalContext ctx) {
 		// naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
 		boolean isCurrentLiteralNegated = ctx.NAF() != null;
-		if (ctx.builtin_atom() != null) {
-			return new ComparisonLiteral(visitBuiltin_atom(ctx.builtin_atom()), !isCurrentLiteralNegated);
-		} else if (ctx.classical_literal() != null) {
-			return new BasicLiteral(visitClassical_literal(ctx.classical_literal()), !isCurrentLiteralNegated);
-		} else if (ctx.external_atom() != null) {
-			return new ExternalLiteral(visitExternal_atom(ctx.external_atom()), !isCurrentLiteralNegated);
+		Atom atom = visitAtom(ctx.atom());
+		if (atom instanceof ComparisonAtom) {
+			return new ComparisonLiteral((ComparisonAtom) atom, !isCurrentLiteralNegated);
+		} else if (atom instanceof BasicAtom) {
+			return new BasicLiteral((BasicAtom) atom, !isCurrentLiteralNegated);
+		} else if (atom instanceof ExternalAtom) {
+			return new ExternalLiteral((ExternalAtom) atom, !isCurrentLiteralNegated);
 		}
 		throw notSupported(ctx);
 	}
