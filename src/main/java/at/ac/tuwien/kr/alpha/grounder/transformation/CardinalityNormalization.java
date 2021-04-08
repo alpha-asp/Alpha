@@ -113,7 +113,7 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 
 	/**
 	 * Checks if rewriting of count aggregates is necessary for the given program, i.e. if such aggregates exist.
-	 *
+	 * 
 	 * @param program the program.
 	 * @return true if count aggregates occur, false otherwise.
 	 */
