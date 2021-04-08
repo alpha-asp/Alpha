@@ -56,9 +56,9 @@ import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.toSig
  * An internal atom that stores information on domain-specific heuristics.
  *
  * For example, the information from the heuristic directive:
- * 	<code>#heuristic b(1) : T a(0), MT a(1), M a(2), F a(3), not T a(4), not MT a(5), not M a(6), not F a(7). [3@2]</code>
+ * 	<code>#heuristic b(1) : T a(0), MT a(1), F a(2), not T a(3), not MT a(4), not F a(5). [3@2]</code>
  * is encoded in a heuristic atom in the following form:
- * 	<code>_h(3, 2, true, b(1), condpos(t(a(0)), tm(a(1)), m(a(2)), f(a(3))), condneg(t(a(4)), tm(a(5)), m(a(6)), f(a(7))))</code>
+ * 	<code>_h(3, 2, true, b(1), condpos(t(a(0)), tm(a(1)), f(a(2))), condneg(t(a(3)), tm(a(4)), f(a(5))))</code>
  *
  */
 public class HeuristicAtom extends Atom {

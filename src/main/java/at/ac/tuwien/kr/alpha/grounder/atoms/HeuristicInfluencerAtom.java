@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2018-2019, the Alpha Team.
+/*
+ * Copyright (c) 2018-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -83,7 +83,7 @@ public class HeuristicInfluencerAtom extends BasicAtom {
 
 	@Override
 	public boolean isGround() {
-		// NOTE: Term is a ConstantTerm, which is ground by definition.
+		// NOTE: terms are ConstantTerms, which are ground by definition.
 		return true;
 	}
 	
