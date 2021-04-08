@@ -351,12 +351,11 @@ public class DomainSpecificHeuristicsTest {
 	}
 
 	/**
-	 * This is an example with domain-specific heuristics from one of our papers.
-	 * TODO: insert pointer to paper
+	 * Tests Example 5 from our paper "Domain-Specific Heuristics in Answer Set Programming: A Declarative Non-Monotonic Approach".
 	 * Note that the constraint has been removed from the program because it is irrelevant to the behaviour of the domain-specific heuristics.
 	 */
 	@Test
-	public void testExampleFromPaper() {
+	public void textExample5() {
 		final Alpha system = new Alpha();
 		final InputProgram inputProgram = parser.parse(
 				"{ a(2); a(4); a(6); a(8); a(5) }." +
