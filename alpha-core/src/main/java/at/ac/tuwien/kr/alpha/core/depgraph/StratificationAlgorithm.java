@@ -25,16 +25,15 @@
  */
 package at.ac.tuwien.kr.alpha.core.depgraph;
 
+import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph.SCComponent;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Algorithm for finding a stratification of a given {@link ComponentGraph}.
+ * Algorithm for finding a stratification of a given {@link ComponentGraphImpl}.
  * 
  * Copyright (c) 2019-2020, the Alpha Team.
  */
@@ -44,9 +43,9 @@ public class StratificationAlgorithm {
 
 	private ComponentGraph componentGraph;
 
-	private final boolean[] visitedComponents;		// Marks visited components.
-	private final boolean[] isUnstratifiableComponent;	// Marks those known to be not stratifiable (may be due to parent not being stratifiable).
-	private final SCComponent[] componentEvaluationSequence;	// Store the topological order of all components.
+	private final boolean[]                    visitedComponents;		// Marks visited components.
+	private final boolean[]                    isUnstratifiableComponent;	// Marks those known to be not stratifiable (may be due to parent not being stratifiable).
+	private final ComponentGraph.SCComponent[] componentEvaluationSequence;	// Store the topological order of all components.
 
 	private int doneComponents;
 	private int numComponents;
@@ -57,7 +56,7 @@ public class StratificationAlgorithm {
 		numComponents = cg.getComponents().size();
 		visitedComponents = new boolean[numComponents];
 		isUnstratifiableComponent = new boolean[numComponents];
-		componentEvaluationSequence = new SCComponent[numComponents];
+		componentEvaluationSequence = new ComponentGraph.SCComponent[numComponents];
 	}
 
 	/**
@@ -69,22 +68,22 @@ public class StratificationAlgorithm {
 	 * @param cg the graph of strongly-connected-components (that must be acyclic).
 	 * @return a list of all stratifiable components in the order that they can be evaluated.
 	 */
-	public static List<SCComponent> calculateStratification(ComponentGraph cg) {
+	public static List<ComponentGraph.SCComponent> calculateStratification(ComponentGraph cg) {
 		return new StratificationAlgorithm(cg).runStratification();
 	}
 
 
-	private List<SCComponent> runStratification() {
+	private List<ComponentGraph.SCComponent> runStratification() {
 		LOGGER.debug("Initial call to stratify with entry points!");
 
 		// Compute topological order and mark unstratifiable components.
-		for (SCComponent component : componentGraph.getEntryPoints()) {
+		for (ComponentGraph.SCComponent component : componentGraph.getEntryPoints()) {
 			topoSort(component, false);
 		}
 
 		// Extract list of stratifiable components.
-		List<SCComponent> stratifiableComponentsSequence = new ArrayList<>();
-		for (SCComponent component : componentEvaluationSequence) {
+		List<ComponentGraph.SCComponent> stratifiableComponentsSequence = new ArrayList<>();
+		for (ComponentGraph.SCComponent component : componentEvaluationSequence) {
 			if (!isUnstratifiableComponent[component.getId()]) {
 				stratifiableComponentsSequence.add(component);
 			}
@@ -93,7 +92,7 @@ public class StratificationAlgorithm {
 		return stratifiableComponentsSequence;
 	}
 
-	private void topoSort(SCComponent component, boolean hasUnstratifiableParent) {
+	private void topoSort(ComponentGraph.SCComponent component, boolean hasUnstratifiableParent) {
 		// We compute a topological ordering using a depth-first search where for any node its position in the
 		// topological ordering is the reverse of its finishing time (i.e., last-finishing node comes first).
 

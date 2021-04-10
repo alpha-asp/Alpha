@@ -2,13 +2,15 @@ package at.ac.tuwien.kr.alpha.core.programs;
 
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
+import at.ac.tuwien.kr.alpha.core.depgraph.DependencyGraphImpl;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
-import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph;
-import at.ac.tuwien.kr.alpha.core.depgraph.DependencyGraph;
+import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraphImpl;
 import at.ac.tuwien.kr.alpha.core.depgraph.StronglyConnectedComponentsAlgorithm;
 
 
@@ -20,11 +22,11 @@ import at.ac.tuwien.kr.alpha.core.depgraph.StronglyConnectedComponentsAlgorithm;
 public class AnalyzedProgram extends InternalProgram {
 
 	private final DependencyGraph dependencyGraph;
-	private final ComponentGraph componentGraph;
+	private final ComponentGraph  componentGraph;
 
 	public AnalyzedProgram(List<CompiledRule> rules, List<Atom> facts) {
 		super(rules, facts);
-		dependencyGraph = DependencyGraph.buildDependencyGraph(getRulesById());
+		dependencyGraph = DependencyGraphImpl.buildDependencyGraph(getRulesById());
 		componentGraph = buildComponentGraph(dependencyGraph);
 	}
 
@@ -35,7 +37,7 @@ public class AnalyzedProgram extends InternalProgram {
 
 	private ComponentGraph buildComponentGraph(DependencyGraph depGraph) {
 		StronglyConnectedComponentsAlgorithm.SccResult sccResult = StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(depGraph);
-		return ComponentGraph.buildComponentGraph(depGraph, sccResult);
+		return ComponentGraphImpl.buildComponentGraph(depGraph, sccResult);
 	}
 
 	public ComponentGraph getComponentGraph() {

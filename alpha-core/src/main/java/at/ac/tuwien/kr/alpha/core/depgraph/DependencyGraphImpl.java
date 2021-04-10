@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,35 +45,35 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 
 /**
  * Internal representation of an {@link at.ac.tuwien.kr.alpha.core.programs.InternalProgram}'s dependency graph. The dependency graph tracks dependencies
- * between rules of a program. Each {@link Node} of the graph represents a {@link PredicateImpl} occurring in the program. A node has an incoming {@link Edge} for
+ * between rules of a program. Each {@link NodeImpl} of the graph represents a {@link Predicate} occurring in the program. A node has an incoming {@link EdgeImpl} for
  * every {@link Literal} in some rule body that depends on it, i.e. the predicate of the literal in question is the same as that of the node. The "sign" flag of
- * an {@link Edge} indicates whether the dependency is a positive or negative one, i.e. if the atom in question is preceded by a "not".
+ * an {@link EdgeImpl} indicates whether the dependency is a positive or negative one, i.e. if the atom in question is preceded by a "not".
  * 
  * Note that constraints are represented by one dummy predicate (named "constr_{num}"). Each constraint node has a negative edge to itself to express the
  * notation of a constraint ":- a, b." as "x :- a, b, not x.".
  * 
  * Copyright (c) 2019-2020, the Alpha Team.
  */
-public final class DependencyGraph {
+public final class DependencyGraphImpl  implements DependencyGraph {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(DependencyGraph.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DependencyGraphImpl.class);
 
 	/*
 	 * Maps nodes to outgoing edges of that node.
-	 * Note: using List<Edge> rather than Map<Integer,Boolean> as one node may have positive and negative edges to
+	 * Note: using List<EdgeImpl> rather than Map<Integer,Boolean> as one node may have positive and negative edges to
 	 * another.
 	 */
 	private final Map<Node, List<Edge>> adjacencyMap;
 
 	private final Map<Predicate, Node> nodesByPredicate;
 
-	private DependencyGraph(Map<Node, List<Edge>> adjacencyMap, Map<Predicate, Node> nodesByPredicate) {
+	private DependencyGraphImpl(Map<Node, List<Edge>> adjacencyMap, Map<Predicate, Node> nodesByPredicate) {
 		this.adjacencyMap = adjacencyMap;
 		this.nodesByPredicate = nodesByPredicate;
 	}
 
-	public static DependencyGraph buildDependencyGraph(Map<Integer, CompiledRule> nonGroundRules) {
-		return new DependencyGraph.Builder(nonGroundRules.values()).build();
+	public static DependencyGraphImpl buildDependencyGraph(Map<Integer, CompiledRule> nonGroundRules) {
+		return new DependencyGraphImpl.Builder(nonGroundRules.values()).build();
 	}
 
 	public Node getNodeForPredicate(Predicate p) {
@@ -91,14 +92,14 @@ public final class DependencyGraph {
 		private Collection<CompiledRule> rules;
 
 		private Map<Node, List<Edge>> adjacentNodesMap = new HashMap<>();
-		private Map<Predicate, Node> nodesByPredicate = new HashMap<>();
+		private Map<Predicate, Node>      nodesByPredicate = new HashMap<>();
 
 		private Builder(Collection<CompiledRule> rules) {
 			this.rules = rules;
 			this.constraintNumber = 0;
 		}
 
-		private DependencyGraph build() {
+		private DependencyGraphImpl build() {
 			for (CompiledRule rule : rules) {
 				LOGGER.debug("Processing rule: {}", rule);
 				Node headNode = handleRuleHead(rule);
@@ -111,7 +112,7 @@ public final class DependencyGraph {
 					handleRuleBodyLiteral(headNode, literal);
 				}
 			}
-			return new DependencyGraph(adjacentNodesMap, nodesByPredicate);
+			return new DependencyGraphImpl(adjacentNodesMap, nodesByPredicate);
 		}
 
 		private Node handleRuleHead(CompiledRule rule) {
@@ -119,9 +120,9 @@ public final class DependencyGraph {
 			Node headNode;
 			if (rule.isConstraint()) {
 				Predicate pred = generateConstraintDummyPredicate();
-				headNode = new Node(pred);
+				headNode = new NodeImpl(pred);
 				List<Edge> dependencies = new ArrayList<>();
-				dependencies.add(new Edge(headNode, false));
+				dependencies.add(new EdgeImpl(headNode, false));
 				if (adjacentNodesMap.containsKey(headNode)) {
 					throw new IllegalStateException("Dependency graph already contains node for constraint " + pred.toString() + "!");
 				}
@@ -131,7 +132,7 @@ public final class DependencyGraph {
 				Atom head = rule.getHeadAtom();
 				Predicate pred = head.getPredicate();
 				if (!nodesByPredicate.containsKey(pred)) {
-					headNode = new Node(pred);
+					headNode = new NodeImpl(pred);
 					adjacentNodesMap.put(headNode, new ArrayList<>());
 					nodesByPredicate.put(pred, headNode);
 				} else {
@@ -148,7 +149,7 @@ public final class DependencyGraph {
 			if (!nodesByPredicate.containsKey(bodyPred)) {
 				LOGGER.trace("Creating new node for bodyPred {}", bodyPred);
 				dependants = new ArrayList<>();
-				bodyNode = new Node(bodyPred);
+				bodyNode = new NodeImpl(bodyPred);
 				nodesByPredicate.put(bodyPred, bodyNode);
 				adjacentNodesMap.put(bodyNode, dependants);
 			} else {
@@ -156,7 +157,7 @@ public final class DependencyGraph {
 				bodyNode = nodesByPredicate.get(bodyPred);
 				dependants = adjacentNodesMap.get(bodyNode);
 			}
-			Edge tmpEdge = new Edge(headNode, !lit.isNegated());
+			Edge tmpEdge = new EdgeImpl(headNode, !lit.isNegated());
 			if (!dependants.contains(tmpEdge)) {
 				LOGGER.trace("Adding dependency: {} -> {} ({})", bodyNode.getPredicate(), headNode.getPredicate(), tmpEdge.getSign() ? "+" : "-");
 				dependants.add(tmpEdge);
@@ -165,7 +166,7 @@ public final class DependencyGraph {
 		}
 
 		private Predicate generateConstraintDummyPredicate() {
-			return Predicates.getPredicate(String.format(DependencyGraph.Builder.CONSTRAINT_PREDICATE_FORMAT, ++constraintNumber), 0);
+			return Predicates.getPredicate(String.format(DependencyGraphImpl.Builder.CONSTRAINT_PREDICATE_FORMAT, ++constraintNumber), 0);
 		}
 	}
 }

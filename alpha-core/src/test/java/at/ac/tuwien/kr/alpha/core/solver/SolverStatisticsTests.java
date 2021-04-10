@@ -35,6 +35,7 @@ import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.api.StatisticsReportingSolver;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.DummyGrounder;
@@ -51,28 +52,28 @@ public class SolverStatisticsTests extends AbstractSolverTests {
 	@Test
 	public void checkStatsStringZeroChoices() {
 		Solver solver = getInstance("a.");
-		assumeTrue(solver instanceof SolverMaintainingStatistics);
+		assumeTrue(solver instanceof StatisticsReportingSolver);
 		collectAnswerSetsAndCheckStats(solver, 1, 0, 0, 0, 0, 0, 0, 0);
 	}
 
 	@Test
 	public void checkStatsStringOneChoice() {
 		Solver solver = getInstance("a :- not b. b :- not a.");
-		assumeTrue(solver instanceof SolverMaintainingStatistics);
+		assumeTrue(solver instanceof StatisticsReportingSolver);
 		collectAnswerSetsAndCheckStats(solver, 2, 1, 1, 1, 1, 0, 0, 0);
 	}
 
 	@Test
 	public void checkNoGoodCounterStatsByTypeUsingDummyGrounder() {
 		Solver solver = getInstance(atomStore, new DummyGrounder(atomStore));
-		assumeTrue(solver instanceof SolverMaintainingStatistics);
+		assumeTrue(solver instanceof StatisticsReportingSolver);
 		collectAnswerSetsAndCheckNoGoodCounterStatsByType(solver, 4, 0, 0, 0);
 	}
 
 	@Test
 	public void checkNoGoodCounterStatsByCardinalityUsingDummyGrounder() {
 		Solver solver = getInstance(atomStore, new DummyGrounder(atomStore));
-		assumeTrue(solver instanceof SolverMaintainingStatistics);
+		assumeTrue(solver instanceof StatisticsReportingSolver);
 		collectAnswerSetsAndCheckNoGoodCounterStatsByCardinality(solver, 2, 1, 1);
 	}
 
@@ -80,7 +81,7 @@ public class SolverStatisticsTests extends AbstractSolverTests {
 			int expectedNumberOfBacktracksWithinBackjumps, int expectedNumberOfBackjumps, int expectedNumberOfMBTs, int expectedNumberOfConflictsAfterClosing, int expectedNumberOfDeletedNoGoods) {
 		Set<AnswerSet> answerSets = solver.collectSet();
 		assertEquals(expectedNumberOfAnswerSets, answerSets.size());
-		SolverMaintainingStatistics solverMaintainingStatistics = (SolverMaintainingStatistics) solver;
+		StatisticsReportingSolver solverMaintainingStatistics = (StatisticsReportingSolver) solver;
 		assertEquals(
 				String.format("g=%d, bt=%d, bj=%d, bt_within_bj=%d, mbt=%d, cac=%d, del_ng=%d", expectedNumberOfGuesses, expectedTotalNumberOfBacktracks, expectedNumberOfBackjumps,
 						expectedNumberOfBacktracksWithinBackjumps, expectedNumberOfMBTs, expectedNumberOfConflictsAfterClosing, expectedNumberOfDeletedNoGoods),
@@ -89,14 +90,18 @@ public class SolverStatisticsTests extends AbstractSolverTests {
 
 	private void collectAnswerSetsAndCheckNoGoodCounterStatsByType(Solver solver, int expectedNumberOfStaticNoGoods, int expectedNumberOfSupportNoGoods, int expectedNumberOfLearntNoGoods, int expectedNumberOfInternalNoGoods) {
 		solver.collectSet();
-		SolverMaintainingStatistics solverMaintainingStatistics = (SolverMaintainingStatistics) solver;
+		// Note: This cast is kinda hacky since it assumes a specific implementation rather than an interface.
+		// To be perfectly clean, we need to introduce an interface in core module that extends StatisticsReportingSolver with getNoGoodCounter()
+		DefaultSolver solverMaintainingStatistics = (DefaultSolver) solver;
 		final NoGoodCounter noGoodCounter =  solverMaintainingStatistics.getNoGoodCounter();
 		assertEquals("STATIC: " + expectedNumberOfStaticNoGoods + " SUPPORT: " + expectedNumberOfSupportNoGoods + " LEARNT: " + expectedNumberOfLearntNoGoods + " INTERNAL: " + expectedNumberOfInternalNoGoods, noGoodCounter.getStatsByType());
 	}
 
 	private void collectAnswerSetsAndCheckNoGoodCounterStatsByCardinality(Solver solver, int expectedNumberOfUnaryNoGoods, int expectedNumberOfBinaryNoGoods, int expectedNumberOfNAryNoGoods) {
 		solver.collectSet();
-		SolverMaintainingStatistics solverMaintainingStatistics = (SolverMaintainingStatistics) solver;
+		// Note: This cast is kinda hacky since it assumes a specific implementation rather than an interface.
+		// To be perfectly clean, we need to introduce an interface in core module that extends StatisticsReportingSolver with getNoGoodCounter()
+		DefaultSolver solverMaintainingStatistics = (DefaultSolver) solver;
 		final NoGoodCounter noGoodCounter =  solverMaintainingStatistics.getNoGoodCounter();
 		assertEquals("unary: " + expectedNumberOfUnaryNoGoods + " binary: " + expectedNumberOfBinaryNoGoods + " larger: " + expectedNumberOfNAryNoGoods, noGoodCounter.getStatsByCardinality());
 	}

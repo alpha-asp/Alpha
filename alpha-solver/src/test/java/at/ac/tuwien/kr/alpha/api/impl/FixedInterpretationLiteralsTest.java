@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.impl;
+package at.ac.tuwien.kr.alpha.api.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;

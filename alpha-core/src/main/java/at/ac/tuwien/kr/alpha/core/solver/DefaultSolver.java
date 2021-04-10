@@ -51,6 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.StatisticsReportingSolver;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -78,7 +79,7 @@ import at.ac.tuwien.kr.alpha.core.util.Substitutions;
  *
  * Copyright (c) 2016-2020, the Alpha Team.
  */
-public class DefaultSolver extends AbstractSolver implements SolverMaintainingStatistics {
+public class DefaultSolver extends AbstractSolver implements StatisticsReportingSolver {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolver.class);
 
 	private final NoGoodStore store;
@@ -576,7 +577,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		return ((NoGoodStoreAlphaRoaming)store).getLearnedNoGoodDeletion().getNumberOfDeletedNoGoods();
 	}
 
-	@Override
 	public NoGoodCounter getNoGoodCounter() {
 		return store.getNoGoodCounter();
 	}

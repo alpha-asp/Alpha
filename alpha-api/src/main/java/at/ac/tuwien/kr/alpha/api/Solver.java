@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-@FunctionalInterface
 public interface Solver {
+	
 	Spliterator<AnswerSet> spliterator();
 
 	default Stream<AnswerSet> stream() {
@@ -22,4 +22,5 @@ public interface Solver {
 	default List<AnswerSet> collectList() {
 		return stream().collect(Collectors.toList());
 	}
+	
 }

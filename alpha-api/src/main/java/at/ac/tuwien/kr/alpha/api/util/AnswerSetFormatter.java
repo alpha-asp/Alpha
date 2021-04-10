@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.common;
+package at.ac.tuwien.kr.alpha.api.util;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 

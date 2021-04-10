@@ -12,8 +12,11 @@ import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph.SCComponent;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph.Node;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph.SCComponent;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
@@ -45,7 +48,7 @@ public class StratificationAlgorithmTest {
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
-		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
+		ComponentGraph cg = ComponentGraphImpl.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
 		List<SCComponent> strata = StratificationAlgorithm.calculateStratification(cg);
 
 		Predicate a = Predicates.getPredicate("a", 0);
@@ -64,7 +67,7 @@ public class StratificationAlgorithmTest {
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
-		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
+		ComponentGraph cg = ComponentGraphImpl.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
 		List<SCComponent> strata = StratificationAlgorithm.calculateStratification(cg);
 
 		Predicate a = Predicates.getPredicate("a", 0);
@@ -88,7 +91,7 @@ public class StratificationAlgorithmTest {
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
-		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
+		ComponentGraph cg = ComponentGraphImpl.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
 		List<SCComponent> strata = StratificationAlgorithm.calculateStratification(cg);
 
 		Predicate a = Predicates.getPredicate("a", 0);
@@ -113,7 +116,7 @@ public class StratificationAlgorithmTest {
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
-		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
+		ComponentGraph cg = ComponentGraphImpl.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
 		List<SCComponent> strata = StratificationAlgorithm.calculateStratification(cg);
 
 		Predicate ancestorOf = Predicates.getPredicate("ancestor_of", 2);
@@ -145,7 +148,7 @@ public class StratificationAlgorithmTest {
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
-		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
+		ComponentGraph cg = ComponentGraphImpl.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
 		List<SCComponent> strata = StratificationAlgorithm.calculateStratification(cg);
 
 		Predicate a = Predicates.getPredicate("a", 0);
@@ -189,7 +192,7 @@ public class StratificationAlgorithmTest {
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
-		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
+		ComponentGraph cg = ComponentGraphImpl.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
 		List<SCComponent> strata = StratificationAlgorithm.calculateStratification(cg);
 
 		Predicate a = Predicates.getPredicate("a", 0);
@@ -222,7 +225,7 @@ public class StratificationAlgorithmTest {
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
-		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
+		ComponentGraph cg = ComponentGraphImpl.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
 		List<SCComponent> strata = StratificationAlgorithm.calculateStratification(cg);
 
 		Predicate a = Predicates.getPredicate("a", 0);

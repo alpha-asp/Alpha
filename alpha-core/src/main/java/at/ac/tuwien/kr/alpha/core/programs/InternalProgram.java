@@ -56,7 +56,7 @@ public class InternalProgram extends AbstractProgram<CompiledRule> implements Co
 		return new ImmutablePair<>(internalRules, facts);
 	}
 
-	public static CompiledProgram fromNormalProgram(NormalProgram normalProgram) {
+	public static InternalProgram fromNormalProgram(NormalProgram normalProgram) {
 		ImmutablePair<List<CompiledRule>, List<Atom>> rulesAndFacts = InternalProgram.internalizeRulesAndFacts(normalProgram);
 		return new InternalProgram(rulesAndFacts.left, rulesAndFacts.right);
 	}

@@ -10,7 +10,6 @@ import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpreta
 import at.ac.tuwien.kr.alpha.api.config.InputConfig;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
-import at.ac.tuwien.kr.alpha.api.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 
@@ -26,16 +25,26 @@ public interface Alpha {
 
 	ASPCore2Program readProgramString(String aspString);
 
+	DebugSolvingResult debugSolve(ASPCore2Program program);
+	
+	DebugSolvingResult debugSolve(NormalProgram program);
+	
 	Stream<AnswerSet> solve(ASPCore2Program program);
 
 	Stream<AnswerSet> solve(ASPCore2Program program, java.util.function.Predicate<Predicate> filter);
 
+	Stream<AnswerSet> solve(NormalProgram program);
+
+	Stream<AnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter);
+	
 	NormalProgram normalizeProgram(ASPCore2Program program);
 	
 	SystemConfig getConfig();
 	
-	CompiledProgram performProgramPreprocessing(CompiledProgram prog);
+	//CompiledProgram performProgramPreprocessing(CompiledProgram prog);
 	
-	Solver prepareSolverFor(CompiledProgram program, java.util.function.Predicate<Predicate> filter);
+	Solver prepareSolverFor(ASPCore2Program program, java.util.function.Predicate<Predicate> filter);
+
+	Solver prepareSolverFor(NormalProgram program, java.util.function.Predicate<Predicate> filter);
 	
 }

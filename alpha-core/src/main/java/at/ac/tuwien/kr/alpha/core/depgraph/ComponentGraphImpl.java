@@ -25,6 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.core.depgraph;
 
+import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import org.apache.commons.lang3.StringUtils;
 
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
@@ -39,31 +41,31 @@ import java.util.Set;
 
 /**
  * Representation of an {@link InternalProgram}'s component graph, i.e. the directed acyclic graph resulting from condensing the program's
- * {@link DependencyGraph} into its strongly connected components. Needed in order to calculate stratifications from which an evaluation order for the
+ * {@link DependencyGraphImpl} into its strongly connected components. Needed in order to calculate stratifications from which an evaluation order for the
  * {@link at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation} transformation can be derived.
  * 
  * Copyright (c) 2019-2020, the Alpha Team.
  */
-public final class ComponentGraph {
+public final class ComponentGraphImpl implements ComponentGraph {
 
 	private final ArrayList<SCComponent> components;
 	private final List<SCComponent> entryPoints;
 
-	private ComponentGraph(ArrayList<SCComponent> components, List<SCComponent> entryPoints) {
+	private ComponentGraphImpl(ArrayList<SCComponent> components, List<SCComponent> entryPoints) {
 		this.components = components;
 		this.entryPoints = entryPoints;
 	}
 
 	/**
-	 * Creates a new {@link ComponentGraph} based on a dependency graph and an {@link StronglyConnectedComponentsAlgorithm.SccResult} representing the
+	 * Creates a new {@link ComponentGraphImpl} based on a dependency graph and an {@link StronglyConnectedComponentsAlgorithm.SccResult} representing the
 	 * result of calculating the dependency graph's strongly connected components (SCCs).
 	 * 
 	 * @param dg        the dependency graph backing this component graph.
 	 * @param sccResult the SCC calculation result for the dependency graph in question.
-	 * @return a new {@link ComponentGraph} representing the strongly connected components of the given dependency graph.
+	 * @return a new {@link ComponentGraphImpl} representing the strongly connected components of the given dependency graph.
 	 */
-	public static ComponentGraph buildComponentGraph(DependencyGraph dg, StronglyConnectedComponentsAlgorithm.SccResult sccResult) {
-		return new ComponentGraph.Builder(dg, sccResult).build();
+	public static ComponentGraphImpl buildComponentGraph(DependencyGraph dg, StronglyConnectedComponentsAlgorithm.SccResult sccResult) {
+		return new ComponentGraphImpl.Builder(dg, sccResult).build();
 	}
 
 	public List<SCComponent> getComponents() {
@@ -74,15 +76,15 @@ public final class ComponentGraph {
 		return Collections.unmodifiableList(entryPoints);
 	}
 
-	public static class SCComponent {
+	public static class SCComponentImpl implements ComponentGraph.SCComponent {
 
-		private final int id;
-		private final List<Node> nodes;
-		private final Map<Integer, Boolean> dependencyIds;
-		private final Set<Integer> dependentIds;
-		private final boolean hasNegativeCycle;
+		private final int                        id;
+		private final List<DependencyGraph.Node> nodes;
+		private final Map<Integer, Boolean>      dependencyIds;
+		private final Set<Integer>               dependentIds;
+		private final boolean                    hasNegativeCycle;
 
-		private SCComponent(int id, List<Node> nodes, Map<Integer, Boolean> dependencyIds, Set<Integer> dependentIds, boolean hasNegativeCycle) {
+		private SCComponentImpl(int id, List<DependencyGraph.Node> nodes, Map<Integer, Boolean> dependencyIds, Set<Integer> dependentIds, boolean hasNegativeCycle) {
 			this.id = id;
 			this.nodes = nodes;
 			this.dependencyIds = dependencyIds;
@@ -107,7 +109,7 @@ public final class ComponentGraph {
 			return hasNegativeCycle;
 		}
 
-		public List<Node> getNodes() {
+		public List<DependencyGraph.Node> getNodes() {
 			return nodes;
 		}
 
@@ -117,19 +119,19 @@ public final class ComponentGraph {
 
 		private static class Builder {
 
-			private int id;
-			private List<Node> nodes;
-			private Map<Integer, Boolean> dependencyIds = new HashMap<>();
-			private Set<Integer> dependentIds = new HashSet<>();
-			private boolean hasNegativeCycle;
+			private int                        id;
+			private List<DependencyGraph.Node> nodes;
+			private Map<Integer, Boolean>      dependencyIds = new HashMap<>();
+			private Set<Integer>               dependentIds = new HashSet<>();
+			private boolean                    hasNegativeCycle;
 
-			private Builder(int id, List<Node> nodes) {
+			private Builder(int id, List<DependencyGraph.Node> nodes) {
 				this.nodes = nodes;
 				this.id = id;
 			}
 
-			private SCComponent build() {
-				return new SCComponent(id, nodes, dependencyIds, dependentIds, hasNegativeCycle);
+			private SCComponentImpl build() {
+				return new SCComponentImpl(id, nodes, dependencyIds, dependentIds, hasNegativeCycle);
 			}
 
 		}
@@ -138,11 +140,11 @@ public final class ComponentGraph {
 
 	private static class Builder {
 
-		private DependencyGraph depGraph;
-		private List<List<Node>> componentMap;
-		private Map<Node, Integer> nodesByComponentId;
-		private ArrayList<SCComponent.Builder> componentBuilders = new ArrayList<>();
-		private ArrayList<SCComponent> components = new ArrayList<>();
+		private DependencyGraph                    depGraph;
+		private List<List<DependencyGraph.Node>>   componentMap;
+		private Map<DependencyGraph.Node, Integer> nodesByComponentId;
+		private ArrayList<SCComponentImpl.Builder>     componentBuilders = new ArrayList<>();
+		private ArrayList<SCComponent>             components = new ArrayList<>();
 
 		private Builder(DependencyGraph dg, StronglyConnectedComponentsAlgorithm.SccResult sccResult) {
 			this.depGraph = dg;
@@ -150,23 +152,23 @@ public final class ComponentGraph {
 			this.nodesByComponentId = sccResult.nodesByComponentId;
 		}
 
-		private ComponentGraph build() {
+		private ComponentGraphImpl build() {
 			// Create a ComponentBuilder for each component.
 			for (int i = 0; i < componentMap.size(); i++) {
-				componentBuilders.add(new SCComponent.Builder(i, componentMap.get(i)));
+				componentBuilders.add(new SCComponentImpl.Builder(i, componentMap.get(i)));
 			}
 			// Iterate and register each edge of every component.
 			for (int i = 0; i < componentBuilders.size(); i++) {
-				SCComponent.Builder builder = componentBuilders.get(i);
-				for (Node node : builder.nodes) {
-					for (Edge edge : depGraph.getAdjancencyMap().get(node)) {
+				SCComponentImpl.Builder builder = componentBuilders.get(i);
+				for (DependencyGraph.Node node : builder.nodes) {
+					for (DependencyGraph.Edge edge : depGraph.getAdjancencyMap().get(node)) {
 						registerEdge(i, edge);
 					}
 				}
 			}
 			// Build each component and identify starting components.
 			List<SCComponent> startingPoints = new ArrayList<>();
-			for (SCComponent.Builder builder : componentBuilders) {
+			for (SCComponentImpl.Builder builder : componentBuilders) {
 				SCComponent tmpComponent = builder.build();
 				components.add(tmpComponent);
 				// Component is starting if it has no dependencies.
@@ -174,10 +176,10 @@ public final class ComponentGraph {
 					startingPoints.add(tmpComponent);
 				}
 			}
-			return new ComponentGraph(components, startingPoints);
+			return new ComponentGraphImpl(components, startingPoints);
 		}
 
-		private void registerEdge(int srcComponentId, Edge edge) {
+		private void registerEdge(int srcComponentId, DependencyGraph.Edge edge) {
 			int destComponentId = nodesByComponentId.get(edge.getTarget());
 			if (srcComponentId == destComponentId) {
 				// Record negative self-loop.
@@ -185,9 +187,9 @@ public final class ComponentGraph {
 					componentBuilders.get(srcComponentId).hasNegativeCycle = true;
 				}
 			} else {
-				SCComponent.Builder srcComponentBld = componentBuilders.get(srcComponentId);
+				SCComponentImpl.Builder srcComponentBld = componentBuilders.get(srcComponentId);
 				srcComponentBld.dependentIds.add(destComponentId);
-				SCComponent.Builder destComponentBld = componentBuilders.get(destComponentId);
+				SCComponentImpl.Builder destComponentBld = componentBuilders.get(destComponentId);
 				boolean isPositiveDep = true;
 				if (destComponentBld.dependencyIds.containsKey(srcComponentId)) {
 					isPositiveDep = destComponentBld.dependencyIds.get(srcComponentId);

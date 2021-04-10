@@ -38,7 +38,6 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.antlr.v4.runtime.RecognitionException;
 import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,22 +45,20 @@ import org.slf4j.LoggerFactory;
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.api.StatisticsReportingSolver;
 import at.ac.tuwien.kr.alpha.api.config.AlphaConfig;
 import at.ac.tuwien.kr.alpha.api.config.InputConfig;
 import at.ac.tuwien.kr.alpha.api.impl.AlphaImpl;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
+import at.ac.tuwien.kr.alpha.api.util.AnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.app.ComponentGraphWriter;
 import at.ac.tuwien.kr.alpha.app.DependencyGraphWriter;
 import at.ac.tuwien.kr.alpha.app.config.CommandLineParser;
-import at.ac.tuwien.kr.alpha.core.common.AnswerSetFormatter;
-import at.ac.tuwien.kr.alpha.core.common.SimpleAnswerSetFormatter;
-import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph;
-import at.ac.tuwien.kr.alpha.core.depgraph.DependencyGraph;
-import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
-import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.solver.SolverMaintainingStatistics;
+import at.ac.tuwien.kr.alpha.commons.util.SimpleAnswerSetFormatter;
 
 /**
  * Main entry point for Alpha.
@@ -87,11 +84,6 @@ public class Main {
 		ASPCore2Program program = null;
 		try {
 			program = alpha.readProgram(cfg.getInputConfig());
-		} catch (RecognitionException e) {
-			// In case a recognition exception occurred, parseVisit will
-			// already have printed an error message, so we just exit
-			// at this point without further logging.
-			System.exit(1);
 		} catch (FileNotFoundException e) {
 			Main.bailOut(e.getMessage());
 		} catch (IOException e) {
@@ -101,24 +93,25 @@ public class Main {
 		NormalProgram normalized = alpha.normalizeProgram(program);
 		CompiledProgram preprocessed;
 		InputConfig inputCfg = cfg.getInputConfig();
-		if (!(inputCfg.isWriteDependencyGraph() || inputCfg.isWriteComponentGraph())) {
-			LOGGER.debug("Not writing dependency or component graphs, starting preprocessing...");
-			preprocessed = alpha.performProgramPreprocessing(InternalProgram.fromNormalProgram(normalized));
-		} else {
-			LOGGER.debug("Performing program analysis in preparation for writing dependency and/or component graph file...");
-			AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalized);
-			if (cfg.getInputConfig().isWriteDependencyGraph()) {
-				Main.writeDependencyGraph(analyzed.getDependencyGraph(), cfg.getInputConfig().getDepgraphPath());
-			}
-			if (cfg.getInputConfig().isWriteComponentGraph()) {
-				Main.writeComponentGraph(analyzed.getComponentGraph(), cfg.getInputConfig().getCompgraphPath());
-			}
-			preprocessed = alpha.performProgramPreprocessing(analyzed);
-		}
-		if (cfg.getInputConfig().isWritePreprocessed()) {
-			Main.writeInternalProgram(preprocessed, cfg.getInputConfig().getPreprocessedPath());
-		}
-		Main.computeAndConsumeAnswerSets(alpha, cfg.getInputConfig(), preprocessed);
+		// TODO commented-out part should be taken care of using debugSolve, adapt CLI accordingly
+//		if (!(inputCfg.isWriteDependencyGraph() || inputCfg.isWriteComponentGraph())) {
+//			LOGGER.debug("Not writing dependency or component graphs, starting preprocessing...");
+//			preprocessed = alpha.performProgramPreprocessing(InternalProgram.fromNormalProgram(normalized));
+//		} else {
+//			LOGGER.debug("Performing program analysis in preparation for writing dependency and/or component graph file...");
+//			AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalized);
+//			if (cfg.getInputConfig().isWriteDependencyGraph()) {
+//				Main.writeDependencyGraph(analyzed.getDependencyGraph(), cfg.getInputConfig().getDepgraphPath());
+//			}
+//			if (cfg.getInputConfig().isWriteComponentGraph()) {
+//				Main.writeComponentGraph(analyzed.getComponentGraph(), cfg.getInputConfig().getCompgraphPath());
+//			}
+//			preprocessed = alpha.performProgramPreprocessing(analyzed);
+//		}
+//		if (cfg.getInputConfig().isWritePreprocessed()) {
+//			Main.writeInternalProgram(preprocessed, cfg.getInputConfig().getPreprocessedPath());
+//		}
+		Main.computeAndConsumeAnswerSets(alpha, cfg.getInputConfig(), normalized);
 	}
 
 	/**
@@ -153,7 +146,7 @@ public class Main {
 	}
 
 	/**
-	 * Writes the given {@link InternalProgram} to the destination passed as the second parameter
+	 * Writes the given {@link CompiledProgram} to the destination passed as the second parameter
 	 * 
 	 * @param prg  the program to write
 	 * @param path the path to write the program to
@@ -174,7 +167,7 @@ public class Main {
 		}
 	}
 
-	private static void computeAndConsumeAnswerSets(Alpha alpha, InputConfig inputCfg, CompiledProgram program) {
+	private static void computeAndConsumeAnswerSets(Alpha alpha, InputConfig inputCfg, NormalProgram program) {
 		Solver solver = alpha.prepareSolverFor(program, inputCfg.getFilter());
 		Stream<AnswerSet> stream = solver.stream();
 		if (alpha.getConfig().isSortAnswerSets()) {
@@ -221,7 +214,12 @@ public class Main {
 			stream.collect(Collectors.toList());
 		}
 		if (alpha.getConfig().isPrintStats()) {
-			((SolverMaintainingStatistics) solver).printStatistics();
+			if (solver instanceof StatisticsReportingSolver) {
+				((StatisticsReportingSolver) solver).printStatistics();
+			} else {
+				// Note: Should not happen with proper validation of commandline args
+				System.err.println("Solver of type " + solver.getClass().getSimpleName() + " does not support solving statistics!");
+			}
 		}
 	}
 

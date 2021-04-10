@@ -11,13 +11,15 @@ import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph.Node;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.test.util.DependencyGraphUtils;
 
-public class DependencyGraphTest {
+public class DependencyGraphImplTest {
 
 	private ProgramParser parser = new ProgramParserImpl();
 	private NormalizeProgramTransformation normalizeTransform = new NormalizeProgramTransformation(false);
@@ -53,8 +55,8 @@ public class DependencyGraphTest {
 	@Test
 	public void edgesEqualTest() {
 		Predicate testPredicate = Predicates.getPredicate("test", 2, false, false);
-		Edge e1 = new Edge(new Node(testPredicate), true);
-		Edge e2 = new Edge(new Node(testPredicate), true);
+		EdgeImpl e1 = new EdgeImpl(new NodeImpl(testPredicate), true);
+		EdgeImpl e2 = new EdgeImpl(new NodeImpl(testPredicate), true);
 		Assert.assertEquals(e1, e2);
 	}
 
@@ -68,7 +70,7 @@ public class DependencyGraphTest {
 		Node a = dg.getNodeForPredicate(Predicates.getPredicate("a", 0));
 		Node b = dg.getNodeForPredicate(Predicates.getPredicate("b", 0));
 
-		Node nonExistent = new Node(Predicates.getPredicate("notHere", 0));
+		NodeImpl nonExistent = new NodeImpl(Predicates.getPredicate("notHere", 0));
 
 		Assert.assertTrue(DependencyGraphUtils.isReachableFrom(a, a, dg));
 		Assert.assertTrue(DependencyGraphUtils.isReachableFrom(b, a, dg));
@@ -129,7 +131,7 @@ public class DependencyGraphTest {
 		Node d = dg.getNodeForPredicate(Predicates.getPredicate("d", 0));
 		Node f1 = dg.getNodeForPredicate(Predicates.getPredicate("f1", 0));
 		Node x = dg.getNodeForPredicate(Predicates.getPredicate("x", 0));
-		Node notInGraph = new Node(Predicates.getPredicate("notInGraph", 0));
+		Node notInGraph = new NodeImpl(Predicates.getPredicate("notInGraph", 0));
 
 		Assert.assertTrue(DependencyGraphUtils.isReachableFrom(d, a, dg));
 		Assert.assertTrue(DependencyGraphUtils.isReachableFrom(c, a, dg));

@@ -25,7 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.impl;
+package at.ac.tuwien.kr.alpha.api.impl;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -486,13 +486,14 @@ public class AlphaImplTest {
 	 */
 	@Test
 	public void disableStratifiedEvalTest() {
+		// Note: This might be cleaner if the test used the debugSolve method from the interface
 		String progstr = "p(a). q(X) :- p(X).";
 		SystemConfig cfg = new SystemConfig();
 		cfg.setEvaluateStratifiedPart(false);
-		Alpha system = new AlphaImpl(cfg);
+		AlphaImpl system = new AlphaImpl(cfg);
 		ASPCore2Program input = system.readProgramString(progstr);
 		NormalProgram normal = system.normalizeProgram(input);
-		CompiledProgram preprocessed = system.performProgramPreprocessing(InternalProgram.fromNormalProgram(normal));
+		CompiledProgram preprocessed = system.performProgramPreprocessing(normal);
 		Assert.assertFalse("Preprocessed program contains fact derived from stratifiable rule, but should not!",
 				preprocessed.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("q", "a")));
 	}
@@ -502,12 +503,13 @@ public class AlphaImplTest {
 	 */
 	@Test
 	public void enableStratifiedEvalTest() {
+		// Note: This might be cleaner if the test used the debugSolve method from the interface
 		String progstr = "p(a). q(X) :- p(X).";
 		SystemConfig cfg = new SystemConfig();
-		Alpha system = new AlphaImpl(cfg);
+		AlphaImpl system = new AlphaImpl(cfg);
 		ASPCore2Program input = system.readProgramString(progstr);
 		NormalProgram normal = system.normalizeProgram(input);
-		CompiledProgram preprocessed = system.performProgramPreprocessing(InternalProgram.fromNormalProgram(normal));
+		CompiledProgram preprocessed = system.performProgramPreprocessing(normal);
 		Assert.assertTrue("Preprocessed program does not contain fact derived from stratifiable rule, but should!",
 				preprocessed.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("q", "a")));
 	}

@@ -103,3 +103,4 @@ gradle-app.setting
 *.tokens
 /.dbeaver
 /Scripts
+/.vscode/

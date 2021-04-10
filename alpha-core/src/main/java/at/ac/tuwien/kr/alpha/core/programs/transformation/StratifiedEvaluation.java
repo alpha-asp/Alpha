@@ -21,14 +21,13 @@ import at.ac.tuwien.kr.alpha.api.grounder.RuleGroundingInfo;
 import at.ac.tuwien.kr.alpha.api.grounder.RuleGroundingOrder;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
-import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph;
-import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph.SCComponent;
-import at.ac.tuwien.kr.alpha.core.depgraph.Node;
 import at.ac.tuwien.kr.alpha.core.depgraph.StratificationAlgorithm;
 import at.ac.tuwien.kr.alpha.core.grounder.IndexedInstanceStorage;
 import at.ac.tuwien.kr.alpha.core.grounder.WorkingMemory;
@@ -64,7 +63,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	public InternalProgram apply(AnalyzedProgram inputProgram) {
 		// Calculate a stratification and initialize the working memory.
 		ComponentGraph componentGraph = inputProgram.getComponentGraph();
-		List<SCComponent> strata = StratificationAlgorithm.calculateStratification(componentGraph);
+		List<ComponentGraph.SCComponent> strata = StratificationAlgorithm.calculateStratification(componentGraph);
 		predicateDefiningRules = inputProgram.getPredicateDefiningRules();
 
 		// Set up list of atoms which are known to be true - these will be expand by the evaluation.
@@ -87,7 +86,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		literalInstantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(workingMemory));
 
 		// Evaluate the program part covered by the calculated stratification.
-		for (SCComponent currComponent : strata) {
+		for (ComponentGraph.SCComponent currComponent : strata) {
 			evaluateComponent(currComponent);
 		}
 
@@ -101,7 +100,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		return new InternalProgram(outputRules, additionalFacts);
 	}
 
-	private void evaluateComponent(SCComponent comp) {
+	private void evaluateComponent(ComponentGraph.SCComponent comp) {
 		LOGGER.debug("Evaluating component {}", comp);
 		ComponentEvaluationInfo evaluationInfo = getRulesToEvaluate(comp);
 		if (evaluationInfo.isEmpty()) {
@@ -306,13 +305,13 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		workingMemory.addInstance(newAtom, true);
 	}
 
-	private ComponentEvaluationInfo getRulesToEvaluate(SCComponent comp) {
+	private ComponentEvaluationInfo getRulesToEvaluate(ComponentGraph.SCComponent comp) {
 		Set<CompiledRule> nonRecursiveRules = new HashSet<>();
 		Set<CompiledRule> recursiveRules = new HashSet<>();
 
 		// Collect all predicates occurring in heads of rules of the given component.
 		Set<Predicate> headPredicates = new HashSet<>();
-		for (Node node : comp.getNodes()) {
+		for (DependencyGraph.Node node : comp.getNodes()) {
 			headPredicates.add(node.getPredicate());
 		}
 		// Check each predicate whether its defining rules depend on some of the head predicates, i.e., whether there is a

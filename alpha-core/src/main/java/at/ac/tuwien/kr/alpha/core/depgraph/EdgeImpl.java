@@ -25,46 +25,57 @@
  */
 package at.ac.tuwien.kr.alpha.core.depgraph;
 
-import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 
 /**
- * A node in a dependency graph. One node references exactly one predicate. This means that all rule heads deriving the
- * same predicate will be condensed into the same graph node. In some cases this results in more "conservative" results
- * in stratification analysis, where some rules will not be evaluated up-front, although that would be possible.
+ * An edge in a dependency graph to be used in adjacency lists (i.e., only the target of the edge is recorded). Edges
+ * are labelled with a boolean sign indicating the polarity of the edge.
  * 
- * Copyright (c) 2017-2020, the Alpha Team.
+ * Copyright (c) 2019-2020, the Alpha Team.
  */
-public class Node {
+public class EdgeImpl implements DependencyGraph.Edge {
 
-	private final Predicate predicate;
+	private final DependencyGraph.Node target;
+	private final boolean              sign;
 
-	public Node(Predicate predicate) {
-		this.predicate = predicate;
+	/**
+	 * Creates a new edge for a dependency graph. Read as "target depends on source". The sign indicates whether the
+	 * dependency is positive or negative (target node depends on default negated atom).
+	 * Note: working assumption is that strong negation is treated like a positive dependency.
+	 * 
+	 * @param target the target node.
+	 * @param sign the polarity of the edge.
+	 */
+	public EdgeImpl(DependencyGraph.Node target, boolean sign) {
+		this.target = target;
+		this.sign = sign;
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		if (!(o instanceof Node)) {
+		if (!(o instanceof DependencyGraph.Edge)) {
 			return false;
 		}
-		return predicate.equals(((Node) o).predicate);
+		EdgeImpl other = (EdgeImpl) o;
+		return this.target.equals(other.target) && this.sign == other.sign;
 	}
 
 	@Override
 	public int hashCode() {
-		return predicate.hashCode();
+		return ("" + target.getPredicate().toString() + sign).hashCode();
 	}
 
 	@Override
 	public String toString() {
-		return "Node{" + predicate.toString() + "}";
+		return "(" + (sign ? "+" : "-") + ") ---> " + target.toString();
+	}
+	
+	public DependencyGraph.Node getTarget() {
+		return target;
 	}
 
-	public String getLabel() {
-		return predicate.toString();
+	public boolean getSign() {
+		return sign;
 	}
 
-	public Predicate getPredicate() {
-		return predicate;
-	}
 }

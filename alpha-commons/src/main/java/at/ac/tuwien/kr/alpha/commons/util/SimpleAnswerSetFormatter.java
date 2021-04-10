@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.common;
+package at.ac.tuwien.kr.alpha.commons.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.util.AnswerSetFormatter;
 
 public class SimpleAnswerSetFormatter implements AnswerSetFormatter<String> {
 

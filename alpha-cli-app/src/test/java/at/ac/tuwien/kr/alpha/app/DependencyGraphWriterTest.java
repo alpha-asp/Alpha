@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.impl.AlphaImpl;
-import at.ac.tuwien.kr.alpha.core.depgraph.DependencyGraph;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 
 public class DependencyGraphWriterTest {

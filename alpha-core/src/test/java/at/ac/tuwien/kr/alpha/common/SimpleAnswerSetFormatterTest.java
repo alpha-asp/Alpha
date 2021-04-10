@@ -4,9 +4,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.util.AnswerSetFormatter;
+import at.ac.tuwien.kr.alpha.commons.util.SimpleAnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.core.common.AnswerSetBuilder;
-import at.ac.tuwien.kr.alpha.core.common.AnswerSetFormatter;
-import at.ac.tuwien.kr.alpha.core.common.SimpleAnswerSetFormatter;
 
 public class SimpleAnswerSetFormatterTest {
 

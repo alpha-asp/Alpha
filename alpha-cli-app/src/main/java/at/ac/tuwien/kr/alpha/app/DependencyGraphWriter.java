@@ -25,6 +25,9 @@
  */
 package at.ac.tuwien.kr.alpha.app;
 
+
+import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.HashMap;
@@ -32,10 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
-
-import at.ac.tuwien.kr.alpha.core.depgraph.DependencyGraph;
-import at.ac.tuwien.kr.alpha.core.depgraph.Edge;
-import at.ac.tuwien.kr.alpha.core.depgraph.Node;
 
 public class DependencyGraphWriter {
 
@@ -48,29 +47,29 @@ public class DependencyGraphWriter {
 		writeAsDot(graph.getAdjancencyMap(), out);
 	}
 
-	private void writeAsDot(Map<Node, List<Edge>> graph, OutputStream out) {
-		BiFunction<Node, Integer, String> nodeFormatter = this::buildNodeString;
+	private void writeAsDot(Map<DependencyGraph.Node, List<DependencyGraph.Edge>> graph, OutputStream out) {
+		BiFunction<DependencyGraph.Node, Integer, String> nodeFormatter = this::buildNodeString;
 		writeAsDot(graph, out, nodeFormatter);
 	}
 
-	private void writeAsDot(Map<Node, List<Edge>> graph, OutputStream out, BiFunction<Node, Integer, String> nodeFormatter) {
+	private void writeAsDot(Map<DependencyGraph.Node, List<DependencyGraph.Edge>> graph, OutputStream out, BiFunction<DependencyGraph.Node, Integer, String> nodeFormatter) {
 		PrintStream ps = new PrintStream(out);
 		startGraph(ps);
 
-		Set<Map.Entry<Node, List<Edge>>> graphDataEntries = graph.entrySet();
+		Set<Map.Entry<DependencyGraph.Node, List<DependencyGraph.Edge>>> graphDataEntries = graph.entrySet();
 		// First, write all nodes.
 		int nodeCnt = 0;
-		Map<Node, Integer> nodesToNumbers = new HashMap<>();
-		for (Map.Entry<Node, List<Edge>> entry : graphDataEntries) {
+		Map<DependencyGraph.Node, Integer> nodesToNumbers = new HashMap<>();
+		for (Map.Entry<DependencyGraph.Node, List<DependencyGraph.Edge>> entry : graphDataEntries) {
 			ps.print(nodeFormatter.apply(entry.getKey(), nodeCnt));
 			nodesToNumbers.put(entry.getKey(), nodeCnt);
 			nodeCnt++;
 		}
 
 		// Second, write all edges.
-		for (Map.Entry<Node, List<Edge>> entry : graphDataEntries) {
+		for (Map.Entry<DependencyGraph.Node, List<DependencyGraph.Edge>> entry : graphDataEntries) {
 			int fromNodeNum = nodesToNumbers.get(entry.getKey());
-			for (Edge edge : entry.getValue()) {
+			for (DependencyGraph.Edge edge : entry.getValue()) {
 				int toNodeNum = nodesToNumbers.get(edge.getTarget());
 				ps.printf(DependencyGraphWriter.DEFAULT_EDGE_FORMAT, fromNodeNum, toNodeNum, edge.getSign() ? "+" : "-");
 			}
@@ -91,7 +90,7 @@ public class DependencyGraphWriter {
 		ps.println("}");
 	}
 
-	private String buildNodeString(Node n, int nodeNum) {
+	private String buildNodeString(DependencyGraph.Node n, int nodeNum) {
 		return String.format(DependencyGraphWriter.DEFAULT_NODE_FORMAT, nodeNum, n.getLabel());
 	}
 

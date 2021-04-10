@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     implementation project(':alpha-solver')
-    implementation project(':alpha-core')
+    implementation project(':alpha-commons')
 
     implementation group: 'commons-cli',        name: 'commons-cli',          version: '1.3.1'
     implementation group: 'org.apache.poi',     name: 'poi',                  version: '4.1.1'

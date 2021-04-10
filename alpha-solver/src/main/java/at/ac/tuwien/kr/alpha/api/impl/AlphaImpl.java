@@ -43,8 +43,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.DebugSolvingResult;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
@@ -135,23 +138,13 @@ public class AlphaImpl implements Alpha {
 	}
 
 	// TODO make sure to adapt this without exposing internal implementation types
-	@Override
-	public CompiledProgram performProgramPreprocessing(CompiledProgram program) {
+	@VisibleForTesting
+	InternalProgram performProgramPreprocessing(NormalProgram program) {
 		LOGGER.debug("Preprocessing InternalProgram!");
-		CompiledProgram retVal = program;
+		InternalProgram retVal = InternalProgram.fromNormalProgram(program);
 		if (config.isEvaluateStratifiedPart()) {
-			AnalyzedProgram analyzed = new AnalyzedProgram(program.getRules(), program.getFacts());
+			AnalyzedProgram analyzed = new AnalyzedProgram(retVal.getRules(), retVal.getFacts());
 			retVal = new StratifiedEvaluation().apply(analyzed);
-		}
-		return retVal;
-	}
-
-	// TODO make sure to adapt this without exposing internal implementation types
-	public InternalProgram performProgramPreprocessing(AnalyzedProgram program) {
-		LOGGER.debug("Preprocessing AnalyzedProgram!");
-		InternalProgram retVal = program;
-		if (config.isEvaluateStratifiedPart()) {
-			retVal = new StratifiedEvaluation().apply(program);
 		}
 		return retVal;
 	}
@@ -175,24 +168,19 @@ public class AlphaImpl implements Alpha {
 		return solve(normalized, filter);
 	}
 
+	@Override
+	public Stream<AnswerSet> solve(NormalProgram program) {
+		return solve(program, InputConfig.DEFAULT_FILTER);
+	}
+	
 	/**
 	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the
 	 * program analysis aren't of interest.
 	 */
+	@Override
 	public Stream<AnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
-		CompiledProgram preprocessed = performProgramPreprocessing(InternalProgram.fromNormalProgram(program));
+		CompiledProgram preprocessed = performProgramPreprocessing(program);
 		return solve(preprocessed, filter);
-	}
-
-	/**
-	 * Overloaded version of solve({@link InternalProgram}, {@link Predicate}) that uses a default filter (accept
-	 * everything).
-	 * 
-	 * @param program the program to solve
-	 * @return a stream of answer sets
-	 */
-	public Stream<AnswerSet> solve(CompiledProgram program) {
-		return solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
 	/**
@@ -202,7 +190,7 @@ public class AlphaImpl implements Alpha {
 	 * @param filter  {@link Predicate} filtering {@at.ac.tuwien.kr.alpha.common.Predicate}s in the returned answer sets
 	 * @return a Stream of answer sets representing stable models of the given program
 	 */
-	public Stream<AnswerSet> solve(CompiledProgram program, java.util.function.Predicate<Predicate> filter) {
+	private Stream<AnswerSet> solve(CompiledProgram program, java.util.function.Predicate<Predicate> filter) {
 		Stream<AnswerSet> retVal = prepareSolverFor(program, filter).stream();
 		return config.isSortAnswerSets() ? retVal.sorted() : retVal;
 	}
@@ -216,8 +204,7 @@ public class AlphaImpl implements Alpha {
 	 *                set stream from the solver.
 	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program.
 	 */
-	@Override
-	public Solver prepareSolverFor(CompiledProgram program, java.util.function.Predicate<Predicate> filter) {
+	private Solver prepareSolverFor(CompiledProgram program, java.util.function.Predicate<Predicate> filter) {
 		String grounderName = config.getGrounderName();
 		boolean doDebugChecks = config.isDebugInternalChecks();
 
@@ -238,6 +225,28 @@ public class AlphaImpl implements Alpha {
 
 	public void setConfig(SystemConfig config) {
 		this.config = config;
+	}
+
+	@Override
+	public DebugSolvingResult debugSolve(ASPCore2Program program) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public DebugSolvingResult debugSolve(NormalProgram program) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Solver prepareSolverFor(ASPCore2Program program, java.util.function.Predicate<Predicate> filter) {
+		return prepareSolverFor(normalizeProgram(program), filter);
+	}
+
+	@Override
+	public Solver prepareSolverFor(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
+		return prepareSolverFor(performProgramPreprocessing(program), filter);
 	}
 
 }

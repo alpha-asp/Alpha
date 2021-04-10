@@ -25,6 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.core.depgraph;
 
+import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
+
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
@@ -41,9 +43,9 @@ import java.util.Set;
  */
 class DepthFirstSearchAlgorithm {
 
-	private Set<Node> discoveredNodes;	// The "gray" nodes that have been seen but not fully processed yet.
-	private Deque<Node> finishedNodes;	// The "black" nodes that have been processed.
-	private Map<Node, List<Node>> depthFirstReachable;	// Per root node, all others that are reachable from it.
+	private Set<DependencyGraph.Node>                             discoveredNodes;	// The "gray" nodes that have been seen but not fully processed yet.
+	private Deque<DependencyGraph.Node>                           finishedNodes;	// The "black" nodes that have been processed.
+	private Map<DependencyGraph.Node, List<DependencyGraph.Node>> depthFirstReachable;	// Per root node, all others that are reachable from it.
 
 	private DepthFirstSearchAlgorithm() {
 		discoveredNodes = new HashSet<>();
@@ -52,7 +54,7 @@ class DepthFirstSearchAlgorithm {
 		depthFirstReachable.put(null, new ArrayList<>());
 	}
 
-	public static DfsResult performDfs(Map<Node, List<Edge>> graph) {
+	public static DfsResult performDfs(Map<DependencyGraph.Node, List<DependencyGraph.Edge>> graph) {
 		return performDfs(graph.keySet().iterator(), graph);
 	}
 
@@ -67,14 +69,14 @@ class DepthFirstSearchAlgorithm {
 	 * @return a {@link DfsResult} holding all nodes in the sequence they were finished and per root node all its
 	 *         depth-first reachable nodes.
 	 */
-	public static DfsResult performDfs(Iterator<Node> nodeVisitIt, Map<Node, List<Edge>> graph) {
+	public static DfsResult performDfs(Iterator<DependencyGraph.Node> nodeVisitIt, Map<DependencyGraph.Node, List<DependencyGraph.Edge>> graph) {
 		DepthFirstSearchAlgorithm algorithm = new DepthFirstSearchAlgorithm();
 		return algorithm.performDepthFirstSearchAlgorithm(nodeVisitIt, graph);
 	}
 
-	private DfsResult performDepthFirstSearchAlgorithm(Iterator<Node> nodeVisitIt, Map<Node, List<Edge>> graph) {
+	private DfsResult performDepthFirstSearchAlgorithm(Iterator<DependencyGraph.Node> nodeVisitIt, Map<DependencyGraph.Node, List<DependencyGraph.Edge>> graph) {
 		while (nodeVisitIt.hasNext()) {
-			Node currentNode = nodeVisitIt.next();
+			DependencyGraph.Node currentNode = nodeVisitIt.next();
 			if (!discoveredNodes.contains(currentNode)) {
 				depthFirstReachable.get(null).add(currentNode);
 				dfsVisit(currentNode, currentNode, graph);
@@ -86,7 +88,7 @@ class DepthFirstSearchAlgorithm {
 		return dfsResult;
 	}
 
-	private void dfsVisit(Node currNode, Node rootNode, Map<Node, List<Edge>> graph) {
+	private void dfsVisit(DependencyGraph.Node currNode, DependencyGraph.Node rootNode, Map<DependencyGraph.Node, List<DependencyGraph.Edge>> graph) {
 		discoveredNodes.add(currNode);
 
 		// Record root-reachability of current node.
@@ -95,9 +97,9 @@ class DepthFirstSearchAlgorithm {
 		}
 		depthFirstReachable.get(rootNode).add(currNode);
 
-		for (Edge edge : graph.get(currNode)) {
+		for (DependencyGraph.Edge edge : graph.get(currNode)) {
 			// Proceed with adjacent (i.e., deeper) nodes first.
-			Node tmpNeighbor = edge.getTarget();
+			DependencyGraph.Node tmpNeighbor = edge.getTarget();
 			if (!discoveredNodes.contains(tmpNeighbor)) {
 				dfsVisit(tmpNeighbor, rootNode, graph);
 			}
@@ -111,7 +113,7 @@ class DepthFirstSearchAlgorithm {
 	 * - per root node all reachable other nodes (including the root itself).
 	 */
 	static class DfsResult {
-		Deque<Node> finishedNodes;
-		Map<Node, List<Node>> depthFirstReachable;
+		Deque<DependencyGraph.Node>                           finishedNodes;
+		Map<DependencyGraph.Node, List<DependencyGraph.Node>> depthFirstReachable;
 	}
 }

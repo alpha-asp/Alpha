@@ -5,9 +5,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.core.depgraph.DependencyGraph;
-import at.ac.tuwien.kr.alpha.core.depgraph.Edge;
-import at.ac.tuwien.kr.alpha.core.depgraph.Node;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph.Edge;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph.Node;
 
 /**
  * 

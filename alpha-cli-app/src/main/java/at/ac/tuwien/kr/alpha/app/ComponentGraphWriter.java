@@ -30,9 +30,8 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.Map.Entry;
 
-import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph;
-import at.ac.tuwien.kr.alpha.core.depgraph.Node;
-import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph.SCComponent;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 
 public class ComponentGraphWriter {
 
@@ -72,7 +71,7 @@ public class ComponentGraphWriter {
 		contentBuilder.append("<td>Predicates</td>");
 		for (int i = 0; i < cg.getComponents().size(); i++) {
 			contentBuilder.append("<td>");
-			for (Node n : cg.getComponents().get(i).getNodes()) {
+			for (DependencyGraph.Node n : cg.getComponents().get(i).getNodes()) {
 				contentBuilder.append(n.getLabel()).append("<br/>");
 			}
 			contentBuilder.append("</td>");
@@ -84,7 +83,7 @@ public class ComponentGraphWriter {
 	}
 
 	private void writeGraph(PrintStream ps, ComponentGraph cg) {
-		List<SCComponent> components = cg.getComponents();
+		List<ComponentGraph.SCComponent> components = cg.getComponents();
 		// Write the node descriptors for the components.
 		for (int componentId = 0; componentId < components.size(); componentId++) {
 			ps.printf(NODE_FMT, componentId, componentId);
