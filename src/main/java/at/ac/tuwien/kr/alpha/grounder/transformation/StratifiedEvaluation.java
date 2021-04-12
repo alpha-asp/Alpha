@@ -1,21 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import org.apache.commons.collections4.SetUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -37,6 +21,21 @@ import at.ac.tuwien.kr.alpha.grounder.instantiation.AssignmentStatus;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationResult;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiator;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.WorkingMemoryBasedInstantiationStrategy;
+import org.apache.commons.collections4.SetUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 /**
  * Evaluates the stratifiable part of a given (analyzed) ASP program.
@@ -237,7 +236,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			return Collections.emptyList();
 		}
 		for (Instance instance : instances) {
-			Substitution unifyingSubstitution = Substitution.unify(lit, instance, new Substitution());
+			Substitution unifyingSubstitution = Substitution.specializeSubstitution(lit, instance, Substitution.EMPTY_SUBSTITUTION);
 			if (unifyingSubstitution != null) {
 				retVal.add(unifyingSubstitution);
 			}

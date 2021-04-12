@@ -25,22 +25,6 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import static at.ac.tuwien.kr.alpha.TestUtil.atom;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -59,6 +43,21 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import static at.ac.tuwien.kr.alpha.TestUtil.atom;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests {@link NaiveGrounder}
@@ -182,7 +181,7 @@ public class NaiveGrounderTest {
 	}
 
 	/**
-	 * Tests the method {@link NaiveGrounder#getGroundInstantiations(NonGroundRule, RuleGroundingOrder, Substitution, Assignment)} on a predefined program:
+	 * Tests the method {@link NaiveGrounder#getGroundInstantiations(InternalRule, RuleGroundingOrder, Substitution, Assignment)} on a predefined program:
 	 * <code>
 	 *  p1(1). q1(1). <br/>
 	 * 	x :- p1(X), p2(X), q1(Y), q2(Y). <br/>
@@ -223,7 +222,7 @@ public class NaiveGrounderTest {
 
 		grounder.bootstrap();
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
-		final Substitution subst1 = Substitution.unify(startingLiteral, new Instance(ConstantTerm.getInstance(1)), new Substitution());
+		final Substitution subst1 = Substitution.specializeSubstitution(startingLiteral, new Instance(ConstantTerm.getInstance(1)), Substitution.EMPTY_SUBSTITUTION);
 		final BindingResult bindingResult = grounder.getGroundInstantiations(nonGroundRule, groundingOrder, subst1, currentAssignment);
 
 		assertEquals(expectNoGoods, bindingResult.size() > 0);
@@ -264,7 +263,7 @@ public class NaiveGrounderTest {
 	}
 
 	/**
-	 * Tests if {@link NaiveGrounder#getGroundInstantiations(NonGroundRule, RuleGroundingOrder, Substitution, Assignment)}
+	 * Tests if {@link NaiveGrounder#getGroundInstantiations(InternalRule, RuleGroundingOrder, Substitution, Assignment)}
 	 * produces ground instantiations for the rule with ID {@code ruleID} in {@code program} when {@code startingLiteral}
 	 * unified with the numeric instance {@code startingInstance} is used as starting literal and {@code b(1)} is assigned
 	 * {@code bTruth}.
@@ -284,7 +283,7 @@ public class NaiveGrounderTest {
 
 		grounder.bootstrap();
 		final InternalRule nonGroundRule = grounder.getNonGroundRule(ruleID);
-		final Substitution substStartingLiteral = Substitution.unify(startingLiteral, new Instance(ConstantTerm.getInstance(startingInstance)), new Substitution());
+		final Substitution substStartingLiteral = Substitution.specializeSubstitution(startingLiteral, new Instance(ConstantTerm.getInstance(startingInstance)), Substitution.EMPTY_SUBSTITUTION);
 		final BindingResult bindingResult = grounder.getGroundInstantiations(nonGroundRule, nonGroundRule.getGroundingOrders().groundingOrders.get(startingLiteral), substStartingLiteral, currentAssignment);
 		assertEquals(expectNoGoods, bindingResult.size() > 0);
 	}
@@ -358,7 +357,7 @@ public class NaiveGrounderTest {
 	}
 
 	/**
-	 * Tests if {@link NaiveGrounder#getGroundInstantiations(NonGroundRule, RuleGroundingOrder, Substitution, Assignment)}
+	 * Tests if {@link NaiveGrounder#getGroundInstantiations(InternalRule, RuleGroundingOrder, Substitution, Assignment)}
 	 * produces ground instantiations for the rule with ID {@code ruleID} in {@code program} when {@code startingLiteral}
 	 * unified with the numeric instance {@code startingInstance} is used as starting literal and the following
 	 * additional conditions are established:
@@ -397,7 +396,7 @@ public class NaiveGrounderTest {
 
 		grounder.bootstrap();
 		final InternalRule nonGroundRule = grounder.getNonGroundRule(ruleID);
-		final Substitution substStartingLiteral = Substitution.unify(startingLiteral, new Instance(ConstantTerm.getInstance(startingInstance)), new Substitution());
+		final Substitution substStartingLiteral = Substitution.specializeSubstitution(startingLiteral, new Instance(ConstantTerm.getInstance(startingInstance)), Substitution.EMPTY_SUBSTITUTION);
 		final BindingResult bindingResult = grounder.getGroundInstantiations(nonGroundRule, nonGroundRule.getGroundingOrders().groundingOrders.get(startingLiteral), substStartingLiteral, currentAssignment);
 		assertEquals(expectNoGoods, bindingResult.size() > 0);
 		if (bindingResult.size() > 0) {
