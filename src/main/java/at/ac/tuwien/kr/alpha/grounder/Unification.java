@@ -38,10 +38,18 @@ import java.util.Set;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
- * Copyright (c) 2017, the Alpha Team.
+ * Helper methods for unification and instantiation of two given atoms.
+ *
+ * Copyright (c) 2017-2021, the Alpha Team.
  */
 public class Unification {
 
+	/**
+	 * Computes the most-general-unifier of two atoms that share no common variables.
+	 * @param left the one atom to unify with
+	 * @param right to other atom to unify with
+	 * @return the most-general-unifier of the two given atoms if it exists, and null otherwise.
+	 */
 	public static Unifier unifyAtoms(Atom left, Atom right) {
 		return unifyAtoms(left, right, false);
 	}
