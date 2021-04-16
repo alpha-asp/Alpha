@@ -6,7 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
-import at.ac.tuwien.kr.alpha.api.DebugSolvingResult;
+import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
 import at.ac.tuwien.kr.alpha.api.impl.AlphaImpl;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 
@@ -50,9 +50,7 @@ public class DependencyGraphWriterTest {
 				"n6 -> n5 [xlabel=\"+\" labeldistance=0.1]" + LS +
 				"}" + LS;
 		Alpha alpha = new AlphaImpl();
-//		AnalyzedProgram prog = AnalyzedProgram.analyzeNormalProgram(
-//				alpha.normalizeProgram(alpha.readProgramString(asp)));
-		DebugSolvingResult dbgResult = alpha.debugSolve(alpha.readProgramString(asp));
+		DebugSolvingContext dbgResult = alpha.prepareDebugSolve(alpha.readProgramString(asp));
 		DependencyGraph depgraph = dbgResult.getDependencyGraph();
 		DependencyGraphWriter writer = new DependencyGraphWriter();
 		ByteArrayOutputStream out = new ByteArrayOutputStream();

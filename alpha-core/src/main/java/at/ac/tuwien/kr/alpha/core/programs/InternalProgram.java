@@ -99,4 +99,9 @@ public class InternalProgram extends AbstractProgram<CompiledRule> implements Co
 		return Collections.unmodifiableMap(rulesById);
 	}
 
+	public NormalProgram toNormalProgram() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

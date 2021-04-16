@@ -47,7 +47,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.DebugSolvingResult;
+import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
@@ -59,6 +59,8 @@ import at.ac.tuwien.kr.alpha.api.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
@@ -172,7 +174,7 @@ public class AlphaImpl implements Alpha {
 	public Stream<AnswerSet> solve(NormalProgram program) {
 		return solve(program, InputConfig.DEFAULT_FILTER);
 	}
-	
+
 	/**
 	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the
 	 * program analysis aren't of interest.
@@ -228,15 +230,61 @@ public class AlphaImpl implements Alpha {
 	}
 
 	@Override
-	public DebugSolvingResult debugSolve(ASPCore2Program program) {
-		// TODO Auto-generated method stub
-		return null;
+	public DebugSolvingContext prepareDebugSolve(ASPCore2Program program) {
+		return prepareDebugSolve(program, InputConfig.DEFAULT_FILTER);
 	}
 
 	@Override
-	public DebugSolvingResult debugSolve(NormalProgram program) {
-		// TODO Auto-generated method stub
-		return null;
+	public DebugSolvingContext prepareDebugSolve(NormalProgram program) {
+		return prepareDebugSolve(program, InputConfig.DEFAULT_FILTER);
+	}	
+	
+	@Override
+	public DebugSolvingContext prepareDebugSolve(final ASPCore2Program program, java.util.function.Predicate<Predicate> filter) {
+		return prepareDebugSolve(normalizeProgram(program), filter);
+	}
+
+	@Override
+	public DebugSolvingContext prepareDebugSolve(final NormalProgram program, java.util.function.Predicate<Predicate> filter) {
+		final DependencyGraph depGraph;
+		final ComponentGraph compGraph;
+		final AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(program);
+		final NormalProgram preprocessed;
+		if (this.config.isEvaluateStratifiedPart()) {
+			preprocessed = new StratifiedEvaluation().apply(analyzed).toNormalProgram();
+		} else {
+			preprocessed = program;
+		}
+		depGraph = analyzed.getDependencyGraph();
+		compGraph = analyzed.getComponentGraph();
+		final Solver solver = prepareSolverFor(analyzed, filter);
+		return new DebugSolvingContext() {
+			
+			@Override
+			public Solver getSolver() {
+				return solver;
+			}
+			
+			@Override
+			public NormalProgram getPreprocessedProgram() {
+				return preprocessed;
+			}
+			
+			@Override
+			public NormalProgram getNormalizedProgram() {
+				return program;
+			}
+			
+			@Override
+			public DependencyGraph getDependencyGraph() {
+				return depGraph;
+			}
+			
+			@Override
+			public ComponentGraph getComponentGraph() {
+				return compGraph;
+			}
+		};
 	}
 
 	@Override

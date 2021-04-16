@@ -25,9 +25,13 @@ public interface Alpha {
 
 	ASPCore2Program readProgramString(String aspString);
 
-	DebugSolvingResult debugSolve(ASPCore2Program program);
+	DebugSolvingContext prepareDebugSolve(final ASPCore2Program program);
+
+	DebugSolvingContext prepareDebugSolve(final NormalProgram program);	
 	
-	DebugSolvingResult debugSolve(NormalProgram program);
+	DebugSolvingContext prepareDebugSolve(final ASPCore2Program program, java.util.function.Predicate<Predicate> filter);
+
+	DebugSolvingContext prepareDebugSolve(final NormalProgram program, java.util.function.Predicate<Predicate> filter);
 	
 	Stream<AnswerSet> solve(ASPCore2Program program);
 
