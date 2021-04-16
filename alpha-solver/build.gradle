@@ -6,6 +6,7 @@ plugins {
 dependencies {
 	
 	api project(":alpha-api")
+	api project(":alpha-commons")
 	implementation project(":alpha-core")
 	
 	testImplementation group: 'junit', name: 'junit', version: '4.12'

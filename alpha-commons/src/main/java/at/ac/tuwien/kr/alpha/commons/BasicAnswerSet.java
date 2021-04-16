@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.common;
+package at.ac.tuwien.kr.alpha.commons;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySortedSet;
@@ -16,14 +16,14 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-// TODO bring this into public non-core API by using something like an "answer-set-view"
-public class BasicAnswerSet implements AnswerSet {
-	public static final BasicAnswerSet EMPTY = new BasicAnswerSet(emptySortedSet(), emptyMap());
+class BasicAnswerSet implements AnswerSet {
+	
+	static final BasicAnswerSet EMPTY = new BasicAnswerSet(emptySortedSet(), emptyMap());
 
 	private final SortedSet<Predicate> predicates;
 	private final Map<Predicate, SortedSet<Atom>> predicateInstances;
 
-	public BasicAnswerSet(SortedSet<Predicate> predicates, Map<Predicate, SortedSet<Atom>> predicateInstances) {
+	BasicAnswerSet(SortedSet<Predicate> predicates, Map<Predicate, SortedSet<Atom>> predicateInstances) {
 		this.predicates = predicates;
 		this.predicateInstances = predicateInstances;
 	}

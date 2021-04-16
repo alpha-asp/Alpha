@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.common;
+package at.ac.tuwien.kr.alpha.commons;
 
 import static java.util.Collections.singletonList;
 
@@ -10,10 +10,10 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
@@ -96,7 +96,7 @@ public class AnswerSetBuilder {
 		return this;
 	}
 
-	public BasicAnswerSet build() {
+	public AnswerSet build() {
 		flush();
 		return new BasicAnswerSet(predicates, predicateInstances);
 	}

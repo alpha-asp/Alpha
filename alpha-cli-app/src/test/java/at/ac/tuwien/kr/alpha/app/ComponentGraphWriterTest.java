@@ -6,9 +6,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.api.DebugSolvingResult;
 import at.ac.tuwien.kr.alpha.api.impl.AlphaImpl;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
-import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 
 public class ComponentGraphWriterTest {
 	private static final String LS = System.lineSeparator();
@@ -53,9 +53,8 @@ public class ComponentGraphWriterTest {
 				"n2 -> n5 [xlabel=\"+\" labeldistance=0.1]" + LS +
 				"}" + LS;
 		Alpha alpha = new AlphaImpl();
-		AnalyzedProgram prog = AnalyzedProgram.analyzeNormalProgram(
-				alpha.normalizeProgram(alpha.readProgramString(asp)));
-		ComponentGraph compgraph = prog.getComponentGraph();
+		DebugSolvingResult dbgResult = alpha.debugSolve(alpha.readProgramString(asp));
+		ComponentGraph compgraph = dbgResult.getComponentGraph();
 		ComponentGraphWriter writer = new ComponentGraphWriter();
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		writer.writeAsDot(compgraph, out);

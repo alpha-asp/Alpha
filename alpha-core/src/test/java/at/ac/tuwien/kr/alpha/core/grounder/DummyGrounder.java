@@ -51,14 +51,14 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
+import at.ac.tuwien.kr.alpha.commons.AnswerSets;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
-import at.ac.tuwien.kr.alpha.core.common.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-import at.ac.tuwien.kr.alpha.core.common.BasicAnswerSet;
 import at.ac.tuwien.kr.alpha.core.common.IntIterator;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
@@ -150,7 +150,7 @@ public class DummyGrounder implements Grounder {
 			predicateInstances.put(trueAtomPredicate, new TreeSet<>(singleton(internalBasicAtom)));
 		}
 
-		return new BasicAnswerSet(trueAtomPredicates, predicateInstances);
+		return AnswerSets.newAnswerSet(trueAtomPredicates, predicateInstances);
 	}
 
 	@Override

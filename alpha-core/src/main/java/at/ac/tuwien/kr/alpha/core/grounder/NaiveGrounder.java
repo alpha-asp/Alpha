@@ -60,13 +60,13 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.AnswerSets;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-import at.ac.tuwien.kr.alpha.core.common.BasicAnswerSet;
 import at.ac.tuwien.kr.alpha.core.common.IntIterator;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.common.NoGoodInterface;
@@ -283,10 +283,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 
 		if (knownPredicates.isEmpty()) {
-			return BasicAnswerSet.EMPTY;
+			return AnswerSets.EMPTY_SET;
 		}
 
-		return new BasicAnswerSet(knownPredicates, predicateInstances);
+		return AnswerSets.newAnswerSet(knownPredicates, predicateInstances);
 	}
 
 	/**
