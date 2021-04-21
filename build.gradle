@@ -17,7 +17,6 @@ def antlrVersion = '4.7'
 
 repositories {
 	mavenCentral()
-	jcenter()
 }
 
 /* The following configuration directive is a work-around for a fault in the Gradle
@@ -126,6 +125,6 @@ test {
 }
 
 wrapper {
-	gradleVersion = '6.7'
+	gradleVersion = '7.0'
 	distributionType = 'ALL'
 }
