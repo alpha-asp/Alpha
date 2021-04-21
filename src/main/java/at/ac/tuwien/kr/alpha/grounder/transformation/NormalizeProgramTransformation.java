@@ -34,6 +34,8 @@ public class NormalizeProgramTransformation extends ProgramTransformation<InputP
 		NormalProgram retVal = NormalProgram.fromInputProgram(tmpPrg);
 		// Transform intervals - CAUTION - this MUST come before VariableEqualityRemoval!
 		retVal = new IntervalTermToIntervalAtom().apply(retVal);
+		// Rewrite ArithmeticTerms.
+		retVal = new ArithmeticTermsRewriting().apply(retVal);
 		// Remove variable equalities.
 		retVal = new VariableEqualityRemoval().apply(retVal);
 		return retVal;

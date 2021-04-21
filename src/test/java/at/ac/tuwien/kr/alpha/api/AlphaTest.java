@@ -274,7 +274,7 @@ public class AlphaTest {
 
 		Alpha system = new Alpha();
 
-		InputProgram prog = new InputProgram(singletonList(rule), emptyList(), new InlineDirectives());
+		InputProgram prog = new InputProgram(new ArrayList<>(singleton(rule)), emptyList(), new InlineDirectives());
 
 		Set<AnswerSet> actual = system.solve(prog).collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("p").instance("x").build()));

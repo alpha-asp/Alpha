@@ -65,6 +65,14 @@ public class IntervalTerm extends Term {
 		return this.upperBound;
 	}
 
+	public Term getLowerBoundTerm() {
+		return lowerBoundTerm;
+	}
+
+	public Term getUpperBoundTerm() {
+		return upperBoundTerm;
+	}
+
 	@Override
 	public List<VariableTerm> getOccurringVariables() {
 		LinkedList<VariableTerm> variables = new LinkedList<>();
