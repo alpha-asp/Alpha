@@ -33,6 +33,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 import java.util.Arrays;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.VariableNormalizableAtom;
@@ -131,6 +132,12 @@ public class IntervalAtom extends Atom implements VariableNormalizableAtom {
 
 	@Override
 	public Atom withTerms(List<Term> terms) {
-		throw new UnsupportedOperationException("IntervalAtoms do not support setting of terms!");
+		if (terms.size() != 2) {
+			throw new IllegalArgumentException("Cannot set term list " + Util.join("[", terms, "]") + " for interval atom!");
+		}
+		if (!(terms.get(0) instanceof IntervalTerm)) {
+			throw new IllegalArgumentException("IntervalAtom requires first term to be an interval term!");
+		}
+		return new IntervalAtom((IntervalTerm) terms.get(0), terms.get(1));
 	}
 }
