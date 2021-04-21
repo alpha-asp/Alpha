@@ -131,13 +131,13 @@ public class IntervalAtom extends Atom implements VariableNormalizableAtom {
 	}
 
 	@Override
-	public Atom withTerms(List<Term> terms) {
+	public Atom withTerms(List<Term> newTerms) {
 		if (terms.size() != 2) {
 			throw new IllegalArgumentException("Cannot set term list " + Util.join("[", terms, "]") + " for interval atom!");
 		}
 		if (!(terms.get(0) instanceof IntervalTerm)) {
 			throw new IllegalArgumentException("IntervalAtom requires first term to be an interval term!");
 		}
-		return new IntervalAtom((IntervalTerm) terms.get(0), terms.get(1));
+		return new IntervalAtom((IntervalTerm) newTerms.get(0), newTerms.get(1));
 	}
 }
