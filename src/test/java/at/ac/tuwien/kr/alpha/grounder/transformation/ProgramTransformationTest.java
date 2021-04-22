@@ -45,7 +45,7 @@ public class ProgramTransformationTest {
 		try {
 			String inputCode = ProgramTransformationTest.readTestResource(resourceSet + ".in");
 			String expectedResult = ProgramTransformationTest.readTestResource(resourceSet + ".out");
-			InputProgram inputProg = this.alpha.readProgramString(inputCode, Externals.scan(ProgramTransformationTest.class));
+			InputProgram inputProg = alpha.readProgramString(inputCode, Externals.scan(ProgramTransformationTest.class));
 			I transformInput = prepareFunc.apply(inputProg);
 			String beforeTransformProg = transformInput.toString();
 			O transformedProg = transform.apply(transformInput);
@@ -59,22 +59,22 @@ public class ProgramTransformationTest {
 
 	@Test
 	public void choiceHeadToNormalSimpleTest() {
-		this.genericTransformationTest(this.choiceToNormal, Function.identity(), "choice-to-normal.1");
+		genericTransformationTest(choiceToNormal, Function.identity(), "choice-to-normal.1");
 	}
 
 	@Test
 	public void intervalTermToIntervalAtomSimpleTest() {
-		this.genericTransformationTest(this.intervalRewriting, NormalProgram::fromInputProgram, "interval.1");
+		genericTransformationTest(intervalRewriting, NormalProgram::fromInputProgram, "interval.1");
 	}
 
 	@Test
 	public void intervalTermToIntervalAtomExternalAtomTest() {
-		this.genericTransformationTest(this.intervalRewriting, NormalProgram::fromInputProgram, "interval-external_atom");
+		genericTransformationTest(intervalRewriting, NormalProgram::fromInputProgram, "interval-external_atom");
 	}
 
 	@Test
 	public void intervalTermToIntervalAtomComparisonAtomTest() {
-		this.genericTransformationTest(this.intervalRewriting, NormalProgram::fromInputProgram, "interval-comparison_atom");
+		genericTransformationTest(intervalRewriting, NormalProgram::fromInputProgram, "interval-comparison_atom");
 	}
 
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate(name = "say_true")
