@@ -79,7 +79,7 @@ public class ProgramTransformationTest {
 
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate(name = "say_true")
 	public static boolean sayTrue(int val) {
-		// dummy method so we can have an external in the transformation test
+		// Dummy method so we can have an external in the transformation test.
 		return true;
 	}
 
