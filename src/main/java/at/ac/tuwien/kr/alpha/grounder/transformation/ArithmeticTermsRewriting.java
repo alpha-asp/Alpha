@@ -1,10 +1,13 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
@@ -15,12 +18,6 @@ import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Transforms rules such that arithmetic terms only occur in comparison predicates.
@@ -131,29 +128,15 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 	}
 
 	private Atom rewriteAtom(Atom atomToRewrite, List<Literal> bodyLiterals) {
+		if (atomToRewrite instanceof ComparisonAtom) {
+			throw oops("Trying to rewrite ComparisonAtom.");
+		}
 		List<Term> rewrittenTerms = new ArrayList<>();
 		for (Term atomTerm : atomToRewrite.getTerms()) {
 			// Rewrite arithmetic term.
 			rewrittenTerms.add(rewriteArithmeticSubterms(atomTerm, bodyLiterals));
 		}
-
-		// NOTE: we have to construct an atom of the same type as atomToRewrite, there should be a nicer way than that instanceof checks below.
-		if (atomToRewrite instanceof BasicAtom) {
-			return atomToRewrite.withTerms(rewrittenTerms);
-		} else if (atomToRewrite instanceof ComparisonAtom) {
-			throw oops("Trying to rewrite ComparisonAtom.");
-		} else if (atomToRewrite instanceof ExternalAtom) {
-			// Rewrite output terms, as so-far only the input terms list has been rewritten.
-			List<Term> rewrittenOutputTerms = new ArrayList<>();
-			for (Term term : ((ExternalAtom) atomToRewrite).getOutput()) {
-				rewrittenOutputTerms.add(rewriteArithmeticSubterms(term, bodyLiterals));
-			}
-			return new ExternalAtom(atomToRewrite.getPredicate(), ((ExternalAtom) atomToRewrite).getInterpretation(), rewrittenTerms, rewrittenOutputTerms);
-		} else if (atomToRewrite instanceof IntervalAtom) {
-			return new IntervalAtom((IntervalTerm) rewrittenTerms.get(0), rewrittenTerms.get(1));
-		} else {
-			throw oops("Unknown Atom type: " + atomToRewrite.getClass());
-		}
+		return atomToRewrite.withTerms(rewrittenTerms);
 	}
 
 	private boolean containsArithmeticTermsToRewrite(Atom atom) {
