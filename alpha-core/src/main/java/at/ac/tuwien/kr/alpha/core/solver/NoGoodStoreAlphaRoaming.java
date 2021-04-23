@@ -212,6 +212,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		return conflictCause;
 	}
 
+	@Override
 	public ConflictCause add(int id, NoGood noGood) {
 		return add(id, noGood, -1);
 	}

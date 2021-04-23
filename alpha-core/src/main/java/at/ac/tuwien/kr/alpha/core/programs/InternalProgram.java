@@ -16,16 +16,18 @@ import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
+import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.core.grounder.FactIntervalEvaluator;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
+import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 
 /**
  * A program in the internal representation needed for grounder and solver, i.e.: rules must have normal heads, all
  * aggregates must be rewritten, all intervals must be preprocessed (into interval atoms), and equality predicates must
  * be rewritten.
  * <p>
- * Copyright (c) 2017-2020, the Alpha Team.
+ * Copyright (c) 2017-2021, the Alpha Team.
  */
 public class InternalProgram extends AbstractProgram<CompiledRule> implements CompiledProgram {
 
@@ -100,8 +102,11 @@ public class InternalProgram extends AbstractProgram<CompiledRule> implements Co
 	}
 
 	public NormalProgram toNormalProgram() {
-		// TODO Auto-generated method stub
-		return null;
+		List<NormalRule> normalRules = new ArrayList<>();
+		for(CompiledRule rule : getRules()) {
+			normalRules.add(new NormalRuleImpl(rule.getHead(), new ArrayList<>(rule.getBody())));
+		}
+		return new NormalProgramImpl(normalRules, getFacts(), getInlineDirectives());
 	}
 
 }

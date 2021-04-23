@@ -76,10 +76,12 @@ public final class DependencyGraphImpl  implements DependencyGraph {
 		return new DependencyGraphImpl.Builder(nonGroundRules.values()).build();
 	}
 
+	@Override
 	public Node getNodeForPredicate(Predicate p) {
 		return nodesByPredicate.get(p);
 	}
 
+	@Override
 	public Map<Node, List<Edge>> getAdjancencyMap() {
 		return Collections.unmodifiableMap(adjacencyMap);
 	}

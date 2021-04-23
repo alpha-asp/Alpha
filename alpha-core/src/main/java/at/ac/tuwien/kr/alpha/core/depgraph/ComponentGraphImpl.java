@@ -68,10 +68,12 @@ public final class ComponentGraphImpl implements ComponentGraph {
 		return new ComponentGraphImpl.Builder(dg, sccResult).build();
 	}
 
+	@Override
 	public List<SCComponent> getComponents() {
 		return Collections.unmodifiableList(components);
 	}
 
+	@Override
 	public List<SCComponent> getEntryPoints() {
 		return Collections.unmodifiableList(entryPoints);
 	}
@@ -92,10 +94,12 @@ public final class ComponentGraphImpl implements ComponentGraph {
 			this.hasNegativeCycle = hasNegativeCycle;
 		}
 
+		@Override
 		public Map<Integer, Boolean> getDependencyIds() {
 			return Collections.unmodifiableMap(dependencyIds);
 		}
 
+		@Override
 		public Set<Integer> getDependentIds() {
 			return Collections.unmodifiableSet(dependentIds);
 		}
@@ -105,14 +109,17 @@ public final class ComponentGraphImpl implements ComponentGraph {
 			return "SCComponent{" + StringUtils.join(nodes, ",") + "}";
 		}
 
+		@Override
 		public boolean hasNegativeCycle() {
 			return hasNegativeCycle;
 		}
 
+		@Override
 		public List<DependencyGraph.Node> getNodes() {
 			return nodes;
 		}
 
+		@Override
 		public int getId() {
 			return id;
 		}

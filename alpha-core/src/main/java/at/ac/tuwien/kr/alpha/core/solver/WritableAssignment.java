@@ -42,6 +42,7 @@ public interface WritableAssignment extends Assignment {
 	/**
 	 * Backtracks the most recent decision level.
 	 */
+	@Override
 	void backtrack();
 
 	/**

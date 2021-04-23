@@ -61,10 +61,12 @@ public class NodeImpl implements DependencyGraph.Node {
 		return "Node{" + predicate.toString() + "}";
 	}
 
+	@Override
 	public String getLabel() {
 		return predicate.toString();
 	}
 
+	@Override
 	public Predicate getPredicate() {
 		return predicate;
 	}

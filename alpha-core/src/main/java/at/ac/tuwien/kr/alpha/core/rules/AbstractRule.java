@@ -82,6 +82,7 @@ public abstract class AbstractRule<H extends Head> implements Rule<H> {
 		 */
 	}
 
+	@Override
 	public boolean isConstraint() {
 		return head == null;
 	}
@@ -101,10 +102,12 @@ public abstract class AbstractRule<H extends Head> implements Rule<H> {
 		return SetUtils.union(this.bodyLiteralsPositive, this.bodyLiteralsNegative);
 	}
 
+	@Override
 	public Set<Literal> getPositiveBody() {
 		return this.bodyLiteralsPositive;
 	}
 
+	@Override
 	public Set<Literal> getNegativeBody() {
 		return this.bodyLiteralsNegative;
 	}

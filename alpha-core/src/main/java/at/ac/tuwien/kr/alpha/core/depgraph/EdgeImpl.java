@@ -70,10 +70,12 @@ public class EdgeImpl implements DependencyGraph.Edge {
 		return "(" + (sign ? "+" : "-") + ") ---> " + target.toString();
 	}
 	
+	@Override
 	public DependencyGraph.Node getTarget() {
 		return target;
 	}
 
+	@Override
 	public boolean getSign() {
 		return sign;
 	}
