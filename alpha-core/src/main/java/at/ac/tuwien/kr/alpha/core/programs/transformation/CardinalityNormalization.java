@@ -14,17 +14,17 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.NormalHeadImpl;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
+import at.ac.tuwien.kr.alpha.core.programs.ASPCore2ProgramImpl;
+import at.ac.tuwien.kr.alpha.core.rules.LegacyBasicRule;
 
 /**
  * Copyright (c) 2017-2020, the Alpha Team.
@@ -52,7 +52,7 @@ public class CardinalityNormalization extends ProgramTransformation<ASPCore2Prog
 		if (!this.rewritingNecessary(inputProgram)) {
 			return inputProgram;
 		}
-		InputProgram.Builder programBuilder = InputProgram.builder();
+		ASPCore2ProgramImpl.Builder programBuilder = ASPCore2ProgramImpl.builder();
 		programBuilder.addFacts(inputProgram.getFacts());
 		programBuilder.addInlineDirectives(inputProgram.getInlineDirectives());
 		//@formatter:off
@@ -106,7 +106,7 @@ public class CardinalityNormalization extends ProgramTransformation<ASPCore2Prog
 		EnumerationAtom enumerationAtom = new EnumerationAtom(Terms.newVariable("A"), Terms.newVariable("X"), Terms.newVariable("I"));
 		List<Literal> enumerationRuleBody = new ArrayList<>(tmpEnumRule.getBody());
 		enumerationRuleBody.add(enumerationAtom.toLiteral());
-		BasicRule enumerationRule = new BasicRule(tmpEnumRule.getHead(), enumerationRuleBody);
+		LegacyBasicRule enumerationRule = new LegacyBasicRule(tmpEnumRule.getHead(), enumerationRuleBody);
 		programBuilder.addRule(enumerationRule);
 
 		// Add cardinality encoding to program.
@@ -223,18 +223,18 @@ public class CardinalityNormalization extends ProgramTransformation<ASPCore2Prog
 				if (!globalVariables.isEmpty()) {
 					elementLiterals.addAll(rewrittenBody);
 				}
-				BasicRule inputRule = new BasicRule(new NormalHeadImpl(inputHeadAtom), elementLiterals);
+				LegacyBasicRule inputRule = new LegacyBasicRule(new NormalHeadImpl(inputHeadAtom), elementLiterals);
 				additionalRules.add(inputRule);
 			}
 
 			// Create lower bound for the aggregate.
 			Atom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateSubstitution);
 			List<Literal> lowerBoundBody = rewrittenBody; // Note: this is only correct if no other aggregate occurs in the rule.
-			additionalRules.add(new BasicRule(new NormalHeadImpl(lowerBoundHeadAtom), lowerBoundBody));
+			additionalRules.add(new LegacyBasicRule(new NormalHeadImpl(lowerBoundHeadAtom), lowerBoundBody));
 
 		}
 		rewrittenBody.addAll(aggregateOutputAtoms);
-		Rule<Head> rewrittenSrcRule = new BasicRule(rule.getHead(), rewrittenBody);
+		Rule<Head> rewrittenSrcRule = new LegacyBasicRule(rule.getHead(), rewrittenBody);
 		additionalRules.add(rewrittenSrcRule);
 		return additionalRules;
 	}

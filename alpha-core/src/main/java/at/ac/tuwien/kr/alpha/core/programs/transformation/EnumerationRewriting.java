@@ -12,16 +12,16 @@ import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.BasicLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Head;
-import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
+import at.ac.tuwien.kr.alpha.core.programs.ASPCore2ProgramImpl;
+import at.ac.tuwien.kr.alpha.core.rules.LegacyBasicRule;
 
 /**
  * Rewrites the ordinary atom whose name is given in the input program by the enumeration directive #enum_atom_is into
@@ -42,7 +42,7 @@ public class EnumerationRewriting extends ProgramTransformation<ASPCore2Program,
 		}
 		Predicate enumPredicate = Predicates.getPredicate(enumDirective, 3);
 
-		InputProgram.Builder programBuilder = InputProgram.builder().addInlineDirectives(inputProgram.getInlineDirectives());
+		ASPCore2ProgramImpl.Builder programBuilder = ASPCore2ProgramImpl.builder().addInlineDirectives(inputProgram.getInlineDirectives());
 
 		checkFactsAreEnumerationFree(inputProgram.getFacts(), enumPredicate);
 		programBuilder.addFacts(inputProgram.getFacts());
@@ -89,7 +89,7 @@ public class EnumerationRewriting extends ProgramTransformation<ASPCore2Program,
 				rewrittenLiterals.add(new EnumerationAtom(enumIdTerm, valueTerm, indexTerm).toLiteral());
 			}
 			modifiedBodyLiterals.addAll(rewrittenLiterals);
-			rewrittenRules.add(new BasicRule(rule.getHead(), modifiedBodyLiterals));
+			rewrittenRules.add(new LegacyBasicRule(rule.getHead(), modifiedBodyLiterals));
 		}
 		return rewrittenRules;
 	}

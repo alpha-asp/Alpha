@@ -22,6 +22,7 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.literals.NormalLiteral;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
@@ -117,7 +118,7 @@ public class AnalyzeUnjustified {
 		log("Rules unifying with {} are {}", p, rulesUnifyingWithP);
 		rulesLoop: for (RuleAndUnifier ruleUnifier : rulesUnifyingWithP) {
 			Unifier sigma = ruleUnifier.unifier;
-			Set<Literal> bodyR = ruleUnifier.ruleBody;
+			Set<NormalLiteral> bodyR = ruleUnifier.ruleBody;
 			Atom sigmaHr = ruleUnifier.originalHead.substitute(sigma);
 			log("Considering now: {}", ruleUnifier);
 			Set<Unifier> vN = new LinkedHashSet<>(x.getComplementSubstitutions());
@@ -349,7 +350,7 @@ public class AnalyzeUnjustified {
 		}
 		for (FactOrNonGroundRule factOrNonGroundRule : definingRulesAndFacts) {
 			boolean isNonGroundRule = factOrNonGroundRule.nonGroundRule != null;
-			Set<Literal> renamedBody;
+			Set<NormalLiteral> renamedBody;
 			Atom headAtom;
 			if (isNonGroundRule) {
 				// First rename all variables in the rule.
@@ -388,11 +389,11 @@ public class AnalyzeUnjustified {
 	}
 
 	private static class RuleAndUnifier {
-		final Set<Literal> ruleBody;
+		final Set<NormalLiteral> ruleBody;
 		final Unifier unifier;
 		final Atom originalHead;
 
-		private RuleAndUnifier(Set<Literal> ruleBody, Unifier unifier, Atom originalHead) {
+		private RuleAndUnifier(Set<NormalLiteral> ruleBody, Unifier unifier, Atom originalHead) {
 			this.ruleBody = ruleBody;
 			this.unifier = unifier;
 			this.originalHead = originalHead;

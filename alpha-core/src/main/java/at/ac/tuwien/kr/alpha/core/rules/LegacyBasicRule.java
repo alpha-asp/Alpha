@@ -31,18 +31,21 @@ import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Head;
+import at.ac.tuwien.kr.alpha.api.programs.transforms.RuleVisitor;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.commons.rules.AbstractRule;
+import at.ac.tuwien.kr.alpha.commons.rules.NormalRuleImpl;
 
 /**
- * Represents a non-ground rule or a constraint. A {@link BasicRule} has a general {@link Head}, meaning both choice heads and disjunctive
+ * Represents a non-ground rule or a constraint. A {@link LegacyBasicRule} has a general {@link Head}, meaning both choice heads and disjunctive
  * heads are permissible.
  * This implementation represents a rule after being parsed from a given ASP program, but before being transformed into a
  * {@link NormalRuleImpl}.
  */
-public class BasicRule extends AbstractRule<Head> implements Rule<Head> {
+public class LegacyBasicRule<H extends Head> extends AbstractRule<H> implements Rule<H> {
 
-	public BasicRule(Head head, List<Literal> body) {
+	public LegacyBasicRule(H head, List<Literal> body) {
 		super(head, body);
 	}
 
@@ -50,6 +53,11 @@ public class BasicRule extends AbstractRule<Head> implements Rule<Head> {
 	public Atom getHeadAtom() {
 		// TODO this only makes sense for NormalRule
 		throw new UnsupportedOperationException("Only here for compatibility, this will be removed!");
+	}
+
+	@Override
+	public void accept(RuleVisitor visitor) {
+		throw new UnsupportedOperationException("This is nonsense!");
 	}
 
 }

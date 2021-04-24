@@ -43,7 +43,7 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.ASPCore2ProgramImpl;
 
 /**
  * Tests {@link AbstractSolver} using some three-coloring test cases, as described in:
@@ -92,11 +92,11 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 				"col(V,C) :- v(V), c(C), not ncol(V,C)." +
 				"ncol(V,C) :- col(V,D), c(C), C != D." +
 				":- e(V,U), col(V,C), col(U,C).");
-		InputProgram.Builder prgBuilder = InputProgram.builder(tmpPrg);
+		ASPCore2ProgramImpl.Builder prgBuilder = ASPCore2ProgramImpl.builder(tmpPrg);
 		prgBuilder.addFacts(createColors("red", "blue", "green"));
 		prgBuilder.addFacts(createVertices(n));
 		prgBuilder.addFacts(createEdges(n));
-		InputProgram program = prgBuilder.build();
+		ASPCore2ProgramImpl program = prgBuilder.build();
 
 		maybeShuffle(program);
 
@@ -108,7 +108,7 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 		// TODO: check correctness of answer set
 	}
 
-	private void maybeShuffle(InputProgram program) {
+	private void maybeShuffle(ASPCore2ProgramImpl program) {
 		// FIXME since InputProgram is immutable this needs to be reworked a bit if used
 		// No shuffling here.
 	}

@@ -39,6 +39,7 @@ import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.literals.NormalLiteral;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 
@@ -170,7 +171,7 @@ public class RuleGroundingInfoImpl implements RuleGroundingInfo {
 	}
 
 	private void computeGroundingOrder(Literal startingLiteral) {
-		Set<Literal> bodyLiterals = internalRule.getBody();
+		Set<NormalLiteral> bodyLiterals = internalRule.getBody();
 		HashSet<VariableTerm> boundVariables = new HashSet<>();
 		boundVariables.addAll(startingLiteral.getBindingVariables());
 		LinkedHashSet<Literal> remainingLiterals = new LinkedHashSet<>(bodyLiterals);

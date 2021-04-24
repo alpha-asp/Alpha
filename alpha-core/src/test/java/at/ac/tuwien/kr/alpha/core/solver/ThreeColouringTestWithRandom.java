@@ -45,7 +45,7 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.ASPCore2ProgramImpl;
 
 /**
  * Tests {@link AbstractSolver} using some three-coloring test cases, as described in: 
@@ -164,11 +164,11 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 	private void testThreeColouring(int n, boolean shuffle, int seed) throws IOException {
 		ASPCore2Program tmpPrg = new ProgramParserImpl()
 				.parse("col(V,C) :- v(V), c(C), not ncol(V,C)." + "ncol(V,C) :- col(V,D), c(C), C != D." + ":- e(V,U), col(V,C), col(U,C).");
-		InputProgram.Builder prgBuilder = InputProgram.builder().accumulate(tmpPrg);
+		ASPCore2ProgramImpl.Builder prgBuilder = ASPCore2ProgramImpl.builder().accumulate(tmpPrg);
 		prgBuilder.addFacts(createColors("1", "2", "3"));
 		prgBuilder.addFacts(createVertices(n));
 		prgBuilder.addFacts(createEdges(n, shuffle, seed));
-		InputProgram program = prgBuilder.build();
+		ASPCore2ProgramImpl program = prgBuilder.build();
 
 		Solver solver = getInstance(program);
 		Optional<AnswerSet> answerSet = solver.stream().findAny();

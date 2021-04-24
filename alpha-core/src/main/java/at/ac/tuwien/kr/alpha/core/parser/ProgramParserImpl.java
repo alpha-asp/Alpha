@@ -22,7 +22,7 @@ import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpreta
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.ASPCore2ProgramImpl;
 
 public class ProgramParserImpl implements ProgramParser {
 
@@ -147,7 +147,7 @@ public class ProgramParserImpl implements ProgramParser {
 
 	@Override
 	public ASPCore2Program parse(Map<String, PredicateInterpretation> externalPredicateDefinitions, Path... programSources) throws IOException {
-		InputProgram.Builder bld = InputProgram.builder();
+		ASPCore2ProgramImpl.Builder bld = ASPCore2ProgramImpl.builder();
 		for (Path src : programSources) {
 			bld.accumulate(parse(src, externalPredicateDefinitions));
 		}
@@ -156,7 +156,7 @@ public class ProgramParserImpl implements ProgramParser {
 
 	@Override
 	public ASPCore2Program parse(Iterable<Path> programSources, Map<String, PredicateInterpretation> externalPredicateDefinitions) throws IOException {
-		InputProgram.Builder bld = InputProgram.builder();
+		ASPCore2ProgramImpl.Builder bld = ASPCore2ProgramImpl.builder();
 		for (Path src : programSources) {
 			bld.accumulate(parse(src, externalPredicateDefinitions));
 		}

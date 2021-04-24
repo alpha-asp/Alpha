@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.rules;
+package at.ac.tuwien.kr.alpha.commons.rules;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -10,8 +10,8 @@ import org.apache.commons.collections4.SetUtils;
 
 import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 
 /**
  * An abstract representation of a rule with a specific type of @{link Head} (type parameter H)
@@ -20,17 +20,17 @@ import at.ac.tuwien.kr.alpha.api.rules.Rule;
  * 
  *            Copyright (c) 2017-2019, the Alpha Team.
  */
-public abstract class AbstractRule<H extends Head> implements Rule<H> {
+abstract class AbstractRule<H extends Head, L extends Literal> implements Rule<H, L>{
 
 	private final H head;
-	private final Set<Literal> bodyLiteralsPositive;
-	private final Set<Literal> bodyLiteralsNegative;
+	private final Set<L> bodyLiteralsPositive;
+	private final Set<L> bodyLiteralsNegative;
 
-	public AbstractRule(H head, List<Literal> body) {
+	AbstractRule(H head, List<L> body) {
 		this.head = head;
-		Set<Literal> positiveBody = new LinkedHashSet<>();
-		Set<Literal> negativeBody = new LinkedHashSet<>();
-		for (Literal bodyLiteral : body) {
+		Set<L> positiveBody = new LinkedHashSet<>();
+		Set<L> negativeBody = new LinkedHashSet<>();
+		for (L bodyLiteral : body) {
 			if (bodyLiteral.isNegated()) {
 				negativeBody.add(bodyLiteral);
 			} else {
@@ -98,17 +98,17 @@ public abstract class AbstractRule<H extends Head> implements Rule<H> {
 	}
 
 	@Override
-	public Set<Literal> getBody() {
+	public Set<L> getBody() {
 		return SetUtils.union(this.bodyLiteralsPositive, this.bodyLiteralsNegative);
 	}
 
 	@Override
-	public Set<Literal> getPositiveBody() {
+	public Set<L> getPositiveBody() {
 		return this.bodyLiteralsPositive;
 	}
 
 	@Override
-	public Set<Literal> getNegativeBody() {
+	public Set<L> getNegativeBody() {
 		return this.bodyLiteralsNegative;
 	}
 
@@ -125,7 +125,7 @@ public abstract class AbstractRule<H extends Head> implements Rule<H> {
 		if (!(obj instanceof AbstractRule)) {
 			return false;
 		}
-		AbstractRule<?> other = (AbstractRule<?>) obj;
+		AbstractRule<?, ?> other = (AbstractRule<?, ?>) obj;
 		return Objects.equals(this.bodyLiteralsNegative, other.bodyLiteralsNegative)
 				&& Objects.equals(this.bodyLiteralsPositive, other.bodyLiteralsPositive)
 				&& Objects.equals(this.head, other.head);

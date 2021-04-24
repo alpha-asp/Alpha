@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.rules.heads;
+package at.ac.tuwien.kr.alpha.commons.rules.heads;
 
 import static at.ac.tuwien.kr.alpha.api.Util.join;
 
@@ -6,8 +6,8 @@ import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead;
+import at.ac.tuwien.kr.alpha.api.programs.literals.ASPCore2Literal;
+import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 
 /**
@@ -26,9 +26,9 @@ public class ChoiceHeadImpl implements ChoiceHead {
 
 	public static class ChoiceElementImpl implements ChoiceElement {
 		public final Atom choiceAtom;
-		public final List<Literal> conditionLiterals;
+		public final List<ASPCore2Literal> conditionLiterals;
 
-		public ChoiceElementImpl(Atom choiceAtom, List<Literal> conditionLiterals) {
+		public ChoiceElementImpl(Atom choiceAtom, List<ASPCore2Literal> conditionLiterals) {
 			this.choiceAtom = choiceAtom;
 			this.conditionLiterals = conditionLiterals;
 		}
@@ -50,7 +50,7 @@ public class ChoiceHeadImpl implements ChoiceHead {
 		}
 
 		@Override
-		public List<Literal> getConditionLiterals() {
+		public List<ASPCore2Literal> getConditionLiterals() {
 			return conditionLiterals;
 		}
 	}

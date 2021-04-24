@@ -17,7 +17,7 @@ import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.ChoiceHeadToNormal;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.LegacyChoiceHeadToNormal;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.IntervalTermToIntervalAtom;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
 
@@ -29,7 +29,7 @@ public class ProgramTransformationTest {
 
 	private static final ProgramParser PARSER = new ProgramParserImpl();
 
-	private ChoiceHeadToNormal choiceToNormal = new ChoiceHeadToNormal();
+	private LegacyChoiceHeadToNormal choiceToNormal = new LegacyChoiceHeadToNormal();
 	private IntervalTermToIntervalAtom intervalRewriting = new IntervalTermToIntervalAtom();
 
 	private static String readTestResource(String resource) throws IOException {

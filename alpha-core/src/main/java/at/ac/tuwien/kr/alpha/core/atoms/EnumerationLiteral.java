@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.programs.literals.BasicLiteral;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.literals.AbstractLiteral;
@@ -12,7 +13,7 @@ import at.ac.tuwien.kr.alpha.commons.literals.AbstractLiteral;
 /**
  * Copyright (c) 2018, the Alpha Team.
  */
-public class EnumerationLiteral extends AbstractLiteral {
+public class EnumerationLiteral extends AbstractLiteral implements BasicLiteral {
 
 	public EnumerationLiteral(EnumerationAtom atom) {
 		super(atom, true);

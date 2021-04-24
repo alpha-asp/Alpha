@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.rules.heads;
+package at.ac.tuwien.kr.alpha.commons.rules.heads;
 
 /**
  * Represents the head of a rule, i.e., either a choice or a disjunction of atoms, but not both. For normal rules the disjunction contains only one atom.

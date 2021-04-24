@@ -37,7 +37,7 @@ import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.literals.BasicLiteral;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
@@ -108,7 +108,7 @@ class BasicAtomImpl extends AbstractAtom implements BasicAtom {
 	}
 
 	@Override
-	public Literal toLiteral(boolean positive) {
+	public BasicLiteral toLiteral(boolean positive) {
 		return Literals.fromAtom(this, positive);
 	}
 

@@ -6,8 +6,9 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.rules.Head;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 
 /**
  * The parent type for all kinds of programs. Defines a program's basic structure (facts + rules + inlineDirectives)
@@ -16,7 +17,7 @@ import at.ac.tuwien.kr.alpha.api.rules.Rule;
  *            implementation permits
  *            Copyright (c) 2019, the Alpha Team.
  */
-public abstract class AbstractProgram<R extends Rule<? extends Head>> {
+public abstract class AbstractProgram<R extends Rule<? extends Head, ? extends Literal>> {
 
 	private final List<R> rules;
 	private final List<Atom> facts;

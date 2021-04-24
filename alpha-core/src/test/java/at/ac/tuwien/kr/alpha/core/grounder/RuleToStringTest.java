@@ -33,16 +33,16 @@ import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
-import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.commons.rules.NormalRuleImpl;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
+import at.ac.tuwien.kr.alpha.core.rules.LegacyBasicRule;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
-import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 
 /**
- * Tests {@link BasicRule#toString()} and {@link InternalRule#toString()}.
+ * Tests {@link LegacyBasicRule#toString()} and {@link InternalRule#toString()}.
  */
 public class RuleToStringTest {
 	private final ProgramParser parser = new ProgramParserImpl();

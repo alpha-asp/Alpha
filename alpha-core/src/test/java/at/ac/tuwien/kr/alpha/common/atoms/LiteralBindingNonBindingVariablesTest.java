@@ -41,8 +41,8 @@ import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpreta
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Head;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.ASPCore2Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.IntPredicateInterpretation;
@@ -76,7 +76,7 @@ public class LiteralBindingNonBindingVariablesTest {
 
 	@Test
 	public void testPositiveComparisonLiteral_EQ_LeftAssigning() {
-		Rule<Head> rule = parser.parse("p(X) :- q(X,Y), Y = 5.").getRules().get(0);
+		ASPCore2Rule<? extends Head> rule = parser.parse("p(X) :- q(X,Y), Y = 5.").getRules().get(0);
 		Literal literal = rule.getBody().stream().filter((lit) -> lit.getPredicate() == ComparisonOperators.EQ.toPredicate()).findFirst().get();
 		assertEquals(false, literal.isNegated());
 		expectVariables(literal.getBindingVariables(), "Y");
@@ -85,7 +85,7 @@ public class LiteralBindingNonBindingVariablesTest {
 
 	@Test
 	public void testNegativeComparisonLiteral_EQ_LeftAssigning() {
-		Rule<Head> rule = parser.parse("p(X) :- q(X,Y), not Y = 5.").getRules().get(0);
+		ASPCore2Rule<? extends Head> rule = parser.parse("p(X) :- q(X,Y), not Y = 5.").getRules().get(0);
 		Literal literal = rule.getNegativeBody().stream().findFirst().get();
 		assertEquals(true, literal.isNegated());
 		expectVariables(literal.getBindingVariables());
@@ -94,7 +94,7 @@ public class LiteralBindingNonBindingVariablesTest {
 
 	@Test
 	public void testPositiveComparisonLiteral_EQ_RightAssigning() {
-		Rule<Head> rule = parser.parse("p(X) :- q(X,Y), 5 = Y.").getRules().get(0);
+		ASPCore2Rule<? extends Head> rule = parser.parse("p(X) :- q(X,Y), 5 = Y.").getRules().get(0);
 		Literal literal = rule.getBody().stream().filter((lit) -> lit.getPredicate() == ComparisonOperators.EQ.toPredicate()).findFirst().get();
 		assertEquals(false, literal.isNegated());
 		expectVariables(literal.getBindingVariables(), "Y");
@@ -112,7 +112,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	@Test
 	@Ignore("Literals of this kind are compiled away by VariableEqualityRemoval")
 	public void testPositiveComparisonLiteral_EQ_Bidirectional() {
-		Rule<Head> rule = parser.parse("p(X) :- q(X,Y), X = Y.").getRules().get(0);
+		ASPCore2Rule<? extends Head> rule = parser.parse("p(X) :- q(X,Y), X = Y.").getRules().get(0);
 		Literal literal = rule.getBody().stream().filter((lit) -> lit.getPredicate() == ComparisonOperators.EQ.toPredicate()).findFirst().get();
 		assertEquals(false, literal.isNegated());
 		expectVariables(literal.getBindingVariables());
@@ -129,7 +129,7 @@ public class LiteralBindingNonBindingVariablesTest {
 
 	@Test
 	public void testPositiveComparisonLiteral_NEQ_LeftAssigning() {
-		Rule<Head> rule = parser.parse("p(X) :- q(X,Y), Y != 5.").getRules().get(0);
+		ASPCore2Rule<? extends Head> rule = parser.parse("p(X) :- q(X,Y), Y != 5.").getRules().get(0);
 		Literal literal = rule.getBody().stream().filter((lit) -> lit.getPredicate() == ComparisonOperators.NE.toPredicate()).findFirst().get();
 		assertEquals(false, literal.isNegated());
 		expectVariables(literal.getBindingVariables());
@@ -146,7 +146,7 @@ public class LiteralBindingNonBindingVariablesTest {
 
 	@Test
 	public void testPositiveComparisonLiteral_NEQ_RightAssigning() {
-		Rule<Head> rule = parser.parse("p(X) :- q(X,Y), 5 != Y.").getRules().get(0);
+		ASPCore2Rule<? extends Head> rule = parser.parse("p(X) :- q(X,Y), 5 != Y.").getRules().get(0);
 		Literal literal = rule.getBody().stream().filter((lit) -> lit.getPredicate() == ComparisonOperators.NE.toPredicate()).findFirst().get();
 		assertEquals(false, literal.isNegated());
 		expectVariables(literal.getBindingVariables());
@@ -163,7 +163,7 @@ public class LiteralBindingNonBindingVariablesTest {
 
 	@Test
 	public void testPositiveComparisonLiteral_NEQ_Bidirectional() {
-		Rule<Head> rule = parser.parse("p(X) :- q(X,Y), X != Y.").getRules().get(0);
+		ASPCore2Rule<? extends Head> rule = parser.parse("p(X) :- q(X,Y), X != Y.").getRules().get(0);
 		Literal literal = rule.getBody().stream().filter((lit) -> lit.getPredicate() == ComparisonOperators.NE.toPredicate()).findFirst().get();
 		assertEquals(false, literal.isNegated());
 		expectVariables(literal.getBindingVariables());
@@ -182,7 +182,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	@Test
 	public void testPositiveExternalLiteral() {
 		externals.put("ext", new IntPredicateInterpretation(i -> i > 0));
-		Rule<Head> rule = parser.parse("p(X) :- q(Y), &ext[Y](X).", externals).getRules().get(0);
+		ASPCore2Rule<? extends Head> rule = parser.parse("p(X) :- q(Y), &ext[Y](X).", externals).getRules().get(0);
 		Literal literal = rule.getBody().stream().filter((lit) -> lit.getPredicate().getName().equals("ext")).findFirst().get();
 		assertEquals(false, literal.isNegated());
 		expectVariables(literal.getBindingVariables(), "X");

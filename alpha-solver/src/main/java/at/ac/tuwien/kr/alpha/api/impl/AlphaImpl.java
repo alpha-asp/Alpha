@@ -67,7 +67,7 @@ import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.ASPCore2ProgramImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
@@ -89,7 +89,7 @@ public class AlphaImpl implements Alpha {
 
 	@Override
 	public ASPCore2Program readProgram(InputConfig cfg) throws IOException {
-		InputProgram.Builder prgBuilder = InputProgram.builder();
+		ASPCore2ProgramImpl.Builder prgBuilder = ASPCore2ProgramImpl.builder();
 		ASPCore2Program tmpProg;
 		if (!cfg.getFiles().isEmpty()) {
 			tmpProg = readProgramFiles(cfg.isLiterate(), cfg.getPredicateMethods(), cfg.getFiles());
@@ -109,7 +109,7 @@ public class AlphaImpl implements Alpha {
 
 	@Override
 	public ASPCore2Program readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
-		InputProgram.Builder prgBuilder = InputProgram.builder();
+		ASPCore2ProgramImpl.Builder prgBuilder = ASPCore2ProgramImpl.builder();
 		ASPCore2Program tmpProg;
 		for (Path path : paths) {
 			InputStream stream;

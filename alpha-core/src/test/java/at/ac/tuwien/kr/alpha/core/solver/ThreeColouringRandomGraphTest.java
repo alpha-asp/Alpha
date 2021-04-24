@@ -42,7 +42,7 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.ASPCore2ProgramImpl;
 
 public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 	@Test(timeout = 1000)
@@ -94,10 +94,10 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 				":- e(N1,N2), blue(N1), blue(N2)." +
 				":- e(N1,N2), red(N1), red(N2)." +
 				":- e(N1,N2), green(N1), green(N2).");
-		InputProgram.Builder prgBuilder = InputProgram.builder(tmpPrg);
+		ASPCore2ProgramImpl.Builder prgBuilder = ASPCore2ProgramImpl.builder(tmpPrg);
 		prgBuilder.addFacts(createVertices(nVertices));
 		prgBuilder.addFacts(createEdges(nVertices, nEdges));
-		InputProgram program = prgBuilder.build();
+		ASPCore2ProgramImpl program = prgBuilder.build();
 		maybeShuffle(program);
 
 		Optional<AnswerSet> answerSet = getInstance(program).stream().findAny();
@@ -106,7 +106,7 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 		// TODO: check correctness of answer set
 	}
 
-	private void maybeShuffle(InputProgram program) {
+	private void maybeShuffle(ASPCore2ProgramImpl program) {
 
 		// TODO: switch on if different rule orderings in the encoding are desired (e.g. for benchmarking purposes)
 		// FIXME since InputProgram is immutable this needs to be reworked a bit if used

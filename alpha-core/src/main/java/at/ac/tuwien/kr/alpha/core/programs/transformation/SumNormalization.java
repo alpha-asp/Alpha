@@ -13,17 +13,17 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.NormalHeadImpl;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
+import at.ac.tuwien.kr.alpha.core.programs.ASPCore2ProgramImpl;
+import at.ac.tuwien.kr.alpha.core.rules.LegacyBasicRule;
 
 /**
  * Rewrites #sum aggregates into normal rules.
@@ -55,7 +55,7 @@ public class SumNormalization extends ProgramTransformation<ASPCore2Program, ASP
 		// Connect/Rewrite every aggregate in each rule.
 		List<Rule<Head>> rewrittenRules = rewriteAggregates(inputProgram.getRules());
 
-		InputProgram.Builder prgBuilder = InputProgram.builder();
+		ASPCore2ProgramImpl.Builder prgBuilder = ASPCore2ProgramImpl.builder();
 		prgBuilder.addFacts(inputProgram.getFacts());
 		ASPCore2Program summationEncoding = makePredicatesInternal(new ProgramParserImpl().parse(summationSubprogram));
 		prgBuilder.accumulate(summationEncoding);
@@ -67,7 +67,7 @@ public class SumNormalization extends ProgramTransformation<ASPCore2Program, ASP
 		EnumerationAtom enumerationAtom = new EnumerationAtom(Terms.newVariable("A"), Terms.newVariable("X"), Terms.newVariable("I"));
 		List<Literal> enumerationRuleBody = new ArrayList<>(tmpEnumRule.getBody());
 		enumerationRuleBody.add(enumerationAtom.toLiteral());
-		BasicRule enumerationRule = new BasicRule(tmpEnumRule.getHead(), enumerationRuleBody);
+		LegacyBasicRule enumerationRule = new LegacyBasicRule(tmpEnumRule.getHead(), enumerationRuleBody);
 		prgBuilder.addRule(enumerationRule);
 
 		return prgBuilder.build();
@@ -184,18 +184,18 @@ public class SumNormalization extends ProgramTransformation<ASPCore2Program, ASP
 				if (!globalVariables.isEmpty()) {
 					elementLiterals.addAll(rewrittenBody);
 				}
-				BasicRule inputRule = new BasicRule(new NormalHeadImpl(inputHeadAtom), elementLiterals);
+				LegacyBasicRule inputRule = new LegacyBasicRule(new NormalHeadImpl(inputHeadAtom), elementLiterals);
 				additionalRules.add(inputRule);
 			}
 
 			// Create lower bound for the aggregate.
 			Atom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateUnifier);
 			List<Literal> lowerBoundBody = rewrittenBody; // Note: this is only correct if no other aggregate occurs in the rule.
-			additionalRules.add(new BasicRule(new NormalHeadImpl(lowerBoundHeadAtom), lowerBoundBody));
+			additionalRules.add(new LegacyBasicRule(new NormalHeadImpl(lowerBoundHeadAtom), lowerBoundBody));
 		}
 		if (aggregatesInRule > 0) {
 			rewrittenBody.addAll(aggregateOutputAtoms);
-			additionalRules.add(new BasicRule(rule.getHead(), rewrittenBody));
+			additionalRules.add(new LegacyBasicRule(rule.getHead(), rewrittenBody));
 		} else {
 			// Return original rule if no aggregate occurs in it.
 			additionalRules.add(rule);

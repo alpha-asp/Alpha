@@ -36,14 +36,15 @@ import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.rules.NormalRuleImpl;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.NormalHeadImpl;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingInfoImpl;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
  * Represents a normal rule or a constraint for the semi-naive grounder.
@@ -92,7 +93,7 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 		InternalRule.ID_GENERATOR.resetGenerator();
 	}
 
-	public static CompiledRule fromNormalRule(Rule<NormalHead> rule) {
+	public static CompiledRule fromNormalRule(NormalRule rule) {
 		return new InternalRule(rule.isConstraint() ? null : new NormalHeadImpl(rule.getHeadAtom()), new ArrayList<>(rule.getBody()));
 	}
 
