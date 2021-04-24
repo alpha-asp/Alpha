@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.grounder;
+package at.ac.tuwien.kr.alpha.core.grounder.transformation;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
+import at.ac.tuwien.kr.alpha.core.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.ChoiceHeadToNormal;
@@ -22,11 +23,11 @@ import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
 
 public class ProgramTransformationTest {
 
-	private static final ProgramParser PARSER = new ProgramParserImpl();
-	
 	private static final Logger LOGGER = LoggerFactory.getLogger(ProgramTransformationTest.class);
 
 	private static final String TESTFILES_PATH = "/transform-test/";
+
+	private static final ProgramParser PARSER = new ProgramParserImpl();
 
 	private ChoiceHeadToNormal choiceToNormal = new ChoiceHeadToNormal();
 	private IntervalTermToIntervalAtom intervalRewriting = new IntervalTermToIntervalAtom();
@@ -48,7 +49,7 @@ public class ProgramTransformationTest {
 		try {
 			String inputCode = ProgramTransformationTest.readTestResource(resourceSet + ".in");
 			String expectedResult = ProgramTransformationTest.readTestResource(resourceSet + ".out");
-			ASPCore2Program inputProg = PARSER.parse(inputCode);
+			ASPCore2Program inputProg = PARSER.parse(inputCode, Externals.scan(ProgramTransformationTest.class));
 			I transformInput = prepareFunc.apply(inputProg);
 			String beforeTransformProg = transformInput.toString();
 			O transformedProg = transform.apply(transformInput);
@@ -62,12 +63,28 @@ public class ProgramTransformationTest {
 
 	@Test
 	public void choiceHeadToNormalSimpleTest() {
-		this.genericTransformationTest(this.choiceToNormal, Function.identity(), "choice-to-normal.1");
+		genericTransformationTest(choiceToNormal, Function.identity(), "choice-to-normal.1");
 	}
 
 	@Test
 	public void intervalTermToIntervalAtomSimpleTest() {
-		this.genericTransformationTest(this.intervalRewriting, NormalProgramImpl::fromInputProgram, "interval.1");
+		genericTransformationTest(intervalRewriting, NormalProgramImpl::fromInputProgram, "interval.1");
+	}
+
+	@Test
+	public void intervalTermToIntervalAtomExternalAtomTest() {
+		genericTransformationTest(intervalRewriting, NormalProgramImpl::fromInputProgram, "interval-external_atom");
+	}
+
+	@Test
+	public void intervalTermToIntervalAtomComparisonAtomTest() {
+		genericTransformationTest(intervalRewriting, NormalProgramImpl::fromInputProgram, "interval-comparison_atom");
+	}
+
+	@at.ac.tuwien.kr.alpha.api.externals.Predicate(name = "say_true")
+	public static boolean sayTrue(int val) {
+		// Dummy method so we can have an external in the transformation test.
+		return true;
 	}
 
 }

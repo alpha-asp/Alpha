@@ -32,6 +32,7 @@ import static at.ac.tuwien.kr.alpha.api.Util.oops;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
@@ -42,6 +43,12 @@ import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
  */
 public class Unification {
 
+	/**
+	 * Computes the most-general-unifier of two atoms that share no common variables.
+	 * @param left the one atom to unify with
+	 * @param right to other atom to unify with
+	 * @return the most-general-unifier of the two given atoms if it exists, and null otherwise.
+	 */
 	public static Unifier unifyAtoms(Atom left, Atom right) {
 		return unifyAtoms(left, right, false);
 	}
@@ -108,6 +115,25 @@ public class Unification {
 				if (!unifyTerms(leftTerm, rightTerm, currentSubstitution, keepLeftAsIs)) {
 					return false;
 				}
+			}
+			return true;
+		}
+		if (leftSubs instanceof ArithmeticTerm && rightSubs instanceof ArithmeticTerm) {
+			// ArithmeticTerms are similar to FunctionTerms, i.e. if the operator is the same and its subterms unify, the ArithmeticTerms unify.
+			final ArithmeticTerm leftArithmeticTerm = (ArithmeticTerm) leftSubs;
+			final ArithmeticTerm rightArithmeticTerm = (ArithmeticTerm) rightSubs;
+			if (!leftArithmeticTerm.getOperator().equals(rightArithmeticTerm.getOperator())) {
+				return false;
+			}
+			final Term leftTermLeftSubterm = leftArithmeticTerm.getLeftOperand();
+			final Term rightTermLeftSubterm = rightArithmeticTerm.getLeftOperand();
+			if (!unifyTerms(leftTermLeftSubterm, rightTermLeftSubterm, currentSubstitution, keepLeftAsIs)) {
+				return false;
+			}
+			final Term leftTermRightSubterm = leftArithmeticTerm.getRightOperand();
+			final Term rightTermRightSubterm = rightArithmeticTerm.getRightOperand();
+			if (!unifyTerms(leftTermRightSubterm, rightTermRightSubterm, currentSubstitution, keepLeftAsIs)) {
+				return false;
 			}
 			return true;
 		}

@@ -25,9 +25,9 @@ jobs:
       # LTS and in "Premier Support" as of 2019-03 (until 2023-09)
       jdk: openjdk11
     - dist: focal
-      # Not succeeded as of 2020-10. Scheduled to be succeeded by
-      # Java 16 in 2021-03, see http://openjdk.java.net/projects/jdk/16/
-      jdk: openjdk15
+      # Not succeeded as of 2021-04. Scheduled to be succeeded by
+      # Java 17 in 2021-09, see http://openjdk.java.net/projects/jdk/17/
+      jdk: openjdk16
 
 # As of 2016-06 Travis CI is running an outdated
 # version of Gradle, so this workaround fetches

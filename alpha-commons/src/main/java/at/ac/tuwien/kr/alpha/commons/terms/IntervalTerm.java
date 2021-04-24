@@ -67,6 +67,14 @@ public class IntervalTerm extends AbstractTerm {
 		return this.upperBound;
 	}
 
+	public Term getLowerBoundTerm() {
+		return lowerBoundTerm;
+	}
+
+	public Term getUpperBoundTerm() {
+		return upperBoundTerm;
+	}
+
 	@Override
 	public Set<VariableTerm> getOccurringVariables() {
 		Set<VariableTerm> variables = new LinkedHashSet<>();

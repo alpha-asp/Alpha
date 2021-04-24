@@ -131,8 +131,14 @@ public class IntervalAtom extends AbstractAtom implements VariableNormalizableAt
 	}
 
 	@Override
-	public Atom withTerms(List<Term> terms) {
-		throw new UnsupportedOperationException("IntervalAtoms do not support setting of terms!");
+	public Atom withTerms(List<Term> newTerms) {
+		if (newTerms.size() != 2) {
+			throw new IllegalArgumentException("Cannot set term list " + Util.join("[", newTerms, "]") + " for interval atom!");
+		}
+		if (!(newTerms.get(0) instanceof IntervalTerm)) {
+			throw new IllegalArgumentException("IntervalAtom requires first term to be an interval term!");
+		}
+		return new IntervalAtom((IntervalTerm) newTerms.get(0), newTerms.get(1));
 	}
 
 }

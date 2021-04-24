@@ -32,13 +32,16 @@ import org.junit.Test;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.CardinalityNormalization;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.SumNormalization;
 
 /**
@@ -48,14 +51,14 @@ import at.ac.tuwien.kr.alpha.core.programs.transformation.SumNormalization;
 public abstract class AggregatesTest extends AbstractSolverTests {
 
 	private static final String LS = System.lineSeparator();
-	
+
 	@Test
 	public void testAggregate_Count_Ground_Positive() throws IOException {
 		String program = "a." + LS
 				+ "b :- 1 <= #count { 1 : a }.";
 		assertAnswerSet(program, "a,b");
 	}
-	
+
 	@Test
 	public void testAggregate_Count_Ground_Negative() throws IOException {
 		String program = "{a}." + LS
@@ -63,7 +66,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				+ "c :- 1 <= #count { 1 : a }.";
 		assertAnswerSets(program, "a,c", "b");
 	}
-	
+
 	@Test
 	public void testAggregate_Count_NonGround_Positive() throws IOException {
 		String program = "n(1..3)." + LS
@@ -74,7 +77,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				"", "x(1)", "x(2)", "x(3)", "x(1), x(2)", "x(1), x(3)",
 				"x(2), x(3)", "x(1), x(2), x(3), ok");
 	}
-	
+
 	@Test
 	public void testAggregate_Count_NonGround_LowerAndUpper() throws IOException {
 		String program = "n(1..3)." + LS
@@ -88,14 +91,14 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				"", "x(1)", "x(2)", "x(3)", "x(1), x(2), ok", "x(1), x(3), ok",
 				"x(2), x(3), ok", "x(1), x(2), x(3), exceedsMax");
 	}
-	
+
 	@Test
 	public void testAggregate_Sum_Ground_Lower() throws IOException {
 		String program = "a." + LS
 				+ "b :- 5 <= #sum { 2 : a; 3 }.";
 		assertAnswerSet(program, "a,b");
 	}
-	
+
 	@Test
 	public void testAggregate_Sum_NonGround_LowerAndUpper() throws IOException {
 		String program = "n(1..3)." + LS
@@ -109,7 +112,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				"", "x(1)", "x(2)", "x(3), ok", "x(1), x(2), ok", "x(1), x(3), ok",
 				"x(2), x(3), exceedsMax", "x(1), x(2), x(3), exceedsMax");
 	}
-	
+
 	@Test
 	public void testAggregate_Sum_NonGround_Lower() throws IOException {
 		String program = "n(1..3)." + LS
@@ -121,13 +124,14 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				"", "x(1)", "x(2)", "x(3), ok", "x(1), x(2), ok", "x(1), x(3), ok",
 				"x(2), x(3), ok", "x(1), x(2), x(3), ok");
 	}
-	
+
 	/**
-	 * TODO: Currently it is a bit tedious to compute sums. Support for equality comparison of aggregates, e.g. {@code sum(S) :- S = #sum { N : n(N), x(N) }.} is still lacking.
+	 * TODO: Currently it is a bit tedious to compute sums. Support for equality comparison of aggregates, e.g. {@code sum(S) :- S = #sum { N :
+	 * n(N), x(N) }.} is still lacking.
 	 */
 	@Test
 	public void testAggregate_Sum_Computed() throws IOException {
-		ignoreTestForNaiveSolver();	// Do not run this test case with the naive solver.
+		ignoreTestForNaiveSolver(); // Do not run this test case with the naive solver.
 		String program = "n(1..3)." + LS
 				+ "{x(N)} :- n(N)." + LS
 				+ "potential_sum(0..6)." + LS
@@ -144,7 +148,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				"x(2), x(3), min(0), min(1), min(2), min(3), min(4), min(5), sum(5)",
 				"x(1), x(2), x(3), min(0), min(1), min(2), min(3), min(4), min(5), min(6), sum(6)");
 	}
-	
+
 	@Test
 	public void testAggregate_Count_GlobalVariable() throws IOException {
 		String program = "box(1..2)." + LS
@@ -155,7 +159,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 		assertAnswerSetsWithBase(program, "box(1), box(2), in(1,1), in(1,2), in(2,2)",
 				"full(2)");
 	}
-	
+
 	@Test
 	public void testAggregate_Sum_GlobalVariable() throws IOException {
 		String program = "box(1..2)." + LS
@@ -167,14 +171,21 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 		assertAnswerSetsWithBase(program, "box(1), box(2), item_size(1,1), item_size(2,2), in(1,1), in(1,2), in(2,2)",
 				"full(2)");
 	}
-	
+
 	@Override
 	protected Solver getInstance(ASPCore2Program program) {
+		NormalProgram normalized = new NormalizeProgramTransformation(useCountingGridNormalization()).apply(program);
+		CompiledProgram compiledProg;
+		if (evaluateStratifiedPart) {
+			compiledProg = new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normalized));
+		} else {
+			compiledProg = InternalProgram.fromNormalProgram(normalized);
+		}
 		AtomStore atomStore = new AtomStoreImpl();
-		CompiledProgram preprocessed = InternalProgram.fromNormalProgram(new NormalizeProgramTransformation(useCountingGridNormalization()).apply(program));
-		return super.getInstance(atomStore, GrounderFactory.getInstance(grounderName, preprocessed, atomStore, p->true, new GrounderHeuristicsConfiguration(), true));
+		return super.getInstance(atomStore,
+				GrounderFactory.getInstance(grounderName, compiledProg, atomStore, p -> true, new GrounderHeuristicsConfiguration(), true));
 	}
-	
+
 	protected abstract boolean useCountingGridNormalization();
 
 }

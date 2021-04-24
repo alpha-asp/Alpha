@@ -6,6 +6,6 @@ plugins {
 
 // TODO project property for dependency versions
 wrapper {
-	gradleVersion = '6.7'
+	gradleVersion = '7.0'
 	distributionType = 'ALL'
 }

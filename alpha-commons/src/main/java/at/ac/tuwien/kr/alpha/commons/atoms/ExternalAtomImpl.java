@@ -31,11 +31,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.ListUtils;
+
 import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
@@ -96,7 +97,7 @@ class ExternalAtomImpl extends AbstractAtom implements ExternalAtom {
 
 	@Override
 	public List<Term> getTerms() {
-		return input;
+		return ListUtils.union(input, output);
 	}
 
 	@Override
@@ -138,9 +139,20 @@ class ExternalAtomImpl extends AbstractAtom implements ExternalAtom {
 		return result;
 	}
 
+	/**
+	 * Creates a new {@link ExternalAtom} with input and output term lists set according to the given term list.
+	 * Callers are responsible for making sure the given term list contains the right number of terms. For an external atom with n input and m
+	 * output terms, terms[0..n-1] is interpreted as input terms for the new atom, terms[n..(n + m)-1] are taken to be output terms.
+	 */
 	@Override
-	public Atom withTerms(List<Term> terms) {
-		throw new UnsupportedOperationException("Editing term list is not supported for external atoms!");
+	public ExternalAtom withTerms(List<Term> terms) {
+		if (terms.size() != this.input.size() + this.output.size()) {
+			throw new IllegalArgumentException(
+					"Cannot apply term list " + terms.toString() + " to external atom " + this.toString() + ", terms has invalid size!");
+		}
+		List<Term> newInput = terms.subList(0, this.input.size());
+		List<Term> newOutput = terms.subList(this.input.size(), terms.size());
+		return new ExternalAtomImpl(this.predicate, this.interpretation, newInput, newOutput);
 	}
 
 	@Override
@@ -161,17 +173,17 @@ class ExternalAtomImpl extends AbstractAtom implements ExternalAtom {
 		if (obj == null) {
 			return false;
 		}
-		if (!(obj instanceof ExternalAtomImpl)) {
+		if (!(obj instanceof ExternalAtom)) {
 			return false;
 		}
-		ExternalAtomImpl other = (ExternalAtomImpl) obj;
-		if (!this.input.equals(other.input)) {
+		ExternalAtom other = (ExternalAtom) obj;
+		if (!this.input.equals(other.getInput())) {
 			return false;
 		}
-		if (!this.output.equals(other.output)) {
+		if (!this.output.equals(other.getOutput())) {
 			return false;
 		}
-		if (!this.predicate.equals(other.predicate)) {
+		if (!this.predicate.equals(other.getPredicate())) {
 			return false;
 		}
 		return true;

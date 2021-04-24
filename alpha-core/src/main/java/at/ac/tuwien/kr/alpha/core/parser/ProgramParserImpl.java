@@ -26,12 +26,17 @@ import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
 public class ProgramParserImpl implements ProgramParser {
 
-	private final Map<String, PredicateInterpretation> preloadedExternals;
+	private final Map<String, PredicateInterpretation> preloadedExternals = new HashMap<>();
 
 	public ProgramParserImpl() {
-		this.preloadedExternals = Externals.getStandardLibraryExternals();
+		this.preloadedExternals.putAll(Externals.getStandardLibraryExternals());
 	}
 
+	public ProgramParserImpl(Map<String, PredicateInterpretation> externals) {
+		this();
+		this.preloadedExternals.putAll(externals);
+	}
+	
 	@Override
 	public ASPCore2Program parse(String s) {
 		return parse(s, Collections.emptyMap());

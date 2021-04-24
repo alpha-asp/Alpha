@@ -72,12 +72,14 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 	private Assignment currentAssignment;
 	private LinkedHashSet<Atom> staleWorkingMemoryEntries;
 	private Map<Predicate, LinkedHashSet<Instance>> facts;
+	private boolean accumulatorEnabled;
 
 	public DefaultLazyGroundingInstantiationStrategy(WorkingMemory workingMemory, AtomStore atomStore,
-			Map<Predicate, LinkedHashSet<Instance>> facts) {
+			Map<Predicate, LinkedHashSet<Instance>> facts, boolean accumulator) {
 		this.workingMemory = workingMemory;
 		this.atomStore = atomStore;
 		this.facts = facts;
+		this.accumulatorEnabled = accumulator;
 	}
 
 	@Override
@@ -93,6 +95,7 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 	 * The atom a is {@link AssignmentStatus#TRUE} iff
 	 * <ul>
 	 * 	<li>The instantiation strategy's <pre>currentAssignment</pre> is null (i.e. the call originated from {@link NaiveGrounder#bootstrap}).</li>
+	 *  <li>a is contained in the working memory and the accumulator flag is enabled.</li>
 	 * 	<li>a is a fact.</li>
 	 *  <li>a is assigned {@link ThriceTruth#TRUE} or {@link ThriceTruth#MBT} in the current assignment by the {@link Solver}.
 	 * </ul>
@@ -114,6 +117,14 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 			// anyway, in which case it's also true).
 			return AssignmentStatus.TRUE;
 		}
+		if (this.accumulatorEnabled) {
+			if (this.workingMemory.get(atom.getPredicate(), true).containsInstance(Instance.fromAtom(atom))) {
+				// Accumulator is enabled. In this case, if the Atom is in the working memory, it is considered true.
+				return AssignmentStatus.TRUE;
+			}
+		}
+
+		// We're neither in bootstrap nor running in accumulator mode, normal workflow starts from here.
 		AssignmentStatus retVal;
 		// First, make sure that the Atom in question exists in the AtomStore.
 		if (atomStore.contains(atom)) {

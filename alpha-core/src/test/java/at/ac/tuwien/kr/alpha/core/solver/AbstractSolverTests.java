@@ -41,10 +41,12 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
+import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.solver.heuristics.Heuristic;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
@@ -52,9 +54,11 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 
 @RunWith(Parameterized.class)
@@ -107,7 +111,7 @@ public abstract class AbstractSolverTests {
 		return System.getProperty("test." + subKey, def).split(",");
 	}
 
-	@Parameters(name = "{0}/{1}/{2}/{3}/seed={4}/checks={5}/gtc={6}/gtr={7}/dir={8}")
+	@Parameters(name = "{0}/{1}/{2}/{3}/seed={4}/checks={5}/gtc={6}/gtr={7}/dir={8}/evaluateStratified={9}")
 	public static Collection<Object[]> parameters() {
 		// Check whether we are running in a CI environment.
 		boolean ci = Boolean.valueOf(System.getenv("CI"));
@@ -119,6 +123,7 @@ public abstract class AbstractSolverTests {
 		String[] gtcValues = getProperty("grounderToleranceConstraints", "strict,permissive");
 		String[] gtrValues = getProperty("grounderToleranceRules", "strict");
 		String[] dirValues = getProperty("disableInstanceRemoval", ci ? "false,true" : "false");
+		String[] evaluateStratifiedValues = getProperty("evaluateStratified", "false,true");
 
 		// "ALL" is a magic value that will be expanded to contain all heuristics.
 		if ("ALL".equals(heuristics[0])) {
@@ -154,9 +159,12 @@ public abstract class AbstractSolverTests {
 						for (String gtc : gtcValues) {
 							for (String gtr : gtrValues) {
 								for (String dir : dirValues) {
-									factories.add(new Object[] {
-											solver, grounder, store, Heuristic.valueOf(heuristic), seed, checks, gtc, gtr, Boolean.valueOf(dir)
-									});
+									for (String evaluateStratified : evaluateStratifiedValues) {
+										factories.add(new Object[] {
+												solver, grounder, store, Heuristic.valueOf(heuristic), seed, checks, gtc, gtr,
+												Boolean.valueOf(dir), Boolean.valueOf(evaluateStratified)
+										});
+									}
 								}
 							}
 						}
@@ -195,6 +203,12 @@ public abstract class AbstractSolverTests {
 	@Parameter(8)
 	public boolean disableInstanceRemoval;
 
+	/**
+	 * Determines whether the {@link Alpha} returned by <code>getInstance</code> is configured to evaluate the stratified part up-front.
+	 */
+	@Parameter(9)
+	public boolean evaluateStratifiedPart;
+
 	protected Solver getInstance(AtomStore atomStore, Grounder grounder) {
 		return SolverFactory.getInstance(buildSystemConfig(), atomStore, grounder);
 	}
@@ -212,8 +226,14 @@ public abstract class AbstractSolverTests {
 
 	protected Solver getInstance(ASPCore2Program program) {
 		AtomStore atomStore = new AtomStoreImpl();
-		CompiledProgram preprocessed = InternalProgram.fromNormalProgram(new NormalizeProgramTransformation(false).apply(program));
-		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, preprocessed, atomStore, true));
+		NormalProgram normalized = new NormalizeProgramTransformation(false).apply(program);
+		CompiledProgram compiledProg;
+		if (evaluateStratifiedPart) {
+			compiledProg = new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normalized));
+		} else {
+			compiledProg = InternalProgram.fromNormalProgram(normalized);
+		}
+		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, compiledProg, atomStore, true));
 	}
 
 	protected Solver getInstance(String program) {
