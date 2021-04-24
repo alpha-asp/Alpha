@@ -9,9 +9,9 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraphImpl;
 import at.ac.tuwien.kr.alpha.core.depgraph.StronglyConnectedComponentsAlgorithm;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 
 
 /**

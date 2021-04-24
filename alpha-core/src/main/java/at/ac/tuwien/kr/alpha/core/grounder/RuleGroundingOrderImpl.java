@@ -28,7 +28,6 @@ package at.ac.tuwien.kr.alpha.core.grounder;
 import java.util.ArrayList;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.api.grounder.RuleGroundingOrder;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 

@@ -1,9 +1,11 @@
-package at.ac.tuwien.kr.alpha.api.rules;
+package at.ac.tuwien.kr.alpha.core.rules;
 
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.api.grounder.RuleGroundingInfo;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingInfo;
 
 public interface CompiledRule extends Rule<NormalHead> {
 	

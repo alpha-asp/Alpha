@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.api.grounder;
+package at.ac.tuwien.kr.alpha.core.grounder;
 
 import java.util.List;
 

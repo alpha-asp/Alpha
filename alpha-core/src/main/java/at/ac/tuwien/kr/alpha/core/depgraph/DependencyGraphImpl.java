@@ -40,8 +40,8 @@ import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 
 /**
  * Internal representation of an {@link at.ac.tuwien.kr.alpha.core.programs.InternalProgram}'s dependency graph. The dependency graph tracks dependencies

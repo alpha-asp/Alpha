@@ -45,8 +45,6 @@ public interface Alpha {
 	
 	SystemConfig getConfig();
 	
-	//CompiledProgram performProgramPreprocessing(CompiledProgram prog);
-	
 	Solver prepareSolverFor(ASPCore2Program program, java.util.function.Predicate<Predicate> filter);
 
 	Solver prepareSolverFor(NormalProgram program, java.util.function.Predicate<Predicate> filter);

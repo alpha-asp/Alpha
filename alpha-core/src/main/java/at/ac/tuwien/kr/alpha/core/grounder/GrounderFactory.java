@@ -29,10 +29,10 @@ package at.ac.tuwien.kr.alpha.core.grounder;
 
 import at.ac.tuwien.kr.alpha.api.config.InputConfig;
 import at.ac.tuwien.kr.alpha.api.grounder.heuristics.GrounderHeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.api.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.grounder.bridges.Bridge;
+import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 
 public final class GrounderFactory {
 	public static Grounder getInstance(String name, CompiledProgram program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter,
