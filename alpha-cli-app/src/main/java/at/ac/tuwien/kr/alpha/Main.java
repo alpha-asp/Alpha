@@ -44,10 +44,12 @@ import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.StatisticsReportingSolver;
 import at.ac.tuwien.kr.alpha.api.config.AlphaConfig;
 import at.ac.tuwien.kr.alpha.api.config.InputConfig;
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.impl.AlphaImpl;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.CompiledProgram;
@@ -90,28 +92,19 @@ public class Main {
 			Main.bailOut("Failed to parse program.", e);
 		}
 
-		NormalProgram normalized = alpha.normalizeProgram(program);
-		CompiledProgram preprocessed;
 		InputConfig inputCfg = cfg.getInputConfig();
-		// TODO commented-out part should be taken care of using debugSolve, adapt CLI accordingly
-//		if (!(inputCfg.isWriteDependencyGraph() || inputCfg.isWriteComponentGraph())) {
-//			LOGGER.debug("Not writing dependency or component graphs, starting preprocessing...");
-//			preprocessed = alpha.performProgramPreprocessing(InternalProgram.fromNormalProgram(normalized));
-//		} else {
-//			LOGGER.debug("Performing program analysis in preparation for writing dependency and/or component graph file...");
-//			AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalized);
-//			if (cfg.getInputConfig().isWriteDependencyGraph()) {
-//				Main.writeDependencyGraph(analyzed.getDependencyGraph(), cfg.getInputConfig().getDepgraphPath());
-//			}
-//			if (cfg.getInputConfig().isWriteComponentGraph()) {
-//				Main.writeComponentGraph(analyzed.getComponentGraph(), cfg.getInputConfig().getCompgraphPath());
-//			}
-//			preprocessed = alpha.performProgramPreprocessing(analyzed);
-//		}
-//		if (cfg.getInputConfig().isWritePreprocessed()) {
-//			Main.writeInternalProgram(preprocessed, cfg.getInputConfig().getPreprocessedPath());
-//		}
-		Main.computeAndConsumeAnswerSets(alpha, cfg.getInputConfig(), normalized);
+		Solver solver;
+		if (inputCfg.isDebugPreprocessing()) {
+			DebugSolvingContext dbgCtx = alpha.prepareDebugSolve(program);
+			Main.writeNormalProgram(dbgCtx.getNormalizedProgram(), inputCfg.getNormalizedPath());
+			Main.writeNormalProgram(dbgCtx.getPreprocessedProgram(), inputCfg.getPreprocessedPath());
+			Main.writeDependencyGraph(dbgCtx.getDependencyGraph(), inputCfg.getDepgraphPath());
+			Main.writeComponentGraph(dbgCtx.getComponentGraph(), inputCfg.getCompgraphPath());
+			solver = dbgCtx.getSolver();
+		} else {
+			solver = alpha.prepareSolverFor(program, inputCfg.getFilter());
+		}
+		Main.computeAndConsumeAnswerSets(solver, cfg);
 	}
 
 	/**
@@ -151,26 +144,23 @@ public class Main {
 	 * @param prg  the program to write
 	 * @param path the path to write the program to
 	 */
-	private static void writeInternalProgram(CompiledProgram prg, String path) {
-		LOGGER.debug("Writing preprocessed program to {}", path);
+	private static void writeNormalProgram(NormalProgram prg, String path) {
+		LOGGER.debug("Writing program to {}", path);
 		PrintStream ps;
 		try {
-			if (path.equals(InputConfig.PREPROC_STDOUT_PATH)) {
-				ps = System.out;
-			} else {
-				ps = new PrintStream(new File(path));
-			}
+			ps = new PrintStream(new File(path));
 			ps.println(prg.toString());
 		} catch (IOException ex) {
-			LOGGER.error("Failed writing preprocessed program file", ex);
-			Main.bailOut("Failed writing preprocessed program file " + ex.getMessage());
+			LOGGER.error("Failed writing program file", ex);
+			Main.bailOut("Failed writing program file " + ex.getMessage());
 		}
 	}
 
-	private static void computeAndConsumeAnswerSets(Alpha alpha, InputConfig inputCfg, NormalProgram program) {
-		Solver solver = alpha.prepareSolverFor(program, inputCfg.getFilter());
+	private static void computeAndConsumeAnswerSets(Solver solver, AlphaConfig alphaCfg) {
+		SystemConfig sysCfg = alphaCfg.getSystemConfig();
+		InputConfig inputCfg = alphaCfg.getInputConfig();
 		Stream<AnswerSet> stream = solver.stream();
-		if (alpha.getConfig().isSortAnswerSets()) {
+		if (sysCfg.isSortAnswerSets()) {
 			stream = stream.sorted();
 		}
 
@@ -179,10 +169,10 @@ public class Main {
 			stream = stream.limit(limit);
 		}
 
-		if (!alpha.getConfig().isQuiet()) {
+		if (!sysCfg.isQuiet()) {
 			AtomicInteger counter = new AtomicInteger(0);
 			final BiConsumer<Integer, AnswerSet> answerSetHandler;
-			final AnswerSetFormatter<String> fmt = new SimpleAnswerSetFormatter(alpha.getConfig().getAtomSeparator());
+			final AnswerSetFormatter<String> fmt = new SimpleAnswerSetFormatter(sysCfg.getAtomSeparator());
 			BiConsumer<Integer, AnswerSet> stdoutPrinter = (n, as) -> {
 				System.out.println("Answer set " + Integer.toString(n) + ":" + System.lineSeparator() + fmt.format(as));
 			};
@@ -213,7 +203,7 @@ public class Main {
 			// answer sets.
 			stream.collect(Collectors.toList());
 		}
-		if (alpha.getConfig().isPrintStats()) {
+		if (sysCfg.isPrintStats()) {
 			if (solver instanceof StatisticsReportingSolver) {
 				((StatisticsReportingSolver) solver).printStatistics();
 			} else {

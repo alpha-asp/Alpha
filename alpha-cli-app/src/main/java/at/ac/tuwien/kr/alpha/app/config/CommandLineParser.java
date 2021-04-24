@@ -83,12 +83,8 @@ public class CommandLineParser {
 			.desc("provide the asp program as a string").build();
 	private static final Option OPT_LITERATE = Option.builder("l").longOpt("literate")
 			.desc("enable literate programming mode (default: " + InputConfig.DEFAULT_LITERATE + ")").build();
-	private static final Option OPT_WRITE_PREPROCESSED = Option.builder("wpp").longOpt("writePreprocessedProgram").hasArg(true).argName("target")
-			.desc("write the internal program that is passed into the solver after transformations to a file. Writing to STDOUT is possible by setting target to: " + InputConfig.PREPROC_STDOUT_PATH).build();
-	private static final Option OPT_WRITE_DEPGRAPH = Option.builder("wdg").longOpt("writeDependencyGraph").hasArg(true).argName("target")
-			.desc("Write a dot file with the input program's dependency graph").build();
-	private static final Option OPT_WRITE_COMPGRAPH = Option.builder("wcg").longOpt("writeComponentGraph").hasArg(true).argName("target")
-			.desc("Write a dot file with the input program's component graph").build();
+	private static final Option OPT_DEBUG_PREPROCESSING = Option.builder("dbgp").longOpt("DebugPreprocessing")
+			.desc("write files for normalized and preprocessed programs, also emit dependency- and component graphs as (graphviz) dot files").build();
 	private static final Option OPT_WRITE_XSLX = Option.builder("wx").longOpt("write-xlsx").hasArg(true).argName("path").type(String.class)
 			.desc("Write answer sets to excel files, i.e. xlsx workbooks (one workbook per answer set)").build();
 
@@ -105,7 +101,7 @@ public class CommandLineParser {
 			.desc("disables randomness (default: " + SystemConfig.DEFAULT_DETERMINISTIC + ")").build();
 	private static final Option OPT_SEED = Option.builder("e").longOpt("seed").hasArg(true).argName("seed").type(Integer.class)
 			.desc("set seed (default: System.nanoTime())").build();
-	private static final Option OPT_DEBUG_INTERNAL_CHECKS = Option.builder("dbg").longOpt("DebugEnableInternalChecks")
+	private static final Option OPT_DEBUG_INTERNAL_CHECKS = Option.builder("dbgs").longOpt("DebugEnableInternalChecks")
 			.desc("run additional (time-consuming) safety checks (default: " + SystemConfig.DEFAULT_DEBUG_INTERNAL_CHECKS + ")").build();
 	private static final Option OPT_BRANCHING_HEURISTIC = Option.builder("b").longOpt("branchingHeuristic").hasArg(true).argName("heuristic")
 			.desc("the branching heuristic to use (default: " + SystemConfig.DEFAULT_BRANCHING_HEURISTIC.name() + ")").build();
@@ -164,10 +160,8 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_LITERATE);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_INPUT);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_ASPSTRING);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_DEBUG_PREPROCESSING);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_XSLX);
-		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_PREPROCESSED);
-		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_DEPGRAPH);
-		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_COMPGRAPH);
 
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SOLVER);
@@ -254,10 +248,8 @@ public class CommandLineParser {
 		this.inputOptionHandlers.put(CommandLineParser.OPT_FILTER.getOpt(), this::handleFilters);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_ASPSTRING.getOpt(), this::handleAspString);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_LITERATE.getOpt(), this::handleLiterate);
+		this.inputOptionHandlers.put(CommandLineParser.OPT_DEBUG_PREPROCESSING.getOpt(), this::handleDebugPreprocessing);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_XSLX.getOpt(), this::handleWriteXlsx);
-		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_PREPROCESSED.getOpt(), this::handleWritePreprocessed);
-		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_DEPGRAPH.getOpt(), this::handleWriteDepgraph);
-		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_COMPGRAPH.getOpt(), this::handleWriteCompgraph);
 	}
 
 	public AlphaConfig parseCommandLine(String[] args) throws ParseException {
@@ -443,22 +435,8 @@ public class CommandLineParser {
 		cfg.setEvaluateStratifiedPart(false);
 	}
 
-	private void handleWritePreprocessed(Option opt, InputConfig cfg) {
-		cfg.setWritePreprocessed(true);
-		String preprocessedPath = opt.getValue(InputConfig.DEFAULT_PREPROC_TARGET_FILE);
-		cfg.setPreprocessedPath(preprocessedPath);
-	}
-
-	private void handleWriteDepgraph(Option opt, InputConfig cfg) {
-		cfg.setWriteDependencyGraph(true);
-		String depgraphPath = opt.getValue(InputConfig.DEFAULT_DEPGRAPH_TARGET_FILE);
-		cfg.setDepgraphPath(depgraphPath);
-	}
-
-	private void handleWriteCompgraph(Option opt, InputConfig cfg) {
-		cfg.setWriteComponentGraph(true);
-		String compgraphPath = opt.getValue(InputConfig.DEFAULT_COMPGRAPH_TARGET_FILE);
-		cfg.setCompgraphPath(compgraphPath);
+	private void handleDebugPreprocessing(Option opt, InputConfig cfg) {
+		cfg.setDebugPreprocessing(true);
 	}
 
 	private void handleNoNoGoodDeletion(Option opt, SystemConfig cfg) {

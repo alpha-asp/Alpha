@@ -107,7 +107,6 @@ public class RuleGroundingInfoImpl implements RuleGroundingInfo {
 			if (literal.getNonBindingVariables().size() != 0) {
 				continue;
 			}
-			// TODO make sure above if is correct, then remove this
 			if (literal.getAtom() instanceof BasicAtom && !literal.isNegated()) {
 				// Positive BasicAtom is the main/ordinary case.
 				ordinaryStartingLiterals.add(literal);
