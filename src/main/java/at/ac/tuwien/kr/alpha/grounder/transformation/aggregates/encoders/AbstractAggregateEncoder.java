@@ -1,11 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders;
 
-import org.apache.commons.collections4.ListUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateElement;
@@ -22,6 +16,11 @@ import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.transformation.PredicateInternalizer;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
+import org.apache.commons.collections4.ListUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Abstract base class for aggregate encoders. An aggregate encoder provides an encoding for a given aggregate literal,
@@ -95,7 +94,7 @@ public abstract class AbstractAggregateEncoder {
 	protected abstract InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx);
 
 	protected BasicRule encodeAggregateElement(String aggregateId, AggregateElement element, AggregateRewritingContext ctx) {
-		Atom headAtom = buildElementRuleHead(aggregateId, element, ctx);
+		Atom headAtom = buildElementRuleHead(aggregateId, element, ctx.getAggregateInfo(aggregateId).getAggregateArguments());
 		return new BasicRule(new NormalHead(headAtom),
 				ListUtils.union(element.getElementLiterals(), new ArrayList<>(ctx.getDependencies(aggregateId))));
 	}
@@ -111,10 +110,8 @@ public abstract class AbstractAggregateEncoder {
 	 * @param ctx
 	 * @return
 	 */
-	protected Atom buildElementRuleHead(String aggregateId, AggregateElement element, AggregateRewritingContext ctx) {
+	protected Atom buildElementRuleHead(String aggregateId, AggregateElement element, Term aggregateArguments) {
 		Predicate headPredicate = Predicate.getInstance(this.getElementTuplePredicateSymbol(aggregateId), 2);
-		AggregateInfo aggregate = ctx.getAggregateInfo(aggregateId);
-		Term aggregateArguments = aggregate.getAggregateArguments();
 		FunctionTerm elementTuple = FunctionTerm.getInstance(ELEMENT_TUPLE_FUNCTION_SYMBOL, element.getElementTerms());
 		return new BasicAtom(headPredicate, aggregateArguments, elementTuple);
 	}

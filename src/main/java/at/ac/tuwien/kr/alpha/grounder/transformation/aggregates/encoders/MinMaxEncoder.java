@@ -96,10 +96,8 @@ public class MinMaxEncoder extends AbstractAggregateEncoder {
 	}
 
 	@Override
-	protected Atom buildElementRuleHead(String aggregateId, AggregateElement element, AggregateRewritingContext ctx) {
+	protected Atom buildElementRuleHead(String aggregateId, AggregateElement element, Term aggregateArguments) {
 		Predicate headPredicate = Predicate.getInstance(this.getElementTuplePredicateSymbol(aggregateId), 2);
-		AggregateInfo aggregate = ctx.getAggregateInfo(aggregateId);
-		Term aggregateArguments = aggregate.getAggregateArguments();
 		Term elementTerm = element.getElementTerms().get(0);
 		return new BasicAtom(headPredicate, aggregateArguments, elementTerm);
 	}
