@@ -14,7 +14,6 @@ import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.transformation.PredicateInternalizer;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 import org.apache.commons.collections4.ListUtils;
 
@@ -41,10 +40,10 @@ public abstract class AbstractAggregateEncoder {
 	}
 
 	/**
-	 * Encodes all aggregate literals in the given {@link AggregateRewritingContext} referenced by the given Ids.
+	 * Encodes all aggregate literals in the given set of aggregate referenced by the given {@link AggregateInfo}.
 	 * 
-	 * @param aggregatesToEncode
-	 * @return
+	 * @param aggregatesToEncode the aggregates to encode.
+	 * @return all rules encoding the given aggregates as an {@link InputProgram}.
 	 */
 	public InputProgram encodeAggregateLiterals(Set<AggregateInfo> aggregatesToEncode) {
 		InputProgram.Builder programBuilder = InputProgram.builder();

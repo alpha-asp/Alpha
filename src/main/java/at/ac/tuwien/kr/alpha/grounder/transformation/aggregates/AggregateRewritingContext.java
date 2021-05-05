@@ -33,11 +33,11 @@ public final class AggregateRewritingContext {
 	private static final ST AGGREGATE_ARGS_NOARGS_CONST = new ST("<id>_no_args");
 
 	private int idCounter;
-	private Map<String, AggregateInfo> aggregatesById = new HashMap<>();
+	private Map<AggregateLiteral, AggregateInfo> aggregateInfos = new HashMap<>();
 	private Map<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateInfo>> aggregateFunctionsToRewrite = new LinkedHashMap<>();
 	// Since theoretically an aggregate literal could occur in several rules in different context,
 	// we need to keep track of the rules aggregate literals occur in.
-	private Map<BasicRule, Map<AggregateLiteral, String>> rulesWithAggregates = new HashMap<>();
+	private List<BasicRule> rulesWithAggregates = new ArrayList<>();
 
 	public AggregateRewritingContext() {
 		idCounter = 0;
@@ -57,62 +57,43 @@ public final class AggregateRewritingContext {
 			// Rule has no aggregates.
 			return false;
 		}
-		Map<AggregateLiteral, String> idsPerLiteral = new HashMap<>();
 		// Do initial registration of each aggregate literal and keep the ids.
 		for (Map.Entry<AggregateLiteral, Set<VariableTerm>> entry : ruleAnalysis.globalVariablesPerAggregate.entrySet()) {
-			String id = internalRegisterAggregateLiteral(entry.getKey(), entry.getValue());
-			idsPerLiteral.put(entry.getKey(), id);
+			String id = registerAggregateLiteral(entry.getKey(), entry.getValue());
 		}
 		// Now go through dependencies and replace the actual aggregate literals with their rewritten versions
 		for (Map.Entry<AggregateLiteral, Set<Literal>> entry : ruleAnalysis.dependenciesPerAggregate.entrySet()) {
-			Set<Literal> rewrittenDependencies = aggregatesById.get(idsPerLiteral.get(entry.getKey())).dependencies;
+			Set<Literal> rewrittenDependencies = getAggregateInfo(entry.getKey()).dependencies;
 			for (Literal dependency : entry.getValue()) {
 				if (dependency instanceof AggregateLiteral) {
-					AggregateInfo dependencyInfo = getAggregateInfo(idsPerLiteral.get((AggregateLiteral) dependency));
+					AggregateInfo dependencyInfo = getAggregateInfo((AggregateLiteral) dependency);
 					rewrittenDependencies.add(new BasicLiteral(dependencyInfo.getOutputAtom(), !dependency.isNegated()));
 				} else {
 					rewrittenDependencies.add(dependency);
 				}
 			}
 		}
-		rulesWithAggregates.put(rule, idsPerLiteral);
+		rulesWithAggregates.add(rule);
 		return true;
 	}
 
 	// Note: Thanks to type erasure we need a name other than "registerAggregateLiteral" here.
-	private String internalRegisterAggregateLiteral(AggregateLiteral lit, Set<VariableTerm> globalVariables) {
+	private String registerAggregateLiteral(AggregateLiteral lit, Set<VariableTerm> globalVariables) {
 		AggregateAtom atom = lit.getAtom();
 		String id = atom.getAggregatefunction().toString().toLowerCase() + "_" + (++idCounter);
 		AggregateInfo info = new AggregateInfo(id, lit, globalVariables);
-		aggregatesById.put(id, info);
+		aggregateInfos.put(lit, info);
 		aggregateFunctionsToRewrite.putIfAbsent(new ImmutablePair<>(atom.getAggregatefunction(), atom.getLowerBoundOperator()), new LinkedHashSet<>());
 		aggregateFunctionsToRewrite.get(new ImmutablePair<>(atom.getAggregatefunction(), atom.getLowerBoundOperator())).add(info);
 		return id;
 	}
 
-	public AggregateInfo getAggregateInfo(String aggregateId) {
-		return aggregatesById.get(aggregateId);
+	public AggregateInfo getAggregateInfo(AggregateLiteral aggregateLiteral) {
+		return aggregateInfos.get(aggregateLiteral);
 	}
 
-	// Transforms (restricted) aggregate literals of format "VAR OP #AGG_FN{...}" into literals of format
-	// "<result_predicate>(ARGS, VAR)" where ARGS is a function term wrapping the aggregate's global variables.
-	List<BasicRule> rewriteRulesWithAggregates() {
-		List<BasicRule> rewrittenRules = new ArrayList<>();
-		for (BasicRule rule : rulesWithAggregates.keySet()) {
-			List<Literal> rewrittenBody = new ArrayList<>();
-			Map<AggregateLiteral, String> aggregatesInRule = rulesWithAggregates.get(rule);
-			for (Literal lit : rule.getBody()) {
-				if (lit instanceof AggregateLiteral) {
-					String aggregateId = aggregatesInRule.get((AggregateLiteral) lit);
-					AggregateInfo aggregateInfo = getAggregateInfo(aggregateId);
-					rewrittenBody.add(new BasicLiteral(aggregateInfo.getOutputAtom(), !lit.isNegated()));
-				} else {
-					rewrittenBody.add(lit);
-				}
-			}
-			rewrittenRules.add(new BasicRule(rule.getHead(), rewrittenBody));
-		}
-		return rewrittenRules;
+	public List<BasicRule> getRulesWithAggregates() {
+		return rulesWithAggregates;
 	}
 
 	public Map<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateInfo>> getAggregateFunctionsToRewrite() {

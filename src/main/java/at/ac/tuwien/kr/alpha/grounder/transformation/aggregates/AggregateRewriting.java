@@ -3,6 +3,8 @@ package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
@@ -78,7 +80,7 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 			}
 		}
 		// Substitute AggregateLiterals with generated result literals.
-		outputRules.addAll(ctx.rewriteRulesWithAggregates());
+		outputRules.addAll(rewriteRulesWithAggregates(ctx));
 		InputProgram.Builder resultBuilder = InputProgram.builder().addRules(outputRules).addFacts(inputProgram.getFacts())
 				.addInlineDirectives(inputProgram.getInlineDirectives());
 		// Add sub-programs deriving respective aggregate literals.
@@ -115,5 +117,29 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 			default:
 				throw new UnsupportedOperationException("Unsupported aggregate function/comparison operator: " + function + ", " + operator);
 		}
+	}
+
+	/**
+	 * Transforms (restricted) aggregate literals of format "VAR OP #AGG_FN{...}" into literals of format
+	 * "<result_predicate>(ARGS, VAR)" where ARGS is a function term wrapping the aggregate's global variables.
+	 *
+	 * @param ctx the {@link AggregateRewritingContext} containing information about all aggregates.
+	 * @return for each rule, its rewritten version where aggregates are replaced with output atoms of the encoding.
+	 */
+	private static List<BasicRule> rewriteRulesWithAggregates(AggregateRewritingContext ctx) {
+		List<BasicRule> rewrittenRules = new ArrayList<>();
+		for (BasicRule rule : ctx.getRulesWithAggregates()) {
+			List<Literal> rewrittenBody = new ArrayList<>();
+			for (Literal lit : rule.getBody()) {
+				if (lit instanceof AggregateLiteral) {
+					AggregateInfo aggregateInfo = ctx.getAggregateInfo((AggregateLiteral) lit);
+					rewrittenBody.add(new BasicLiteral(aggregateInfo.getOutputAtom(), !lit.isNegated()));
+				} else {
+					rewrittenBody.add(lit);
+				}
+			}
+			rewrittenRules.add(new BasicRule(rule.getHead(), rewrittenBody));
+		}
+		return rewrittenRules;
 	}
 }
