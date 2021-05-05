@@ -20,7 +20,6 @@ import org.stringtemplate.v4.ST;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -35,7 +34,6 @@ public final class AggregateRewritingContext {
 
 	private int idCounter;
 	private Map<String, AggregateInfo> aggregatesById = new HashMap<>();
-	private Map<String, Set<Literal>> dependenciesById = new HashMap<>();
 	private Map<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateInfo>> aggregateFunctionsToRewrite = new LinkedHashMap<>();
 	// Since theoretically an aggregate literal could occur in several rules in different context,
 	// we need to keep track of the rules aggregate literals occur in.
@@ -67,7 +65,7 @@ public final class AggregateRewritingContext {
 		}
 		// Now go through dependencies and replace the actual aggregate literals with their rewritten versions
 		for (Map.Entry<AggregateLiteral, Set<Literal>> entry : ruleAnalysis.dependenciesPerAggregate.entrySet()) {
-			Set<Literal> rewrittenDependencies = new HashSet<>();
+			Set<Literal> rewrittenDependencies = aggregatesById.get(idsPerLiteral.get(entry.getKey())).dependencies;
 			for (Literal dependency : entry.getValue()) {
 				if (dependency instanceof AggregateLiteral) {
 					AggregateInfo dependencyInfo = getAggregateInfo(idsPerLiteral.get((AggregateLiteral) dependency));
@@ -76,7 +74,6 @@ public final class AggregateRewritingContext {
 					rewrittenDependencies.add(dependency);
 				}
 			}
-			dependenciesById.put(idsPerLiteral.get(entry.getKey()), rewrittenDependencies);
 		}
 		rulesWithAggregates.put(rule, idsPerLiteral);
 		return true;
@@ -118,10 +115,6 @@ public final class AggregateRewritingContext {
 		return rewrittenRules;
 	}
 
-	public Set<Literal> getDependencies(String aggregateId) {
-		return dependenciesById.get(aggregateId);
-	}
-
 	public Map<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateInfo>> getAggregateFunctionsToRewrite() {
 		return Collections.unmodifiableMap(aggregateFunctionsToRewrite);
 	}
@@ -132,6 +125,7 @@ public final class AggregateRewritingContext {
 		private final BasicAtom outputAtom;
 		private final Set<VariableTerm> globalVariables;
 		private final Term aggregateArguments;
+		private final Set<Literal> dependencies = new LinkedHashSet<>();
 
 		AggregateInfo(String id, AggregateLiteral literal, Set<VariableTerm> globalVariables) {
 			this.id = id;
@@ -193,6 +187,10 @@ public final class AggregateRewritingContext {
 
 		public Term getAggregateArguments() {
 			return aggregateArguments;
+		}
+
+		public Set<Literal> getDependencies() {
+			return dependencies;
 		}
 
 	}
