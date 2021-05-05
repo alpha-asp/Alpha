@@ -1,13 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
@@ -24,8 +16,14 @@ import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm.ArithmeticOperator;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.RuleAnalysis;
 import at.ac.tuwien.kr.alpha.test.util.RuleParser;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 public class RuleAnalysisTest {
 
@@ -48,24 +46,24 @@ public class RuleAnalysisTest {
 			+ "    N = #count{ V : graph_vertex_degree(G, V, DMAX)}.";
 	//@formatter:on
 
-	private static final RuleAnalysis analyze(String rule) {
-		return RuleAnalysis.analyzeRule(RuleParser.parse(rule));
+	private static final AggregateRewritingRuleAnalysis analyze(String rule) {
+		return AggregateRewritingRuleAnalysis.analyzeRule(RuleParser.parse(rule));
 	}
 
 	@Test
 	public void bindingAggregateNoGlobals() {
-		RuleAnalysis analysis = analyze(BINDING_AGGREGATE_NO_GLOBALS);
+		AggregateRewritingRuleAnalysis analysis = analyze(BINDING_AGGREGATE_NO_GLOBALS);
 		Assert.assertEquals(1, analysis.globalVariablesPerAggregate.size());
 		Assert.assertEquals(1, analysis.dependenciesPerAggregate.size());
 
 		AggregateLiteral aggregate = new ArrayList<>(analysis.globalVariablesPerAggregate.keySet()).get(0);
 		Assert.assertTrue(analysis.globalVariablesPerAggregate.get(aggregate).isEmpty());
-		Assert.assertTrue(analysis.dependenciesPerAggregate.get(aggregate).isEmpty());
+		Assert.assertEquals(2, analysis.dependenciesPerAggregate.get(aggregate).size());
 	}
 
 	@Test
 	public void nonBindingAggregateNoGlobals1() {
-		RuleAnalysis analysis = analyze(NONBINDING_AGGREGATE_NO_GLOBALS_1);
+		AggregateRewritingRuleAnalysis analysis = analyze(NONBINDING_AGGREGATE_NO_GLOBALS_1);
 		Assert.assertEquals(1, analysis.globalVariablesPerAggregate.size());
 		Assert.assertEquals(1, analysis.dependenciesPerAggregate.size());
 
@@ -74,7 +72,7 @@ public class RuleAnalysisTest {
 		Assert.assertFalse(analysis.dependenciesPerAggregate.get(aggregate).isEmpty());
 
 		Set<Literal> dependencies = analysis.dependenciesPerAggregate.get(aggregate);
-		Assert.assertEquals(1, dependencies.size());
+		Assert.assertEquals(2, dependencies.size());
 
 		Literal pXY = new BasicLiteral(new BasicAtom(Predicate.getInstance("p", 2), VariableTerm.getInstance("X"), VariableTerm.getInstance("Y")), true);
 		Assert.assertTrue(dependencies.contains(pXY));
@@ -82,7 +80,7 @@ public class RuleAnalysisTest {
 
 	@Test
 	public void nonBindingAggregateNoGlobals2() {
-		RuleAnalysis analysis = analyze(NONBINDING_AGGREGATE_NO_GLOBALS_2);
+		AggregateRewritingRuleAnalysis analysis = analyze(NONBINDING_AGGREGATE_NO_GLOBALS_2);
 		Assert.assertEquals(1, analysis.globalVariablesPerAggregate.size());
 		Assert.assertEquals(1, analysis.dependenciesPerAggregate.size());
 
@@ -91,7 +89,7 @@ public class RuleAnalysisTest {
 		Assert.assertFalse(analysis.dependenciesPerAggregate.get(aggregate).isEmpty());
 
 		Set<Literal> dependencies = analysis.dependenciesPerAggregate.get(aggregate);
-		Assert.assertEquals(3, dependencies.size());
+		Assert.assertEquals(4, dependencies.size());
 
 		Literal threePlusY = new ComparisonLiteral(
 				new ComparisonAtom(VariableTerm.getInstance("X"),
@@ -113,7 +111,7 @@ public class RuleAnalysisTest {
 
 	@Test
 	public void bindingAggregateWithGlobals1() {
-		RuleAnalysis analysis = analyze(BINDING_AGGREGATE_WITH_GLOBALS_1);
+		AggregateRewritingRuleAnalysis analysis = analyze(BINDING_AGGREGATE_WITH_GLOBALS_1);
 		Assert.assertEquals(1, analysis.globalVariablesPerAggregate.size());
 		Assert.assertEquals(1, analysis.dependenciesPerAggregate.size());
 
@@ -138,7 +136,7 @@ public class RuleAnalysisTest {
 
 	@Test
 	public void bindingAggregateWithGlobals2() {
-		RuleAnalysis analysis = analyze(BINDING_AGGREGATE_WITH_GLOBALS_2);
+		AggregateRewritingRuleAnalysis analysis = analyze(BINDING_AGGREGATE_WITH_GLOBALS_2);
 		Assert.assertEquals(2, analysis.globalVariablesPerAggregate.size());
 		Assert.assertEquals(2, analysis.dependenciesPerAggregate.size());
 

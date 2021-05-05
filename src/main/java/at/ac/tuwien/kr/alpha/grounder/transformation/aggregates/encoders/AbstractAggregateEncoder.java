@@ -44,13 +44,13 @@ public abstract class AbstractAggregateEncoder {
 	 * Encodes all aggregate literals in the given {@link AggregateRewritingContext} referenced by the given Ids.
 	 * 
 	 * @param ctx
-	 * @param aggregateIdsToEncode
+	 * @param aggregatesToEncode
 	 * @return
 	 */
-	public InputProgram encodeAggregateLiterals(AggregateRewritingContext ctx, Set<String> aggregateIdsToEncode) {
+	public InputProgram encodeAggregateLiterals(AggregateRewritingContext ctx, Set<AggregateInfo> aggregatesToEncode) {
 		InputProgram.Builder programBuilder = InputProgram.builder();
-		for (String aggregateId : aggregateIdsToEncode) {
-			programBuilder.accumulate(encodeAggregateLiteral(ctx.getAggregateInfo(aggregateId), ctx));
+		for (AggregateInfo aggregateInfo : aggregatesToEncode) {
+			programBuilder.accumulate(encodeAggregateLiteral(aggregateInfo, ctx));
 		}
 		return programBuilder.build();
 	}
@@ -107,7 +107,7 @@ public abstract class AbstractAggregateEncoder {
 	 * 
 	 * @param aggregateId
 	 * @param element
-	 * @param ctx
+	 * @param aggregateArguments
 	 * @return
 	 */
 	protected Atom buildElementRuleHead(String aggregateId, AggregateElement element, Term aggregateArguments) {

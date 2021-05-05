@@ -1,22 +1,19 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
 
+import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
+import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.AbstractAggregateEncoder;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.AggregateEncoderFactory;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.AbstractAggregateEncoder;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.AggregateEncoderFactory;
+import java.util.Set;
 
 /**
  * Rewrites {@link AggregateLiteral}s in programs to semantically equivalent, aggregate-free sub-programs.
@@ -80,13 +77,14 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 			}
 		}
 		// Substitute AggregateLiterals with generated result literals.
-		outputRules.addAll(rewriteRulesWithAggregates(ctx));
+		outputRules.addAll(ctx.rewriteRulesWithAggregates());
 		InputProgram.Builder resultBuilder = InputProgram.builder().addRules(outputRules).addFacts(inputProgram.getFacts())
 				.addInlineDirectives(inputProgram.getInlineDirectives());
 		// Add sub-programs deriving respective aggregate literals.
-		for (ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> func : ctx.getAggregateFunctionsToRewrite().keySet()) {
+		for (Map.Entry<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateRewritingContext.AggregateInfo>> aggToRewrite : ctx.getAggregateFunctionsToRewrite().entrySet()) {
+			ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> func = aggToRewrite.getKey();
 			AbstractAggregateEncoder encoder = getEncoderForAggregateFunction(func.left, func.right);
-			resultBuilder.accumulate(encoder.encodeAggregateLiterals(ctx, ctx.getAggregateFunctionsToRewrite().get(func)));
+			resultBuilder.accumulate(encoder.encodeAggregateLiterals(ctx, aggToRewrite.getValue()));
 		}
 		return resultBuilder.build();
 	}
@@ -117,26 +115,4 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 				throw new UnsupportedOperationException("Unsupported aggregate function/comparison operator: " + function + ", " + operator);
 		}
 	}
-
-	// Transforms (restricted) aggregate literals of format "VAR OP #AGG_FN{...}" into literals of format
-	// "<result_predicate>(ARGS, VAR)" where ARGS is a function term wrapping the aggregate's global variables.
-	private static List<BasicRule> rewriteRulesWithAggregates(AggregateRewritingContext ctx) {
-		List<BasicRule> rewrittenRules = new ArrayList<>();
-		for (BasicRule rule : ctx.getRulesToRewrite()) {
-			List<Literal> rewrittenBody = new ArrayList<>();
-			Map<AggregateLiteral, String> aggregatesInRule = ctx.getAggregatesInRule(rule);
-			for (Literal lit : rule.getBody()) {
-				if (lit instanceof AggregateLiteral) {
-					String aggregateId = aggregatesInRule.get((AggregateLiteral) lit);
-					AggregateInfo aggregateInfo = ctx.getAggregateInfo(aggregateId);
-					rewrittenBody.add(new BasicLiteral(aggregateInfo.getOutputAtom(), !lit.isNegated()));
-				} else {
-					rewrittenBody.add(lit);
-				}
-			}
-			rewrittenRules.add(new BasicRule(rule.getHead(), rewrittenBody));
-		}
-		return rewrittenRules;
-	}
-
 }
