@@ -94,6 +94,10 @@ class AggregateRewritingRuleAnalysis {
 	}
 
 	private void checkForTwoAggregatesSolelyBindingOneVariable(Set<VariableTerm> variablesBoundByBodyMinusAggregates) {
+		if (aggregatesInRule.size() < 2) {
+			// Only if at least 2 aggregates are present, uncovered case can be hit.
+			return;
+		}
 		Set<VariableTerm> variablesBoundByAggregates = new HashSet<>();
 		for (AggregateLiteral aggregateLiteral : aggregatesInRule) {
 			if (!aggregateLiteral.getBindingVariables().isEmpty()) {

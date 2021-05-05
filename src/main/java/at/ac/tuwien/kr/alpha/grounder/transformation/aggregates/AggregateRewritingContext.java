@@ -33,10 +33,8 @@ public final class AggregateRewritingContext {
 	private static final ST AGGREGATE_ARGS_NOARGS_CONST = new ST("<id>_no_args");
 
 	private int idCounter;
-	private Map<AggregateLiteral, AggregateInfo> aggregateInfos = new HashMap<>();
+	private Map<AggregateLiteral, AggregateInfo> aggregateInfos = new HashMap<>();	// Maps aggregate literals to their respective AggregateInfo.
 	private Map<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateInfo>> aggregateFunctionsToRewrite = new LinkedHashMap<>();
-	// Since theoretically an aggregate literal could occur in several rules in different context,
-	// we need to keep track of the rules aggregate literals occur in.
 	private List<BasicRule> rulesWithAggregates = new ArrayList<>();
 
 	public AggregateRewritingContext() {
@@ -59,7 +57,7 @@ public final class AggregateRewritingContext {
 		}
 		// Do initial registration of each aggregate literal and keep the ids.
 		for (Map.Entry<AggregateLiteral, Set<VariableTerm>> entry : ruleAnalysis.globalVariablesPerAggregate.entrySet()) {
-			String id = registerAggregateLiteral(entry.getKey(), entry.getValue());
+			registerAggregateLiteral(entry.getKey(), entry.getValue());
 		}
 		// Now go through dependencies and replace the actual aggregate literals with their rewritten versions
 		for (Map.Entry<AggregateLiteral, Set<Literal>> entry : ruleAnalysis.dependenciesPerAggregate.entrySet()) {
@@ -77,22 +75,20 @@ public final class AggregateRewritingContext {
 		return true;
 	}
 
-	// Note: Thanks to type erasure we need a name other than "registerAggregateLiteral" here.
-	private String registerAggregateLiteral(AggregateLiteral lit, Set<VariableTerm> globalVariables) {
+	private void registerAggregateLiteral(AggregateLiteral lit, Set<VariableTerm> globalVariables) {
 		AggregateAtom atom = lit.getAtom();
 		String id = atom.getAggregatefunction().toString().toLowerCase() + "_" + (++idCounter);
 		AggregateInfo info = new AggregateInfo(id, lit, globalVariables);
 		aggregateInfos.put(lit, info);
 		aggregateFunctionsToRewrite.putIfAbsent(new ImmutablePair<>(atom.getAggregatefunction(), atom.getLowerBoundOperator()), new LinkedHashSet<>());
 		aggregateFunctionsToRewrite.get(new ImmutablePair<>(atom.getAggregatefunction(), atom.getLowerBoundOperator())).add(info);
-		return id;
 	}
 
-	public AggregateInfo getAggregateInfo(AggregateLiteral aggregateLiteral) {
+	AggregateInfo getAggregateInfo(AggregateLiteral aggregateLiteral) {
 		return aggregateInfos.get(aggregateLiteral);
 	}
 
-	public List<BasicRule> getRulesWithAggregates() {
+	List<BasicRule> getRulesWithAggregates() {
 		return rulesWithAggregates;
 	}
 
