@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
 public final class AggregateRewritingContext {
 
 	private static final ST AGGREGATE_RESULT_TEMPLATE = new ST("<id>_result");
@@ -79,6 +81,9 @@ public final class AggregateRewritingContext {
 		AggregateAtom atom = lit.getAtom();
 		String id = atom.getAggregatefunction().toString().toLowerCase() + "_" + (++idCounter);
 		AggregateInfo info = new AggregateInfo(id, lit, globalVariables);
+		if (aggregateInfos.containsKey(lit)) {
+			throw oops("AggregateInfo for AggregateLiteral already existing.");
+		}
 		aggregateInfos.put(lit, info);
 		aggregateFunctionsToRewrite.putIfAbsent(new ImmutablePair<>(atom.getAggregatefunction(), atom.getLowerBoundOperator()), new LinkedHashSet<>());
 		aggregateFunctionsToRewrite.get(new ImmutablePair<>(atom.getAggregatefunction(), atom.getLowerBoundOperator())).add(info);
