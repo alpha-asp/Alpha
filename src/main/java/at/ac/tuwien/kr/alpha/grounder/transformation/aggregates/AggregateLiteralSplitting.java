@@ -54,18 +54,7 @@ public final class AggregateLiteralSplitting {
 		// First, sort literals of the rule and also compute splitting.
 		for (Literal literal : sourceRule.getBody()) {
 			if (literal instanceof AggregateLiteral && shouldRewrite((AggregateLiteral) literal)) {
-				AggregateLiteral aggLit = (AggregateLiteral) literal;
-				ImmutablePair<AggregateAtom, AggregateAtom> splitAggregate = splitCombinedAggregateAtom(aggLit.getAtom());
-				if (literal.isNegated()) {
-					// Negated aggregate require splitting in two rules.
-					twoRulesSplitAggregates.add(new ImmutablePair<>(
-						splitAggregate.left.toLiteral(false),
-						splitAggregate.right.toLiteral(false)));
-				} else {
-					// Positive aggregate requires two literals in the body.
-					twoLiteralsSplitAggregates.add(splitAggregate.left.toLiteral(true));
-					twoLiteralsSplitAggregates.add(splitAggregate.right.toLiteral(true));
-				}
+				splitCombinedAggregateLiteral(literal, twoLiteralsSplitAggregates, twoRulesSplitAggregates);
 			} else {
 				// Literal is no aggregate that needs splitting.
 				commonBodyLiterals.add(literal);
@@ -95,6 +84,21 @@ public final class AggregateLiteralSplitting {
 			rewrittenRules.add(new BasicRule(sourceRule.getHead(), rewrittenBody));
 		}
 		return rewrittenRules;
+	}
+
+	private static void splitCombinedAggregateLiteral(Literal literal, List<Literal> twoLiteralsSplitAggregates, List<ImmutablePair<Literal, Literal>> twoRulesSplitAggregates) {
+		AggregateLiteral aggLit = (AggregateLiteral) literal;
+		ImmutablePair<AggregateAtom, AggregateAtom> splitAggregate = splitCombinedAggregateAtom(aggLit.getAtom());
+		if (literal.isNegated()) {
+			// Negated aggregate require splitting in two rules.
+			twoRulesSplitAggregates.add(new ImmutablePair<>(
+				splitAggregate.left.toLiteral(false),
+				splitAggregate.right.toLiteral(false)));
+		} else {
+			// Positive aggregate requires two literals in the body.
+			twoLiteralsSplitAggregates.add(splitAggregate.left.toLiteral(true));
+			twoLiteralsSplitAggregates.add(splitAggregate.right.toLiteral(true));
+		}
 	}
 
 	private static boolean shouldRewrite(AggregateLiteral lit) {
