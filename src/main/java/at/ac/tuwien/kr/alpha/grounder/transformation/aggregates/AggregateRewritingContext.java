@@ -7,7 +7,6 @@ import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -63,13 +62,13 @@ public final class AggregateRewritingContext {
 		}
 		// Now go through dependencies and replace the actual aggregate literals with their rewritten versions
 		for (Map.Entry<AggregateLiteral, Set<Literal>> entry : ruleAnalysis.dependenciesPerAggregate.entrySet()) {
-			Set<Literal> rewrittenDependencies = getAggregateInfo(entry.getKey()).dependencies;
+			AggregateInfo aggregateInfo = getAggregateInfo(entry.getKey());
 			for (Literal dependency : entry.getValue()) {
 				if (dependency instanceof AggregateLiteral) {
 					AggregateInfo dependencyInfo = getAggregateInfo((AggregateLiteral) dependency);
-					rewrittenDependencies.add(new BasicLiteral(dependencyInfo.getOutputAtom(), !dependency.isNegated()));
+					aggregateInfo.addDependency(dependencyInfo.getOutputAtom().toLiteral(!dependency.isNegated()));
 				} else {
-					rewrittenDependencies.add(dependency);
+					aggregateInfo.addDependency(dependency);
 				}
 			}
 		}
@@ -149,6 +148,10 @@ public final class AggregateRewritingContext {
 			Term argumentTerm = aggregateArguments;
 			Term resultTerm = literal.getAtom().getLowerBoundTerm();
 			return new BasicAtom(Predicate.getInstance(outputPredicateName, 2, true), argumentTerm, resultTerm);
+		}
+
+		private void addDependency(Literal dependency) {
+			dependencies.add(dependency);
 		}
 
 		public String getId() {
