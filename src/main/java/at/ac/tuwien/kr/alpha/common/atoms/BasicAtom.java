@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2020, the Alpha Team.
+/*
+ * Copyright (c) 2016-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -32,6 +32,7 @@ import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -111,7 +112,7 @@ public class BasicAtom extends Atom implements VariableNormalizableAtom {
 	
 	@Override
 	public FunctionTerm toFunctionTerm() {
-		return FunctionTerm.getInstance(predicate.getName(), terms);
+		return FunctionTerm.getInstance(predicate.getName(), new ArrayList<>(terms));
 	}
 
 	@Override

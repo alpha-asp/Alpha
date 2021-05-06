@@ -45,6 +45,7 @@ import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -73,7 +74,7 @@ public class HeuristicAtom extends Atom {
 	private final FunctionTerm negativeCondition;
 	private final boolean ground;
 
-	private HeuristicAtom(WeightAtLevel weightAtLevel, ThriceTruth headSign, FunctionTerm headAtom, FunctionTerm positiveCondition, FunctionTerm negativeCondition) {
+	public HeuristicAtom(WeightAtLevel weightAtLevel, ThriceTruth headSign, FunctionTerm headAtom, FunctionTerm positiveCondition, FunctionTerm negativeCondition) {
 		this.weightAtLevel = weightAtLevel;
 		this.headSign = headSign;
 		this.headAtom = headAtom;
@@ -99,16 +100,20 @@ public class HeuristicAtom extends Atom {
 		return PREDICATE;
 	}
 
+	/**
+	 * Returns an unmodifiable list of this atom's terms
+	 * (because changes to the returned list would NOT be reflected in the heuristic atom's terms!)
+	 */
 	@Override
 	public List<Term> getTerms() {
-		return Arrays.asList(
+		return Collections.unmodifiableList(Arrays.asList(
 				weightAtLevel.getWeight(),
 				weightAtLevel.getLevel(),
 				ConstantTerm.getInstance(headSign.toBoolean()),
 				headAtom,
 				positiveCondition,
 				negativeCondition
-		);
+		));
 	}
 
 	@Override
