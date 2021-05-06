@@ -33,6 +33,7 @@ import at.ac.tuwien.kr.alpha.antlr.AlphaASPParser;
 import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -64,6 +65,11 @@ public class ProgramPartParser {
 		return (Literal)parse(parser.naf_literal());
 	}
 
+	public BasicRule parseBasicRule(String s) {
+		final AlphaASPParser parser = getParser(s);
+		return (BasicRule)parse(parser.statement());
+	}
+
 	public HeuristicDirective parseHeuristicDirective(String s) {
 		final AlphaASPParser parser = getParser(s);
 		return (HeuristicDirective)parse(parser.directive_heuristic());
@@ -75,6 +81,7 @@ public class ProgramPartParser {
 
 	private Object parse(ParserRuleContext context) {
 		try {
+			visitor.initialize();
 			return visitor.visit(context);
 		} catch (RecognitionException | ParseCancellationException e) {
 			// If there were issues parsing the given string, we

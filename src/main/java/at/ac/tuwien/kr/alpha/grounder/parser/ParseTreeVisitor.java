@@ -99,6 +99,11 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 		this.acceptVariables = acceptVariables;
 	}
 
+	void initialize() {
+		inlineDirectives = new InlineDirectives();
+		programBuilder = InputProgram.builder();
+	}
+
 	private UnsupportedOperationException notSupported(RuleContext ctx) {
 		return new UnsupportedOperationException("Unsupported syntax encountered: " + ctx.getText());
 	}
@@ -165,8 +170,7 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 		if (ctx.statements() == null) {
 			return InputProgram.EMPTY;
 		}
-		inlineDirectives = new InlineDirectives();
-		programBuilder = InputProgram.builder();
+		initialize();
 		visitStatements(ctx.statements());
 		programBuilder.addInlineDirectives(inlineDirectives);
 		return programBuilder.build();
@@ -204,10 +208,11 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 	}
 
 	@Override
-	public Object visitStatement_rule(AlphaASPParser.Statement_ruleContext ctx) {
+	public BasicRule visitStatement_rule(AlphaASPParser.Statement_ruleContext ctx) {
 		// head CONS body DOT
-		programBuilder.addRule(new BasicRule(visitHead(ctx.head()), visitBody(ctx.body())));
-		return null;
+		final BasicRule rule = new BasicRule(visitHead(ctx.head()), visitBody(ctx.body()));
+		programBuilder.addRule(rule);
+		return rule;
 	}
 
 	@Override
@@ -300,9 +305,6 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 	@Override
 	public Object visitDirective_enumeration(AlphaASPParser.Directive_enumerationContext ctx) {
 		// directive_enumeration : SHARP 'enum_predicate_is' ID DOT;
-		if (inlineDirectives == null) {
-			inlineDirectives = new InlineDirectives();
-		}
 		inlineDirectives.addDirective(InlineDirectives.DIRECTIVE.enum_predicate_is, new EnumerationDirective(ctx.ID().getText()));
 		return null;
 	}
@@ -619,9 +621,6 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 		final HeuristicDirectiveAtom head = visitHeuristic_head_atom(ctx.heuristic_head_atom());
 		final HeuristicDirectiveBody body = visitHeuristic_body(ctx.heuristic_body());
 		final WeightAtLevel weightAtLevel = visitHeuristic_weight_annotation(ctx.heuristic_weight_annotation());
-		if (inlineDirectives == null) {
-			inlineDirectives = new InlineDirectives();
-		}
 		HeuristicDirective heuristicDirective = new HeuristicDirective(head, body, weightAtLevel);
 		inlineDirectives.addDirective(DIRECTIVE.heuristic, heuristicDirective);
 		return heuristicDirective;
