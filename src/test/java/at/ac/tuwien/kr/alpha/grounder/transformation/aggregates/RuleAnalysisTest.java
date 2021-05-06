@@ -47,7 +47,7 @@ public class RuleAnalysisTest {
 	//@formatter:on
 
 	private static final AggregateRewritingRuleAnalysis analyze(String rule) {
-		return AggregateRewritingRuleAnalysis.analyzeRule(RuleParser.parse(rule));
+		return AggregateRewritingRuleAnalysis.analyzeRuleDependencies(RuleParser.parse(rule));
 	}
 
 	@Test
@@ -58,7 +58,7 @@ public class RuleAnalysisTest {
 
 		AggregateLiteral aggregate = new ArrayList<>(analysis.globalVariablesPerAggregate.keySet()).get(0);
 		Assert.assertTrue(analysis.globalVariablesPerAggregate.get(aggregate).isEmpty());
-		Assert.assertEquals(2, analysis.dependenciesPerAggregate.get(aggregate).size());
+		Assert.assertEquals(0, analysis.dependenciesPerAggregate.get(aggregate).size());
 	}
 
 	@Test
@@ -72,7 +72,7 @@ public class RuleAnalysisTest {
 		Assert.assertFalse(analysis.dependenciesPerAggregate.get(aggregate).isEmpty());
 
 		Set<Literal> dependencies = analysis.dependenciesPerAggregate.get(aggregate);
-		Assert.assertEquals(2, dependencies.size());
+		Assert.assertEquals(1, dependencies.size());
 
 		Literal pXY = new BasicLiteral(new BasicAtom(Predicate.getInstance("p", 2), VariableTerm.getInstance("X"), VariableTerm.getInstance("Y")), true);
 		Assert.assertTrue(dependencies.contains(pXY));
@@ -89,7 +89,7 @@ public class RuleAnalysisTest {
 		Assert.assertFalse(analysis.dependenciesPerAggregate.get(aggregate).isEmpty());
 
 		Set<Literal> dependencies = analysis.dependenciesPerAggregate.get(aggregate);
-		Assert.assertEquals(4, dependencies.size());
+		Assert.assertEquals(3, dependencies.size());
 
 		Literal threePlusY = new ComparisonLiteral(
 				new ComparisonAtom(VariableTerm.getInstance("X"),

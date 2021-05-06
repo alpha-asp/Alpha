@@ -5,9 +5,12 @@ import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import org.apache.commons.collections4.SetUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -39,11 +42,75 @@ class AggregateRewritingRuleAnalysis {
 	 * @param rule
 	 * @return
 	 */
-	static AggregateRewritingRuleAnalysis analyzeRule(BasicRule rule) {
+	static AggregateRewritingRuleAnalysis analyzeRuleDependencies(BasicRule rule) {
 		AggregateRewritingRuleAnalysis ruleAnalysis = new AggregateRewritingRuleAnalysis(rule);
 		ruleAnalysis.findGlobalVariablesPerAggregate();
-		ruleAnalysis.computeDependencies();
+		ruleAnalysis.analyzeRuleDependencies();
 		return ruleAnalysis;
+	}
+
+	private void analyzeRuleDependencies() {
+		for (AggregateLiteral lit : globalVariablesPerAggregate.keySet()) {
+			Set<VariableTerm> nonBindingVars = new HashSet<>(globalVariablesPerAggregate.get(lit));
+			Term leftHandTerm = lit.getAtom().getLowerBoundTerm();
+			if (lit.getBindingVariables().isEmpty() && leftHandTerm instanceof VariableTerm) {
+				/*
+				 * If the "left-hand" term LT of the literal is a variable and not binding, it has to be non-binding,
+				 * i.e. the aggregate literal depends on the literals binding LT.
+				 */
+				nonBindingVars.add((VariableTerm) leftHandTerm);
+			}
+			Set<Literal> dependencies = new HashSet<>();
+			Set<Literal> bodyWithoutLit = SetUtils.difference(rule.getBody(), Collections.singleton(lit));
+			findBindingLiterals(nonBindingVars, new HashSet<>(), dependencies, bodyWithoutLit, globalVariablesPerAggregate);
+			dependenciesPerAggregate.put(lit, dependencies);
+		}
+	}
+
+
+	/**
+	 * Recursively looks for literals in <code>searchScope</code> that bind the variables in the set
+	 * <code>varsToBind</code>, i.e. any literal lit that has any variable var in question in its
+	 * <code>bindingVariables</code> (i.e. lit assigns a value to var). Found binding literals are added to the set
+	 * <code>boundSoFar</code>. If a literal has any of the desired variables as a binding variable, but also has other
+	 * non-binding variables, the literals binding these are added to the set of desired variables for the next recursive
+	 * call. Since {@link AggregateLiteral}s cannot report their non-binding variables by themselves, this method also needs
+	 * a map of all aggregate literals and their global variables within the search scope.
+	 */
+	// Note: This algorithm has potentially exponential time complexity. Tuning potential definitely exists, but
+	// performance optimization seems non-trivial.
+	private static void findBindingLiterals(Set<VariableTerm> varsToBind, Set<VariableTerm> varsBoundSoFar, Set<Literal> foundSoFar,
+						Set<Literal> searchScope,
+						Map<AggregateLiteral, Set<VariableTerm>> aggregatesWithGlobalVars) {
+		int newlyBoundVars = 0;
+		Set<VariableTerm> furtherVarsToBind = new HashSet<>();
+		for (VariableTerm varToBind : varsToBind) {
+			for (Literal lit : searchScope) {
+				Set<VariableTerm> bindingVars = lit.getBindingVariables();
+				Set<VariableTerm> nonBindingVars = (lit instanceof AggregateLiteral) ? aggregatesWithGlobalVars.get((AggregateLiteral) lit)
+					: lit.getNonBindingVariables();
+				if (bindingVars.contains(varToBind)) {
+					varsBoundSoFar.add(varToBind);
+					foundSoFar.add(lit);
+					newlyBoundVars++;
+					for (VariableTerm nonBindingVar : nonBindingVars) {
+						if (!varsBoundSoFar.contains(nonBindingVar)) {
+							furtherVarsToBind.add(nonBindingVar);
+						}
+					}
+				}
+			}
+		}
+		if (newlyBoundVars == 0 && !varsToBind.isEmpty()) {
+			// Sanity check to prevent endless recursions: If because of weird cyclic dependencies we end up with unbound variables,
+			// but couldn't find any binding literals in the last run, it seems we're running in circles. Better to give up
+			// screaming than producing a stack overflow ;-)
+			throw new IllegalStateException("Couldn't find any literals binding variables: " + varsToBind + " in search scope " + searchScope);
+		}
+		if (!furtherVarsToBind.isEmpty()) {
+			// As long as we find variables we still need to bind, repeat with the new set of variables to bind.
+			findBindingLiterals(furtherVarsToBind, varsBoundSoFar, foundSoFar, searchScope, aggregatesWithGlobalVars);
+		}
 	}
 
 	private void computeDependencies() {

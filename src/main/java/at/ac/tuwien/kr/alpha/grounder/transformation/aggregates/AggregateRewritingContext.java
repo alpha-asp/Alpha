@@ -51,7 +51,7 @@ public final class AggregateRewritingContext {
 	 * @return true if the given rule contains one or more aggregate literals, false otherwise
 	 */
 	public boolean registerRule(BasicRule rule) {
-		AggregateRewritingRuleAnalysis ruleAnalysis = AggregateRewritingRuleAnalysis.analyzeRule(rule);
+		AggregateRewritingRuleAnalysis ruleAnalysis = AggregateRewritingRuleAnalysis.analyzeRuleDependencies(rule);
 		if (ruleAnalysis.aggregatesInRule.isEmpty()) {
 			// Rule has no aggregates.
 			return false;
