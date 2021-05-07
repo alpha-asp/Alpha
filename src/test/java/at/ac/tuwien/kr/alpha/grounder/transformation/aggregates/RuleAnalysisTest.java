@@ -23,6 +23,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class RuleAnalysisTest {
@@ -34,6 +35,8 @@ public class RuleAnalysisTest {
 			"p(X) :- X < #max{N : q(N)}, X < 10, p(X, Y).";
 	private static final String NONBINDING_AGGREGATE_NO_GLOBALS_2 = 
 			"p(X) :- X < #max{N : q(N)}, X < 10, X = 3 + Y, Y = Z + 4, r(S, Z).";
+	private static final String BINDING_AGGREGATES_NO_GLOBALS_INCLUDED =
+			"p :- not p(X), 3 < #max { Y : q(Y) }, X = #count { Y : q(Y) }.";
 	private static final String BINDING_AGGREGATE_WITH_GLOBALS_1 =
 			"graph_vertex_degree(G, V, D) :-"
 			+ "    graph(G),"
@@ -183,6 +186,22 @@ public class RuleAnalysisTest {
 		Assert.assertEquals(2, cntAggrDependencies.size());
 		Assert.assertTrue(cntAggrDependencies.contains(graph));
 		Assert.assertTrue(cntAggrDependencies.contains(maxAggregate));
+	}
+
+	@Test
+	public void bindingAggregateGlobalsNotIncluded() {
+		AggregateRewritingRuleAnalysis analysis = analyze(BINDING_AGGREGATES_NO_GLOBALS_INCLUDED);
+		Assert.assertEquals(2, analysis.globalVariablesPerAggregate.size());
+		Assert.assertEquals(2, analysis.dependenciesPerAggregate.size());
+
+		// Check that the #max aggregate does not include "not p(X)" as its dependency.
+		for (Map.Entry<AggregateLiteral, Set<Literal>> aggregateDependencies : analysis.dependenciesPerAggregate.entrySet()) {
+			if (aggregateDependencies.getKey().getAtom().getAggregatefunction() == AggregateFunctionSymbol.MAX) {
+				for (Literal dependency : aggregateDependencies.getValue()) {
+					Assert.assertFalse(dependency.isNegated());
+				}
+			}
+		}
 	}
 
 }
