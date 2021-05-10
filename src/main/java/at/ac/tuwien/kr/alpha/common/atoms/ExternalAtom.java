@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2019, the Alpha Team.
+ * Copyright (c) 2017-2020, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -27,16 +27,18 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import static at.ac.tuwien.kr.alpha.Util.join;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import org.apache.commons.collections4.ListUtils;
+
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 public class ExternalAtom extends Atom implements VariableNormalizableAtom {
 
@@ -88,7 +90,7 @@ public class ExternalAtom extends Atom implements VariableNormalizableAtom {
 
 	@Override
 	public List<Term> getTerms() {
-		return input;
+		return ListUtils.union(input, output);
 	}
 
 	@Override
@@ -130,9 +132,20 @@ public class ExternalAtom extends Atom implements VariableNormalizableAtom {
 		return result;
 	}
 
+	/**
+	 * Creates a new {@link ExternalAtom} with input and output term lists set according to the given term list.
+	 * Callers are responsible for making sure the given term list contains the right number of terms. For an external atom with n input and m
+	 * output terms, terms[0..n-1] is interpreted as input terms for the new atom, terms[n..(n + m)-1] are taken to be output terms.
+	 */
 	@Override
-	public Atom withTerms(List<Term> terms) {
-		throw new UnsupportedOperationException("Editing term list is not supported for external atoms!");
+	public ExternalAtom withTerms(List<Term> terms) {
+		if (terms.size() != this.input.size() + this.output.size()) {
+			throw new IllegalArgumentException(
+					"Cannot apply term list " + terms.toString() + " to external atom " + this.toString() + ", terms has invalid size!");
+		}
+		List<Term> newInput = terms.subList(0, this.input.size());
+		List<Term> newOutput = terms.subList(this.input.size(), terms.size());
+		return new ExternalAtom(this.predicate, this.interpretation, newInput, newOutput);
 	}
 
 	@Override

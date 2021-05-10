@@ -33,6 +33,7 @@ import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 
@@ -284,13 +285,13 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 
 	@Override
 	protected Solver getInstance(InputProgram program) {
-		Alpha system = new Alpha();
-		system.getConfig().setUseNormalizationGrid(useCountingGridNormalization());
+		SystemConfig config = this.buildSystemConfig();
+		config.setUseNormalizationGrid(useCountingGridNormalization());
+		Alpha system = new Alpha(config);
 		AtomStore atomStore = new AtomStoreImpl();
 		NormalProgram normal = system.normalizeProgram(program);
 		InternalProgram preprocessed = InternalProgram.fromNormalProgram(normal);
-		return super.getInstance(atomStore,
-				GrounderFactory.getInstance(grounderName, preprocessed, atomStore, p -> true, new GrounderHeuristicsConfiguration(), true));
+		return super.getInstance(atomStore, GrounderFactory.getInstance(grounderName, preprocessed, atomStore, p->true, new GrounderHeuristicsConfiguration(), true));
 	}
 
 	protected abstract boolean useCountingGridNormalization();
