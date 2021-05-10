@@ -1,11 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
@@ -17,6 +11,12 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.AbstractAggregateEncoder;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.AggregateEncoderFactory;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Rewrites {@link AggregateLiteral}s in programs to semantically equivalent, aggregate-free sub-programs.
@@ -84,9 +84,10 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 		InputProgram.Builder resultBuilder = InputProgram.builder().addRules(outputRules).addFacts(inputProgram.getFacts())
 				.addInlineDirectives(inputProgram.getInlineDirectives());
 		// Add sub-programs deriving respective aggregate literals.
-		for (ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> func : ctx.getAggregateFunctionsToRewrite().keySet()) {
+		for (Map.Entry<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateInfo>> aggToRewrite : ctx.getAggregateFunctionsToRewrite().entrySet()) {
+			ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> func = aggToRewrite.getKey();
 			AbstractAggregateEncoder encoder = getEncoderForAggregateFunction(func.left, func.right);
-			resultBuilder.accumulate(encoder.encodeAggregateLiterals(ctx, ctx.getAggregateFunctionsToRewrite().get(func)));
+			resultBuilder.accumulate(encoder.encodeAggregateLiterals(aggToRewrite.getValue()));
 		}
 		return resultBuilder.build();
 	}
@@ -118,17 +119,20 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 		}
 	}
 
-	// Transforms (restricted) aggregate literals of format "VAR OP #AGG_FN{...}" into literals of format
-	// "<result_predicate>(ARGS, VAR)" where ARGS is a function term wrapping the aggregate's global variables.
+	/**
+	 * Transforms (restricted) aggregate literals of format "VAR OP #AGG_FN{...}" into literals of format
+	 * "<result_predicate>(ARGS, VAR)" where ARGS is a function term wrapping the aggregate's global variables.
+	 *
+	 * @param ctx the {@link AggregateRewritingContext} containing information about all aggregates.
+	 * @return for each rule, its rewritten version where aggregates are replaced with output atoms of the encoding.
+	 */
 	private static List<BasicRule> rewriteRulesWithAggregates(AggregateRewritingContext ctx) {
 		List<BasicRule> rewrittenRules = new ArrayList<>();
-		for (BasicRule rule : ctx.getRulesToRewrite()) {
+		for (BasicRule rule : ctx.getRulesWithAggregates()) {
 			List<Literal> rewrittenBody = new ArrayList<>();
-			Map<AggregateLiteral, String> aggregatesInRule = ctx.getAggregatesInRule(rule);
 			for (Literal lit : rule.getBody()) {
 				if (lit instanceof AggregateLiteral) {
-					String aggregateId = aggregatesInRule.get((AggregateLiteral) lit);
-					AggregateInfo aggregateInfo = ctx.getAggregateInfo(aggregateId);
+					AggregateInfo aggregateInfo = ctx.getAggregateInfo((AggregateLiteral) lit);
 					rewrittenBody.add(new BasicLiteral(aggregateInfo.getOutputAtom(), !lit.isNegated()));
 				} else {
 					rewrittenBody.add(lit);
@@ -138,5 +142,4 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 		}
 		return rewrittenRules;
 	}
-
 }

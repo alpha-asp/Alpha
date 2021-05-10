@@ -1,8 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders;
 
-import org.apache.commons.collections4.SetUtils;
-import org.stringtemplate.v4.ST;
-
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -14,8 +11,9 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
+import org.apache.commons.collections4.SetUtils;
+import org.stringtemplate.v4.ST;
 
 public class MinMaxEncoder extends AbstractAggregateEncoder {
 
@@ -58,7 +56,7 @@ public class MinMaxEncoder extends AbstractAggregateEncoder {
 	}
 
 	@Override
-	protected InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx) {
+	protected InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode) {
 		ST encodingTemplate = null;
 		if (this.getAggregateFunctionToEncode() == AggregateFunctionSymbol.MAX) {
 			encodingTemplate = new ST(MAX_LITERAL_ENCODING);
@@ -84,7 +82,7 @@ public class MinMaxEncoder extends AbstractAggregateEncoder {
 			// Ideally, we'd use "internalized", i.e. somehow prefixed "_AGGR_..." etc
 			resultRuleTemplate.add("cmp_term", atom.getLowerBoundTerm());
 			resultRuleTemplate.add("cmp_op", cmpOp);
-			resultRuleTemplate.add("dependencies", ctx.getDependencies(aggregateToEncode.getId()));
+			resultRuleTemplate.add("dependencies", aggregateToEncode.getDependencies());
 
 		}
 		resultRuleTemplate.add("agg_func", atom.getAggregatefunction().toString().toLowerCase());
@@ -96,10 +94,8 @@ public class MinMaxEncoder extends AbstractAggregateEncoder {
 	}
 
 	@Override
-	protected Atom buildElementRuleHead(String aggregateId, AggregateElement element, AggregateRewritingContext ctx) {
+	protected Atom buildElementRuleHead(String aggregateId, AggregateElement element, Term aggregateArguments) {
 		Predicate headPredicate = Predicate.getInstance(this.getElementTuplePredicateSymbol(aggregateId), 2);
-		AggregateInfo aggregate = ctx.getAggregateInfo(aggregateId);
-		Term aggregateArguments = aggregate.getAggregateArguments();
 		Term elementTerm = element.getElementTerms().get(0);
 		return new BasicAtom(headPredicate, aggregateArguments, elementTerm);
 	}

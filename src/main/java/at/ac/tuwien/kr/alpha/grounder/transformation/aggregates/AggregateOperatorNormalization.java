@@ -1,9 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
@@ -11,8 +7,16 @@ import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.Terms;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static at.ac.tuwien.kr.alpha.common.ComparisonOperator.EQ;
+import static at.ac.tuwien.kr.alpha.common.ComparisonOperator.LE;
 
 /**
  * Transforms an {@link InputProgram} such that, for all aggregate (body-)literals, only the comparison operators "="
@@ -35,7 +39,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
  * a left term and operator. When preprocessing programs, apply this transformation AFTER
  * {@link at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateLiteralSplitting}.
  * 
- * Copyright (c) 2020, the Alpha Team.
+ * Copyright (c) 2020-2021, the Alpha Team.
  */
 public final class AggregateOperatorNormalization {
 
@@ -62,10 +66,10 @@ public final class AggregateOperatorNormalization {
 	private static List<Literal> rewriteAggregateOperator(AggregateLiteral lit) {
 		AggregateAtom atom = lit.getAtom();
 		if (lit.getAtom().getAggregatefunction() == AggregateFunctionSymbol.MIN || lit.getAtom().getAggregatefunction() == AggregateFunctionSymbol.MAX) {
-			// No operator normalization needed for #min/#max aggregates
+			// No operator normalization needed for #min/#max aggregates.
 			return Collections.singletonList(lit);
 		}
-		if (atom.getLowerBoundOperator() == ComparisonOperator.EQ || atom.getLowerBoundOperator() == ComparisonOperator.LE) {
+		if (atom.getLowerBoundOperator() == EQ || atom.getLowerBoundOperator() == LE) {
 			// Nothing to do for operator "=" or "<=".
 			return Collections.singletonList(lit);
 		} else {
@@ -74,30 +78,18 @@ public final class AggregateOperatorNormalization {
 			switch (atom.getLowerBoundOperator()) {
 				case LT:
 					decrementedBound = VariableTerm.getAnonymousInstance();
-					retVal.add(new AggregateLiteral(
-							new AggregateAtom(
-									ComparisonOperator.LE, decrementedBound, atom.getAggregatefunction(), atom.getAggregateElements()),
-							!lit.isNegated()));
+					retVal.add(createLowerBoundedAggregateLiteral(LE, decrementedBound, atom, !lit.isNegated()));
 					retVal.add(Terms.incrementTerm(atom.getLowerBoundTerm(), decrementedBound));
 					break;
 				case NE:
-					retVal.add(new AggregateLiteral(
-							new AggregateAtom(
-									ComparisonOperator.EQ, atom.getLowerBoundTerm(), atom.getAggregatefunction(), atom.getAggregateElements()),
-							lit.isNegated()));
+					retVal.add(createLowerBoundedAggregateLiteral(EQ, atom.getLowerBoundTerm(), atom, lit.isNegated()));
 					break;
 				case GT:
-					retVal.add(new AggregateLiteral(
-							new AggregateAtom(
-									ComparisonOperator.LE, atom.getLowerBoundTerm(), atom.getAggregatefunction(), atom.getAggregateElements()),
-							lit.isNegated()));
+					retVal.add(createLowerBoundedAggregateLiteral(LE, atom.getLowerBoundTerm(), atom, lit.isNegated()));
 					break;
 				case GE:
 					decrementedBound = VariableTerm.getAnonymousInstance();
-					retVal.add(new AggregateLiteral(
-							new AggregateAtom(
-									ComparisonOperator.LE, decrementedBound, atom.getAggregatefunction(), atom.getAggregateElements()),
-							lit.isNegated()));
+					retVal.add(createLowerBoundedAggregateLiteral(LE, decrementedBound, atom, lit.isNegated()));
 					retVal.add(Terms.incrementTerm(atom.getLowerBoundTerm(), decrementedBound));
 					break;
 				default:
@@ -105,6 +97,11 @@ public final class AggregateOperatorNormalization {
 			}
 			return retVal;
 		}
+	}
+
+	private static AggregateLiteral createLowerBoundedAggregateLiteral(ComparisonOperator op, Term lowerBoundTerm, AggregateAtom aggregateAtom, boolean isNegated) {
+		return new AggregateLiteral(new AggregateAtom(op, lowerBoundTerm, aggregateAtom.getAggregatefunction(),
+			aggregateAtom.getAggregateElements()), isNegated);
 	}
 
 }

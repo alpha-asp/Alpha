@@ -1,11 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -13,6 +7,12 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class AggregateRewritingTest {
 
@@ -66,6 +66,10 @@ public class AggregateRewritingTest {
 			+ "	   graph(G),"
 			+ "	   DMAX = #max{ DV : graph_vertex_degree(G, V, DV)},"
 			+ "    N = #count{ V : graph_vertex_degree(G, V, DMAX)}.";
+	private static final String COMPLEX_EQUALITY_WITH_GLOBALS =
+			"p(1..10)."
+			+ "q :- X = #count { Y : p( Y ) }, X = #count { Z : p( Z ) },"
+			+ "	Y = #count { X : p( X ) }, 1 <= #count { X : p( X ) }, Z = #max { W : p( W ) }.";
 	//@formatter:on
 
 	@Test
@@ -243,6 +247,25 @@ public class AggregateRewritingTest {
 
 		Assert.assertTrue(answerSet.getPredicates().contains(boundLe));
 		Assert.assertTrue(answerSet.getPredicateInstances(boundLe).contains(new BasicAtom(boundLe, ConstantTerm.getInstance(11))));
+	}
+
+	@Ignore("Open issue, as dependency analysis includes cyclic output-dependency, which it should not.")
+	@Test
+	public void setComplexEqualityWithGlobals() {
+		Alpha alpha = new Alpha();
+		alpha.getConfig().setEvaluateStratifiedPart(false);
+		InputProgram input = alpha.readProgramString(COMPLEX_EQUALITY_WITH_GLOBALS);
+		NormalProgram normalized = alpha.normalizeProgram(input);
+		// System.out.println(normalized);
+		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
+		Assert.assertEquals(1, answerSets.size());
+		AnswerSet answerSet = answerSets.get(0);
+		Predicate q = Predicate.getInstance("q", 0);
+
+		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
+
+		Assert.assertTrue(answerSet.getPredicates().contains(q));
+		Assert.assertTrue(answerSet.getPredicateInstances(q).contains(new BasicAtom(q)));
 	}
 
 }

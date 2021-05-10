@@ -1,15 +1,15 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Splits aggregate literals with both "lower" and "upper" bound operators into literals with only one operator each.
@@ -34,56 +34,75 @@ public final class AggregateLiteralSplitting {
 		throw new UnsupportedOperationException("Utility class - cannot instantiate!");
 	}
 
-	public static List<BasicRule> split(BasicRule rule) {
-		List<BasicRule> retVal = new ArrayList<>();
-		rewriteRule(rule, retVal);
-		return retVal;
-	}
-
-	private static void rewriteRule(BasicRule sourceRule, List<BasicRule> resultRules) {
-		boolean containsRewrittenAggregate = false;
+	public static List<BasicRule> split(BasicRule sourceRule) {
+		// Check if body contains aggregates that need to be split.
 		for (Literal lit : sourceRule.getBody()) {
-			AggregateLiteral aggLit;
-			if (lit instanceof AggregateLiteral && shouldRewrite(aggLit = (AggregateLiteral) lit)) {
-				containsRewrittenAggregate = true;
-				for (BasicRule rewritten : splitAggregateLiteral(sourceRule, aggLit)) {
-					rewriteRule(rewritten, resultRules);
-				}
-				return;
+			if (lit instanceof AggregateLiteral && shouldRewrite((AggregateLiteral) lit)) {
+				return splitAggregatesInRule(sourceRule);
 			}
 		}
-		if (!containsRewrittenAggregate) {
-			resultRules.add(sourceRule);
+		// No aggregate in the body that needs splitting, return original rule.
+		return Collections.singletonList(sourceRule);
+	}
+
+	private static List<BasicRule> splitAggregatesInRule(BasicRule sourceRule) {
+		// Rule contains some aggregates that need splitting.
+		// Aggregates may require splitting in two literals, or in two rules.
+		List<Literal> commonBodyLiterals = new ArrayList<>();
+		List<Literal> twoLiteralsSplitAggregates = new ArrayList<>();
+		List<ImmutablePair<Literal, Literal>> twoRulesSplitAggregates = new ArrayList<>();
+		// First, sort literals of the rule and also compute splitting.
+		for (Literal literal : sourceRule.getBody()) {
+			if (literal instanceof AggregateLiteral && shouldRewrite((AggregateLiteral) literal)) {
+				splitCombinedAggregateLiteral(literal, twoLiteralsSplitAggregates, twoRulesSplitAggregates);
+			} else {
+				// Literal is no aggregate that needs splitting.
+				commonBodyLiterals.add(literal);
+			}
+		}
+		// Second, compute rule bodies of splitting result.
+		List<Literal> commonBody = new ArrayList<>(commonBodyLiterals);
+		commonBody.addAll(twoLiteralsSplitAggregates);
+		List<List<Literal>> rewrittenBodies = new ArrayList<>();
+		rewrittenBodies.add(commonBody);	// Initialize list of rules with the common body.
+		// For n twoRulesSplitAggregates we need 2^n rules, so
+		// for each of the n pairs in twoRulesSplitAggregates we duplicate the list of rewritten bodies.
+		for (ImmutablePair<Literal, Literal> ruleSplitAggregate : twoRulesSplitAggregates) {
+			int numBodiesBeforeDuplication = rewrittenBodies.size();
+			for (int i = 0; i < numBodiesBeforeDuplication; i++) {
+				List<Literal> originalBody = rewrittenBodies.get(i);
+				List<Literal> duplicatedBody = new ArrayList<>(originalBody);
+				// Extend bodies of original and duplicate with splitting results.
+				originalBody.add(ruleSplitAggregate.left);
+				duplicatedBody.add(ruleSplitAggregate.right);
+				rewrittenBodies.add(duplicatedBody);
+			}
+		}
+		// Third, turn computed bodies into rules again.
+		List<BasicRule> rewrittenRules = new ArrayList<>();
+		for (List<Literal> rewrittenBody : rewrittenBodies) {
+			rewrittenRules.add(new BasicRule(sourceRule.getHead(), rewrittenBody));
+		}
+		return rewrittenRules;
+	}
+
+	private static void splitCombinedAggregateLiteral(Literal literal, List<Literal> twoLiteralsSplitAggregates, List<ImmutablePair<Literal, Literal>> twoRulesSplitAggregates) {
+		AggregateLiteral aggLit = (AggregateLiteral) literal;
+		ImmutablePair<AggregateAtom, AggregateAtom> splitAggregate = splitCombinedAggregateAtom(aggLit.getAtom());
+		if (literal.isNegated()) {
+			// Negated aggregate require splitting in two rules.
+			twoRulesSplitAggregates.add(new ImmutablePair<>(
+				splitAggregate.left.toLiteral(false),
+				splitAggregate.right.toLiteral(false)));
+		} else {
+			// Positive aggregate requires two literals in the body.
+			twoLiteralsSplitAggregates.add(splitAggregate.left.toLiteral(true));
+			twoLiteralsSplitAggregates.add(splitAggregate.right.toLiteral(true));
 		}
 	}
 
 	private static boolean shouldRewrite(AggregateLiteral lit) {
 		return lit.getAtom().getLowerBoundTerm() != null && lit.getAtom().getUpperBoundTerm() != null;
-	}
-
-	private static List<BasicRule> splitAggregateLiteral(BasicRule sourceRule, AggregateLiteral aggLit) {
-		List<Literal> remainingBody = new ArrayList<>();
-		sourceRule.getBody().forEach((lit) -> {
-			if (lit != aggLit) {
-				remainingBody.add(lit);
-			}
-		});
-		ImmutablePair<AggregateAtom, AggregateAtom> normalizedAtoms = splitCombinedAggregateAtom(aggLit.getAtom());
-		List<BasicRule> retVal = new ArrayList<>();
-		if (aggLit.isNegated()) {
-			List<Literal> leftRuleBody = new ArrayList<>(remainingBody);
-			leftRuleBody.add(normalizedAtoms.left.toLiteral(false));
-			List<Literal> rightRuleBody = new ArrayList<>(remainingBody);
-			rightRuleBody.add(normalizedAtoms.right.toLiteral(false));
-			retVal.add(new BasicRule(sourceRule.getHead(), leftRuleBody));
-			retVal.add(new BasicRule(sourceRule.getHead(), rightRuleBody));
-		} else {
-			List<Literal> resultBody = new ArrayList<>(remainingBody);
-			resultBody.add(normalizedAtoms.left.toLiteral(true));
-			resultBody.add(normalizedAtoms.right.toLiteral(true));
-			retVal.add(new BasicRule(sourceRule.getHead(), resultBody));
-		}
-		return retVal;
 	}
 
 	private static ImmutablePair<AggregateAtom, AggregateAtom> splitCombinedAggregateAtom(AggregateAtom atom) {

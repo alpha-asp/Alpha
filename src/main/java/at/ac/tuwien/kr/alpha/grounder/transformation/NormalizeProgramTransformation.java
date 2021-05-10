@@ -22,8 +22,10 @@ public class NormalizeProgramTransformation extends ProgramTransformation<InputP
 	@Override
 	public NormalProgram apply(InputProgram inputProgram) {
 		InputProgram tmpPrg;
+		// Remove variable equalities.
+		tmpPrg = new VariableEqualityRemoval().apply(inputProgram);
 		// Transform choice rules.
-		tmpPrg = new ChoiceHeadToNormal().apply(inputProgram);
+		tmpPrg = new ChoiceHeadToNormal().apply(tmpPrg);
 		// Transform cardinality aggregates.
 		tmpPrg = new AggregateRewriting(!useNormalizationGrid).apply(tmpPrg);
 		// Transform enumeration atoms.
@@ -32,10 +34,8 @@ public class NormalizeProgramTransformation extends ProgramTransformation<InputP
 
 		// Construct the normal program.
 		NormalProgram retVal = NormalProgram.fromInputProgram(tmpPrg);
-		// Transform intervals - CAUTION - this MUST come before VariableEqualityRemoval!
+		// Transform intervals.
 		retVal = new IntervalTermToIntervalAtom().apply(retVal);
-		// Remove variable equalities.
-		retVal = new VariableEqualityRemoval().apply(retVal);
 		return retVal;
 	}
 
