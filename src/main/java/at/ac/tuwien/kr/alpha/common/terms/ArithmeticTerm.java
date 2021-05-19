@@ -60,6 +60,17 @@ public class ArithmeticTerm extends Term {
 		return INTERNER.intern(new ArithmeticTerm(left, arithmeticOperator, right));
 	}
 
+	public Term getLeft() {
+		return left;
+	}
+
+	public Term getRight() {
+		return right;
+	}
+
+	public ArithmeticOperator getArithmeticOperator() {
+		return arithmeticOperator;
+	}
 
 	@Override
 	public boolean isGround() {
