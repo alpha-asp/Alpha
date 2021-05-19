@@ -70,6 +70,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
 import static java.util.Collections.emptyList;
 
 /**
@@ -214,7 +215,8 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Object visitWeight_at_level(ASPCore2Parser.Weight_at_levelContext ctx) {
 		// weight_at_level : term (AT term)? (COMMA terms)?;
-		return null;
+		// Construction fully done at visitStatement_weightConstraint, should never descend to this.
+		throw oops("ParserTreeVisitor called method visitWeight_at_level.");
 	}
 
 	@Override

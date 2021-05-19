@@ -69,8 +69,8 @@ public interface Grounder {
 	boolean inputProgramContainsWeakConstraints();
 
 	/**
-	 * Returns the atomId of atoms representing weak constraint and the respective weight and level.
-	 * Must be preceeded by a call to getNoGoods().
+	 * Returns the atomId of atoms representing weak constraints and the respective weights and levels.
+	 * Must be preceded by a call to getNoGoods().
 	 * @return a list of triples (atomId, weight, level) where atomId is the atom that becomes true whenever the
 	 * corresponding weak constraint is violated.
 	 */

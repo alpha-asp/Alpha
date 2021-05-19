@@ -229,10 +229,10 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				LOGGER.debug("Closed unassigned known atoms (assigning FALSE).");
 				afterAllAtomsAssigned = true;
 			} else if (assignment.getMBTCount() == 0) {
-				// NOTE: If we would do optimization, we would now have a guaranteed upper bound.
+				// Found an answer-set.
 				AnswerSet as = translate(assignment.getTrueAssignments());
 				if (enableBranchAndBoundOptimization) {
-					// Enrich answer-set with weights information.
+					// Enrich answer-set with weights information, record current-best upper bound.
 					weakConstraintsManager.markCurrentWeightAsBestKnown();
 					as = new WeightedAnswerSet((BasicAnswerSet)as, weakConstraintsManager.getCurrentWeightAtLevels());
 				}
