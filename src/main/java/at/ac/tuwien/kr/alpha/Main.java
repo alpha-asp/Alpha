@@ -215,11 +215,10 @@ public class Main {
 					}
 				}
 			} else {
+				System.out.println("SATISFIABLE");
 				if (program.containsWeakConstraints() && counter.get() < limit) {
-					// Note: this ignores the case where n answer sets are requested and the n-th is the optimum. For this, a solver state is needed.
-					System.out.println("OPTIMUM FOUND");
-				} else {
-					System.out.println("SATISFIABLE");
+					// If less answer sets were found than requested and optimisation is enabled, then the last one is an optimal answer set.
+					System.out.println("OPTIMUM PROVEN");
 				}
 			}
 		} else {
