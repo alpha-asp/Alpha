@@ -78,7 +78,8 @@ public class WeakConstraintsManager implements Checkable {
 		// Note: alternative to searching all known callback atoms would be maintaining a list of true ones, but this is probably less efficient.
 		ArrayList<Integer> trueCallbackAtoms = new ArrayList<>();
 		for (Integer callbackAtom : knownCallbackAtoms) {
-			if (assignment.getTruth(callbackAtom).toBoolean()) {
+			ThriceTruth truth = assignment.getTruth(callbackAtom);
+			if (truth != null && truth.toBoolean()) {
 				trueCallbackAtoms.add(atomToLiteral(callbackAtom));
 			}
 		}

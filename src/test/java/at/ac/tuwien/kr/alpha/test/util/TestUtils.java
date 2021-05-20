@@ -2,7 +2,9 @@ package at.ac.tuwien.kr.alpha.test.util;
 
 import at.ac.tuwien.kr.alpha.AnswerSetsParser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.WeightedAnswerSet;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.AbstractProgram;
@@ -95,4 +97,50 @@ public class TestUtils {
 		return new BasicAtom(pred, trms);
 	}
 
+	public static void assertOptimumAnswerSetEquals(String expectedOptimumAnswerSet, String expectedWeightsAtLevels, Set<AnswerSet> actual) {
+		// Construct the weighted answer set from the given strings.
+		BasicAnswerSet basicOptimumAnswerSet = (BasicAnswerSet) AnswerSetsParser.parse("{ " + expectedOptimumAnswerSet + " }").iterator().next();
+		String[] weightsAtLevels = expectedWeightsAtLevels.split(":");
+		ArrayList<Integer> expectedWeightsAtLevel = new ArrayList<>();
+		for (String weight : weightsAtLevels) {
+			expectedWeightsAtLevel.add(Integer.parseInt(weight));
+		}
+		WeightedAnswerSet optimumAnswerSet = new WeightedAnswerSet(basicOptimumAnswerSet, expectedWeightsAtLevel);
+		// Check the optimum is contained in the set of actual answer sets.
+		if (!actual.contains(optimumAnswerSet)) {
+			throw new AssertionError("Expected optimum answer set is not contained in actual.\n" +
+				"Expected optimum answer set: " + optimumAnswerSet + "\n" +
+				"Actual answer sets: " + actual);
+		}
+		// Ensure that there is no better answer set contained in the actual answer sets.
+		for (AnswerSet actualAnswerSet : actual) {
+			if (actualAnswerSet.equals(optimumAnswerSet)) {
+				// Skip optimum itself.
+				continue;
+			}
+			if (!(actualAnswerSet instanceof WeightedAnswerSet)) {
+				throw new AssertionError("Expecting weighted answer sets but obtained answer set is not: " + actualAnswerSet);
+			}
+			WeightedAnswerSet actualWeightedAnswerSet = (WeightedAnswerSet) actualAnswerSet;
+			ArrayList<Integer> actualWeightsAtLevel = actualWeightedAnswerSet.getWeightsAtLevel();
+			if (actualWeightsAtLevel.size() > expectedWeightsAtLevel.size()) {
+				continue;
+			}
+			if (actualWeightsAtLevel.size() < expectedWeightsAtLevel.size()) {
+				throw new AssertionError("Actual answer set is better than expected one.\n" +
+					"Expected: " + expectedWeightsAtLevel + "\n" +
+					"Actual: " + actualWeightsAtLevel);
+			}
+			for (int i = expectedWeightsAtLevel.size() - 1; i >= 0; i--) {
+				if (expectedWeightsAtLevel.get(i) < actualWeightsAtLevel.get(i)) {
+					break;
+				}
+				if (expectedWeightsAtLevel.get(i) > actualWeightsAtLevel.get(i)) {
+					throw new AssertionError("Actual answer set is better than expected one.\n" +
+						"Expected: " + expectedWeightsAtLevel + "\n" +
+						"Actual: " + actualWeightsAtLevel);
+				}
+			}
+		}
+	}
 }
