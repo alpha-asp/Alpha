@@ -18,7 +18,8 @@ cnt_eq (id, result_predicate, element_tuple, bound )::=<<
 
 	$! Every ordinal of a counted value is a candidate value for the final count !$
 	$! Since we need to check every value from 1 up to the maximum index, use intervals here !$
-	$id$_cnt_candidate(ARGS, 1..ORD) :- $element_tuple$(ARGS, TPL), enum(ARGS, TPL, ORD).
+	$id$_cnt_candidate(ARGS, ORD) :- $element_tuple$(ARGS, TPL), enum(ARGS, TPL, ORD).
+	$id$_cnt_candidate(ARGS, Nm1) :- $id$_cnt_candidate(ARGS, N), N > 1, Nm1 = N - 1.
 
 	$! Input Numbers - Every ordinal for which the mapped atom is actually true is an input number to the sorting grid !$
 	$id$_sorting_network_input_number(ARGS, NUM) :- $element_tuple$(ARGS, TPL), enum(ARGS, TPL, NUM).
