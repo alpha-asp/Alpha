@@ -174,7 +174,8 @@ sum_le (id, result_predicate, element_tuple, bound )::=<<
 	$id$_input_value_at_index(ARGS, VAL, IDX) :- $element_tuple$(ARGS, TPL, VAL), enum(ARGS, TPL, IDX).
 
 	$! Calculate intermediate sums. Each tuple can be true or false, i.e. contribute zero or its value to the sum. !$
-	$id$_interesting_index(ARGS, 1..I1) :- $id$_input_value_at_index(ARGS, _, I), I1 = I - 1.
+	$id$_interesting_index(ARGS, I1) :- $id$_input_value_at_index(ARGS, _, I), I1 = I - 1.
+	$id$_interesting_index(ARGS, Im1) :- Im1 = I-1, I > 1, $id$_interesting_index(ARGS, I).
 	$id$_partial_sum_at_index(ARGS, 0, 0) :- $id$_input_value_at_index(ARGS, _, _).
 	$id$_partial_sum_at_index(ARGS, S, I) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, $id$_interesting_index(ARGS, I).
 	$id$_partial_sum_at_index(ARGS, SF, I) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, SF = S + F, $id$_input_value_at_index(ARGS, F, I), $bound$(ARGS, K), SF < K.
