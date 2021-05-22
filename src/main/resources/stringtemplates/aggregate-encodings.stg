@@ -112,8 +112,9 @@ sorting_grid_core (id)::=<<
 		$id$_sorting_network_lvl(L,P,D), $id$_sorting_network_span_project(I),
 		1<L, N=B-1, N = (I - 1) / S - ((I - 1) / S / B) * B, S = 2 ** (P - L), B = 2 ** L.
 
-	$id$_sorting_network_dh(ARGS, 1..D) :-
+	$id$_sorting_network_dh(ARGS, D) :-
 		$id$_sorting_network_span(ARGS, N1), N1=N+1, $id$_sorting_network_done(N,_), N2=N*2, $id$_sorting_network_done(N2,D).
+	$id$_sorting_network_dh(ARGS, Dm1) :- Dm1 = D - 1, D > 1, $id$_sorting_network_dh(ARGS, D).
 
 	$id$_sorting_network_done(1,0).
 	$id$_sorting_network_done(N,D) :- $id$_sorting_network_log2(N,P), $id$_sorting_network_lvl(P,P,D).
