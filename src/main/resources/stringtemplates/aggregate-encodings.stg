@@ -144,7 +144,8 @@ cnt_le_counting_grid (id, result_predicate, element_tuple, bound )::=<<
 	$!Fallback rule - even if no input number exists, the count is still zero!$
 	$id$_sum(ARGS, 0, 0)    :- $bound$(ARGS, _).
 
-	$id$_span(ARGS, 1..I1) :- I1 = I-1, $id$_sorting_network_input_number(ARGS, I).
+	$id$_span(ARGS, I1) :- I1 = I-1, $id$_sorting_network_input_number(ARGS, I).
+	$id$_span(ARGS, Im1) :- Im1 = I-1, I > 1, $id$_span(ARGS, I).
 	$id$_sum(ARGS, 0, 0)    :- $id$_sorting_network_input_number(ARGS, _).
 	$id$_sum(ARGS, I, S)    :- $id$_sum(ARGS, I1, S), I1 = I-1, $id$_span(ARGS, I).
 	$id$_sum(ARGS, I, S1)   :- $id$_sum(ARGS, I1, S), S1 = S+1, I1 = I-1, $id$_sorting_network_input_number(ARGS, I), $bound$(ARGS, K), S < K.
