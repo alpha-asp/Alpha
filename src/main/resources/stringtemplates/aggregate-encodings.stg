@@ -112,8 +112,9 @@ sorting_grid_core (id)::=<<
 		$id$_sorting_network_lvl(L,P,D), $id$_sorting_network_span_project(I),
 		1<L, N=B-1, N = (I - 1) / S - ((I - 1) / S / B) * B, S = 2 ** (P - L), B = 2 ** L.
 
-	$id$_sorting_network_dh(ARGS, 1..D) :-
+	$id$_sorting_network_dh(ARGS, D) :-
 		$id$_sorting_network_span(ARGS, N1), N1=N+1, $id$_sorting_network_done(N,_), N2=N*2, $id$_sorting_network_done(N2,D).
+	$id$_sorting_network_dh(ARGS, Dm1) :- Dm1 = D - 1, D > 1, $id$_sorting_network_dh(ARGS, D).
 
 	$id$_sorting_network_done(1,0).
 	$id$_sorting_network_done(N,D) :- $id$_sorting_network_log2(N,P), $id$_sorting_network_lvl(P,P,D).
@@ -143,7 +144,8 @@ cnt_le_counting_grid (id, result_predicate, element_tuple, bound )::=<<
 	$!Fallback rule - even if no input number exists, the count is still zero!$
 	$id$_sum(ARGS, 0, 0)    :- $bound$(ARGS, _).
 
-	$id$_span(ARGS, 1..I1) :- I1 = I-1, $id$_sorting_network_input_number(ARGS, I).
+	$id$_span(ARGS, I1) :- I1 = I-1, $id$_sorting_network_input_number(ARGS, I).
+	$id$_span(ARGS, Im1) :- Im1 = I-1, I > 1, $id$_span(ARGS, I).
 	$id$_sum(ARGS, 0, 0)    :- $id$_sorting_network_input_number(ARGS, _).
 	$id$_sum(ARGS, I, S)    :- $id$_sum(ARGS, I1, S), I1 = I-1, $id$_span(ARGS, I).
 	$id$_sum(ARGS, I, S1)   :- $id$_sum(ARGS, I1, S), S1 = S+1, I1 = I-1, $id$_sorting_network_input_number(ARGS, I), $bound$(ARGS, K), S < K.
@@ -172,7 +174,8 @@ sum_le (id, result_predicate, element_tuple, bound )::=<<
 	$id$_input_value_at_index(ARGS, VAL, IDX) :- $element_tuple$(ARGS, TPL, VAL), enum(ARGS, TPL, IDX).
 
 	$! Calculate intermediate sums. Each tuple can be true or false, i.e. contribute zero or its value to the sum. !$
-	$id$_interesting_index(ARGS, 1..I1) :- $id$_input_value_at_index(ARGS, _, I), I1 = I - 1.
+	$id$_interesting_index(ARGS, I1) :- $id$_input_value_at_index(ARGS, _, I), I1 = I - 1.
+	$id$_interesting_index(ARGS, Im1) :- Im1 = I-1, I > 1, $id$_interesting_index(ARGS, I).
 	$id$_partial_sum_at_index(ARGS, 0, 0) :- $id$_input_value_at_index(ARGS, _, _).
 	$id$_partial_sum_at_index(ARGS, S, I) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, $id$_interesting_index(ARGS, I).
 	$id$_partial_sum_at_index(ARGS, SF, I) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, SF = S + F, $id$_input_value_at_index(ARGS, F, I), $bound$(ARGS, K), SF < K.
@@ -199,7 +202,8 @@ sum_eq (id, result_predicate, element_tuple, bound )::=<<
 	$id$_input_value_at_index(ARGS, VAL, IDX) :- $element_tuple$(ARGS, TPL, VAL), enum(ARGS, TPL, IDX).
 
 	$! Calculate intermediate sums. Each tuple can be true or false, i.e. contribute zero or its value to the sum. !$
-	$id$_interesting_index(ARGS, 1..I1) :- $id$_input_value_at_index(ARGS, _, I), I1 = I - 1.
+	$id$_interesting_index(ARGS, I1) :- $id$_input_value_at_index(ARGS, _, I), I1 = I - 1.
+	$id$_interesting_index(ARGS, Im1) :- Im1 = I-1, I > 1, $id$_interesting_index(ARGS, I).
 	$id$_partial_sum_at_index(ARGS, 0, 0) :- $id$_input_value_at_index(ARGS, _, _).
 	$id$_partial_sum_at_index(ARGS, S, I) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, $id$_interesting_index(ARGS, I).
 	$id$_partial_sum_at_index(ARGS, SF, I) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, SF = S + F, $id$_input_value_at_index(ARGS, F, I).
