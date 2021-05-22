@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class RuleAnalysisTest {
+public class AggregateRewritingRuleAnalysisTest {
 
 	//@formatter:off
 	private static final String BINDING_AGGREGATE_NO_GLOBALS = 

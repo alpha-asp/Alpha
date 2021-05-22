@@ -24,7 +24,7 @@ public final class CountEncoder extends StringtemplateBasedAggregateEncoder {
 		return new CountEncoder(ComparisonOperator.LE, useSortingGrid ? CNT_LE_SORTING_GRID_TEMPLATE : CNT_LE_COUNTING_GRID_TEMPLATE);
 	}
 
-	public static CountEncoder buildCountEqualsEncoder(boolean useSortingGrid) {
+	public static CountEncoder buildCountEqualsEncoder() {
 		return new CountEncoder(ComparisonOperator.EQ, CNT_EQ_TEMPLATE);
 	}
 

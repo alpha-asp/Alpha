@@ -1,5 +1,11 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders;
 
+import org.apache.commons.collections4.ListUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateElement;
@@ -15,11 +21,6 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.transformation.PredicateInternalizer;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
-import org.apache.commons.collections4.ListUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Abstract base class for aggregate encoders. An aggregate encoder provides an encoding for a given aggregate literal,
@@ -89,6 +90,12 @@ public abstract class AbstractAggregateEncoder {
 	 */
 	protected abstract InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode);
 
+	/**
+	 * Encodes individual aggregate elements. For each aggregate element, a rule is created that fires for each tuple matching the element.
+	 * @param aggregateInfo
+	 * @param element
+	 * @return
+	 */
 	protected BasicRule encodeAggregateElement(AggregateInfo aggregateInfo, AggregateElement element) {
 		Atom headAtom = buildElementRuleHead(aggregateInfo.getId(), element, aggregateInfo.getAggregateArguments());
 		return new BasicRule(new NormalHead(headAtom),

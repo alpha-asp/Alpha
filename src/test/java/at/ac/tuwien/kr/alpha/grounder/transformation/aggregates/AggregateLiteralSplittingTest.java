@@ -67,18 +67,8 @@ public class AggregateLiteralSplittingTest {
 				.parse("count_not_between :- dom(X), dom(Y), not Y > #count{N : thing(N)}.");
 		List<BasicRule> rewritten = AggregateLiteralSplitting.split(inputRule);
 		Assert.assertEquals(2, rewritten.size());
-		boolean rule1Ok = false;
-		boolean rule2Ok = false;
-		for (BasicRule rewrittenRule : rewritten) {
-			if (rewrittenRule.equals(expectedRewrittenRule1)) {
-				rule1Ok = true;
-			}
-			if (rewrittenRule.equals(expectedRewrittenRule2)) {
-				rule2Ok = true;
-			}
-		}
-		Assert.assertTrue(rule1Ok);
-		Assert.assertTrue(rule2Ok);
+		Assert.assertTrue(rewritten.contains(expectedRewrittenRule1));
+		Assert.assertTrue(rewritten.contains(expectedRewrittenRule2));
 	}
 
 	@Test
@@ -94,28 +84,10 @@ public class AggregateLiteralSplittingTest {
 				.parse("count_not_between :- dom(X), dom(Y), dom(U), dom(V), not Y > #count{N : thing(N)}, not V > #count{K : thing(K)}.");
 		List<BasicRule> rewritten = AggregateLiteralSplitting.split(inputRule);
 		Assert.assertEquals(4, rewritten.size());
-		boolean rule1Ok = false;
-		boolean rule2Ok = false;
-		boolean rule3Ok = false;
-		boolean rule4Ok = false;
-		for (BasicRule rewrittenRule : rewritten) {
-			if (rewrittenRule.equals(expectedRewrittenRule1)) {
-				rule1Ok = true;
-			}
-			if (rewrittenRule.equals(expectedRewrittenRule2)) {
-				rule2Ok = true;
-			}
-			if (rewrittenRule.equals(expectedRewrittenRule3)) {
-				rule3Ok = true;
-			}
-			if (rewrittenRule.equals(expectedRewrittenRule4)) {
-				rule4Ok = true;
-			}
-		}
-		Assert.assertTrue(rule1Ok);
-		Assert.assertTrue(rule2Ok);
-		Assert.assertTrue(rule3Ok);
-		Assert.assertTrue(rule4Ok);
+		Assert.assertTrue(rewritten.contains(expectedRewrittenRule1));
+		Assert.assertTrue(rewritten.contains(expectedRewrittenRule2));
+		Assert.assertTrue(rewritten.contains(expectedRewrittenRule3));
+		Assert.assertTrue(rewritten.contains(expectedRewrittenRule4));
 	}
 
 	@Test
@@ -127,18 +99,8 @@ public class AggregateLiteralSplittingTest {
 				.parse("count_between_and_not_between(U, V, X, Y) :- dom(X), dom(Y), dom(U), dom(V), not Y > #count{N : thing(N)}, U < #count{K : thing(K)}, V > #count{K : thing(K)}.");
 		List<BasicRule> rewritten = AggregateLiteralSplitting.split(inputRule);
 		Assert.assertEquals(2, rewritten.size());
-		boolean rule1Ok = false;
-		boolean rule2Ok = false;
-		for (BasicRule rewrittenRule : rewritten) {
-			if (rewrittenRule.equals(expectedRewrittenRule1)) {
-				rule1Ok = true;
-			}
-			if (rewrittenRule.equals(expectedRewrittenRule2)) {
-				rule2Ok = true;
-			}
-		}
-		Assert.assertTrue(rule1Ok);
-		Assert.assertTrue(rule2Ok);
+		Assert.assertTrue(rewritten.contains(expectedRewrittenRule1));
+		Assert.assertTrue(rewritten.contains(expectedRewrittenRule2));
 	}
 
 }

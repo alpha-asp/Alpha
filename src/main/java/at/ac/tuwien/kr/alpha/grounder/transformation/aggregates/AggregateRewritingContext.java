@@ -1,5 +1,19 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.stringtemplate.v4.ST;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
@@ -13,20 +27,14 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.stringtemplate.v4.ST;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static at.ac.tuwien.kr.alpha.Util.oops;
-
+/**
+ * Holds all information about aggregate literals that need to be rewritten within a program.
+ * Specifically, a rewriting context holds a list of rules with aggregates, as well as detailed analysis results like
+ * global variables and dependencies per aggregate (see AggregateInfo).
+ * 
+ * Copyright (c) 2021, the Alpha Team.
+ */
 public final class AggregateRewritingContext {
 
 	private static final ST AGGREGATE_RESULT_TEMPLATE = new ST("<id>_result");
@@ -34,7 +42,7 @@ public final class AggregateRewritingContext {
 	private static final ST AGGREGATE_ARGS_NOARGS_CONST = new ST("<id>_no_args");
 
 	private int idCounter;
-	private Map<AggregateLiteral, AggregateInfo> aggregateInfos = new HashMap<>();	// Maps aggregate literals to their respective AggregateInfo.
+	private Map<AggregateLiteral, AggregateInfo> aggregateInfos = new HashMap<>(); // Maps aggregate literals to their respective AggregateInfo.
 	private Map<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateInfo>> aggregateFunctionsToRewrite = new LinkedHashMap<>();
 	private List<BasicRule> rulesWithAggregates = new ArrayList<>();
 

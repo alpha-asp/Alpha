@@ -21,17 +21,6 @@ import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
  */
 public class PredicateInternalizer {
 
-	public static InputProgram makePredicatesInternal(InputProgram program) {
-		InputProgram.Builder prgBuilder = InputProgram.builder();
-		for (Atom atom : program.getFacts()) {
-			prgBuilder.addFact(PredicateInternalizer.makePredicateInternal(atom));
-		}
-		for (BasicRule rule : program.getRules()) {
-			prgBuilder.addRule(PredicateInternalizer.makePredicateInternal(rule));
-		}
-		prgBuilder.addInlineDirectives(program.getInlineDirectives());
-		return prgBuilder.build();
-	}
 
 	public static InputProgram makePrefixedPredicatesInternal(InputProgram program, String prefix) {
 		InputProgram.Builder prgBuilder = InputProgram.builder();
@@ -71,27 +60,6 @@ public class PredicateInternalizer {
 				} else {
 					newBody.add(bodyElement);
 				}
-			} else {
-				// Keep other body element as is.
-				newBody.add(bodyElement);
-			}
-		}
-		return new BasicRule(newHead, newBody);
-	}
-
-	private static BasicRule makePredicateInternal(BasicRule rule) {
-		Head newHead = null;
-		if (rule.getHead() != null) {
-			if (!(rule.getHead() instanceof NormalHead)) {
-				throw new UnsupportedOperationException("Cannot make predicates in rules internal whose head is not normal.");
-			}
-			newHead = new NormalHead(makePredicateInternal(((NormalHead) rule.getHead()).getAtom()));
-		}
-		List<Literal> newBody = new ArrayList<>();
-		for (Literal bodyElement : rule.getBody()) {
-			// Only rewrite BasicAtoms.
-			if (bodyElement instanceof BasicLiteral) {
-				newBody.add(makePredicateInternal(bodyElement.getAtom()).toLiteral(!bodyElement.isNegated()));
 			} else {
 				// Keep other body element as is.
 				newBody.add(bodyElement);

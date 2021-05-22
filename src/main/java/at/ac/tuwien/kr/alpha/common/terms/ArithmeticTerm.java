@@ -152,15 +152,15 @@ public class ArithmeticTerm extends Term {
 	}
 
 	public Term getLeft() {
-		return this.left;
+		return left;
 	}
 
 	public ArithmeticOperator getArithmeticOperator() {
-		return this.arithmeticOperator;
+		return arithmeticOperator;
 	}
 
 	public Term getRight() {
-		return this.right;
+		return right;
 	}
 
 	public enum ArithmeticOperator {

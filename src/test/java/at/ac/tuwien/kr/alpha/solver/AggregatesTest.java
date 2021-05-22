@@ -39,8 +39,6 @@ import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration
 
 /**
  * Tests if correct answer sets for programs containing aggregates are computed.
- * Only aggregates known to by syntactically supported by {@link CardinalityNormalization} or {@link SumNormalization}
- * are currently tested.
  */
 public abstract class AggregatesTest extends AbstractSolverTests {
 
@@ -102,7 +100,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				"thing(2), thing(4)",
 				"thing(3), thing(4)");
 	}
-	
+
 	@Test
 	public void aggregateCountEqWithChoicePositive() {
 		String program = "potential_thing(1..4). "
@@ -121,7 +119,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				"thing(2), thing(4)",
 				"thing(3), thing(4)");
 	}
-	
+
 	@Test
 	public void aggregateSumEqWithChoicePositive() {
 		String program = "potential_thing(1..4). "
@@ -140,7 +138,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				"thing(2), thing(4), sum_things(6)",
 				"thing(3), thing(4), sum_things(7)");
 	}
-	
+
 	@Test
 	public void aggregateSumBetweenNegative() {
 		String program = "potential_thing(1..4). "
@@ -157,9 +155,9 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				"thing(1), thing(2), sum_things(3)",
 				"thing(1), thing(3), sum_things(4)",
 				"thing(2), thing(4), sum_things(6)",
-				"thing(3), thing(4), sum_things(7)");		
+				"thing(3), thing(4), sum_things(7)");
 	}
-	
+
 	@Test
 	public void aggregateMaxNegative() {
 		String program = "potential_thing(1..4). "
@@ -169,9 +167,8 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				+ ":- thing(N1), thing(N2), N1 != N2."
 				+ "max_chosen :- thing(X), not X < #max{M : potential_thing(M)}."
 				+ ":- not max_chosen.";
-		assertAnswerSetsWithBase(program,
-				"",
-				"potential_thing(1), potential_thing(2), potential_thing(3), potential_thing(4), one_chosen, max_chosen, thing(4)");	
+		assertAnswerSet(program,
+				"potential_thing(1), potential_thing(2), potential_thing(3), potential_thing(4), one_chosen, max_chosen, thing(4)");
 	}
 
 	@Test
@@ -291,7 +288,8 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 		AtomStore atomStore = new AtomStoreImpl();
 		NormalProgram normal = system.normalizeProgram(program);
 		InternalProgram preprocessed = InternalProgram.fromNormalProgram(normal);
-		return super.getInstance(atomStore, GrounderFactory.getInstance(grounderName, preprocessed, atomStore, p->true, new GrounderHeuristicsConfiguration(), true));
+		return super.getInstance(atomStore,
+				GrounderFactory.getInstance(grounderName, preprocessed, atomStore, p -> true, new GrounderHeuristicsConfiguration(), true));
 	}
 
 	protected abstract boolean useCountingGridNormalization();

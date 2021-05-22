@@ -1,5 +1,12 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
@@ -10,13 +17,9 @@ import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.AbstractAggregateEncoder;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.AggregateEncoderFactory;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.CountEncoder;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.MinMaxEncoder;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.SumEncoder;
 
 /**
  * Rewrites {@link AggregateLiteral}s in programs to semantically equivalent, aggregate-free sub-programs.
@@ -25,10 +28,8 @@ import java.util.Set;
  */
 public class AggregateRewriting extends ProgramTransformation<InputProgram, InputProgram> {
 
-	private final AggregateEncoderFactory encoderFactory;
-
 	private final AbstractAggregateEncoder countEqualsEncoder;
-	private final AbstractAggregateEncoder countLessOrEqualSortingGridEncoder;
+	private final AbstractAggregateEncoder countLessOrEqualEncoder;
 	private final AbstractAggregateEncoder sumEqualsEncoder;
 	private final AbstractAggregateEncoder sumLessOrEqualEncoder;
 	private final AbstractAggregateEncoder minEncoder;
@@ -41,13 +42,12 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	 *                          encoding.
 	 */
 	public AggregateRewriting(boolean useSortingCircuit) {
-		this.encoderFactory = new AggregateEncoderFactory(useSortingCircuit);
-		this.countLessOrEqualSortingGridEncoder = this.encoderFactory.buildCountLessOrEqualEncoder();
-		this.sumLessOrEqualEncoder = this.encoderFactory.buildSumLessOrEqualEncoder();
-		this.sumEqualsEncoder = this.encoderFactory.buildSumEqualsEncoder();
-		this.countEqualsEncoder = this.encoderFactory.buildCountEqualsEncoder();
-		this.minEncoder = this.encoderFactory.buildMinEncoder();
-		this.maxEncoder = this.encoderFactory.buildMaxEncoder();
+		this.countLessOrEqualEncoder = CountEncoder.buildCountLessOrEqualEncoder(useSortingCircuit);
+		this.sumLessOrEqualEncoder = SumEncoder.buildSumLessOrEqualEncoder();
+		this.sumEqualsEncoder = SumEncoder.buildSumEqualsEncoder();
+		this.countEqualsEncoder = CountEncoder.buildCountEqualsEncoder();
+		this.minEncoder = new MinMaxEncoder(AggregateFunctionSymbol.MIN);
+		this.maxEncoder = new MinMaxEncoder(AggregateFunctionSymbol.MAX);
 	}
 
 	/**
@@ -63,7 +63,6 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	 * deriving the result literal is added that is semantically equivalent to the replaced aggregate literal.
 	 */
 	@Override
-	// Note: Ideally, all variables introduced by AggregateRewriting should be prefixed "_AGG" or something.
 	public InputProgram apply(InputProgram inputProgram) {
 		AggregateRewritingContext ctx = new AggregateRewritingContext();
 		List<BasicRule> outputRules = new ArrayList<>();
@@ -98,7 +97,7 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 				if (operator == ComparisonOperator.EQ) {
 					return countEqualsEncoder;
 				} else if (operator == ComparisonOperator.LE) {
-					return countLessOrEqualSortingGridEncoder;
+					return countLessOrEqualEncoder;
 				} else {
 					throw new UnsupportedOperationException("No fitting encoder for aggregate function " + function + "and operator " + operator + "!");
 				}
