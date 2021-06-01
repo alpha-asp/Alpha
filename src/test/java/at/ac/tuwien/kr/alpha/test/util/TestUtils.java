@@ -18,6 +18,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.TreeMap;
 
 import static java.util.Collections.emptySet;
 
@@ -97,15 +98,21 @@ public class TestUtils {
 		return new BasicAtom(pred, trms);
 	}
 
-	public static void assertOptimumAnswerSetEquals(String expectedOptimumAnswerSet, String expectedWeightsAtLevels, Set<AnswerSet> actual) {
-		// Construct the weighted answer set from the given strings.
-		BasicAnswerSet basicOptimumAnswerSet = (BasicAnswerSet) AnswerSetsParser.parse("{ " + expectedOptimumAnswerSet + " }").iterator().next();
-		String[] weightsAtLevels = expectedWeightsAtLevels.split(":");
-		ArrayList<Integer> expectedWeightsAtLevel = new ArrayList<>();
-		for (String weight : weightsAtLevels) {
-			expectedWeightsAtLevel.add(Integer.parseInt(weight));
+	public static WeightedAnswerSet weightedAnswerSetFromStrings(String basicAnswerSetAsString, String weightAtLevelsAsString) {
+		BasicAnswerSet basicAnswerSet = (BasicAnswerSet) AnswerSetsParser.parse("{ " + basicAnswerSetAsString + " }").iterator().next();
+		// Extract weights at levels from given string.
+		String[] weightsAtLevels = weightAtLevelsAsString.split(", ");
+		TreeMap<Integer, Integer> weightAtLevelsTreeMap = new TreeMap<>();
+		for (String weightsAtLevel : weightsAtLevels) {
+			String[] wAtL = weightsAtLevel.split("@");
+			weightAtLevelsTreeMap.put(Integer.parseInt(wAtL[1]), Integer.parseInt(wAtL[0]));
 		}
-		WeightedAnswerSet optimumAnswerSet = new WeightedAnswerSet(basicOptimumAnswerSet, expectedWeightsAtLevel);
+		return new WeightedAnswerSet(basicAnswerSet, weightAtLevelsTreeMap);
+	}
+
+	public static void assertOptimumAnswerSetEquals(String expectedOptimumAnswerSet, String expectedWeightsAtLevels, Set<AnswerSet> actual) {
+		WeightedAnswerSet optimumAnswerSet = weightedAnswerSetFromStrings(expectedOptimumAnswerSet, expectedWeightsAtLevels);
+
 		// Check the optimum is contained in the set of actual answer sets.
 		if (!actual.contains(optimumAnswerSet)) {
 			throw new AssertionError("Expected optimum answer set is not contained in actual.\n" +
@@ -122,24 +129,10 @@ public class TestUtils {
 				throw new AssertionError("Expecting weighted answer sets but obtained answer set is not: " + actualAnswerSet);
 			}
 			WeightedAnswerSet actualWeightedAnswerSet = (WeightedAnswerSet) actualAnswerSet;
-			ArrayList<Integer> actualWeightsAtLevel = actualWeightedAnswerSet.getWeightsAtLevel();
-			if (actualWeightsAtLevel.size() > expectedWeightsAtLevel.size()) {
-				continue;
-			}
-			if (actualWeightsAtLevel.size() < expectedWeightsAtLevel.size()) {
+			if (optimumAnswerSet.compareWeights(actualWeightedAnswerSet) >= 0) {
 				throw new AssertionError("Actual answer set is better than expected one.\n" +
-					"Expected: " + expectedWeightsAtLevel + "\n" +
-					"Actual: " + actualWeightsAtLevel);
-			}
-			for (int i = expectedWeightsAtLevel.size() - 1; i >= 0; i--) {
-				if (expectedWeightsAtLevel.get(i) < actualWeightsAtLevel.get(i)) {
-					break;
-				}
-				if (expectedWeightsAtLevel.get(i) > actualWeightsAtLevel.get(i)) {
-					throw new AssertionError("Actual answer set is better than expected one.\n" +
-						"Expected: " + expectedWeightsAtLevel + "\n" +
-						"Actual: " + actualWeightsAtLevel);
-				}
+					"Expected: " + optimumAnswerSet + "\n" +
+					"Actual: " + actualWeightedAnswerSet);
 			}
 		}
 	}

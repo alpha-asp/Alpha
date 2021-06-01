@@ -1,24 +1,77 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
+import java.util.TreeMap;
 
 /**
- * Represents a weighted answer sets, i.e., it extends a {@link BasicAnswerSet} with weights information.
+ * Represents a weighted answer set, i.e., it extends a {@link BasicAnswerSet} with weights information.
  *
- * Copyright (c) 2020, the Alpha Team.
+ * Weights are given as a mapping from levels to the respective weight. Note that negative levels and weights are allowed.
+ * The highest level is the most important one and levels not contained in the map have a weight of zero.
+ *
+ * Copyright (c) 2020-2021, the Alpha Team.
  */
 public class WeightedAnswerSet extends BasicAnswerSet {
 
-	private final ArrayList<Integer> weightsAtLevel;
+	private final TreeMap<Integer, Integer> weightPerLevel;
 
-	public WeightedAnswerSet(BasicAnswerSet basicAnswerSet, ArrayList<Integer> weightsAtLevel) {
+	public WeightedAnswerSet(BasicAnswerSet basicAnswerSet, TreeMap<Integer, Integer> weightPerLevel) {
 		super(basicAnswerSet.getPredicates(), basicAnswerSet.getPredicateInstances());
-		this.weightsAtLevel = weightsAtLevel;
+		this.weightPerLevel = weightPerLevel;
 	}
 
-	public ArrayList<Integer> getWeightsAtLevel() {
-		return weightsAtLevel;
+	/**
+	 * Compares the weights of this {@link WeightedAnswerSet} with the weights of the other one.
+	 * @param other the {@link WeightedAnswerSet} to compare with.
+	 * @return -1, 0, or 1 depending on whether the weights of this are better, equal, or worse than the other.
+	 */
+	public int compareWeights(WeightedAnswerSet other) {
+		Iterator<Integer> thisDescIterator = this.weightPerLevel.descendingKeySet().iterator();
+		Iterator<Integer> otherDescIterator = other.weightPerLevel.descendingKeySet().iterator();
+		while (true) {
+			// Descend this level down to one with non-zero weight.
+			Integer thisLevel = null;
+			Integer thisWeight = null;
+			while (thisDescIterator.hasNext()) {
+				thisLevel = thisDescIterator.next();
+				thisWeight = this.weightPerLevel.get(thisLevel);
+				if (thisWeight != null && thisWeight != 0) {
+					break;
+				}
+			}
+			// Descend other level down to one with non-zero weight.
+			Integer otherLevel = null;
+			Integer otherWeight = null;
+			while (otherDescIterator.hasNext()) {
+				otherLevel = otherDescIterator.next();
+				otherWeight = other.weightPerLevel.get(otherLevel);
+				if (otherWeight != null && otherWeight != 0) {
+					break;
+				}
+			}
+			if (thisWeight == null && otherWeight == null) {
+				return 0;
+			}
+			if (thisWeight == null) {
+				return otherWeight < 0 ? 1 : -1;
+			}
+			if (otherWeight == null) {
+				return thisWeight < 0 ? -1 : 1;
+			}
+			if (thisLevel.equals(otherLevel)) {
+				if (thisWeight.equals(otherWeight)) {
+					continue;
+				} else {
+					return thisWeight < otherWeight ? -1 : 1;
+				}
+
+			} else {
+				return thisLevel < otherLevel ? -1 : 1;
+			}
+		}
 	}
 
 	@Override
@@ -31,22 +84,12 @@ public class WeightedAnswerSet extends BasicAnswerSet {
 			return basicComparison;
 		}
 		WeightedAnswerSet otherWeighted = (WeightedAnswerSet) other;
-		if (weightsAtLevel.size() != otherWeighted.weightsAtLevel.size()) {
-			return weightsAtLevel.size() - otherWeighted.weightsAtLevel.size();
-		}
-		for (int i = 0; i < weightsAtLevel.size(); i++) {
-			Integer thisWeightAtI = weightsAtLevel.get(i);
-			Integer otherWeightAtI = otherWeighted.weightsAtLevel.get(i);
-			if (!thisWeightAtI.equals(otherWeightAtI)) {
-				return thisWeightAtI - otherWeightAtI;
-			}
-		}
-		return 0;
+		return compareWeights(otherWeighted);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), weightsAtLevel);
+		return Objects.hash(super.hashCode(), weightPerLevel);
 	}
 
 	@Override
@@ -68,23 +111,15 @@ public class WeightedAnswerSet extends BasicAnswerSet {
 			return false;
 		}
 
-		return weightsAtLevel.equals(that.weightsAtLevel);
+		return weightPerLevel.equals(that.weightPerLevel);
 	}
 
 	public String getWeightsAsString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("[");
-		for (int i = 0; i < weightsAtLevel.size(); i++) {
-			if (i != 0) {
-				sb.append(",");
-			}
-			Integer weight = weightsAtLevel.get(i);
-			sb.append(weight);
-			sb.append("@");
-			sb.append(i);
+		StringJoiner joiner = new StringJoiner(", ", "[", "]");
+		for (Map.Entry<Integer, Integer> weightPerLevel : weightPerLevel.entrySet()) {
+			joiner.add(weightPerLevel.getValue() + "@" + weightPerLevel.getKey());
 		}
-		sb.append("]");
-		return sb.toString();
+		return joiner.toString();
 	}
 
 	@Override

@@ -22,7 +22,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  * Represents the head of a weak constraint (i.e., a special internal atom indicating that a rule really is a weak
  * constraint).
  *
- * Copyright (c) 2020, the Alpha Team.
+ * Copyright (c) 2020-2021, the Alpha Team.
  */
 public class WeakConstraintAtom extends Atom {
 	private static final Predicate PREDICATE = Predicate.getInstance("_weakconstraint_", 3, true, true);
@@ -33,18 +33,22 @@ public class WeakConstraintAtom extends Atom {
 	private final FunctionTerm termList;
 
 	private WeakConstraintAtom(Term weight, Term level, FunctionTerm termList) {
+		if (!isIntegerOrVariable(weight)) {
+			throw new IllegalArgumentException("WeakConstraint with non-integer weight encountered: " + weight);
+		}
+		if (isNegativeInteger(weight)) {
+			throw new IllegalArgumentException("WeakConstraint with negative weight encountered: " + weight + "@" + level + "\n"
+			+ "Negative weights in weak constraints are not supported. Please rewrite your input program (turn negative weight if condition is met into positive weight if inverse condition is met).");
+		}
+		if (!isIntegerOrVariable(level)) {
+			throw new IllegalArgumentException("WeakConstraint with non-integer level encountered: " + level);
+		}
 		this.weight = weight;
 		this.level = level;
 		this.termList = termList;
 	}
 
 	public static WeakConstraintAtom getInstance(Term weight, Term level, List<Term> termList) {
-		if (!isIntegerOrVariable(weight)) {
-			throw new IllegalArgumentException("WeakConstraint with non-integer weight encountered: " + weight);
-		}
-		if (level != null && !isIntegerOrVariable(level)) {
-			throw new IllegalArgumentException("WeakConstraint with non-integer level encountered: " + level);
-		}
 		Term actualLevel = level != null ? level : ConstantTerm.getInstance(0);
 		List<Term> actualTermlist = termList != null ? termList : Collections.emptyList();
 		return new WeakConstraintAtom(weight, actualLevel, FunctionTerm.getInstance(TERMLISTSYMBOL, actualTermlist));
@@ -65,6 +69,13 @@ public class WeakConstraintAtom extends Atom {
 		if (term instanceof ConstantTerm) {
 			Comparable constant = ((ConstantTerm) term).getObject();
 			return constant instanceof Integer;
+		}
+		return false;
+	}
+
+	private static boolean isNegativeInteger(Term term) {
+		if (term instanceof ConstantTerm && ((ConstantTerm) term).getObject() instanceof Integer) {
+			return ((Integer)((ConstantTerm) term).getObject()) < 0;
 		}
 		return false;
 	}
