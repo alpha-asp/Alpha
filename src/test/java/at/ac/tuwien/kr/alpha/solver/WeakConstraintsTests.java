@@ -16,9 +16,8 @@ public class WeakConstraintsTests extends AbstractSolverTests {
 		String program = ":~a.[1@0,foo,bar]" +
 			":~b.[2@0,baz]" +
 			"a :- not b. b:- not a.";
-		System.out.println(program);
 		Set<AnswerSet> actualAnswerSets = collectSet(program);
-		TestUtils.assertOptimumAnswerSetEquals("a", "1", actualAnswerSets);
+		TestUtils.assertOptimumAnswerSetEquals("a", "1@0", actualAnswerSets);
 	}
 
 
@@ -28,6 +27,16 @@ public class WeakConstraintsTests extends AbstractSolverTests {
 			":~b.[1@1,baz]" +
 			"a :- not b. b:- not a.";
 		Set<AnswerSet> actualAnswerSets = collectSet(program);
-		TestUtils.assertOptimumAnswerSetEquals("b", "0:1:0", actualAnswerSets);
+		TestUtils.assertOptimumAnswerSetEquals("b", "1@1", actualAnswerSets);
+	}
+
+	@Test
+	public void simpleMultiLevelWeightedAnswerSet() {
+		String program = ":~a.[2@2,foo,bar]" +
+			":~b.[1@1,baz]" +
+			":~b.[3@-4,baz]" +
+			"a :- not b. b:- not a.";
+		Set<AnswerSet> actualAnswerSets = collectSet(program);
+		TestUtils.assertOptimumAnswerSetEquals("b", "3@-4, 1@1", actualAnswerSets);
 	}
 }
