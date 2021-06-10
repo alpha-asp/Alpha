@@ -1,14 +1,6 @@
 package at.ac.tuwien.kr.alpha.test.util;
 
-import at.ac.tuwien.kr.alpha.AnswerSetsParser;
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.program.AbstractProgram;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import org.junit.Assert;
+import static java.util.Collections.emptySet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,7 +9,31 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import static java.util.Collections.emptySet;
+import org.junit.Assert;
+
+import at.ac.tuwien.kr.alpha.AnswerSetsParser;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.program.AbstractProgram;
+import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.grounder.transformation.NormalizeProgramTransformation;
+import at.ac.tuwien.kr.alpha.grounder.transformation.StratifiedEvaluation;
+import at.ac.tuwien.kr.alpha.solver.RegressionTestConfig;
+import at.ac.tuwien.kr.alpha.solver.Solver;
+import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 
 public class TestUtils {
 
@@ -95,4 +111,62 @@ public class TestUtils {
 		return new BasicAtom(pred, trms);
 	}
 
+	private static SystemConfig regressionTestConfigToSystemConfig(RegressionTestConfig cfg) {
+		SystemConfig retVal = new SystemConfig();
+		retVal.setGrounderName(cfg.getGrounderName());
+		retVal.setSolverName(cfg.getSolverName());
+		retVal.setNogoodStoreName(cfg.getNoGoodStoreName());
+		retVal.setSeed(cfg.getSeed());
+		retVal.setBranchingHeuristic(cfg.getBranchingHeuristic());
+		retVal.setDebugInternalChecks(cfg.isDebugChecks());
+		retVal.setEvaluateStratifiedPart(cfg.isEvaluateStratifiedPart());
+		retVal.setGrounderAccumulatorEnabled(cfg.isDisableInstanceRemoval());
+		return retVal;
+	}
+	
+	private static Solver buildSolverFromSystemConfig(InputProgram prog, SystemConfig cfg) {
+		AtomStore atomStore = new AtomStoreImpl();
+		NormalProgram normalProg = new NormalizeProgramTransformation(cfg.isUseNormalizationGrid()).apply(prog); // TODO we need to somehow handle aggregate configs
+		InternalProgram preprocessed = cfg.isEvaluateStratifiedPart() ? new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normalProg))
+				: InternalProgram.fromNormalProgram(normalProg);
+		return SolverFactory.getInstance(cfg, atomStore, GrounderFactory.getInstance(cfg.getGrounderName(), preprocessed, atomStore, cfg.isDebugInternalChecks()));
+	}
+	
+	public static Solver buildSolverForRegressionTest(InputProgram prog, RegressionTestConfig cfg) {
+		return buildSolverFromSystemConfig(prog, regressionTestConfigToSystemConfig(cfg));
+	}
+	
+	public static Solver buildSolverForRegressionTest(String prog, RegressionTestConfig cfg) {
+		return buildSolverFromSystemConfig(new ProgramParser().parse(prog), regressionTestConfigToSystemConfig(cfg));
+	}
+	
+	public static Solver buildSolverForRegressionTest(AtomStore atomStore, Grounder grounder, RegressionTestConfig cfg) {
+		SystemConfig systemCfg = regressionTestConfigToSystemConfig(cfg);
+		return SolverFactory.getInstance(systemCfg, atomStore, grounder);
+	}
+
+	public static Set<AnswerSet> collectRegressionTestAnswerSets(InputProgram prog, RegressionTestConfig cfg) {
+		return buildSolverForRegressionTest(prog, cfg).collectSet();
+	}
+	
+	public static Set<AnswerSet> collectRegressionTestAnswerSets(String aspstr, RegressionTestConfig cfg) {
+		InputProgram prog = new ProgramParser().parse(aspstr);
+		return collectRegressionTestAnswerSets(prog, cfg);
+	}
+
+	public static void assertRegressionTestAnswerSet(String program, String answerSet, RegressionTestConfig cfg) {
+		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
+		TestUtils.assertAnswerSetsEqual(answerSet, actualAnswerSets);
+	}
+	
+	public static void assertRegressionTestAnswerSets(RegressionTestConfig cfg, String program, String... answerSets) {
+		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
+		TestUtils.assertAnswerSetsEqual(answerSets, actualAnswerSets);		
+	}
+	
+	public static void assertRegressionTestAnswerSetsWithBase(RegressionTestConfig cfg, String program, String base, String... answerSets) {
+		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
+		TestUtils.assertAnswerSetsEqualWithBase(base, answerSets, actualAnswerSets);		
+	}
+	
 }

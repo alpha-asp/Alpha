@@ -1,5 +1,8 @@
 package at.ac.tuwien.kr.alpha;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,8 +13,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.mapper.AnswerSetToWorkbookMapperTest;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
@@ -28,9 +30,9 @@ public class AnswerSetToXlsxWriterTest {
 		writer.accept(0, as);
 		File tmpDirFile = tmpDir.toFile();
 		File[] generatedFiles = tmpDirFile.listFiles();
-		Assert.assertEquals(generatedFiles.length, 1);
+		assertEquals(generatedFiles.length, 1);
 		File answerSetFile = generatedFiles[0];
-		Assert.assertEquals("alphaAnswerSet.0.xlsx", answerSetFile.getName());
+		assertEquals("alphaAnswerSet.0.xlsx", answerSetFile.getName());
 		Workbook wb = WorkbookFactory.create(answerSetFile);
 		AnswerSetToWorkbookMapperTest.assertWorkbookMatchesAnswerSet(wb, as);
 		wb.close();
@@ -45,16 +47,16 @@ public class AnswerSetToXlsxWriterTest {
 		AnswerSetToXlsxWriter.writeUnsatInfo(Paths.get(tmpDir.toString() + "/alphaAnswerSet.UNSAT.xlsx"));
 		File tmpDirFile = tmpDir.toFile();
 		File[] generatedFiles = tmpDirFile.listFiles();
-		Assert.assertEquals(generatedFiles.length, 1);
+		assertEquals(generatedFiles.length, 1);
 		File unsatFile = generatedFiles[0];
-		Assert.assertEquals("alphaAnswerSet.UNSAT.xlsx", unsatFile.getName());
+		assertEquals("alphaAnswerSet.UNSAT.xlsx", unsatFile.getName());
 		Workbook wb = WorkbookFactory.create(unsatFile);
 		Sheet unsatSheet = wb.getSheet("Unsatisfiable");
-		Assert.assertNotNull(unsatSheet);
+		assertNotNull(unsatSheet);
 		Cell cell = unsatSheet.getRow(0).getCell(0);
-		Assert.assertNotNull(cell);
+		assertNotNull(cell);
 		String cellValue = cell.getStringCellValue();
-		Assert.assertEquals("Input is unsatisfiable - No answer sets!", cellValue);
+		assertEquals("Input is unsatisfiable - No answer sets!", cellValue);
 		wb.close();
 		// clean up
 		unsatFile.delete();

@@ -27,42 +27,52 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import static at.ac.tuwien.kr.alpha.Main.main;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.stream.Stream;
 
-import static at.ac.tuwien.kr.alpha.Main.main;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
+//@RunWith(Parameterized.class)
 public class MainTest {
+	
 	private static final String INPUT = "p(a). " + System.lineSeparator() + " b :- p(X)." + System.lineSeparator();
 
-	@Parameters
-	public static Iterable<? extends String[][]> data() {
-		return Arrays.asList(
-				new String[][][] {{{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "20", "-str", INPUT }},
-						{{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "0", "-str", INPUT }},
-						{{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "1", "-str", INPUT }},
-						{{"-g", "naive", "-s", "default", "-r", "naive", "-e", "1119654162577372", "--numAS", "1", "-str", INPUT }}});
-	}
+//	@Parameters
+//	public static Iterable<? extends String[][]> data() {
+//		return Arrays.asList(
+//				new String[][][] { { { "-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "20", "-str", INPUT } },
+//						{ { "-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "0", "-str", INPUT } },
+//						{ { "-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "1", "-str", INPUT } },
+//						{ { "-g", "naive", "-s", "default", "-r", "naive", "-e", "1119654162577372", "--numAS", "1", "-str", INPUT } } });
+//	}
 
-	@Parameter
-	public String[] argv;
+//	@Parameter
+//	public String[] argv;
+
+	
+	public static Stream<Arguments> provideArgs() {
+		return Stream.of(
+				Arguments.of((Object) new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "20", "-str", INPUT}),
+				Arguments.of((Object) new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "0", "-str", INPUT}),
+				Arguments.of((Object) new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "1", "-str", INPUT}),
+				Arguments.of((Object) new String[]{"-g", "naive", "-s", "default", "-r", "naive", "-e", "1119654162577372", "--numAS", "1", "-str", INPUT}));
+	}
 
 	/**
 	 * Temporarily redirects System.err and System.out while running the solver from the main entry point with the
 	 * given parameters.
 	 * Warning: this test is fragile and may require adaptions if printing is changed anywhere in Alpha.
 	 */
-	@Test
-	public void test() {
+	@ParameterizedTest
+	@MethodSource("provideArgs")
+	public void test(String[] argv) {
 		PrintStream sysOut = System.out;
 		ByteArrayOutputStream newOut = new ByteArrayOutputStream();
 		System.setOut(new PrintStream(newOut));
@@ -71,8 +81,9 @@ public class MainTest {
 		assertTrue(newOut.toString().contains("{ b, p(a) }"));
 	}
 
-	@Test
-	public void filterTest() {
+	@ParameterizedTest
+	@MethodSource("provideArgs")
+	public void filterTest(String[] argv) {
 		PrintStream sysOut = System.out;
 		ByteArrayOutputStream newOut = new ByteArrayOutputStream();
 		System.setOut(new PrintStream(newOut));
