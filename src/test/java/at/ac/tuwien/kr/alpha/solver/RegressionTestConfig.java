@@ -23,12 +23,14 @@ public class RegressionTestConfig {
 	private final boolean disableInstanceRemoval;
 
 	private final boolean evaluateStratifiedPart;
+	
+	private final boolean encodeAggregatesUsingSortingGrid;
 
 	public RegressionTestConfig(
 			String solverName, String grounderName, String noGoodStoreName,
 			BranchingHeuristicFactory.Heuristic branchingHeuristic, long seed,
 			boolean debugChecks, String grounderToleranceConstraints, String grounderToleranceRules,
-			boolean disableInstanceRemoval, boolean evaluateStratifiedPart) {
+			boolean disableInstanceRemoval, boolean evaluateStratifiedPart, boolean useSortingGrid) {
 		this.solverName = solverName;
 		this.grounderName = grounderName;
 		this.noGoodStoreName = noGoodStoreName;
@@ -39,6 +41,7 @@ public class RegressionTestConfig {
 		this.grounderToleranceRules = grounderToleranceRules;
 		this.disableInstanceRemoval = disableInstanceRemoval;
 		this.evaluateStratifiedPart = evaluateStratifiedPart;
+		this.encodeAggregatesUsingSortingGrid = useSortingGrid;
 	}
 
 	public String getSolverName() {
@@ -79,6 +82,18 @@ public class RegressionTestConfig {
 
 	public boolean isEvaluateStratifiedPart() {
 		return this.evaluateStratifiedPart;
+	}
+
+	public boolean isEncodeAggregatesUsingSortingGrid() {
+		return this.encodeAggregatesUsingSortingGrid;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format(
+				"RegressionTestConfig [solverName=%s, grounderName=%s, noGoodStoreName=%s, branchingHeuristic=%s, seed=%s, debugChecks=%s, grounderToleranceConstraints=%s, grounderToleranceRules=%s, disableInstanceRemoval=%s, evaluateStratifiedPart=%s, useSortingGrid=%s]",
+				this.solverName, this.grounderName, this.noGoodStoreName, this.branchingHeuristic, this.seed, this.debugChecks,
+				this.grounderToleranceConstraints, this.grounderToleranceRules, this.disableInstanceRemoval, this.evaluateStratifiedPart, this.encodeAggregatesUsingSortingGrid);
 	}
 
 }

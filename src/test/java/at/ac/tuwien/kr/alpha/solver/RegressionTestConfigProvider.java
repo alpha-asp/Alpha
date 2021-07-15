@@ -12,20 +12,22 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heurist
 
 public class RegressionTestConfigProvider {
 
-	public static List<Arguments> provideConfigs() {
+	private static final boolean DEFAULT_USE_SORTING_GRID = true;
+
+	private static List<RegressionTestConfig> buildConfigs(boolean useSortingGridForAggregates) {
 		// Check whether we are running in a CI environment.
 		boolean ci = Boolean.valueOf(System.getenv("CI"));
 
 		//@formatter:off
-		String[] solvers = ci ? new String[] {"default", "naive" } : new String[] {"default" };
+		String[] solvers = ci ? new String[]{"default", "naive" } : new String[]{"default" };
 		String grounder = "naive";
-		String[] atomStores = ci ? new String[] {"alpharoaming", "naive" } : new String[] {"alpharoaming" };
-		String[] heuristics = ci ? nonDeprecatedHeuristics() : new String[] {"NAIVE", "VSIDS" };
-		String[] gtcValues = new String[] {"strict", "permissive" };
+		String[] atomStores = ci ? new String[]{"alpharoaming", "naive" } : new String[]{"alpharoaming" };
+		String[] heuristics = ci ? nonDeprecatedHeuristics() : new String[]{"NAIVE", "VSIDS" };
+		String[] gtcValues = new String[]{"strict", "permissive" };
 		String gtrValue = "strict";
-		boolean[] disableInstanceRemovalValues = ci ? new boolean[] {false, true } : new boolean[] {false };
-		boolean[] evaluateStratifiedValues = new boolean[] {false, true };
-		boolean[] enableDebugChecksValues = new boolean[] {false, true };
+		boolean[] disableInstanceRemovalValues = ci ? new boolean[]{false, true } : new boolean[]{false };
+		boolean[] evaluateStratifiedValues = new boolean[]{false, true };
+		boolean[] enableDebugChecksValues = new boolean[]{false, true };
 		//@formatter:on
 
 		// NOTE:
@@ -37,7 +39,7 @@ public class RegressionTestConfigProvider {
 		String seedProperty = System.getProperty("seed", ci ? "0" : "");
 		long seed = seedProperty.isEmpty() ? (new Random().nextLong()) : Long.valueOf(seedProperty);
 
-		List<Arguments> configsToTest = new ArrayList<>();
+		List<RegressionTestConfig> configsToTest = new ArrayList<>();
 		for (String solverName : solvers) {
 			for (String atomStoreName : atomStores) {
 				for (String branchingHeuristicName : heuristics) {
@@ -45,9 +47,10 @@ public class RegressionTestConfigProvider {
 						for (boolean disableInstanceRemoval : disableInstanceRemovalValues) {
 							for (boolean evaluateStratified : evaluateStratifiedValues) {
 								for (boolean enableDebugChecks : enableDebugChecksValues) {
-									configsToTest.add(Arguments.of(new RegressionTestConfig(
+									configsToTest.add(new RegressionTestConfig(
 											solverName, grounder, atomStoreName, BranchingHeuristicFactory.Heuristic.valueOf(branchingHeuristicName),
-											seed, enableDebugChecks, grounderTolerance, gtrValue, disableInstanceRemoval, evaluateStratified)));
+											seed, enableDebugChecks, grounderTolerance, gtrValue, disableInstanceRemoval, evaluateStratified,
+											useSortingGridForAggregates));
 								}
 							}
 						}
@@ -56,6 +59,26 @@ public class RegressionTestConfigProvider {
 			}
 		}
 		return configsToTest;
+
+	}
+
+	public static List<Arguments> provideConfigs() {
+		List<Arguments> retVal = new ArrayList<>();
+		for (RegressionTestConfig cfg : buildConfigs(DEFAULT_USE_SORTING_GRID)) {
+			retVal.add(Arguments.of(cfg));
+		}
+		return retVal;
+	}
+
+	public static List<Arguments> provideAggregateTestConfigs() {
+		List<Arguments> retVal = new ArrayList<>();
+		for (RegressionTestConfig cfg : buildConfigs(true)) {
+			retVal.add(Arguments.of(cfg));
+		}
+		for (RegressionTestConfig cfg : buildConfigs(false)) {
+			retVal.add(Arguments.of(cfg));
+		}
+		return retVal;
 	}
 
 	private static final String[] nonDeprecatedHeuristics() {

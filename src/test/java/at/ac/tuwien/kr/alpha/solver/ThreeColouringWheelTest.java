@@ -25,13 +25,15 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.runWithTimeout;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import org.junit.jupiter.api.Disabled;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -49,42 +51,51 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
  * In Theory and Practice of Logic Programming, pp. 1-45.
  * DOI: 10.1017/S1471068416000569
  */
-public class ThreeColouringWheelTest extends AbstractSolverTests {
-	@Test(timeout = 1000)
-	public void testN4() throws IOException {
-		testThreeColouring(4);
+public class ThreeColouringWheelTest {
+	
+	private static final long DEBUG_TIMEOUT_FACTOR = 5;
+	
+	@RegressionTest
+	public void testN4(RegressionTestConfig cfg) throws IOException {
+		long timeout = 1000L;
+		runWithTimeout(() -> testThreeColouring(4, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
 	}
 
-	@Test(timeout = 1000)
-	public void testN5() throws IOException {
-		testThreeColouring(5);
+	@RegressionTest
+	public void testN5(RegressionTestConfig cfg) throws IOException {
+		long timeout = 1000L;
+		runWithTimeout(() -> testThreeColouring(5, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
 	}
 
-	@Test(timeout = 6000)
-	@Ignore("disabled to save resources during CI")
-	public void testN6() throws IOException {
-		testThreeColouring(6);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testN6(RegressionTestConfig cfg) throws IOException {
+		long timeout = 6000L;
+		runWithTimeout(() -> testThreeColouring(6, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
 	}
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN3() throws IOException {
-		testThreeColouring(3);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testN3(RegressionTestConfig cfg) throws IOException {
+		long timeout = 60000L;
+		runWithTimeout(() -> testThreeColouring(3, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
 	}
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN7() throws IOException {
-		testThreeColouring(7);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testN7(RegressionTestConfig cfg) throws IOException {
+		long timeout = 60000L;
+		runWithTimeout(() -> testThreeColouring(7, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
 	}
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN11() throws IOException {
-		testThreeColouring(11);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testN11(RegressionTestConfig cfg) throws IOException {
+		long timeout = 60000L;
+		runWithTimeout(() -> testThreeColouring(11, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
 	}
 
-	private void testThreeColouring(int n) throws IOException {
+	private void testThreeColouring(int n, RegressionTestConfig cfg) throws IOException {
 		InputProgram tmpPrg = new ProgramParser().parse(
 				"col(V,C) :- v(V), c(C), not ncol(V,C)." +
 				"ncol(V,C) :- col(V,D), c(C), C != D." +
@@ -97,7 +108,7 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 
 		maybeShuffle(program);
 
-		Solver solver = getInstance(program);
+		Solver solver = buildSolverForRegressionTest(program, cfg);
 
 		Optional<AnswerSet> answerSet = solver.stream().findAny();
 		//System.out.println(answerSet);

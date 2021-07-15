@@ -1,7 +1,9 @@
 package at.ac.tuwien.kr.alpha.test.util;
 
 import static java.util.Collections.emptySet;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -10,6 +12,8 @@ import java.util.Set;
 import java.util.StringJoiner;
 
 import org.junit.Assert;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.function.Executable;
 
 import at.ac.tuwien.kr.alpha.AnswerSetsParser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
@@ -34,6 +38,7 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.solver.RegressionTestConfig;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 
 public class TestUtils {
 
@@ -167,6 +172,18 @@ public class TestUtils {
 	public static void assertRegressionTestAnswerSetsWithBase(RegressionTestConfig cfg, String program, String base, String... answerSets) {
 		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
 		TestUtils.assertAnswerSetsEqualWithBase(base, answerSets, actualAnswerSets);		
+	}
+	
+	public static void runWithTimeout(Executable action, long timeoutMillis) {
+		assertTimeout(Duration.ofMillis(timeoutMillis), action);
+	}
+	
+	public static void ignoreTestForNaiveSolver(RegressionTestConfig cfg) {
+		Assumptions.assumeFalse(cfg.getSolverName().equals("naive"));
+	}
+	
+	public static void ignoreTestForNonDefaultDomainIndependentHeuristics(RegressionTestConfig cfg) {
+		Assumptions.assumeTrue(cfg.getBranchingHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
 	}
 	
 }
