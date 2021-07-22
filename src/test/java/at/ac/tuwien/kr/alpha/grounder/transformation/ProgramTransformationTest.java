@@ -1,13 +1,14 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.function.Function;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,8 +50,8 @@ public class ProgramTransformationTest {
 			I transformInput = prepareFunc.apply(inputProg);
 			String beforeTransformProg = transformInput.toString();
 			O transformedProg = transform.apply(transformInput);
-			Assert.assertEquals("Transformation result doesn't match expected result", expectedResult, transformedProg.toString());
-			Assert.assertEquals("Transformation modified source program (breaks immutability!)", beforeTransformProg, transformInput.toString());
+			assertEquals("Transformation result doesn't match expected result", expectedResult, transformedProg.toString());
+			assertEquals("Transformation modified source program (breaks immutability!)", beforeTransformProg, transformInput.toString());
 		} catch (Exception ex) {
 			LOGGER.error("Exception in test, nested exception: " + ex.getMessage(), ex);
 			throw new RuntimeException(ex);

@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
-import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
@@ -92,7 +91,7 @@ public class ThreeColouringTestWithRandom {
 	}
 
 	@RegressionTest
-	@Ignore("disabled to save resources during CI")
+	@Disabled("disabled to save resources during CI")
 	public void testN8(RegressionTestConfig cfg) throws IOException {
 		long timeout = 8000L;
 		runWithTimeout(() -> testThreeColouring(8, false, 0, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);

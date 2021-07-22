@@ -25,16 +25,21 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.solver.*;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.solver.NoGoodStore;
+import at.ac.tuwien.kr.alpha.solver.NoGoodStoreAlphaRoaming;
+import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 
 /**
  * Tests {@link BranchingHeuristicFactory}
@@ -45,7 +50,7 @@ public class BranchingHeuristicFactoryTest {
 	private final boolean debugInternalChecks = true;
 	private ChoiceManager choiceManager;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		AtomStore atomStore = new AtomStoreImpl();
 		WritableAssignment assignment = new TrailAssignment(atomStore);
@@ -58,7 +63,7 @@ public class BranchingHeuristicFactoryTest {
 		HeuristicsConfigurationBuilder builder = new HeuristicsConfigurationBuilder().setHeuristic(BranchingHeuristicFactory.Heuristic.VSIDS).setReplayChoices(Arrays.asList(1, 2, 3));
 		BranchingHeuristic branchingHeuristic = factory.getInstance(builder.build(), null, null, choiceManager, null);
 		assertEquals(ChainedBranchingHeuristics.class, branchingHeuristic.getClass());
-		assertTrue("Unexpected type of branchingHeuristic: " + branchingHeuristic.getClass(), branchingHeuristic instanceof ChainedBranchingHeuristics);
+		assertTrue(branchingHeuristic instanceof ChainedBranchingHeuristics, "Unexpected type of branchingHeuristic: " + branchingHeuristic.getClass());
 		assertEquals(ChainedBranchingHeuristics.class.getSimpleName() + "[" + ReplayHeuristic.class.getSimpleName() + ", " + VSIDS.class.getSimpleName() + "]", branchingHeuristic.toString());
 	}
 

@@ -27,18 +27,24 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.*;
-import org.junit.Before;
-import org.junit.Test;
-
-import at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type;
+import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
+import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type;
 
 public class LearnedNoGoodDeletionTest {
 
@@ -54,7 +60,7 @@ public class LearnedNoGoodDeletionTest {
 		learnedNoGoodDeletion = store.getLearnedNoGoodDeletion();
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		store.clear();
 		store.growForMaxAtomId(fromOldLiterals(200));
@@ -130,9 +136,9 @@ public class LearnedNoGoodDeletionTest {
 
 		for (Type type : Type.values()) {
 			if (type == Type.LEARNT) {
-				assertTrue("Count of LEARNT nogoods did not decrease during deletion", countersBeforeDeletion.get(type) > countersAfterDeletion.get(type));
+				assertTrue(countersBeforeDeletion.get(type) > countersAfterDeletion.get(type),"Count of LEARNT nogoods did not decrease during deletion");
 			} else {
-				assertEquals("Unexpected count of " + type + " nogoods", countersBeforeDeletion.get(type), countersAfterDeletion.get(type));
+				assertEquals(countersBeforeDeletion.get(type), countersAfterDeletion.get(type), "Unexpected count of " + type + " nogoods");
 			}
 		}
 

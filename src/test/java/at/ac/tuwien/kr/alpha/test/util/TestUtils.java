@@ -1,7 +1,9 @@
 package at.ac.tuwien.kr.alpha.test.util;
 
 import static java.util.Collections.emptySet;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTimeout;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -11,7 +13,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.function.Executable;
 
@@ -49,7 +50,7 @@ public class TestUtils {
 			}
 		}
 		try {
-			Assert.assertEquals(expected, actual);
+			assertEquals(expected, actual);
 		} catch (AssertionError e) {
 			Set<AnswerSet> expectedMinusActual = new LinkedHashSet<>(expected);
 			expectedMinusActual.removeAll(actual);
@@ -94,7 +95,7 @@ public class TestUtils {
 
 	public static void assertFactsContainedInProgram(AbstractProgram<?> prog, Atom... facts) {
 		for (Atom fact : facts) {
-			Assert.assertTrue(prog.getFacts().contains(fact));
+			assertTrue(prog.getFacts().contains(fact));
 		}
 	}
 

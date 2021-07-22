@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collection;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
@@ -50,7 +50,7 @@ public class ChoiceManagerTests {
 	private ChoiceManager choiceManager;
 	private AtomStore atomStore;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		Alpha system = new Alpha();
 		String testProgram = "h :- b1, b2, not b3, not b4.";

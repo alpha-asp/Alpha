@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
@@ -170,7 +169,7 @@ public class HeadBodyTransformationTests {
 	}
 
 	@RegressionTest
-	@Ignore("disabled to save resources during CI")
+	@Disabled("disabled to save resources during CI")
 	public void testProgramA_N16(RegressionTestConfig cfg) throws IOException {
 		long timeout = 10000L;
 		TestUtils.runWithTimeout(() -> test(constructProgramA(16), cfg), timeout * DEBUG_TIMEOUT_FACTOR);

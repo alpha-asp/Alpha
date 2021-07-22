@@ -32,7 +32,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -54,7 +54,7 @@ public class AtomCounterTests {
 
 	private AtomStore atomStore;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		this.atomStore = new AtomStoreImpl();
 	}

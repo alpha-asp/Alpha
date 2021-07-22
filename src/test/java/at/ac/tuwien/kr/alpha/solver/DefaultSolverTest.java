@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import org.antlr.v4.runtime.CharStreams;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;

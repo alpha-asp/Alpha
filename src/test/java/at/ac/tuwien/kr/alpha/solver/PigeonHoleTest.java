@@ -28,7 +28,7 @@ package at.ac.tuwien.kr.alpha.solver;
 import static at.ac.tuwien.kr.alpha.test.util.TestUtils.collectRegressionTestAnswerSets;
 import static at.ac.tuwien.kr.alpha.test.util.TestUtils.ignoreTestForNonDefaultDomainIndependentHeuristics;
 import static at.ac.tuwien.kr.alpha.test.util.TestUtils.runWithTimeout;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;

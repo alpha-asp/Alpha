@@ -28,14 +28,16 @@
 package at.ac.tuwien.kr.alpha.config;
 
 import org.apache.commons.cli.ParseException;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class CommandLineParserTest {
 
@@ -70,10 +72,12 @@ public class CommandLineParserTest {
 		assertEquals(Arrays.asList(new String[] {"b :- a.", "c :- a, b."}), ctx.getInputConfig().getAspStrings());
 	}
 
-	@Test(expected = ParseException.class)
+	@Test
 	public void invalidUsageNoInput() throws ParseException {
-		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		parser.parseCommandLine(new String[] {});
+		assertThrows(ParseException.class, () -> {
+			CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+			parser.parseCommandLine(new String[] {});
+		});
 	}
 
 	@Test
@@ -82,10 +86,12 @@ public class CommandLineParserTest {
 		parser.parseCommandLine(new String[] {"-i", "a.b", "-i", "b.c", "-str", "aString."});
 	}
 
-	@Test(expected = ParseException.class)
+	@Test
 	public void invalidUsageMissingInputFlag() throws ParseException {
-		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		parser.parseCommandLine(new String[] {"-i", "a.b", "b.c"});
+		assertThrows(ParseException.class, () -> {
+			CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+			parser.parseCommandLine(new String[] {"-i", "a.b", "b.c"});
+		});
 	}
 
 	@Test
@@ -95,10 +101,12 @@ public class CommandLineParserTest {
 		assertEquals(435, ctx.getInputConfig().getNumAnswerSets());
 	}
 	
-	@Test(expected = ParseException.class)
+	@Test
 	public void noInputGiven() throws ParseException {
-		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		parser.parseCommandLine(new String[] {});
+		assertThrows(ParseException.class, () -> {
+			CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+			parser.parseCommandLine(new String[] {});
+		});
 	}
 
 	@Test
@@ -108,10 +116,12 @@ public class CommandLineParserTest {
 		assertEquals(Arrays.asList(1, 2, 3), alphaConfig.getSystemConfig().getReplayChoices());
 	}
 
-	@Test(expected = ParseException.class)
+	@Test
 	public void replayWithNonNumericLiteral() throws ParseException {
-		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		parser.parseCommandLine(new String[]{"-str", "aString.", "-rc", "\"1, 2, x\""});
+		assertThrows(ParseException.class, () -> {
+			CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+			parser.parseCommandLine(new String[]{"-str", "aString.", "-rc", "\"1, 2, x\""});
+		});
 	}
 
 	@Test
@@ -153,14 +163,14 @@ public class CommandLineParserTest {
 	public void disableStratifiedEval() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
 		AlphaConfig ctx = parser.parseCommandLine(new String[]{"-i", "someFile.asp", "-i", "someOtherFile.asp", "-dse"});
-		Assert.assertFalse(ctx.getSystemConfig().isEvaluateStratifiedPart());
+		assertFalse(ctx.getSystemConfig().isEvaluateStratifiedPart());
 	}
 	
 	@Test
 	public void disableStratifiedEvalLongOpt() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
 		AlphaConfig ctx = parser.parseCommandLine(new String[]{"-i", "someFile.asp", "-i", "someOtherFile.asp", "--disableStratifiedEvaluation"});
-		Assert.assertFalse(ctx.getSystemConfig().isEvaluateStratifiedPart());
+		assertFalse(ctx.getSystemConfig().isEvaluateStratifiedPart());
 	}
 
 	@Test

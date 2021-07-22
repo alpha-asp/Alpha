@@ -6,13 +6,15 @@ import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph.SCComponent;
 import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
+
 
 public class StratificationAlgorithmTest {
 

@@ -56,7 +56,6 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
-import junit.framework.TestCase;
 
 public class SolverTests {
 	
@@ -804,13 +803,13 @@ public class SolverTests {
 	@RegressionTest
 	public void dummyGrounder(RegressionTestConfig cfg) {
 		AtomStore atomStore = new AtomStoreImpl();
-		TestCase.assertEquals(DummyGrounder.EXPECTED, buildSolverForRegressionTest(atomStore, new DummyGrounder(atomStore), cfg).collectSet());
+		assertEquals(DummyGrounder.EXPECTED, buildSolverForRegressionTest(atomStore, new DummyGrounder(atomStore), cfg).collectSet());
 	}
 
 	@RegressionTest
 	public void choiceGrounder(RegressionTestConfig cfg) {
 		AtomStore atomStore = new AtomStoreImpl();
-		TestCase.assertEquals(ChoiceGrounder.EXPECTED, buildSolverForRegressionTest(atomStore, new ChoiceGrounder(atomStore), cfg).collectSet());
+		assertEquals(ChoiceGrounder.EXPECTED, buildSolverForRegressionTest(atomStore, new ChoiceGrounder(atomStore), cfg).collectSet());
 	}
 
 }
