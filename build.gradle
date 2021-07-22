@@ -120,6 +120,7 @@ jacocoTestReport {
 }
 
 test {
+	useJUnitPlatform()
 	testLogging {
 		exceptionFormat = 'full'
 	}

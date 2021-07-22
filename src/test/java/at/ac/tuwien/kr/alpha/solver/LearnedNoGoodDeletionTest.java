@@ -136,7 +136,7 @@ public class LearnedNoGoodDeletionTest {
 
 		for (Type type : Type.values()) {
 			if (type == Type.LEARNT) {
-				assertTrue(countersBeforeDeletion.get(type) > countersAfterDeletion.get(type),"Count of LEARNT nogoods did not decrease during deletion");
+				assertTrue(countersBeforeDeletion.get(type) > countersAfterDeletion.get(type), "Count of LEARNT nogoods did not decrease during deletion");
 			} else {
 				assertEquals(countersBeforeDeletion.get(type), countersAfterDeletion.get(type), "Unexpected count of " + type + " nogoods");
 			}

@@ -50,8 +50,8 @@ public class ProgramTransformationTest {
 			I transformInput = prepareFunc.apply(inputProg);
 			String beforeTransformProg = transformInput.toString();
 			O transformedProg = transform.apply(transformInput);
-			assertEquals("Transformation result doesn't match expected result", expectedResult, transformedProg.toString());
-			assertEquals("Transformation modified source program (breaks immutability!)", beforeTransformProg, transformInput.toString());
+			assertEquals(expectedResult, transformedProg.toString(), "Transformation result doesn't match expected result");
+			assertEquals(beforeTransformProg, transformInput.toString(), "Transformation modified source program (breaks immutability!)");
 		} catch (Exception ex) {
 			LOGGER.error("Exception in test, nested exception: " + ex.getMessage(), ex);
 			throw new RuntimeException(ex);

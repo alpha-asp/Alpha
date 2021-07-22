@@ -89,32 +89,22 @@ public class StratifiedEvaluationRegressionTest {
 		testCases.add(new ImmutablePair<>(EQUALITY_ASP, EQUALITY_VERIFIERS));
 		testCases.add(new ImmutablePair<>(EQUALITY_WITH_VAR_ASP, EQUALITY_WITH_VAR_VERIFIERS));
 
-		testCases.forEach((pair) -> paramList.add(Arguments.of(pair.left, pair.right.left, pair.right.right )));
+		testCases.forEach((pair) -> paramList.add(Arguments.of(pair.left, pair.right.left, pair.right.right)));
 		return paramList;
-	}
-
-	private String aspString;
-	private Consumer<InternalProgram> programVerifier;
-	private Consumer<Set<AnswerSet>> answerSetsVerifier;
-
-	public StratifiedEvaluationRegressionTest(String aspString, Consumer<InternalProgram> programVerifier, Consumer<Set<AnswerSet>> answerSetsVerifier) {
-		this.aspString = aspString;
-		this.programVerifier = programVerifier;
-		this.answerSetsVerifier = answerSetsVerifier;
 	}
 
 	@ParameterizedTest
 	@MethodSource("at.ac.tuwien.kr.alpha.grounder.transformation.StratifiedEvaluationRegressionTest#params")
 	public void runTest(String aspString, Consumer<InternalProgram> programVerifier, Consumer<Set<AnswerSet>> resultVerifier) {
-		String aspStr = this.aspString;
+		String aspStr = aspString;
 		Alpha system = new Alpha();
 		InputProgram prg = system.readProgramString(aspStr);
 		NormalProgram normal = system.normalizeProgram(prg);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normal);
 		InternalProgram evaluated = new StratifiedEvaluation().apply(analyzed);
-		this.programVerifier.accept(evaluated);
+		programVerifier.accept(evaluated);
 		Set<AnswerSet> answerSets = system.solve(evaluated).collect(Collectors.toSet());
-		this.answerSetsVerifier.accept(answerSets);
+		resultVerifier.accept(answerSets);
 	}
 
 	private static void verifyProgramBasic(InternalProgram evaluated) {

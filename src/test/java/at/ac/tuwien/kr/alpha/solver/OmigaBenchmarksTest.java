@@ -47,7 +47,7 @@ public class OmigaBenchmarksTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(OmigaBenchmarksTest.class);
 
-	private static final int DEBUG_TIMEOUT_FACTOR = 5;
+	private static final int DEBUG_TIMEOUT_FACTOR = 8;
 	
 	@RegressionTest
 	public void test3Col_10_18(RegressionTestConfig cfg) throws IOException {
