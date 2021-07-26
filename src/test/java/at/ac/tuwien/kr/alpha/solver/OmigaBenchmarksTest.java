@@ -52,39 +52,40 @@ public class OmigaBenchmarksTest {
 	@RegressionTest
 	public void test3Col_10_18(RegressionTestConfig cfg) throws IOException {
 		long timeout = 10000L;
-		TestUtils.runWithTimeout(() -> test("3col", "3col-10-18.txt", cfg), timeout * DEBUG_TIMEOUT_FACTOR);
+		TestUtils.runWithTimeout(() -> test("3col", "3col-10-18.txt", cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
 	}
 
 	@RegressionTest
 	public void test3Col_20_38(RegressionTestConfig cfg) throws IOException {
 		long timeout = 10000L;
-		TestUtils.runWithTimeout(() -> test("3col", "3col-20-38.txt", cfg), timeout * DEBUG_TIMEOUT_FACTOR);
+		TestUtils.runWithTimeout(() -> test("3col", "3col-20-38.txt", cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
 	}
 
 	@RegressionTest
 	public void testCutedge_100_30(RegressionTestConfig cfg) throws IOException {
 		long timeout = 15000L;
-		TestUtils.runWithTimeout(() -> test("cutedge", "cutedge-100-30.txt", cfg), timeout * DEBUG_TIMEOUT_FACTOR);
+		TestUtils.runWithTimeout(() -> test("cutedge", "cutedge-100-30.txt", cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
 	}
 
 	@RegressionTest
 	public void testCutedge_100_50(RegressionTestConfig cfg) throws IOException {
 		long timeout = 15000L;
-		TestUtils.runWithTimeout(() -> test("cutedge", "cutedge-100-50.txt", cfg), timeout * DEBUG_TIMEOUT_FACTOR);
+		long debugTimeout = 210000L; // this test specifically takes a lot longer with the solver in debug mode
+		TestUtils.runWithTimeout(() -> test("cutedge", "cutedge-100-50.txt", cfg), cfg.isDebugChecks() ? debugTimeout : timeout);
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
 	public void testLocstrat_200(RegressionTestConfig cfg) throws IOException {
 		long timeout = 10000L;
-		TestUtils.runWithTimeout(() -> test("locstrat", "locstrat-200.txt", cfg), timeout * DEBUG_TIMEOUT_FACTOR);
+		TestUtils.runWithTimeout(() -> test("locstrat", "locstrat-200.txt", cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
 	public void testLocstrat_400(RegressionTestConfig cfg) throws IOException {
 		long timeout = 10000L;
-		TestUtils.runWithTimeout(() -> test("locstrat", "locstrat-400.txt", cfg), timeout * DEBUG_TIMEOUT_FACTOR);
+		TestUtils.runWithTimeout(() -> test("locstrat", "locstrat-400.txt", cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
 	}
 
 	@RegressionTest
@@ -92,14 +93,14 @@ public class OmigaBenchmarksTest {
 		long timeout = 15000L;
 		TestUtils.ignoreTestForNaiveSolver(cfg);
 		TestUtils.ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
-		TestUtils.runWithTimeout(() -> test("reach", "reach-1.txt", cfg), timeout * DEBUG_TIMEOUT_FACTOR);
+		TestUtils.runWithTimeout(() -> test("reach", "reach-1.txt", cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
 	public void testReach_4(RegressionTestConfig cfg) throws IOException {
 		long timeout = 10000L;
-		TestUtils.runWithTimeout(() -> test("reach", "reach-4.txt", cfg), timeout * DEBUG_TIMEOUT_FACTOR);
+		TestUtils.runWithTimeout(() -> test("reach", "reach-4.txt", cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
 	}
 
 	private void test(String folder, String aspFileName, RegressionTestConfig cfg) throws IOException {
