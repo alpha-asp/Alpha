@@ -43,14 +43,6 @@ public class MainTest {
 	
 	private static final String INPUT = "p(a). " + System.lineSeparator() + " b :- p(X)." + System.lineSeparator();
 
-//	@Parameters
-//	public static Iterable<? extends String[][]> data() {
-//		return Arrays.asList(
-//				new String[][][] { { { "-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "20", "-str", INPUT } },
-//						{ { "-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "0", "-str", INPUT } },
-//						{ { "-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "1", "-str", INPUT } },
-//						{ { "-g", "naive", "-s", "default", "-r", "naive", "-e", "1119654162577372", "--numAS", "1", "-str", INPUT } } });
-//	}
 
 //	@Parameter
 //	public String[] argv;
