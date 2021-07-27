@@ -39,7 +39,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-//@RunWith(Parameterized.class)
 public class MainTest {
 	
 	private static final String INPUT = "p(a). " + System.lineSeparator() + " b :- p(X)." + System.lineSeparator();
