@@ -53,10 +53,6 @@ public class HeadBodyTransformationTests {
 
 	private static final int DEBUG_TIMEOUT_FACTOR = 5;
 	
-//	@Before
-//	public void printSolverName() {
-//		System.out.println(solverName);
-//	}
 
 	@RegressionTest
 	public void testProgramB_N1(RegressionTestConfig cfg) throws IOException {
