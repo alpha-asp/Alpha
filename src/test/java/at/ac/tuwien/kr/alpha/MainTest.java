@@ -44,8 +44,6 @@ public class MainTest {
 	private static final String INPUT = "p(a). " + System.lineSeparator() + " b :- p(X)." + System.lineSeparator();
 
 
-//	@Parameter
-//	public String[] argv;
 
 	
 	public static Stream<Arguments> provideArgs() {
