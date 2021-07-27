@@ -201,7 +201,7 @@ sum_eq (id, result_predicate, element_tuple, bound )::=<<
 
     $! Separate positive and negative input values for separate summation !$
     $id$_pos_input_value_at_index(ARGS, VAL, IDX) :- $element_tuple$(ARGS, TPL, VAL), enum(sum_elements(ARGS, pos), TPL, IDX), VAL >= 0.
-    $id$_neg_input_value_at_index(ARGS, VAL * -1, IDX) :- $element_tuple$(ARGS, TPL, VAL), enum(sum_elements(ARGS, neg), TPL, IDX), VAL < 0.
+    $id$_neg_input_value_at_index(ARGS, ABS_VAL, IDX) :- $element_tuple$(ARGS, TPL, VAL), enum(sum_elements(ARGS, neg), TPL, IDX), VAL < 0, ABS_VAL = VAL * -1.
 
     $! include encoding for actual summation of positive and negative input values!$
 	$partial_sums(id=id, tag="pos", bound=bound)$

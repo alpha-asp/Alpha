@@ -75,6 +75,18 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 		String program = "sum_things(S) :- S = #sum{X : thing(X)}.";
 		assertAnswerSet(program, "sum_things(0)");
 	}
+	
+	@Test
+	public void aggregateSumEqNegativeSum() {
+		String program = "thing(-1). thing(-2). thing(-3). sum_things(S) :- S = #sum{X : thing(X)}.";
+		assertAnswerSet(program, "thing(-1), thing(-2), thing(-3), sum_things(-6)");
+	}
+	
+	@Test
+	public void aggregateSumEqMixedElementsSum() {
+		String program = "thing(-1). thing(6). thing(-3). sum_things(S) :- S = #sum{X : thing(X)}.";
+		assertAnswerSet(program, "thing(-1), thing(6), thing(-3), sum_things(2)");		
+	}
 
 	@Test
 	public void aggregateSumLeEmptySetPositive() {
@@ -137,6 +149,25 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				"thing(2), thing(3), sum_things(5)",
 				"thing(2), thing(4), sum_things(6)",
 				"thing(3), thing(4), sum_things(7)");
+	}
+	
+	@Test
+	public void aggregateSumEqOverMixedValuesWithChoicePositive() {
+		String program = "potential_thing(-2). potential_thing(-1). potential_thing(0). potential_thing(1). "
+				+ "{ thing(N) : potential_thing(N)}."
+				+ "two_things_chosen :- thing(N1), thing(N2), N1 != N2."
+				+ "three_things_chosen :- thing(N1), thing(N2), thing(N3), N1 != N2, N1 != N3, N2 != N3."
+				+ ":- not two_things_chosen."
+				+ ":- three_things_chosen."
+				+ "sum_things(SUM) :- SUM = #sum{ X : thing(X) }.";
+		assertAnswerSetsWithBase(program,
+				"potential_thing(-2), potential_thing(-1), potential_thing(0), potential_thing(1), two_things_chosen",
+				"thing(-2), thing(-1), sum_things(-3)",
+				"thing(-2), thing(0), sum_things(-2)",
+				"thing(-2), thing(1), sum_things(-1)",
+				"thing(-1), thing(0), sum_things(-1)",
+				"thing(-1), thing(1), sum_things(0)",
+				"thing(0), thing(1), sum_things(1)");
 	}
 
 	@Test
