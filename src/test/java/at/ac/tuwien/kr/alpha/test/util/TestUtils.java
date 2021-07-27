@@ -127,6 +127,7 @@ public class TestUtils {
 		retVal.setDebugInternalChecks(cfg.isDebugChecks());
 		retVal.setEvaluateStratifiedPart(cfg.isEvaluateStratifiedPart());
 		retVal.setGrounderAccumulatorEnabled(cfg.isDisableInstanceRemoval());
+		retVal.setUseNormalizationGrid(!cfg.isEncodeAggregatesUsingSortingGrid());
 		return retVal;
 	}
 	
