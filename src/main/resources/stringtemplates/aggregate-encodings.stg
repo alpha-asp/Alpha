@@ -167,6 +167,7 @@ cnt_le_counting_grid (id, result_predicate, element_tuple, bound )::=<<
  */
 sum_le (id, result_predicate, element_tuple, bound )::=<<
 	#enumeration_predicate_is enum.
+	$! TODO since the sum could contain negative elements, we need to calculate the full sum also for le comparison !$
 	$! We have found a result when either the bound is LEQ zero or we have a candidate that, added to an intermediate sum exceeds the bound !$
 	$result_predicate$(ARGS, K) :- $bound$(ARGS, K), K <= 0.
 	$result_predicate$(ARGS, K) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, $id$_input_value_at_index(ARGS, F, I), $bound$(ARGS, K), K <= S + F.
@@ -198,21 +199,26 @@ sum_le (id, result_predicate, element_tuple, bound )::=<<
 sum_eq (id, result_predicate, element_tuple, bound )::=<<
 	#enumeration_predicate_is enum.
 
-	$! The first term of each aggregate element goes into the sum !$
-	$id$_input_value_at_index(ARGS, VAL, IDX) :- $element_tuple$(ARGS, TPL, VAL), enum(ARGS, TPL, IDX).
+    $! Separate positive and negative input values for separate summation !$
+    $id$_pos_input_value_at_index(ARGS, VAL, IDX) :- $element_tuple$(ARGS, TPL, VAL), enum(sum_elements(ARGS, pos), TPL, IDX), VAL >= 0.
+    $id$_neg_input_value_at_index(ARGS, VAL * -1, IDX) :- $element_tuple$(ARGS, TPL, VAL), enum(sum_elements(ARGS, neg), TPL, IDX), VAL < 0.
 
-	$! Calculate intermediate sums. Each tuple can be true or false, i.e. contribute zero or its value to the sum. !$
-	$id$_interesting_index(ARGS, I1) :- $id$_input_value_at_index(ARGS, _, I), I1 = I - 1.
-	$id$_interesting_index(ARGS, Im1) :- Im1 = I-1, I > 1, $id$_interesting_index(ARGS, I).
-	$id$_partial_sum_at_index(ARGS, 0, 0) :- $id$_input_value_at_index(ARGS, _, _).
-	$id$_partial_sum_at_index(ARGS, S, I) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, $id$_interesting_index(ARGS, I).
-	$id$_partial_sum_at_index(ARGS, SF, I) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, SF = S + F, $id$_input_value_at_index(ARGS, F, I).
+    $! include encoding for actual summation of positive and negative input values!$
+	$partial_sums(id=id, tag="pos", bound=bound)$
+	$partial_sums(id=id, tag="neg", bound=bound)$
 
-	$!Fallback rule - even if no element tuple exists, the sum is still zero!$
-	$id$_partial_sum_at_index(ARGS, 0, 0) :- $bound$(ARGS, _).
+    $! The actual sum is the result of subtracting the sum of all negative values from all positive values !$
+    $result_predicate$(ARGS, SUM) :- $id$_pos_result(ARGS, POS_SUM), $id$_neg_result(ARGS, NEG_SUM), SUM = POS_SUM - NEG_SUM.
+>>
 
-	$! Now find the maximum partial sum, which is the real sum !$
-	$id$_partial_sum_less_than(ARGS, LESS, THAN) :- $id$_partial_sum_at_index(ARGS, LESS, _), $id$_partial_sum_at_index(ARGS, THAN, _), LESS < THAN.
-	$id$_partial_sum_has_greater(ARGS, P_SUM) :- $id$_partial_sum_less_than(ARGS, P_SUM, _).
-	$result_predicate$(ARGS, SUM) :- $id$_partial_sum_at_index(ARGS, SUM, _), not $id$_partial_sum_has_greater(ARGS, SUM).
+partial_sums(id, tag, bound) ::=<<
+    $id$_$tag$_interesting_index(ARGS, I1) :- $id$_$tag$_input_value_at_index(ARGS, _, I), I1 = I - 1.
+    $id$_$tag$_interesting_index(ARGS, Im1) :- Im1 = I - 1, I > 1, $id$_$tag$_interesting_index(ARGS, I).
+    $id$_$tag$_partial_sum_at_index(ARGS, 0, 0) :- $id$_$tag$_input_value_at_index(ARGS, _, _).
+    $id$_$tag$_partial_sum_at_index(ARGS, S, I) :- $id$_$tag$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, $id$_$tag$_interesting_index(ARGS, I).
+    $id$_$tag$_partial_sum_at_index(ARGS, SF, I) :- $id$_$tag$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, SF = S + F, $id$_$tag$_input_value_at_index(ARGS, F, I).
+    $id$_$tag$_partial_sum_at_index(ARGS, 0, 0) :- $bound$(ARGS, _).
+    $id$_$tag$_partial_sum_less_than(ARGS, LESS, THAN) :- $id$_$tag$_partial_sum_at_index(ARGS, LESS, _), $id$_$tag$_partial_sum_at_index(ARGS, THAN, _), LESS < THAN.
+    $id$_$tag$_partial_sum_has_greater(ARGS, P_SUM) :- $id$_$tag$_partial_sum_less_than(ARGS, P_SUM, _).
+    $id$_$tag$_result(ARGS, SUM) :- $id$_$tag$_partial_sum_at_index(ARGS, SUM, _), not $id$_$tag$_partial_sum_has_greater(ARGS, SUM).
 >>
