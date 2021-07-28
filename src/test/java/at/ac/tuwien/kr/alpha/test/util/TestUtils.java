@@ -128,6 +128,8 @@ public class TestUtils {
 		retVal.setEvaluateStratifiedPart(cfg.isEvaluateStratifiedPart());
 		retVal.setGrounderAccumulatorEnabled(cfg.isDisableInstanceRemoval());
 		retVal.setUseNormalizationGrid(!cfg.isEncodeAggregatesUsingSortingGrid());
+		retVal.setGrounderToleranceRules(cfg.getGrounderToleranceRules());
+		retVal.setGrounderToleranceConstraints(cfg.getGrounderToleranceConstraints());
 		return retVal;
 	}
 	
