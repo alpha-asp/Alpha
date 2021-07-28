@@ -72,7 +72,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void testObjectProgram(RegressionTestConfig cfg) throws IOException {
+	public void testObjectProgram(RegressionTestConfig cfg) {
 		final Thingy thingy = new Thingy();
 
 		final Atom fact = new BasicAtom(Predicate.getInstance("foo", 1), ConstantTerm.getInstance(thingy));
@@ -89,7 +89,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void testFactsOnlyProgram(RegressionTestConfig cfg) throws IOException {
+	public void testFactsOnlyProgram(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
 			"p(a). p(b). foo(13). foo(16). q(a). q(c).",
 
@@ -99,7 +99,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void testSimpleRule(RegressionTestConfig cfg) throws Exception {
+	public void testSimpleRule(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
 			"p(a). p(b). r(X) :- p(X).",
 
@@ -109,7 +109,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void testSimpleRuleWithGroundPart(RegressionTestConfig cfg) throws Exception {
+	public void testSimpleRuleWithGroundPart(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
 			"p(1)." +
 				"p(2)." +
@@ -121,7 +121,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void testProgramZeroArityPredicates(RegressionTestConfig cfg) throws Exception {
+	public void testProgramZeroArityPredicates(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
 			"a. p(X) :- b, r(X).",
 
@@ -131,7 +131,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void testChoiceGroundProgram(RegressionTestConfig cfg) throws Exception {
+	public void testChoiceGroundProgram(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSets(
 			cfg,
 			"a :- not b. b :- not a.",
@@ -142,7 +142,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void testChoiceProgramNonGround(RegressionTestConfig cfg) throws Exception {
+	public void testChoiceProgramNonGround(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSetsWithBase(
 			cfg,
 			"dom(1). dom(2). dom(3)." +
@@ -163,7 +163,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void choiceProgram3Way(RegressionTestConfig cfg) throws IOException {
+	public void choiceProgram3Way(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSets(
 			cfg,
 			"a :- not b, not c." +
@@ -177,12 +177,12 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void emptyProgramYieldsEmptyAnswerSet(RegressionTestConfig cfg) throws IOException {
+	public void emptyProgramYieldsEmptyAnswerSet(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSets(cfg, "", "");
 	}
 
 	@RegressionTest
-	public void chooseMultipleAnswerSets(RegressionTestConfig cfg) throws IOException {
+	public void chooseMultipleAnswerSets(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSets(
 			cfg,
 			"a :- not nota." +
@@ -204,7 +204,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void builtinAtoms(RegressionTestConfig cfg) throws IOException {
+	public void builtinAtoms(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
 			"dom(1). dom(2). dom(3). dom(4). dom(5)." +
 			"p(X) :- dom(X), X = 4." +
@@ -216,7 +216,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void builtinAtomsGroundRule(RegressionTestConfig cfg) throws IOException {
+	public void builtinAtomsGroundRule(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
 			"a :- 13 != 4." +
 			"b :- 2 != 3, 2 = 3." +
@@ -229,7 +229,7 @@ public class SolverTests {
 
 	
 	@RegressionTest
-	public void choiceProgramConstraintSimple(RegressionTestConfig cfg) throws IOException {
+	public void choiceProgramConstraintSimple(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
 				"fact(a).\n" + 
 				"choice(either, X) :- fact(X), not choice(or, X).\n" + 
@@ -242,7 +242,7 @@ public class SolverTests {
 	}
 	
 	@RegressionTest
-	public void choiceProgramConstraintSimple2(RegressionTestConfig cfg) throws IOException {
+	public void choiceProgramConstraintSimple2(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
 				"fact(a).\n" + 
 				"desired(either).\n" + 
@@ -256,7 +256,7 @@ public class SolverTests {
 	}
 	
 	@RegressionTest
-	public void choiceProgramConstraint(RegressionTestConfig cfg) throws IOException {
+	public void choiceProgramConstraint(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSetsWithBase(
 			cfg,
 			"eq(1,1)." +
@@ -282,7 +282,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void choiceProgramConstraintPermutation(RegressionTestConfig cfg) throws IOException {
+	public void choiceProgramConstraintPermutation(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSetsWithBase(
 		cfg,
 		"eq(1,1)." +
@@ -308,7 +308,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void simpleNoPropagation(RegressionTestConfig cfg) throws IOException {
+	public void simpleNoPropagation(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
 			"val(1,1)." +
 			"val(2,2)." +
@@ -320,7 +320,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void choiceAndPropagationAfterwards(RegressionTestConfig cfg) throws IOException {
+	public void choiceAndPropagationAfterwards(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSetsWithBase(
 			cfg,
 			"node(a)." +
@@ -339,7 +339,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void choiceAndConstraints(RegressionTestConfig cfg) throws IOException {
+	public void choiceAndConstraints(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSetsWithBase(
 			cfg,
 			"node(a)." +
@@ -358,12 +358,12 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void testUnsatisfiableProgram(RegressionTestConfig cfg) throws IOException {
+	public void testUnsatisfiableProgram(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSets(cfg, "p(a). p(b). :- p(a), p(b).");
 	}
 
 	@RegressionTest
-	public void testFunctionTermEquality(RegressionTestConfig cfg) throws IOException {
+	public void testFunctionTermEquality(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
 			"r1(f(a,b)). r2(f(a,b)). a :- r1(X), r2(Y), X = Y.",
 
@@ -373,7 +373,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void builtinInequality(RegressionTestConfig cfg) throws IOException {
+	public void builtinInequality(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSetsWithBase(
 			cfg,
 			"location(a1)." +
@@ -396,7 +396,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void choiceConstraintsInequality(RegressionTestConfig cfg) throws IOException {
+	public void choiceConstraintsInequality(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSetsWithBase(
 			cfg,
 			"assign(L, R) :- not nassign(L, R), possible(L, R)." +
@@ -454,7 +454,7 @@ public class SolverTests {
 	}
 	
 	@RegressionTest
-	public void sameVariableTwiceInAtom(RegressionTestConfig cfg) throws IOException {
+	public void sameVariableTwiceInAtom(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSets(
 			cfg,
 			"p(a, a)." +
@@ -465,7 +465,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void sameVariableTwiceInAtomConstraint(RegressionTestConfig cfg) throws IOException {
+	public void sameVariableTwiceInAtomConstraint(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSets(
 			cfg,
 			"p(a, a)." +
@@ -474,7 +474,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void noPositiveSelfFounding(RegressionTestConfig cfg) throws IOException {
+	public void noPositiveSelfFounding(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSets(
 			cfg,
 			"a :- b." +
@@ -484,7 +484,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void noPositiveCycleSelfFoundingChoice(RegressionTestConfig cfg) throws IOException {
+	public void noPositiveCycleSelfFoundingChoice(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSets(
 			cfg,
 			"c :- not d." +
@@ -496,7 +496,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void conflictFromUnaryNoGood(RegressionTestConfig cfg) throws IOException {
+	public void conflictFromUnaryNoGood(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
 			"d(b)." +
 			"sel(X) :- not nsel(X), d(X)." +
@@ -510,7 +510,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void intervalsInFacts(RegressionTestConfig cfg) throws IOException {
+	public void intervalsInFacts(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSets(
 			cfg,
 			"a." +
@@ -547,7 +547,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void intervalInRules(RegressionTestConfig cfg) throws IOException {
+	public void intervalInRules(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSets(
 			cfg,
 			"a :- 3 = 1..4 ." +
@@ -568,7 +568,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void emptyIntervals(RegressionTestConfig cfg) throws IOException {
+	public void emptyIntervals(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSets(
 			cfg,
 			"p(3..1)." +
@@ -579,7 +579,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void intervalInFunctionTermsInRules(RegressionTestConfig cfg) throws IOException {
+	public void intervalInFunctionTermsInRules(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSets(
 			cfg,
 			"a :- q(f(1..3,g(4..5)))." +
@@ -604,7 +604,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void groundAtomInRule(RegressionTestConfig cfg) throws IOException {
+	public void groundAtomInRule(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
 			"p :- dom(X), q, q2." +
 				"dom(1)." +
@@ -620,7 +620,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void simpleChoiceRule(RegressionTestConfig cfg) throws IOException {
+	public void simpleChoiceRule(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSetsWithBase(
 			cfg,
 			"{ a; b; c} :- d." +
@@ -639,7 +639,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void conditionalChoiceRule(RegressionTestConfig cfg) throws IOException {
+	public void conditionalChoiceRule(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSetsWithBase(
 			cfg,
 			"dom(1..3)." +
@@ -663,7 +663,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void doubleChoiceRule(RegressionTestConfig cfg) throws IOException {
+	public void doubleChoiceRule(RegressionTestConfig cfg) {
 		Solver solver = buildSolverForRegressionTest("{ a }. { a }.", cfg);
 		// Make sure that no superfluous answer sets that only differ on hidden atoms occur.
 		List<AnswerSet> actual = solver.collectList();
@@ -672,7 +672,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void simpleArithmetics(RegressionTestConfig cfg) throws IOException {
+	public void simpleArithmetics(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet("eight(X) :- X = 4 + 5 - 1." +
 			"three(X) :- X = Z, Y = 1..10, Z = Y / 3, Z > 2, Z < 4.",
 
@@ -681,7 +681,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void arithmeticsMultiplicationBeforeAddition(RegressionTestConfig cfg) throws IOException {
+	public void arithmeticsMultiplicationBeforeAddition(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet("seven(X) :- 1+2 * 3 = X.",
 
 			"seven(7)",
@@ -692,7 +692,7 @@ public class SolverTests {
 	 * Tests the fix for issue #101
 	 */
 	@RegressionTest
-	public void involvedUnsatisfiableProgram(RegressionTestConfig cfg) throws IOException {
+	public void involvedUnsatisfiableProgram(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSets(
 			cfg,	
 			"x :- c1, c2, not x." +
@@ -707,7 +707,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void instanceEnumerationAtom(RegressionTestConfig cfg) throws IOException {
+	public void instanceEnumerationAtom(RegressionTestConfig cfg) {
 		Set<AnswerSet> answerSets = buildSolverForRegressionTest("# enumeration_predicate_is enum." +
 			"dom(1). dom(2). dom(3)." +
 			"p(X) :- dom(X)." +
@@ -724,7 +724,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void instanceEnumerationArbitraryTerms(RegressionTestConfig cfg) throws IOException {
+	public void instanceEnumerationArbitraryTerms(RegressionTestConfig cfg) {
 		Set<AnswerSet> answerSets = buildSolverForRegressionTest("# enumeration_predicate_is enum." +
 			"dom(a). dom(f(a,b)). dom(d)." +
 			"p(X) :- dom(X)." +
@@ -741,7 +741,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void instanceEnumerationMultipleIdentifiers(RegressionTestConfig cfg) throws IOException {
+	public void instanceEnumerationMultipleIdentifiers(RegressionTestConfig cfg) {
 		Set<AnswerSet> answerSets = buildSolverForRegressionTest("# enumeration_predicate_is enum." +
 			"dom(a). dom(b). dom(c). dom(d)." +
 			"p(X) :- dom(X)." +

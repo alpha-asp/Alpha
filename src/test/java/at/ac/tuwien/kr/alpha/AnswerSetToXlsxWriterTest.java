@@ -30,7 +30,7 @@ public class AnswerSetToXlsxWriterTest {
 		writer.accept(0, as);
 		File tmpDirFile = tmpDir.toFile();
 		File[] generatedFiles = tmpDirFile.listFiles();
-		assertEquals(generatedFiles.length, 1);
+		assertEquals(1, generatedFiles.length);
 		File answerSetFile = generatedFiles[0];
 		assertEquals("alphaAnswerSet.0.xlsx", answerSetFile.getName());
 		Workbook wb = WorkbookFactory.create(answerSetFile);
