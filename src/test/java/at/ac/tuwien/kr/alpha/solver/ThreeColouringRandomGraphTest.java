@@ -28,7 +28,6 @@ package at.ac.tuwien.kr.alpha.solver;
 import static at.ac.tuwien.kr.alpha.test.util.TestUtils.buildSolverForRegressionTest;
 import static at.ac.tuwien.kr.alpha.test.util.TestUtils.runWithTimeout;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -50,54 +49,54 @@ public class ThreeColouringRandomGraphTest {
 	private static final long DEBUG_TIMEOUT_FACTOR = 5;
 	
 	@RegressionTest
-	public void testV3E3(RegressionTestConfig cfg) throws IOException {
+	public void testV3E3(RegressionTestConfig cfg) {
 		long timeout = 1000L;
-		runWithTimeout(() -> testThreeColouring(3, 3, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(3, 3, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testV10E18(RegressionTestConfig cfg) throws IOException {
+	public void testV10E18(RegressionTestConfig cfg) {
 		long timeout = 10000L;
-		runWithTimeout(() -> testThreeColouring(10, 18, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(10, 18, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testV20E38(RegressionTestConfig cfg) throws IOException {
+	public void testV20E38(RegressionTestConfig cfg) {
 		long timeout = 10000L;
-		runWithTimeout(() -> testThreeColouring(20, 38, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(20, 38, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testV30E48(RegressionTestConfig cfg) throws IOException {
+	public void testV30E48(RegressionTestConfig cfg) {
 		long timeout = 10000L;
-		runWithTimeout(() -> testThreeColouring(30, 48, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(30, 48, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testV200E300(RegressionTestConfig cfg) throws IOException {
+	public void testV200E300(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testThreeColouring(200, 300, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(200, 300, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testV300E200(RegressionTestConfig cfg) throws IOException {
+	public void testV300E200(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testThreeColouring(300, 200, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(300, 200, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testV300E300(RegressionTestConfig cfg) throws IOException {
+	public void testV300E300(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testThreeColouring(300, 300, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(300, 300, cfg));
 	}
 
-	private void testThreeColouring(int nVertices, int nEdges, RegressionTestConfig cfg) throws IOException {
+	private void testThreeColouring(int nVertices, int nEdges, RegressionTestConfig cfg) {
 		InputProgram tmpPrg = new ProgramParser().parse(
 				"blue(N) :- v(N), not red(N), not green(N)." +
 				"red(N) :- v(N), not blue(N), not green(N)." +
@@ -111,12 +110,14 @@ public class ThreeColouringRandomGraphTest {
 		InputProgram program = prgBuilder.build();
 		maybeShuffle(program);
 
+		@SuppressWarnings("unused")
 		Optional<AnswerSet> answerSet = buildSolverForRegressionTest(program, cfg).stream().findAny();
 		//System.out.println(answerSet);
 
 		// TODO: check correctness of answer set
 	}
 
+	@SuppressWarnings("unused")
 	private void maybeShuffle(InputProgram program) {
 
 		// TODO: switch on if different rule orderings in the encoding are desired (e.g. for benchmarking purposes)

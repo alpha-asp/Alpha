@@ -68,27 +68,27 @@ public class TrailAssignmentTest {
 	}
 
 	@Test
-	public void assign() throws Exception {
+	public void assign() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			assignment.assign(0, null);
 		});
 	}
 
 	@Test
-	public void negativeAtomThrows() throws Exception {
+	public void negativeAtomThrows() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			assignment.assign(-1, null);
 		});
 	}
 
 	@Test
-	public void alreadyAssignedThrows() throws Exception {
+	public void alreadyAssignedThrows() {
 		assertNull(assignment.assign(1, MBT));
 		assertNotNull(assignment.assign(1, FALSE));
 	}
 
 	@Test
-	public void initializeDecisionLevelState() throws Exception {
+	public void initializeDecisionLevelState() {
 		assignment.assign(1, MBT);
 		assignment.choose(2, MBT);
 		assignment.choose(1, TRUE);
@@ -156,7 +156,7 @@ public class TrailAssignmentTest {
 	}
 
 	@Test
-	public void assignmentsToProcess() throws Exception {
+	public void assignmentsToProcess() {
 		assignment.assign(1, MBT);
 
 		Assignment.Pollable queue = assignment.getAssignmentsToProcess();
@@ -173,7 +173,7 @@ public class TrailAssignmentTest {
 	}
 
 	@Test
-	public void newAssignmentsIteratorAndBacktracking() throws Exception {
+	public void newAssignmentsIteratorAndBacktracking() {
 		IntIterator newAssignmentsIterator;
 
 		assignment.assign(1, MBT);
@@ -196,7 +196,7 @@ public class TrailAssignmentTest {
 	}
 
 	@Test
-	public void newAssignmentsIteratorLowerDecisionLevelAndBacktracking() throws Exception {
+	public void newAssignmentsIteratorLowerDecisionLevelAndBacktracking() {
 		IntIterator newAssignmentsIterator;
 
 		assignment.choose(1, MBT);
@@ -211,7 +211,7 @@ public class TrailAssignmentTest {
 	}
 
 	@Test
-	public void iteratorAndBacktracking() throws Exception {
+	public void iteratorAndBacktracking() {
 		Assignment.Pollable assignmentsToProcess = assignment.getAssignmentsToProcess();
 
 		assignment.assign(1, MBT);
@@ -248,7 +248,7 @@ public class TrailAssignmentTest {
 	}
 
 	@Test
-	public void numberOfAssignedAtoms() throws Exception {
+	public void numberOfAssignedAtoms() {
 		assignment.assign(1, MBT);
 		assertEquals(1, assignment.getNumberOfAssignedAtoms());
 		assignment.assign(2, FALSE);

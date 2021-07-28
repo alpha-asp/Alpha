@@ -28,7 +28,6 @@ package at.ac.tuwien.kr.alpha.solver;
 import static at.ac.tuwien.kr.alpha.test.util.TestUtils.buildSolverForRegressionTest;
 import static at.ac.tuwien.kr.alpha.test.util.TestUtils.runWithTimeout;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -56,46 +55,46 @@ public class ThreeColouringWheelTest {
 	private static final long DEBUG_TIMEOUT_FACTOR = 5;
 	
 	@RegressionTest
-	public void testN4(RegressionTestConfig cfg) throws IOException {
+	public void testN4(RegressionTestConfig cfg) {
 		long timeout = 1000L;
-		runWithTimeout(() -> testThreeColouring(4, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(4, cfg));
 	}
 
 	@RegressionTest
-	public void testN5(RegressionTestConfig cfg) throws IOException {
+	public void testN5(RegressionTestConfig cfg) {
 		long timeout = 1000L;
-		runWithTimeout(() -> testThreeColouring(5, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(5, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN6(RegressionTestConfig cfg) throws IOException {
+	public void testN6(RegressionTestConfig cfg) {
 		long timeout = 6000L;
-		runWithTimeout(() -> testThreeColouring(6, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(6, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN3(RegressionTestConfig cfg) throws IOException {
+	public void testN3(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testThreeColouring(3, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(3, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN7(RegressionTestConfig cfg) throws IOException {
+	public void testN7(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testThreeColouring(7, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(7, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN11(RegressionTestConfig cfg) throws IOException {
+	public void testN11(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testThreeColouring(11, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(11, cfg));
 	}
 
-	private void testThreeColouring(int n, RegressionTestConfig cfg) throws IOException {
+	private void testThreeColouring(int n, RegressionTestConfig cfg) {
 		InputProgram tmpPrg = new ProgramParser().parse(
 				"col(V,C) :- v(V), c(C), not ncol(V,C)." +
 				"ncol(V,C) :- col(V,D), c(C), C != D." +
@@ -110,12 +109,14 @@ public class ThreeColouringWheelTest {
 
 		Solver solver = buildSolverForRegressionTest(program, cfg);
 
+		@SuppressWarnings("unused")
 		Optional<AnswerSet> answerSet = solver.stream().findAny();
 		//System.out.println(answerSet);
 
 		// TODO: check correctness of answer set
 	}
 
+	@SuppressWarnings("unused")
 	private void maybeShuffle(InputProgram program) {
 		// FIXME since InputProgram is immutable this needs to be reworked a bit if used
 		// No shuffling here.

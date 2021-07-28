@@ -28,7 +28,6 @@ package at.ac.tuwien.kr.alpha.solver;
 import static at.ac.tuwien.kr.alpha.test.util.TestUtils.buildSolverForRegressionTest;
 import static at.ac.tuwien.kr.alpha.test.util.TestUtils.runWithTimeout;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,130 +57,130 @@ public class ThreeColouringTestWithRandom {
 	private static final long DEBUG_TIMEOUT_FACTOR = 5;
 	
 	@RegressionTest
-	public void testN3(RegressionTestConfig cfg) throws IOException {
+	public void testN3(RegressionTestConfig cfg) {
 		long timeout = 3000L;
-		runWithTimeout(() -> testThreeColouring(3, false, 0, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(3, false, 0, cfg));
 	}
 
 	@RegressionTest
-	public void testN4(RegressionTestConfig cfg) throws IOException {
+	public void testN4(RegressionTestConfig cfg) {
 		long timeout = 4000L;
-		runWithTimeout(() -> testThreeColouring(4, false, 0, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(4, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN5(RegressionTestConfig cfg) throws IOException {
+	public void testN5(RegressionTestConfig cfg) {
 		long timeout = 5000L;
-		runWithTimeout(() -> testThreeColouring(5, false, 0, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(5, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN6(RegressionTestConfig cfg) throws IOException {
+	public void testN6(RegressionTestConfig cfg) {
 		long timeout = 6000L;
-		runWithTimeout(() -> testThreeColouring(6, false, 0, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(6, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN7(RegressionTestConfig cfg) throws IOException {
+	public void testN7(RegressionTestConfig cfg) {
 		long timeout = 7000L;
-		runWithTimeout(() -> testThreeColouring(7, false, 0, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(7, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN8(RegressionTestConfig cfg) throws IOException {
+	public void testN8(RegressionTestConfig cfg) {
 		long timeout = 8000L;
-		runWithTimeout(() -> testThreeColouring(8, false, 0, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(8, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN9(RegressionTestConfig cfg) throws IOException {
+	public void testN9(RegressionTestConfig cfg) {
 		long timeout = 9000L;
-		runWithTimeout(() -> testThreeColouring(9, false, 0, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(9, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN10(RegressionTestConfig cfg) throws IOException {
+	public void testN10(RegressionTestConfig cfg) {
 		long timeout = 10000L;
-		runWithTimeout(() -> testThreeColouring(10, false, 0, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(10, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN10Random0(RegressionTestConfig cfg) throws IOException {
+	public void testN10Random0(RegressionTestConfig cfg) {
 		long timeout = 10000L;
-		runWithTimeout(() -> testThreeColouring(10, true, 0, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(10, true, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN10Random1(RegressionTestConfig cfg) throws IOException {
+	public void testN10Random1(RegressionTestConfig cfg) {
 		long timeout = 10000L;
-		runWithTimeout(() -> testThreeColouring(10, true, 1, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(10, true, 1, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN10Random2(RegressionTestConfig cfg) throws IOException {
+	public void testN10Random2(RegressionTestConfig cfg) {
 		long timeout = 10000L;
-		runWithTimeout(() -> testThreeColouring(10, true, 2, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(10, true, 2, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN10Random3(RegressionTestConfig cfg) throws IOException {
+	public void testN10Random3(RegressionTestConfig cfg) {
 		long timeout = 10000L;
-		runWithTimeout(() -> testThreeColouring(10, true, 3, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(10, true, 3, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN19(RegressionTestConfig cfg) throws IOException {
+	public void testN19(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testThreeColouring(19, false, 0, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(19, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN19Random0(RegressionTestConfig cfg) throws IOException {
+	public void testN19Random0(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testThreeColouring(19, true, 0, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(19, true, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN19Random1(RegressionTestConfig cfg) throws IOException {
+	public void testN19Random1(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testThreeColouring(19, true, 1, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(19, true, 1, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN19Random2(RegressionTestConfig cfg) throws IOException {
+	public void testN19Random2(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testThreeColouring(19, true, 2, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(19, true, 2, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN19Random3(RegressionTestConfig cfg) throws IOException {
+	public void testN19Random3(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testThreeColouring(19, true, 3, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(19, true, 3, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN101(RegressionTestConfig cfg) throws IOException {
+	public void testN101(RegressionTestConfig cfg) {
 		long timeout = 10000L;
-		runWithTimeout(() -> testThreeColouring(101, false, 0, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(101, false, 0, cfg));
 	}
 
-	private void testThreeColouring(int n, boolean shuffle, int seed, RegressionTestConfig cfg) throws IOException {
+	private void testThreeColouring(int n, boolean shuffle, int seed, RegressionTestConfig cfg) {
 		InputProgram tmpPrg = new ProgramParser()
 				.parse("col(V,C) :- v(V), c(C), not ncol(V,C)." + "ncol(V,C) :- col(V,D), c(C), C != D." + ":- e(V,U), col(V,C), col(U,C).");
 		InputProgram.Builder prgBuilder = InputProgram.builder().accumulate(tmpPrg);
@@ -191,6 +190,7 @@ public class ThreeColouringTestWithRandom {
 		InputProgram program = prgBuilder.build();
 
 		Solver solver = buildSolverForRegressionTest(program, cfg);
+		@SuppressWarnings("unused")
 		Optional<AnswerSet> answerSet = solver.stream().findAny();
 		// System.out.println(answerSet);
 		// TODO: check correctness of answer set

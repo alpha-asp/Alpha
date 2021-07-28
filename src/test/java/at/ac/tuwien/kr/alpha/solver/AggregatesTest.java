@@ -29,8 +29,6 @@ import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnsw
 import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnswerSets;
 import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnswerSetsWithBase;
 
-import java.io.IOException;
-
 import at.ac.tuwien.kr.alpha.grounder.transformation.CardinalityNormalization;
 import at.ac.tuwien.kr.alpha.grounder.transformation.SumNormalization;
 
@@ -43,14 +41,14 @@ public abstract class AggregatesTest {
 	private static final String LS = System.lineSeparator();
 	
 	@AggregateRegressionTest
-	public void testAggregate_Count_Ground_Positive(RegressionTestConfig cfg) throws IOException {
+	public void testAggregate_Count_Ground_Positive(RegressionTestConfig cfg) {
 		String program = "a." + LS
 				+ "b :- 1 <= #count { 1 : a }.";
 		assertRegressionTestAnswerSet(program, "a,b", cfg);
 	}
 	
 	@AggregateRegressionTest
-	public void testAggregate_Count_Ground_Negative(RegressionTestConfig cfg) throws IOException {
+	public void testAggregate_Count_Ground_Negative(RegressionTestConfig cfg) {
 		String program = "{a}." + LS
 				+ "b :- not c." + LS
 				+ "c :- 1 <= #count { 1 : a }.";
@@ -58,7 +56,7 @@ public abstract class AggregatesTest {
 	}
 	
 	@AggregateRegressionTest
-	public void testAggregate_Count_NonGround_Positive(RegressionTestConfig cfg) throws IOException {
+	public void testAggregate_Count_NonGround_Positive(RegressionTestConfig cfg) {
 		String program = "n(1..3)." + LS
 				+ "{x(N)} :- n(N)." + LS
 				+ "min(3)." + LS
@@ -69,7 +67,7 @@ public abstract class AggregatesTest {
 	}
 	
 	@AggregateRegressionTest
-	public void testAggregate_Count_NonGround_LowerAndUpper(RegressionTestConfig cfg) throws IOException {
+	public void testAggregate_Count_NonGround_LowerAndUpper(RegressionTestConfig cfg) {
 		String program = "n(1..3)." + LS
 				+ "{x(N)} :- n(N)." + LS
 				+ "min(2)." + LS
@@ -83,14 +81,14 @@ public abstract class AggregatesTest {
 	}
 	
 	@AggregateRegressionTest
-	public void testAggregate_Sum_Ground_Lower(RegressionTestConfig cfg) throws IOException {
+	public void testAggregate_Sum_Ground_Lower(RegressionTestConfig cfg) {
 		String program = "a." + LS
 				+ "b :- 5 <= #sum { 2 : a; 3 }.";
 		assertRegressionTestAnswerSet(program, "a,b", cfg);
 	}
 	
 	@AggregateRegressionTest
-	public void testAggregate_Sum_NonGround_LowerAndUpper(RegressionTestConfig cfg) throws IOException {
+	public void testAggregate_Sum_NonGround_LowerAndUpper(RegressionTestConfig cfg) {
 		String program = "n(1..3)." + LS
 				+ "{x(N)} :- n(N)." + LS
 				+ "min(3)." + LS
@@ -104,7 +102,7 @@ public abstract class AggregatesTest {
 	}
 	
 	@AggregateRegressionTest
-	public void testAggregate_Sum_NonGround_Lower(RegressionTestConfig cfg) throws IOException {
+	public void testAggregate_Sum_NonGround_Lower(RegressionTestConfig cfg) {
 		String program = "n(1..3)." + LS
 				+ "{x(N)} :- n(N)." + LS
 				+ "min(3)." + LS
@@ -119,7 +117,7 @@ public abstract class AggregatesTest {
 	 * TODO: Currently it is a bit tedious to compute sums. Support for equality comparison of aggregates, e.g. {@code sum(S) :- S = #sum { N : n(N), x(N) }.} is still lacking.
 	 */
 	@AggregateRegressionTest
-	public void testAggregate_Sum_Computed(RegressionTestConfig cfg) throws IOException {
+	public void testAggregate_Sum_Computed(RegressionTestConfig cfg) {
 		// Do not run this test case with the naive solver.
 		if (cfg.getSolverName().equals("naive")) {
 			return;
@@ -142,7 +140,7 @@ public abstract class AggregatesTest {
 	}
 	
 	@AggregateRegressionTest
-	public void testAggregate_Count_GlobalVariable(RegressionTestConfig cfg) throws IOException {
+	public void testAggregate_Count_GlobalVariable(RegressionTestConfig cfg) {
 		String program = "box(1..2)." + LS
 				+ "in(1,1)." + LS
 				+ "in(1,2)." + LS
@@ -153,7 +151,7 @@ public abstract class AggregatesTest {
 	}
 	
 	@AggregateRegressionTest
-	public void testAggregate_Sum_GlobalVariable(RegressionTestConfig cfg) throws IOException {
+	public void testAggregate_Sum_GlobalVariable(RegressionTestConfig cfg) {
 		String program = "box(1..2)." + LS
 				+ "item_size(I,I) :- I=1..2." + LS
 				+ "in(1,1)." + LS

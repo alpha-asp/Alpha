@@ -49,15 +49,16 @@ public class RacksTest {
 	private static final long DEBUG_TIMEOUT_FACTOR = 5;
 
 	@RegressionTest
-	public void testRacks(RegressionTestConfig cfg) throws IOException {
+	public void testRacks(RegressionTestConfig cfg) {
 		long timeout = 10000L;
-		runWithTimeout(() -> test(cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(cfg));
 	}
 
 	private void test(RegressionTestConfig cfg) throws IOException {
 		CharStream programInputStream = CharStreams.fromPath(
 				Paths.get("benchmarks", "siemens", "racks", "racks.lp"));
 		Solver solver = buildSolverForRegressionTest(new ProgramParser().parse(programInputStream), cfg);
+		@SuppressWarnings("unused")
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		// System.out.println(answerSet);
 		// TODO: check correctness of answer set

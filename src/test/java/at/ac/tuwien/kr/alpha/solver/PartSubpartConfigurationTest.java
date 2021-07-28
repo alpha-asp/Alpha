@@ -29,7 +29,6 @@ import static at.ac.tuwien.kr.alpha.test.util.TestUtils.collectRegressionTestAns
 import static at.ac.tuwien.kr.alpha.test.util.TestUtils.runWithTimeout;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -46,61 +45,61 @@ public class PartSubpartConfigurationTest {
 	private static final int DEBUG_TIMEOUT_FACTOR = 5;
 	
 	@RegressionTest
-	public void testN2(RegressionTestConfig cfg) throws IOException {
+	public void testN2(RegressionTestConfig cfg) {
 		long timeout = 1000L;
-		runWithTimeout(() -> testPartSubpart(2, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(2, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN4(RegressionTestConfig cfg) throws IOException {
+	public void testN4(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testPartSubpart(4, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(4, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN8(RegressionTestConfig cfg) throws IOException {
+	public void testN8(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testPartSubpart(8, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(8, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN16(RegressionTestConfig cfg) throws IOException {
+	public void testN16(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testPartSubpart(16, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(16, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN32(RegressionTestConfig cfg) throws IOException {
+	public void testN32(RegressionTestConfig cfg) {
 		long timeout = 61000L;
-		runWithTimeout(() -> testPartSubpart(32, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(32, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN60(RegressionTestConfig cfg) throws IOException {
+	public void testN60(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testPartSubpart(60, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(60, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN75(RegressionTestConfig cfg) throws IOException {
+	public void testN75(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testPartSubpart(75, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(75, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN100(RegressionTestConfig cfg) throws IOException {
+	public void testN100(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testPartSubpart(100, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(100, cfg));
 	}
 
-	private void testPartSubpart(int n, RegressionTestConfig cfg) throws IOException {
+	private void testPartSubpart(int n, RegressionTestConfig cfg) {
 		List<String> rules = new ArrayList<>();
 		for (int i = 1; i <= n; i++) {
 			rules.add(String.format("n(%d).", i));

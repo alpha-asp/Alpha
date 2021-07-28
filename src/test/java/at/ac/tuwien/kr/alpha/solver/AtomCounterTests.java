@@ -60,7 +60,7 @@ public class AtomCounterTests {
 	}
 
 	@Test
-	public void testGetNumberOfAtoms() throws NoSuchMethodException {
+	public void testGetNumberOfAtoms() {
 		final AtomCounter atomCounter = atomStore.getAtomCounter();
 
 		expectGetNumberOfAtoms(atomCounter, BasicAtom.class, 0);
@@ -81,7 +81,7 @@ public class AtomCounterTests {
 	}
 
 	@Test
-	public void testGetStatsByType() throws NoSuchMethodException {
+	public void testGetStatsByType() {
 		final AtomCounter atomCounter = atomStore.getAtomCounter();
 
 		createBasicAtom1();

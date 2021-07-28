@@ -30,7 +30,6 @@ import static at.ac.tuwien.kr.alpha.test.util.TestUtils.ignoreTestForNonDefaultD
 import static at.ac.tuwien.kr.alpha.test.util.TestUtils.runWithTimeout;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -48,100 +47,100 @@ public class PigeonHoleTest {
 	private static final long DEBUG_TIMEOUT_FACTOR = 5;
 	
 	@RegressionTest
-	public void test2Pigeons2Holes(RegressionTestConfig cfg) throws IOException {
+	public void test2Pigeons2Holes(RegressionTestConfig cfg) {
 		long timeout = 5000L;
 		ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
-		runWithTimeout(() -> testPigeonsHoles(2, 2, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPigeonsHoles(2, 2, cfg));
 	}
 
 	@RegressionTest
-	public void test3Pigeons2Holes(RegressionTestConfig cfg) throws IOException {
+	public void test3Pigeons2Holes(RegressionTestConfig cfg) {
 		long timeout = 5000L;
 		ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
-		runWithTimeout(() -> testPigeonsHoles(3, 2, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPigeonsHoles(3, 2, cfg));
 	}
 
 	@RegressionTest
-	public void test2Pigeons3Holes(RegressionTestConfig cfg) throws IOException {
+	public void test2Pigeons3Holes(RegressionTestConfig cfg) {
 		long timeout = 5000L;
 		ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
-		runWithTimeout(() -> testPigeonsHoles(2, 3, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPigeonsHoles(2, 3, cfg));
 	}
 
 	@RegressionTest
-	public void test3Pigeons3Holes(RegressionTestConfig cfg) throws IOException {
+	public void test3Pigeons3Holes(RegressionTestConfig cfg) {
 		long timeout = 10000L;
 		ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
-		runWithTimeout(() -> testPigeonsHoles(3, 3, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPigeonsHoles(3, 3, cfg));
 	}
 
 	@RegressionTest
-	public void test4Pigeons3Holes(RegressionTestConfig cfg) throws IOException {
+	public void test4Pigeons3Holes(RegressionTestConfig cfg) {
 		long timeout = 10000L;
 		ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
-		runWithTimeout(() -> testPigeonsHoles(4, 3, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPigeonsHoles(4, 3, cfg));
 	}
 
 	@RegressionTest
-	public void test3Pigeons4Holes(RegressionTestConfig cfg) throws IOException {
+	public void test3Pigeons4Holes(RegressionTestConfig cfg) {
 		long timeout = 10000L;
 		ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
-		runWithTimeout(() -> testPigeonsHoles(3, 4, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPigeonsHoles(3, 4, cfg));
 	}
 
 	@RegressionTest
-	public void test4Pigeons4Holes(RegressionTestConfig cfg) throws IOException {
+	public void test4Pigeons4Holes(RegressionTestConfig cfg) {
 		long timeout = 10000L;
 		ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
-		runWithTimeout(() -> testPigeonsHoles(4, 4, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPigeonsHoles(4, 4, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void test10Pigeons10Holes(RegressionTestConfig cfg) throws IOException {
+	public void test10Pigeons10Holes(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testPigeonsHoles(10, 10, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPigeonsHoles(10, 10, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void test19Pigeons20Holes(RegressionTestConfig cfg) throws IOException {
+	public void test19Pigeons20Holes(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testPigeonsHoles(19, 20, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPigeonsHoles(19, 20, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void test28Pigeons30Holes(RegressionTestConfig cfg) throws IOException {
+	public void test28Pigeons30Holes(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testPigeonsHoles(28, 30, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPigeonsHoles(28, 30, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void test37Pigeons40Holes(RegressionTestConfig cfg) throws IOException {
+	public void test37Pigeons40Holes(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testPigeonsHoles(37, 40, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPigeonsHoles(37, 40, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void test46Pigeons50Holes(RegressionTestConfig cfg) throws IOException {
+	public void test46Pigeons50Holes(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testPigeonsHoles(46, 50, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPigeonsHoles(46, 50, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void test55Pigeons60Holes(RegressionTestConfig cfg) throws IOException {
+	public void test55Pigeons60Holes(RegressionTestConfig cfg) {
 		long timeout = 60000L;
-		runWithTimeout(() -> testPigeonsHoles(55, 60, cfg), cfg.isDebugChecks() ? timeout * DEBUG_TIMEOUT_FACTOR : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPigeonsHoles(55, 60, cfg));
 	}
 
 	/**
 	 * Tries to solve the problem of assigning P pigeons to H holes.
 	 */
-	private void testPigeonsHoles(int pigeons, int holes, RegressionTestConfig cfg) throws IOException {
+	private void testPigeonsHoles(int pigeons, int holes, RegressionTestConfig cfg) {
 		List<String> rules = new ArrayList<>();
 		rules.add("pos(P,H) :- pigeon(P), hole(H), not negpos(P,H).");
 		rules.add("negpos(P,H) :- pigeon(P), hole(H), not pos(P,H).");

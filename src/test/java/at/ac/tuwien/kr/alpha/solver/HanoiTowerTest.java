@@ -54,6 +54,7 @@ import at.ac.tuwien.kr.alpha.test.util.TestUtils;
  */
 public class HanoiTowerTest {
 
+	@SuppressWarnings("unused")
 	private static final Logger LOGGER = LoggerFactory.getLogger(HanoiTowerTest.class);
 
 	private static final int DEBUG_TIMEOUT_FACTOR = 5;
@@ -62,38 +63,38 @@ public class HanoiTowerTest {
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testInstance1(RegressionTestConfig cfg) throws IOException {
+	public void testInstance1(RegressionTestConfig cfg) {
 		long timeout = 10000L;
-		runWithTimeout(() -> testHanoiTower(1, cfg), cfg.isDebugChecks() ? DEBUG_TIMEOUT_FACTOR * timeout : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower(1, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testInstance2(RegressionTestConfig cfg) throws IOException {
+	public void testInstance2(RegressionTestConfig cfg) {
 		long timeout = 10000L;
-		runWithTimeout(() -> testHanoiTower(2, cfg), cfg.isDebugChecks() ? DEBUG_TIMEOUT_FACTOR * timeout : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower(2, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testInstance3(RegressionTestConfig cfg) throws IOException {
+	public void testInstance3(RegressionTestConfig cfg) {
 		long timeout = 10000L;
-		runWithTimeout(() -> testHanoiTower(3, cfg), cfg.isDebugChecks() ? DEBUG_TIMEOUT_FACTOR * timeout : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower(3, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testInstance4(RegressionTestConfig cfg) throws IOException {
+	public void testInstance4(RegressionTestConfig cfg) {
 		long timeout = 10000L;
-		runWithTimeout(() -> testHanoiTower(4, cfg), cfg.isDebugChecks() ? DEBUG_TIMEOUT_FACTOR * timeout : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower(4, cfg));
 	}
 
 	@RegressionTest
-	public void testSimple(RegressionTestConfig cfg) throws IOException {
+	public void testSimple(RegressionTestConfig cfg) {
 		TestUtils.ignoreTestForNaiveSolver(cfg);
 		TestUtils.ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
 		long timeout = 60000L;
-		runWithTimeout(() -> testHanoiTower("simple", cfg), cfg.isDebugChecks() ? DEBUG_TIMEOUT_FACTOR * timeout : timeout);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower("simple", cfg));
 	}
 
 	private void testHanoiTower(int instance, RegressionTestConfig cfg) throws IOException {

@@ -2,7 +2,7 @@ package at.ac.tuwien.kr.alpha.test.util;
 
 import static java.util.Collections.emptySet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTimeout;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
@@ -176,8 +176,9 @@ public class TestUtils {
 		TestUtils.assertAnswerSetsEqualWithBase(base, answerSets, actualAnswerSets);		
 	}
 	
-	public static void runWithTimeout(Executable action, long timeoutMillis) {
-		assertTimeout(Duration.ofMillis(timeoutMillis), action);
+	public static void runWithTimeout(RegressionTestConfig cfg, long baseTimeout, long timeoutFactor, Executable action) {
+		long timeout = cfg.isDebugChecks() ? timeoutFactor * baseTimeout : baseTimeout;
+		assertTimeoutPreemptively(Duration.ofMillis(timeout), action);
 	}
 	
 	public static void ignoreTestForNaiveSolver(RegressionTestConfig cfg) {

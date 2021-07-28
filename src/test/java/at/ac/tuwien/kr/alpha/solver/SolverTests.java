@@ -36,7 +36,6 @@ import static java.util.Collections.singleton;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -779,7 +778,7 @@ public class SolverTests {
 	}
 
 	@RegressionTest
-	public void smallCardinalityAggregate(RegressionTestConfig cfg) throws IOException {
+	public void smallCardinalityAggregate(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSetsWithBase(
 			cfg,
 			"dom(1..3)." +
