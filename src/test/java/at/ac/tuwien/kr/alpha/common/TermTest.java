@@ -47,7 +47,7 @@ public class TermTest {
 		FunctionTerm tf = FunctionTerm.getInstance("f", ta, tx);
 		List<VariableTerm> occurringVariables = tf.getOccurringVariables();
 
-		assertEquals(occurringVariables.get(0), tx, "Variable occurring as subterm must be reported as occurring variable.");
+		assertEquals(tx, occurringVariables.get(0), "Variable occurring as subterm must be reported as occurring variable.");
 	}
 
 	@Test
