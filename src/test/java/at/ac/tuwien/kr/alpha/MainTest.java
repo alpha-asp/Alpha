@@ -46,7 +46,7 @@ public class MainTest {
 
 
 	
-	public static Stream<Arguments> provideArgs() {
+	private static Stream<Arguments> provideCommandLineArguments() {
 		return Stream.of(
 				Arguments.of((Object) new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "20", "-str", INPUT}),
 				Arguments.of((Object) new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "0", "-str", INPUT}),
@@ -55,12 +55,12 @@ public class MainTest {
 	}
 
 	/**
-	 * Temporarily redirects System.err and System.out while running the solver from the main entry point with the
+	 * Temporarily redirects System.out while running the solver from the main entry point with the
 	 * given parameters.
 	 * Warning: this test is fragile and may require adaptions if printing is changed anywhere in Alpha.
 	 */
 	@ParameterizedTest
-	@MethodSource("provideArgs")
+	@MethodSource("provideCommandLineArguments")
 	public void test(String[] argv) {
 		PrintStream sysOut = System.out;
 		ByteArrayOutputStream newOut = new ByteArrayOutputStream();
@@ -71,7 +71,7 @@ public class MainTest {
 	}
 
 	@ParameterizedTest
-	@MethodSource("provideArgs")
+	@MethodSource("provideCommandLineArguments")
 	public void filterTest(String[] argv) {
 		PrintStream sysOut = System.out;
 		ByteArrayOutputStream newOut = new ByteArrayOutputStream();

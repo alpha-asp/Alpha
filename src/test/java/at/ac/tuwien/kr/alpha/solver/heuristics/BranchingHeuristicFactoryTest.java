@@ -46,7 +46,6 @@ import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
  */
 public class BranchingHeuristicFactoryTest {
 
-	private final BranchingHeuristicFactory factory = new BranchingHeuristicFactory();
 	private final boolean debugInternalChecks = true;
 	private ChoiceManager choiceManager;
 
