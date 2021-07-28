@@ -47,7 +47,7 @@ public class AnswerSetToXlsxWriterTest {
 		AnswerSetToXlsxWriter.writeUnsatInfo(Paths.get(tmpDir.toString() + "/alphaAnswerSet.UNSAT.xlsx"));
 		File tmpDirFile = tmpDir.toFile();
 		File[] generatedFiles = tmpDirFile.listFiles();
-		assertEquals(generatedFiles.length, 1);
+		assertEquals(1, generatedFiles.length);
 		File unsatFile = generatedFiles[0];
 		assertEquals("alphaAnswerSet.UNSAT.xlsx", unsatFile.getName());
 		Workbook wb = WorkbookFactory.create(unsatFile);
