@@ -44,7 +44,7 @@ public abstract class AggregatesTest {
 	public void testAggregate_Count_Ground_Positive(RegressionTestConfig cfg) {
 		String program = "a." + LS
 				+ "b :- 1 <= #count { 1 : a }.";
-		assertRegressionTestAnswerSet(program, "a,b", cfg);
+		assertRegressionTestAnswerSet(cfg, program, "a,b");
 	}
 	
 	@AggregateRegressionTest
@@ -84,7 +84,7 @@ public abstract class AggregatesTest {
 	public void testAggregate_Sum_Ground_Lower(RegressionTestConfig cfg) {
 		String program = "a." + LS
 				+ "b :- 5 <= #sum { 2 : a; 3 }.";
-		assertRegressionTestAnswerSet(program, "a,b", cfg);
+		assertRegressionTestAnswerSet(cfg, program, "a,b");
 	}
 	
 	@AggregateRegressionTest

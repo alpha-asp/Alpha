@@ -163,7 +163,7 @@ public class TestUtils {
 		return collectRegressionTestAnswerSets(prog, cfg);
 	}
 
-	public static void assertRegressionTestAnswerSet(String program, String answerSet, RegressionTestConfig cfg) {
+	public static void assertRegressionTestAnswerSet(RegressionTestConfig cfg, String program, String answerSet) {
 		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
 		TestUtils.assertAnswerSetsEqual(answerSet, actualAnswerSets);
 	}

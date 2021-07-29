@@ -90,42 +90,42 @@ public class SolverTests {
 	@RegressionTest
 	public void testFactsOnlyProgram(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
+			cfg, 
 			"p(a). p(b). foo(13). foo(16). q(a). q(c).",
 
-			"q(a), q(c), p(a), p(b), foo(13), foo(16)",
-			cfg
+			"q(a), q(c), p(a), p(b), foo(13), foo(16)"
 		);
 	}
 
 	@RegressionTest
 	public void testSimpleRule(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
+			cfg, 
 			"p(a). p(b). r(X) :- p(X).",
 
-			"p(a), p(b), r(a), r(b)",
-			cfg
+			"p(a), p(b), r(a), r(b)"
 		);
 	}
 
 	@RegressionTest
 	public void testSimpleRuleWithGroundPart(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
+			cfg, 
 			"p(1)." +
 				"p(2)." +
 				"q(X) :-  p(X), p(1).",
 
-			"q(1), q(2), p(1), p(2)",
-			cfg
+			"q(1), q(2), p(1), p(2)"
 		);
 	}
 
 	@RegressionTest
 	public void testProgramZeroArityPredicates(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
+			cfg, 
 			"a. p(X) :- b, r(X).",
 
-		"a",
-		cfg
+		"a"
 		);
 	}
 
@@ -205,24 +205,24 @@ public class SolverTests {
 	@RegressionTest
 	public void builtinAtoms(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
+			cfg,
 			"dom(1). dom(2). dom(3). dom(4). dom(5)." +
 			"p(X) :- dom(X), X = 4." +
 			"r(Y) :- dom(Y), Y <= 2.",
 
-			"dom(1), dom(2), dom(3), dom(4), dom(5), p(4), r(1), r(2)",
-			cfg
+			"dom(1), dom(2), dom(3), dom(4), dom(5), p(4), r(1), r(2)"
 		);
 	}
 
 	@RegressionTest
 	public void builtinAtomsGroundRule(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
+			cfg,
 			"a :- 13 != 4." +
 			"b :- 2 != 3, 2 = 3." +
 			"c :- 2 <= 3, not 2 > 3.",
 
-			"a, c",
-			cfg
+			"a, c"
 		);
 	}
 
@@ -230,27 +230,27 @@ public class SolverTests {
 	@RegressionTest
 	public void choiceProgramConstraintSimple(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
+				cfg, 
 				"fact(a).\n" + 
 				"choice(either, X) :- fact(X), not choice(or, X).\n" + 
 				"choice(or, X) :- fact(X), not choice(either, X).\n" + 
 				":- choice(or, X).",
 				
-				"fact(a), choice(either, a)",
-				cfg
+				"fact(a), choice(either, a)"
 		);
 	}
 	
 	@RegressionTest
 	public void choiceProgramConstraintSimple2(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
+				cfg, 
 				"fact(a).\n" + 
 				"desired(either).\n" + 
 				"choice(either, X) :- fact(X), not choice(or, X).\n" + 
 				"choice(or, X) :- fact(X), not choice(either, X).\n" + 
 				":- choice(C, X), not desired(C).",
 				
-				"fact(a), desired(either), choice(either, a)",
-				cfg
+				"fact(a), desired(either), choice(either, a)"
 		);
 	}
 	
@@ -309,12 +309,12 @@ public class SolverTests {
 	@RegressionTest
 	public void simpleNoPropagation(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
+			cfg,
 			"val(1,1)." +
 			"val(2,2)." +
 			"something:- val(VAR1,VAL1), val(VAR2,VAL2), anything(VAL1,VAL2).",
 
-			"val(1, 1), val(2, 2)",
-			cfg
+			"val(1, 1), val(2, 2)"
 		);
 	}
 
@@ -364,10 +364,10 @@ public class SolverTests {
 	@RegressionTest
 	public void testFunctionTermEquality(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
+			cfg, 
 			"r1(f(a,b)). r2(f(a,b)). a :- r1(X), r2(Y), X = Y.",
 
-			"r1(f(a,b)), r2(f(a,b)), a",
-			cfg
+			"r1(f(a,b)), r2(f(a,b)), a"
 		);
 	}
 
@@ -497,14 +497,14 @@ public class SolverTests {
 	@RegressionTest
 	public void conflictFromUnaryNoGood(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
+			cfg, 
 			"d(b)." +
 			"sel(X) :- not nsel(X), d(X)." +
 			"nsel(X) :- not sel(X), d(X)." +
 			"t(a) :- sel(b)." +
 			":- t(X).",
 
-			"d(b), nsel(b)",
-			cfg
+			"d(b), nsel(b)"
 		);
 	}
 
@@ -605,6 +605,7 @@ public class SolverTests {
 	@RegressionTest
 	public void groundAtomInRule(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
+			cfg, 
 			"p :- dom(X), q, q2." +
 				"dom(1)." +
 				"q :- not nq." +
@@ -613,8 +614,7 @@ public class SolverTests {
 				"nq2 :- not q2." +
 				":- not p.",
 
-			"dom(1), p, q, q2",
-			cfg
+			"dom(1), p, q, q2"
 		);
 	}
 
@@ -672,19 +672,21 @@ public class SolverTests {
 
 	@RegressionTest
 	public void simpleArithmetics(RegressionTestConfig cfg) {
-		assertRegressionTestAnswerSet("eight(X) :- X = 4 + 5 - 1." +
+		assertRegressionTestAnswerSet(
+			cfg, 
+			"eight(X) :- X = 4 + 5 - 1." +
 			"three(X) :- X = Z, Y = 1..10, Z = Y / 3, Z > 2, Z < 4.",
 
-			"eight(8), three(3)",
-			cfg);
+			"eight(8), three(3)");
 	}
 
 	@RegressionTest
 	public void arithmeticsMultiplicationBeforeAddition(RegressionTestConfig cfg) {
-		assertRegressionTestAnswerSet("seven(X) :- 1+2 * 3 = X.",
+		assertRegressionTestAnswerSet(
+			cfg, 
+			"seven(X) :- 1+2 * 3 = X.",
 
-			"seven(7)",
-			cfg);
+			"seven(7)");
 	}
 
 	/**

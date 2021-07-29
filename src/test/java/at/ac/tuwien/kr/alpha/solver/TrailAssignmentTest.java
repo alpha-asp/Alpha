@@ -68,14 +68,14 @@ public class TrailAssignmentTest {
 	}
 
 	@Test
-	public void assign() {
+	public void assignThrowsExceptionOnNullTruth() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			assignment.assign(0, null);
 		});
 	}
 
 	@Test
-	public void negativeAtomThrows() {
+	public void negativeAtomThrowsException() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			assignment.assign(-1, null);
 		});
