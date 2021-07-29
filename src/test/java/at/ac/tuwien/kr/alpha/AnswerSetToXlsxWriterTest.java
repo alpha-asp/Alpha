@@ -33,9 +33,10 @@ public class AnswerSetToXlsxWriterTest {
 		assertEquals(1, generatedFiles.length);
 		File answerSetFile = generatedFiles[0];
 		assertEquals("alphaAnswerSet.0.xlsx", answerSetFile.getName());
-		Workbook wb = WorkbookFactory.create(answerSetFile);
-		AnswerSetToWorkbookMapperTest.assertWorkbookMatchesAnswerSet(wb, as);
-		wb.close();
+		try (Workbook wb = WorkbookFactory.create(answerSetFile)) {
+			AnswerSetToWorkbookMapperTest.assertWorkbookMatchesAnswerSet(wb, as);
+			wb.close();
+		}
 		// clean up
 		answerSetFile.delete();
 		tmpDirFile.delete();
@@ -50,14 +51,15 @@ public class AnswerSetToXlsxWriterTest {
 		assertEquals(1, generatedFiles.length);
 		File unsatFile = generatedFiles[0];
 		assertEquals("alphaAnswerSet.UNSAT.xlsx", unsatFile.getName());
-		Workbook wb = WorkbookFactory.create(unsatFile);
-		Sheet unsatSheet = wb.getSheet("Unsatisfiable");
-		assertNotNull(unsatSheet);
-		Cell cell = unsatSheet.getRow(0).getCell(0);
-		assertNotNull(cell);
-		String cellValue = cell.getStringCellValue();
-		assertEquals("Input is unsatisfiable - No answer sets!", cellValue);
-		wb.close();
+		try (Workbook wb = WorkbookFactory.create(unsatFile)) {
+			Sheet unsatSheet = wb.getSheet("Unsatisfiable");
+			assertNotNull(unsatSheet);
+			Cell cell = unsatSheet.getRow(0).getCell(0);
+			assertNotNull(cell);
+			String cellValue = cell.getStringCellValue();
+			assertEquals("Input is unsatisfiable - No answer sets!", cellValue);
+			wb.close();
+		}
 		// clean up
 		unsatFile.delete();
 		tmpDirFile.delete();

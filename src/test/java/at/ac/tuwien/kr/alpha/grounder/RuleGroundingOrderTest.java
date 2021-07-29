@@ -34,8 +34,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
@@ -53,7 +51,7 @@ public class RuleGroundingOrderTest {
 
 
 	@Test
-	public void groundingOrder() throws IOException {
+	public void groundingOrder() {
 		String aspStr = "h(X,C) :- p(X,Y), q(A,B), r(Y,A), s(C)." +
 				"j(A,B,X,Y) :- r1(A,B), r1(X,Y), r1(A,X), r1(B,Y), A = B." +
 				"p(a) :- b = a.";
@@ -77,7 +75,7 @@ public class RuleGroundingOrderTest {
 	}
 
 	@Test
-	public void groundingOrderUnsafe() throws IOException {
+	public void groundingOrderUnsafe() {
 		assertThrows(RuntimeException.class, () -> {
 			String aspStr = "h(X,C) :- X = Y, Y = C .. 3, C = X.";
 			Alpha system = new Alpha();

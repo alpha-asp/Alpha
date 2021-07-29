@@ -29,6 +29,7 @@ public class ProgramTransformationTest {
 	private ChoiceHeadToNormal choiceToNormal = new ChoiceHeadToNormal();
 	private IntervalTermToIntervalAtom intervalRewriting = new IntervalTermToIntervalAtom();
 
+	@SuppressWarnings("resource")
 	private static String readTestResource(String resource) throws IOException {
 		InputStream is = ProgramTransformationTest.class.getResourceAsStream(TESTFILES_PATH + resource);
 		BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -78,6 +79,7 @@ public class ProgramTransformationTest {
 		genericTransformationTest(intervalRewriting, NormalProgram::fromInputProgram, "interval-comparison_atom");
 	}
 
+	@SuppressWarnings("unused")
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate(name = "say_true")
 	public static boolean sayTrue(int val) {
 		// Dummy method so we can have an external in the transformation test.

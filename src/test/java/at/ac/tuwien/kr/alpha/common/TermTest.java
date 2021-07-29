@@ -51,7 +51,7 @@ public class TermTest {
 	}
 
 	@Test
-	public void testTermOrdering() throws Exception {
+	public void testTermOrdering() {
 		Term cts = ConstantTerm.getInstance("abc");
 		Term cti = ConstantTerm.getInstance(2);
 		Term cto = ConstantTerm.getInstance(new UUID(0, 0));

@@ -69,7 +69,7 @@ public class ParserTest {
 	private final ProgramParser parser = new ProgramParser();
 
 	@Test
-	public void parseFact() throws IOException {
+	public void parseFact() {
 		InputProgram parsedProgram = parser.parse("p(a,b).");
 
 		assertEquals(1, parsedProgram.getFacts().size(), "Program contains one fact.");
@@ -80,7 +80,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void parseFactWithFunctionTerms() throws IOException {
+	public void parseFactWithFunctionTerms() {
 		InputProgram parsedProgram = parser.parse("p(f(a),g(h(Y))).");
 
 		assertEquals(1, parsedProgram.getFacts().size(), "Program contains one fact.");
@@ -91,7 +91,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void parseSmallProgram() throws IOException {
+	public void parseSmallProgram() {
 		InputProgram parsedProgram = parser.parse(
 				"a :- b, not d." + System.lineSeparator() +
 						"c(X) :- p(X,a,_), q(Xaa,xaa)." + System.lineSeparator() +
@@ -101,14 +101,14 @@ public class ParserTest {
 	}
 
 	@Test
-	public void parseBadSyntax() throws IOException {
+	public void parseBadSyntax() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			parser.parse("Wrong Syntax.");
 		});
 	}
 
 	@Test
-	public void parseBuiltinAtom() throws IOException {
+	public void parseBuiltinAtom() {
 		InputProgram parsedProgram = parser.parse("a :- p(X), X != Y, q(Y).");
 		assertEquals(1, parsedProgram.getRules().size());
 		assertEquals(3, parsedProgram.getRules().get(0).getBody().size());
@@ -116,14 +116,14 @@ public class ParserTest {
 
 	@Test
 	// Change expected after Alpha can deal with disjunction.
-	public void parseProgramWithDisjunctionInHead() throws IOException {
+	public void parseProgramWithDisjunctionInHead() {
 		assertThrows(UnsupportedOperationException.class, () -> {
 			parser.parse("r(X) | q(X) :- q(X)." + System.lineSeparator() + "q(a)." + System.lineSeparator());
 		});
 	}
 
 	@Test
-	public void parseInterval() throws IOException {
+	public void parseInterval() {
 		InputProgram parsedProgram = parser.parse("fact(2..5). p(X) :- q(a, 3 .. X).");
 		IntervalTerm factInterval = (IntervalTerm) parsedProgram.getFacts().get(0).getTerms().get(0);
 		assertTrue(factInterval.equals(IntervalTerm.getInstance(ConstantTerm.getInstance(2), ConstantTerm.getInstance(5))));
@@ -132,7 +132,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void parseChoiceRule() throws IOException {
+	public void parseChoiceRule() {
 		InputProgram parsedProgram = parser.parse("dom(1). dom(2). { a ; b } :- dom(X).");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
 		assertEquals(2, choiceHead.getChoiceElements().size());
@@ -143,7 +143,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void parseChoiceRuleBounded() throws IOException {
+	public void parseChoiceRuleBounded() {
 		InputProgram parsedProgram = parser.parse("dom(1). dom(2). 1 < { a: p(v,w), not r; b } <= 13 :- dom(X). foo.");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
 		assertEquals(2, choiceHead.getChoiceElements().size());
@@ -193,7 +193,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void parseEnumerationDirective() throws IOException {
+	public void parseEnumerationDirective() {
 		InputProgram parsedProgram = parser.parse("p(a,1)." +
 				"# enumeration_predicate_is mune." +
 				"r(X) :- p(X), mune(X)." +
@@ -203,7 +203,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void cardinalityAggregate() throws IOException {
+	public void cardinalityAggregate() {
 		InputProgram parsedProgram = parser.parse("num(K) :-  K <= #count {X,Y,Z : p(X,Y,Z) }, dom(K).");
 		Optional<Literal> optionalBodyElement = parsedProgram.getRules().get(0).getBody().stream().filter((lit) -> lit instanceof AggregateLiteral).findFirst();
 		assertTrue(optionalBodyElement.isPresent());

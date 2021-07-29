@@ -24,7 +24,7 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 public class BasicAnswerSetTest {
 	
 	@Test
-	public void areAnswerSetsEqual() throws Exception {
+	public void areAnswerSetsEqual() {
 		Predicate a = Predicate.getInstance("a", 0);
 		Predicate foo = Predicate.getInstance("foo", 1);
 		SortedSet<Predicate> fooAndA = new TreeSet<>(asList(foo, a));

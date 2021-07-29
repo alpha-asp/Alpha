@@ -19,7 +19,7 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 
 public class DefaultSolverTest {
 	
-	// detailed reproduction test-case for github issue #239
+	// Detailed reproduction test-case for github issue #239.
 	@Test
 	public void testLearnedUnaryNoGoodCausingOutOfOrderLiteralsConflict() throws IOException {
 		final ProgramParser parser = new ProgramParser();

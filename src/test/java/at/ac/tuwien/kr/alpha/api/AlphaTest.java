@@ -83,6 +83,7 @@ public class AlphaTest {
 		return a == 0xF00;
 	}
 
+	@SuppressWarnings("unused")
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static boolean thinger(Thingy thingy) {
 		return true;
@@ -100,7 +101,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	public void addsFacts() throws Exception {
+	public void addsFacts() {
 		Alpha system = new Alpha();
 		Thingy a = new Thingy();
 		Thingy b = new Thingy();
@@ -112,7 +113,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	public void withExternalTypeConflict() throws Exception {
+	public void withExternalTypeConflict() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			Alpha system = new Alpha();
 			InputConfig inputCfg = InputConfig.forString("a :- &isFoo[\"adsfnfdsf\"].");
@@ -178,7 +179,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	public void smallGraphWithWrongType() throws Exception {
+	public void smallGraphWithWrongType() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			Alpha system = new Alpha();
 			InputConfig cfg = InputConfig.forString("a :- &connected[\"hello\",2].");
@@ -305,7 +306,7 @@ public class AlphaTest {
 	 * an exception is thrown.
 	 */
 	@Test
-	public void errorDuplicateExternal() throws Exception {
+	public void errorDuplicateExternal() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			InputConfig cfg = InputConfig.forString("someString.");
 			cfg.addPredicateMethods(Externals.scan(this.getClass()));

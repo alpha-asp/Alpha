@@ -166,6 +166,7 @@ public class StratifiedEvaluationTest {
 		TestUtils.assertAnswerSetsEqual("stuff(1), stuff(2), smallStuff(1)", answerSets);
 	}
 
+	@SuppressWarnings("unused")
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static boolean sayTrue(Object o) {
 		return true;

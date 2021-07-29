@@ -73,7 +73,7 @@ public class CommandLineParserTest {
 	}
 
 	@Test
-	public void invalidUsageNoInput() throws ParseException {
+	public void invalidUsageNoInput() {
 		assertThrows(ParseException.class, () -> {
 			CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
 			parser.parseCommandLine(new String[] {});
@@ -87,7 +87,7 @@ public class CommandLineParserTest {
 	}
 
 	@Test
-	public void invalidUsageMissingInputFlag() throws ParseException {
+	public void invalidUsageMissingInputFlag() {
 		assertThrows(ParseException.class, () -> {
 			CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
 			parser.parseCommandLine(new String[] {"-i", "a.b", "b.c"});
@@ -102,7 +102,7 @@ public class CommandLineParserTest {
 	}
 	
 	@Test
-	public void noInputGiven() throws ParseException {
+	public void noInputGiven() {
 		assertThrows(ParseException.class, () -> {
 			CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
 			parser.parseCommandLine(new String[] {});
@@ -117,7 +117,7 @@ public class CommandLineParserTest {
 	}
 
 	@Test
-	public void replayWithNonNumericLiteral() throws ParseException {
+	public void replayWithNonNumericLiteral() {
 		assertThrows(ParseException.class, () -> {
 			CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
 			parser.parseCommandLine(new String[]{"-str", "aString.", "-rc", "\"1, 2, x\""});

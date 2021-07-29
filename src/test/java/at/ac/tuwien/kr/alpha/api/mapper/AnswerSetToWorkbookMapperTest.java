@@ -29,12 +29,13 @@ public class AnswerSetToWorkbookMapperTest {
 	public void smokeTest() throws IOException {
 		AnswerSet as = new AnswerSetBuilder().predicate("bla").instance("blubb", "blubb").instance("foo", "bar").predicate("foo").instance("bar")
 				.instance("baz").predicate("complex").instance(Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3)).build();
-		Workbook wb = this.mapper.mapFromAnswerSet(as);
-		assertNotNull(wb.getSheet("Flags"));
-		assertNotNull(wb.getSheet("bla_2"));
-		assertNotNull(wb.getSheet("foo_1"));
-		assertNotNull(wb.getSheet("complex_3"));
-		wb.close();
+		try (Workbook wb = this.mapper.mapFromAnswerSet(as)) {
+			assertNotNull(wb.getSheet("Flags"));
+			assertNotNull(wb.getSheet("bla_2"));
+			assertNotNull(wb.getSheet("foo_1"));
+			assertNotNull(wb.getSheet("complex_3"));
+			wb.close();
+		}
 	}
 
 	@Test

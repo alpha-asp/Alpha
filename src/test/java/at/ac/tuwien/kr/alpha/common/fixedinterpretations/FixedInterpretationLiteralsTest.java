@@ -35,6 +35,7 @@ public class FixedInterpretationLiteralsTest {
 	 * Dummy input param which is not used exists solely to avoid producing an edge
 	 * case where there is output, but no input
 	 */
+	@SuppressWarnings("unused")
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static Set<List<ConstantTerm<String>>> connection(String dummy) {
 		Set<List<ConstantTerm<String>>> retVal = new HashSet<>();

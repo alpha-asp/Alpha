@@ -181,6 +181,7 @@ public class BerkMinTest {
 	public void learnNoGood() {
 		NoGood learnedNoGood = NoGood.learnt(fromOldLiterals(1, 2));
 		int backjumpLevel = 1;
+		@SuppressWarnings("unused")
 		boolean clearLastChoiceAfterBackjump = true;
 		Collection<Integer> resolutionAtoms = Collections.emptySet();
 		berkmin.analyzedConflict(new ConflictAnalysisResult(learnedNoGood, backjumpLevel,

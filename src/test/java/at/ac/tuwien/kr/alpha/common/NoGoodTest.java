@@ -34,41 +34,41 @@ public class NoGoodTest {
 	}
 
 	@Test
-	public void iteration() throws Exception {
+	public void iteration() {
 		Iterator<Integer> i = new NoGood(1).iterator();
 		assertEquals(1, (int)i.next());
 		assertFalse(i.hasNext());
 	}
 
 	@Test
-	public void compareToNull() throws Exception {
+	public void compareToNull() {
 		assertThrows(NullPointerException.class, () -> {
 			new NoGood().compareTo(null);
 		});
 	}
 
 	@Test
-	public void compareToSame() throws Exception {
+	public void compareToSame() {
 		assertEquals(0, new NoGood(1).compareTo(new NoGood(1)));
 	}
 
 	@Test
-	public void compareToLengthShort() throws Exception {
+	public void compareToLengthShort() {
 		assertEquals(-1, new NoGood(1).compareTo(new NoGood(1, 2)));
 	}
 
 	@Test
-	public void compareToLengthLong() throws Exception {
+	public void compareToLengthLong() {
 		assertEquals(+1, new NoGood(1, 2).compareTo(new NoGood(1)));
 	}
 
 	@Test
-	public void compareToLexicographicSmall() throws Exception {
+	public void compareToLexicographicSmall() {
 		assertEquals(-1, new NoGood(1, 2).compareTo(new NoGood(2, 3)));
 	}
 
 	@Test
-	public void compareToLexicographicBig() throws Exception {
+	public void compareToLexicographicBig() {
 		assertEquals(+1, new NoGood(2, 3).compareTo(new NoGood(1, 2)));
 	}
 
