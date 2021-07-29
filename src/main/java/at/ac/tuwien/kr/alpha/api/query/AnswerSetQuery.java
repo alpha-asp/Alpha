@@ -137,22 +137,17 @@ public final class AnswerSetQuery implements java.util.function.Predicate<Atom> 
 	 */
 	@Override
 	public boolean test(Atom atom) {
-		java.util.function.Predicate<Term> currTermTester;
-		boolean atomMatches;
-		if (!atom.getPredicate().equals(this.predicate)) {
+		if (!atom.getPredicate().equals(predicate)) {
 			return false;
 		}
-		atomMatches = true;
 		for (int i = 0; i < atom.getTerms().size(); i++) {
-			if (this.filters.containsKey(i)) {
-				currTermTester = this.filters.get(i);
-				atomMatches &= currTermTester.test(atom.getTerms().get(i));
-				if (!atomMatches) { // shortcut
-					return false;
-				}
+			Term ithTerm = atom.getTerms().get(i);
+			java.util.function.Predicate<Term> ithFilter = filters.get(i);
+			if (ithFilter != null && !ithFilter.test(ithTerm)) {
+				return false;
 			}
 		}
-		return atomMatches;
+		return true;
 	}
 
 	/**
