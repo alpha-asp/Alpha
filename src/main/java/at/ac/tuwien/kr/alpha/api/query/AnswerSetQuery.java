@@ -132,8 +132,7 @@ public final class AnswerSetQuery implements java.util.function.Predicate<Atom> 
 	 * to match the query, all of its terms must satisfy all filters on these
 	 * terms
 	 * 
-	 * @param atom
-	 *             the atom to which to apply the query
+	 * @param atom the atom to which to apply the query
 	 * @return true iff the atom satisfies the query
 	 */
 	@Override
