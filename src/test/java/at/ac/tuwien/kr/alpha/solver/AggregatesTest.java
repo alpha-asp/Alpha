@@ -31,6 +31,7 @@ import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnsw
 
 import at.ac.tuwien.kr.alpha.grounder.transformation.CardinalityNormalization;
 import at.ac.tuwien.kr.alpha.grounder.transformation.SumNormalization;
+import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 
 /**
  * Tests if correct answer sets for programs containing aggregates are computed.
@@ -119,9 +120,7 @@ public abstract class AggregatesTest {
 	@AggregateRegressionTest
 	public void testAggregate_Sum_Computed(RegressionTestConfig cfg) {
 		// Do not run this test case with the naive solver.
-		if (cfg.getSolverName().equals("naive")) {
-			return;
-		}
+		TestUtils.ignoreTestForNaiveSolver(cfg);
 		String program = "n(1..3)." + LS
 				+ "{x(N)} :- n(N)." + LS
 				+ "potential_sum(0..6)." + LS
