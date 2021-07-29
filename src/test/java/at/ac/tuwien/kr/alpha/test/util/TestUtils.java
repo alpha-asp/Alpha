@@ -135,7 +135,7 @@ public class TestUtils {
 	
 	private static Solver buildSolverFromSystemConfig(InputProgram prog, SystemConfig cfg) {
 		AtomStore atomStore = new AtomStoreImpl();
-		NormalProgram normalProg = new NormalizeProgramTransformation(cfg.isUseNormalizationGrid()).apply(prog); // TODO we need to somehow handle aggregate configs
+		NormalProgram normalProg = new NormalizeProgramTransformation(cfg.isUseNormalizationGrid()).apply(prog);
 		InternalProgram preprocessed = cfg.isEvaluateStratifiedPart() ? new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normalProg))
 				: InternalProgram.fromNormalProgram(normalProg);
 		return SolverFactory.getInstance(cfg, atomStore, GrounderFactory.getInstance(cfg.getGrounderName(), preprocessed, atomStore, cfg.isDebugInternalChecks()));
