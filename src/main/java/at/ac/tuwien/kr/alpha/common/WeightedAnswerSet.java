@@ -61,16 +61,14 @@ public class WeightedAnswerSet extends BasicAnswerSet {
 			if (otherWeight == null) {
 				return thisWeight < 0 ? -1 : 1;
 			}
-			if (thisLevel.equals(otherLevel)) {
-				if (thisWeight.equals(otherWeight)) {
-					continue;
-				} else {
-					return thisWeight < otherWeight ? -1 : 1;
-				}
-
-			} else {
+			// Found level and weight for this and other WeightedAnswerSet.
+			if (!thisLevel.equals(otherLevel)) {
 				return thisLevel < otherLevel ? -1 : 1;
 			}
+			if (!thisWeight.equals(otherWeight)) {
+				return thisWeight < otherWeight ? -1 : 1;
+			}
+			// Same level and same weight for both WeightedAnswerSet, now continue with next lower level.
 		}
 	}
 

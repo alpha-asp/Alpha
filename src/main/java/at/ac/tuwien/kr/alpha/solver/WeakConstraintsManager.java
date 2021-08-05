@@ -103,6 +103,7 @@ public class WeakConstraintsManager implements Checkable {
 		foundFirstAnswerSet = true;
 		HashMap<Integer, Integer> sumWeightsAtLevel = new HashMap<>();
 		int highestLevel = 0;
+		int lowestLevel = 0;
 		for (WeakConstraintAtomCallback atomCallback : knownAtomCallbacksForFirstAnswerSet) {
 			ThriceTruth truth = assignment.getTruth(atomCallback.atom);
 			if (truth == null || !truth.toBoolean()) {
@@ -110,9 +111,12 @@ public class WeakConstraintsManager implements Checkable {
 				continue;
 			}
 			int level = atomCallback.level;
+			// Record if level is highest or lowest so far.
 			if (highestLevel < level) {
-				// Record level if it is highest so far.
 				highestLevel = level;
+			}
+			if (lowestLevel > level) {
+				lowestLevel = level;
 			}
 			// Update weight information.
 			if (sumWeightsAtLevel.get(level) == null) {
@@ -124,8 +128,8 @@ public class WeakConstraintsManager implements Checkable {
 		}
 		maxLevel = highestLevel;
 		LOGGER.trace("Maximum recorded level (0-offset) is: {} ({})", maxLevel, listOffsetToLevel(0));
-		bestKnownWeightAtLevels = new ArrayList<>(highestLevel);
-		growForLevel(bestKnownWeightAtLevels, highestLevel);
+		bestKnownWeightAtLevels = new ArrayList<>();
+		growForLevel(bestKnownWeightAtLevels, lowestLevel);
 		for (Map.Entry<Integer, Integer> levelWeight : sumWeightsAtLevel.entrySet()) {
 			bestKnownWeightAtLevels.set(maxLevel - levelWeight.getKey(), levelWeight.getValue());
 		}
