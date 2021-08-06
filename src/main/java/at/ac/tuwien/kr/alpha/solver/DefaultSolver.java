@@ -50,6 +50,7 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.ChainedBranchingHeuristics;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
+import at.ac.tuwien.kr.alpha.solver.optimization.WeakConstraintsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -13,13 +13,13 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  *
  * Copyright (c) 2020, the Alpha Team.
  */
-class AtomCallbackManager {
+public class AtomCallbackManager {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AtomCallbackManager.class);
 
 	private AtomCallback[] atomCallbacks = new AtomCallback[0];
 
-	void recordCallback(int atom, AtomCallback atomCallback) {
+	public void recordCallback(int atom, AtomCallback atomCallback) {
 		if (atomCallbacks[atom] != null && !atomCallbacks[atom].equals(atomCallback)) {
 			throw oops("Recording different callbacks for one atom. Atom: " + atom);
 		}
@@ -52,7 +52,7 @@ class AtomCallbackManager {
 	/**
 	 * Interface for callbacks to be called when atoms change their truth value.
 	 */
-	interface AtomCallback {
+	public interface AtomCallback {
 
 		void processCallback();
 	}
