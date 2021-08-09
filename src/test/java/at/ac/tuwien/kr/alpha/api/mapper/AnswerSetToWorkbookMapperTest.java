@@ -34,7 +34,6 @@ public class AnswerSetToWorkbookMapperTest {
 			assertNotNull(wb.getSheet("bla_2"));
 			assertNotNull(wb.getSheet("foo_1"));
 			assertNotNull(wb.getSheet("complex_3"));
-			wb.close();
 		}
 	}
 
