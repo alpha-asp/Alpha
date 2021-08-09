@@ -115,5 +115,20 @@ public class AnswerSetQueryTest {
 		List<Atom> queryResult = as.query(query);
 		Assert.assertEquals(2, queryResult.size());
 	}
+	
+	@Test
+	public void matchTerm() {
+		AnswerSetBuilder bld = new AnswerSetBuilder();
+		bld.predicate("p")
+				.instance(1).instance(2).instance(3).instance(4).instance(5)
+				.instance("bla").symbolicInstance("blubb");
+		AnswerSet as = bld.build();
+		
+		AnswerSetQuery equalTerm = AnswerSetQuery.forPredicate(Predicate.getInstance("p", 1)).withTermEquals(0, ConstantTerm.getInstance(1));
+		List<Atom> queryResult = as.query(equalTerm);
+		Assert.assertEquals(1, queryResult.size());
+		Atom retrievedAtom = queryResult.get(0);
+		Assert.assertTrue(retrievedAtom.getTerms().get(0).equals(ConstantTerm.getInstance(1)));
+	}
 
 }
