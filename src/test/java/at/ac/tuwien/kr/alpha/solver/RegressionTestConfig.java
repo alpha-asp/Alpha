@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 
 public class RegressionTestConfig {
@@ -23,7 +24,7 @@ public class RegressionTestConfig {
 	private final boolean disableInstanceRemoval;
 
 	private final boolean evaluateStratifiedPart;
-	
+
 	private final boolean encodeAggregatesUsingSortingGrid;
 
 	public RegressionTestConfig(
@@ -42,6 +43,22 @@ public class RegressionTestConfig {
 		this.disableInstanceRemoval = disableInstanceRemoval;
 		this.evaluateStratifiedPart = evaluateStratifiedPart;
 		this.encodeAggregatesUsingSortingGrid = useSortingGrid;
+	}
+
+	public SystemConfig toSystemConfig() {
+		SystemConfig retVal = new SystemConfig();
+		retVal.setGrounderName(this.grounderName);
+		retVal.setSolverName(this.solverName);
+		retVal.setNogoodStoreName(this.noGoodStoreName);
+		retVal.setSeed(this.seed);
+		retVal.setBranchingHeuristic(this.branchingHeuristic);
+		retVal.setDebugInternalChecks(this.debugChecks);
+		retVal.setEvaluateStratifiedPart(this.evaluateStratifiedPart);
+		retVal.setGrounderAccumulatorEnabled(this.disableInstanceRemoval);
+		retVal.setUseNormalizationGrid(!this.encodeAggregatesUsingSortingGrid);
+		retVal.setGrounderToleranceRules(this.grounderToleranceRules);
+		retVal.setGrounderToleranceConstraints(this.grounderToleranceConstraints);
+		return retVal;
 	}
 
 	public String getSolverName() {
@@ -87,13 +104,14 @@ public class RegressionTestConfig {
 	public boolean isEncodeAggregatesUsingSortingGrid() {
 		return this.encodeAggregatesUsingSortingGrid;
 	}
-	
+
 	@Override
 	public String toString() {
 		return String.format(
 				"RegressionTestConfig [solverName=%s, grounderName=%s, noGoodStoreName=%s, branchingHeuristic=%s, seed=%s, debugChecks=%s, grounderToleranceConstraints=%s, grounderToleranceRules=%s, disableInstanceRemoval=%s, evaluateStratifiedPart=%s, useSortingGrid=%s]",
 				this.solverName, this.grounderName, this.noGoodStoreName, this.branchingHeuristic, this.seed, this.debugChecks,
-				this.grounderToleranceConstraints, this.grounderToleranceRules, this.disableInstanceRemoval, this.evaluateStratifiedPart, this.encodeAggregatesUsingSortingGrid);
+				this.grounderToleranceConstraints, this.grounderToleranceRules, this.disableInstanceRemoval, this.evaluateStratifiedPart,
+				this.encodeAggregatesUsingSortingGrid);
 	}
 
 }

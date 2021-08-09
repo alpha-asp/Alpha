@@ -116,22 +116,6 @@ public class TestUtils {
 		}
 		return new BasicAtom(pred, trms);
 	}
-
-	private static SystemConfig regressionTestConfigToSystemConfig(RegressionTestConfig cfg) {
-		SystemConfig retVal = new SystemConfig();
-		retVal.setGrounderName(cfg.getGrounderName());
-		retVal.setSolverName(cfg.getSolverName());
-		retVal.setNogoodStoreName(cfg.getNoGoodStoreName());
-		retVal.setSeed(cfg.getSeed());
-		retVal.setBranchingHeuristic(cfg.getBranchingHeuristic());
-		retVal.setDebugInternalChecks(cfg.isDebugChecks());
-		retVal.setEvaluateStratifiedPart(cfg.isEvaluateStratifiedPart());
-		retVal.setGrounderAccumulatorEnabled(cfg.isDisableInstanceRemoval());
-		retVal.setUseNormalizationGrid(!cfg.isEncodeAggregatesUsingSortingGrid());
-		retVal.setGrounderToleranceRules(cfg.getGrounderToleranceRules());
-		retVal.setGrounderToleranceConstraints(cfg.getGrounderToleranceConstraints());
-		return retVal;
-	}
 	
 	private static Solver buildSolverFromSystemConfig(InputProgram prog, SystemConfig cfg) {
 		AtomStore atomStore = new AtomStoreImpl();
@@ -142,15 +126,15 @@ public class TestUtils {
 	}
 	
 	public static Solver buildSolverForRegressionTest(InputProgram prog, RegressionTestConfig cfg) {
-		return buildSolverFromSystemConfig(prog, regressionTestConfigToSystemConfig(cfg));
+		return buildSolverFromSystemConfig(prog, cfg.toSystemConfig());
 	}
 	
 	public static Solver buildSolverForRegressionTest(String prog, RegressionTestConfig cfg) {
-		return buildSolverFromSystemConfig(new ProgramParser().parse(prog), regressionTestConfigToSystemConfig(cfg));
+		return buildSolverFromSystemConfig(new ProgramParser().parse(prog), cfg.toSystemConfig());
 	}
 	
 	public static Solver buildSolverForRegressionTest(AtomStore atomStore, Grounder grounder, RegressionTestConfig cfg) {
-		SystemConfig systemCfg = regressionTestConfigToSystemConfig(cfg);
+		SystemConfig systemCfg = cfg.toSystemConfig();
 		return SolverFactory.getInstance(systemCfg, atomStore, grounder);
 	}
 
