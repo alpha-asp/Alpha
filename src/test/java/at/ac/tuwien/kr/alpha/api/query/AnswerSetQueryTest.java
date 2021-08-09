@@ -1,13 +1,15 @@
 package at.ac.tuwien.kr.alpha.api.query;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
@@ -33,9 +35,9 @@ public class AnswerSetQueryTest {
 		//@formatter:on
 		AnswerSet as = bld.build();
 		List<Atom> queryResult = as.query(AnswerSetQuery.forPredicate(Predicate.getInstance("p", 1)));
-		Assert.assertEquals(2, queryResult.size());
+		assertEquals(2, queryResult.size());
 		for (Atom a : queryResult) {
-			Assert.assertTrue(a.getPredicate().equals(Predicate.getInstance("p", 1)));
+			assertTrue(a.getPredicate().equals(Predicate.getInstance("p", 1)));
 		}
 	}
 
@@ -50,7 +52,7 @@ public class AnswerSetQueryTest {
 				.forPredicate(Predicate.getInstance("p", 1))
 				.withConstantEquals(0, "a");
 		List<Atom> queryResult = as.query(constantQuery);
-		Assert.assertEquals(1, queryResult.size());
+		assertEquals(1, queryResult.size());
 	}
 
 	@Test
@@ -64,7 +66,7 @@ public class AnswerSetQueryTest {
 				.forPredicate(Predicate.getInstance("p", 1))
 				.withStringEquals(0, "a");
 		List<Atom> queryResult = as.query(stringQuery);
-		Assert.assertEquals(1, queryResult.size());
+		assertEquals(1, queryResult.size());
 	}
 
 	@Test
@@ -85,10 +87,10 @@ public class AnswerSetQueryTest {
 				.withFilter(0, isInteger.and(
 						(term) -> Integer.valueOf(((ConstantTerm<?>) term).getObject().toString()) % 2 == 0));
 		List<Atom> queryResult = as.query(evenIntegers);
-		Assert.assertEquals(2, queryResult.size());
+		assertEquals(2, queryResult.size());
 		for (Atom atom : queryResult) {
 			ConstantTerm<?> term = (ConstantTerm<?>) atom.getTerms().get(0);
-			Assert.assertTrue(Integer.valueOf(term.getObject().toString()) % 2 == 0);
+			assertTrue(Integer.valueOf(term.getObject().toString()) % 2 == 0);
 		}
 	}
 
@@ -113,7 +115,7 @@ public class AnswerSetQueryTest {
 		AnswerSet as = new BasicAnswerSet(predicates, instances);
 		AnswerSetQuery query = AnswerSetQuery.forPredicate(Predicate.getInstance("p", 2)).withConstantEquals(0, "x").withFunctionTerm(1, "f", 1);
 		List<Atom> queryResult = as.query(query);
-		Assert.assertEquals(2, queryResult.size());
+		assertEquals(2, queryResult.size());
 	}
 	
 	@Test
@@ -126,9 +128,9 @@ public class AnswerSetQueryTest {
 		
 		AnswerSetQuery equalTerm = AnswerSetQuery.forPredicate(Predicate.getInstance("p", 1)).withTermEquals(0, ConstantTerm.getInstance(1));
 		List<Atom> queryResult = as.query(equalTerm);
-		Assert.assertEquals(1, queryResult.size());
+		assertEquals(1, queryResult.size());
 		Atom retrievedAtom = queryResult.get(0);
-		Assert.assertTrue(retrievedAtom.getTerms().get(0).equals(ConstantTerm.getInstance(1)));
+		assertTrue(retrievedAtom.getTerms().get(0).equals(ConstantTerm.getInstance(1)));
 	}
 
 }
