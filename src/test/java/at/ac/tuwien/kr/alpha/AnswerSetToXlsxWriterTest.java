@@ -35,7 +35,6 @@ public class AnswerSetToXlsxWriterTest {
 		assertEquals("alphaAnswerSet.0.xlsx", answerSetFile.getName());
 		try (Workbook wb = WorkbookFactory.create(answerSetFile)) {
 			AnswerSetToWorkbookMapperTest.assertWorkbookMatchesAnswerSet(wb, as);
-			wb.close();
 		}
 		// clean up
 		answerSetFile.delete();
@@ -58,7 +57,6 @@ public class AnswerSetToXlsxWriterTest {
 			assertNotNull(cell);
 			String cellValue = cell.getStringCellValue();
 			assertEquals("Input is unsatisfiable - No answer sets!", cellValue);
-			wb.close();
 		}
 		// clean up
 		unsatFile.delete();
