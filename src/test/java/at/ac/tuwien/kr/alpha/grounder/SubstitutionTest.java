@@ -27,6 +27,12 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.Arrays;
+
+import org.junit.jupiter.api.Test;
+
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
@@ -41,11 +47,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.test.util.SubstitutionTestUtil;
-import org.junit.Test;
 
-import java.util.Arrays;
-
-import static org.junit.Assert.assertEquals;
 
 public class SubstitutionTest {
 	private static final ProgramParser PARSER = new ProgramParser();

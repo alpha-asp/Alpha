@@ -1,16 +1,27 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.*;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import static at.ac.tuwien.kr.alpha.common.NoGood.fact;
 import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
 import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
 import static at.ac.tuwien.kr.alpha.solver.AntecedentTest.antecedentsEquals;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
-import static org.junit.Assert.*;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
+import at.ac.tuwien.kr.alpha.common.NoGood;
 
 /**
  * Copyright (c) 2017, the Alpha Team.
@@ -26,7 +37,7 @@ public class NaiveNoGoodStoreTest {
 		store = new NaiveNoGoodStore(assignment);
 	}
 
-	@Before
+	@BeforeEach	
 	public void setUp() {
 		store.clear();
 		AtomStoreTest.fillAtomStore(atomStore, 200);
@@ -83,7 +94,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
+	@Disabled("Checks for conflict detection in add.")
 	public void addNotCausingAssignmentFalse() {
 		assignment.assign(1, FALSE);
 		assignment.assign(4, TRUE);
@@ -250,7 +261,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for propagation in add.")
+	@Disabled("Checks for propagation in add.")
 	public void propagateNaryMBTTwice() {
 		assignment.assign(4, FALSE);
 		assignment.assign(3, MBT);
@@ -343,7 +354,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
+	@Disabled("Checks for conflict detection in add.")
 	public void conflictingBinary() {
 		final NoGood noGood = new NoGood(fromOldLiterals(1, 2));
 		assignment.assign(1, TRUE);
@@ -353,7 +364,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
+	@Disabled("Checks for conflict detection in add.")
 	public void conflictingNary() {
 		final NoGood noGood = new NoGood(fromOldLiterals(1, 2, 3));
 		assignment.assign(1, TRUE);
@@ -433,7 +444,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
+	@Disabled("Checks for conflict detection in add.")
 	public void naryNoGoodViolatedDuringAdditionAllTrue() {
 		NoGood noGood = new NoGood(fromOldLiterals(1, 2, 3));
 		assertNull(assignment.assign(1, TRUE));
@@ -445,7 +456,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
+	@Disabled("Checks for conflict detection in add.")
 	public void naryNoGoodViolatedDuringAdditionAllMbt() {
 		NoGood noGood = new NoGood(fromOldLiterals(1, 2, 3));
 		assertNull(assignment.assign(1, MBT));
@@ -466,7 +477,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
+	@Disabled("Checks for conflict detection in add.")
 	public void binaryNoGoodViolatedDuringAdditionAllTrue() {
 		NoGood noGood = new NoGood(fromOldLiterals(1, 2));
 		assertNull(assignment.assign(1, TRUE));
@@ -477,7 +488,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
+	@Disabled("Checks for conflict detection in add.")
 	public void binaryNoGoodViolatedDuringAdditionAllMbt() {
 		NoGood noGood = new NoGood(fromOldLiterals(1, 2));
 		assertNull(assignment.assign(1, MBT));
@@ -532,7 +543,7 @@ public class NaiveNoGoodStoreTest {
 
 
 	@Test
-	@Ignore("Checks for propagation in add.")
+	@Disabled("Checks for propagation in add.")
 	public void addedBinaryNoGoodPropagatesTrueFromFalse() {
 		NoGood noGood = headFirst(fromOldLiterals(-11, -12));
 		assertNull(assignment.choose(12, FALSE));
@@ -572,7 +583,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Not decision-level aware.")
+	@Disabled("Not decision-level aware.")
 	public void propagationAtLowerDecisionLevel() {
 		NoGood noGood = headFirst(fromOldLiterals(-1, 2, -3));
 		assertNull(assignment.choose(3, FALSE));

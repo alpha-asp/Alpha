@@ -25,14 +25,15 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import java.io.IOException;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.runWithTimeout;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -43,49 +44,59 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
-public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
-	@Test(timeout = 1000)
-	public void testV3E3() throws IOException {
-		testThreeColouring(3, 3);
+public class ThreeColouringRandomGraphTest {
+	
+	private static final long DEBUG_TIMEOUT_FACTOR = 5;
+	
+	@RegressionTest
+	public void testV3E3(RegressionTestConfig cfg) {
+		long timeout = 1000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(3, 3, cfg));
 	}
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testV10E18() throws IOException {
-		testThreeColouring(10, 18);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testV10E18(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(10, 18, cfg));
 	}
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testV20E38() throws IOException {
-		testThreeColouring(20, 38);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testV20E38(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(20, 38, cfg));
 	}
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testV30E48() throws IOException {
-		testThreeColouring(30, 48);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testV30E48(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(30, 48, cfg));
 	}
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testV200E300() throws IOException {
-		testThreeColouring(200, 300);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testV200E300(RegressionTestConfig cfg) {
+		long timeout = 60000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(200, 300, cfg));
 	}
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testV300E200() throws IOException {
-		testThreeColouring(300, 200);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testV300E200(RegressionTestConfig cfg) {
+		long timeout = 60000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(300, 200, cfg));
 	}
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testV300E300() throws IOException {
-		testThreeColouring(300, 300);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testV300E300(RegressionTestConfig cfg) {
+		long timeout = 60000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(300, 300, cfg));
 	}
 
-	private void testThreeColouring(int nVertices, int nEdges) throws IOException {
+	private void testThreeColouring(int nVertices, int nEdges, RegressionTestConfig cfg) {
 		InputProgram tmpPrg = new ProgramParser().parse(
 				"blue(N) :- v(N), not red(N), not green(N)." +
 				"red(N) :- v(N), not blue(N), not green(N)." +
@@ -99,12 +110,14 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 		InputProgram program = prgBuilder.build();
 		maybeShuffle(program);
 
-		Optional<AnswerSet> answerSet = getInstance(program).stream().findAny();
+		@SuppressWarnings("unused")
+		Optional<AnswerSet> answerSet = buildSolverForRegressionTest(program, cfg).stream().findAny();
 		//System.out.println(answerSet);
 
 		// TODO: check correctness of answer set
 	}
 
+	@SuppressWarnings("unused")
 	private void maybeShuffle(InputProgram program) {
 
 		// TODO: switch on if different rule orderings in the encoding are desired (e.g. for benchmarking purposes)

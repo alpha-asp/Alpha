@@ -3,10 +3,12 @@ package at.ac.tuwien.kr.alpha.common.graphio;
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph;
 import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
-import org.junit.Assert;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayOutputStream;
+
+import org.junit.jupiter.api.Test;
 
 public class ComponentGraphWriterTest {
 	private static final String LS = System.lineSeparator();
@@ -59,7 +61,7 @@ public class ComponentGraphWriterTest {
 		writer.writeAsDot(compgraph, out);
 		String actualGraph = out.toString();
 		System.out.println(actualGraph);
-		Assert.assertEquals(expectedGraph, actualGraph);
+		assertEquals(expectedGraph, actualGraph);
 	}
 
 }

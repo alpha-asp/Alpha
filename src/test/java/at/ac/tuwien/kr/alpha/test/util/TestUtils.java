@@ -1,15 +1,11 @@
 package at.ac.tuwien.kr.alpha.test.util;
 
-import at.ac.tuwien.kr.alpha.AnswerSetsParser;
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.program.AbstractProgram;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import org.junit.Assert;
+import static java.util.Collections.emptySet;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -17,7 +13,33 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import static java.util.Collections.emptySet;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.function.Executable;
+
+import at.ac.tuwien.kr.alpha.AnswerSetsParser;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.program.AbstractProgram;
+import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.grounder.transformation.NormalizeProgramTransformation;
+import at.ac.tuwien.kr.alpha.grounder.transformation.StratifiedEvaluation;
+import at.ac.tuwien.kr.alpha.solver.RegressionTestConfig;
+import at.ac.tuwien.kr.alpha.solver.Solver;
+import at.ac.tuwien.kr.alpha.solver.SolverFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 
 public class TestUtils {
 
@@ -28,7 +50,7 @@ public class TestUtils {
 			}
 		}
 		try {
-			Assert.assertEquals(expected, actual);
+			assertEquals(expected, actual);
 		} catch (AssertionError e) {
 			Set<AnswerSet> expectedMinusActual = new LinkedHashSet<>(expected);
 			expectedMinusActual.removeAll(actual);
@@ -73,7 +95,7 @@ public class TestUtils {
 
 	public static void assertFactsContainedInProgram(AbstractProgram<?> prog, Atom... facts) {
 		for (Atom fact : facts) {
-			Assert.assertTrue(prog.getFacts().contains(fact));
+			assertTrue(prog.getFacts().contains(fact));
 		}
 	}
 
@@ -94,5 +116,63 @@ public class TestUtils {
 		}
 		return new BasicAtom(pred, trms);
 	}
+	
+	private static Solver buildSolverFromSystemConfig(InputProgram prog, SystemConfig cfg) {
+		AtomStore atomStore = new AtomStoreImpl();
+		NormalProgram normalProg = new NormalizeProgramTransformation(cfg.isUseNormalizationGrid()).apply(prog);
+		InternalProgram preprocessed = cfg.isEvaluateStratifiedPart() ? new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normalProg))
+				: InternalProgram.fromNormalProgram(normalProg);
+		return SolverFactory.getInstance(cfg, atomStore, GrounderFactory.getInstance(cfg.getGrounderName(), preprocessed, atomStore, cfg.isDebugInternalChecks()));
+	}
+	
+	public static Solver buildSolverForRegressionTest(InputProgram prog, RegressionTestConfig cfg) {
+		return buildSolverFromSystemConfig(prog, cfg.toSystemConfig());
+	}
+	
+	public static Solver buildSolverForRegressionTest(String prog, RegressionTestConfig cfg) {
+		return buildSolverFromSystemConfig(new ProgramParser().parse(prog), cfg.toSystemConfig());
+	}
+	
+	public static Solver buildSolverForRegressionTest(AtomStore atomStore, Grounder grounder, RegressionTestConfig cfg) {
+		SystemConfig systemCfg = cfg.toSystemConfig();
+		return SolverFactory.getInstance(systemCfg, atomStore, grounder);
+	}
 
+	public static Set<AnswerSet> collectRegressionTestAnswerSets(InputProgram prog, RegressionTestConfig cfg) {
+		return buildSolverForRegressionTest(prog, cfg).collectSet();
+	}
+	
+	public static Set<AnswerSet> collectRegressionTestAnswerSets(String aspstr, RegressionTestConfig cfg) {
+		InputProgram prog = new ProgramParser().parse(aspstr);
+		return collectRegressionTestAnswerSets(prog, cfg);
+	}
+
+	public static void assertRegressionTestAnswerSet(RegressionTestConfig cfg, String program, String answerSet) {
+		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
+		TestUtils.assertAnswerSetsEqual(answerSet, actualAnswerSets);
+	}
+	
+	public static void assertRegressionTestAnswerSets(RegressionTestConfig cfg, String program, String... answerSets) {
+		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
+		TestUtils.assertAnswerSetsEqual(answerSets, actualAnswerSets);		
+	}
+	
+	public static void assertRegressionTestAnswerSetsWithBase(RegressionTestConfig cfg, String program, String base, String... answerSets) {
+		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
+		TestUtils.assertAnswerSetsEqualWithBase(base, answerSets, actualAnswerSets);		
+	}
+	
+	public static void runWithTimeout(RegressionTestConfig cfg, long baseTimeout, long timeoutFactor, Executable action) {
+		long timeout = cfg.isDebugChecks() ? timeoutFactor * baseTimeout : baseTimeout;
+		assertTimeoutPreemptively(Duration.ofMillis(timeout), action);
+	}
+	
+	public static void ignoreTestForNaiveSolver(RegressionTestConfig cfg) {
+		Assumptions.assumeFalse(cfg.getSolverName().equals("naive"));
+	}
+	
+	public static void ignoreTestForNonDefaultDomainIndependentHeuristics(RegressionTestConfig cfg) {
+		Assumptions.assumeTrue(cfg.getBranchingHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
+	}
+	
 }
