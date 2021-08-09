@@ -34,6 +34,9 @@ public class AnswerSetQueryTest {
 		AnswerSet as = bld.build();
 		List<Atom> queryResult = as.query(AnswerSetQuery.forPredicate(Predicate.getInstance("p", 1)));
 		Assert.assertEquals(2, queryResult.size());
+		for (Atom a : queryResult) {
+			Assert.assertTrue(a.getPredicate().equals(Predicate.getInstance("p", 1)));
+		}
 	}
 
 	@Test
