@@ -40,6 +40,7 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.WeakConstraintAtom;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -96,21 +97,14 @@ public class NoGoodGenerator {
 			return singletonList(NoGood.fromConstraint(posLiterals, negLiterals));
 		}
 
-		final List<NoGood> result = new ArrayList<>();
-
 		final Atom groundHeadAtom = nonGroundRule.getHeadAtom().substitute(substitution);
-		final int headId = atomStore.putIfAbsent(groundHeadAtom);
 
 		if (groundHeadAtom instanceof WeakConstraintAtom) {
-			WeakConstraintAtom weakConstraintAtom = (WeakConstraintAtom) groundHeadAtom;
-			// Treat weak constraints: only generate nogood for the if-direction (body satisfied causes head to be true).
-			NoGood wcRule = NoGood.fromBodyInternal(posLiterals, negLiterals, atomToLiteral(headId));
-			result.add(wcRule);
-
-			// Record weak constraint association.
-			weakConstraintRecorder.addWeakConstraint(headId, weakConstraintAtom.getWeight(), weakConstraintAtom.getLevel());
-			return result;
+			return generateWeakConstraintNogoods(posLiterals, negLiterals, groundHeadAtom);
 		}
+
+		final List<NoGood> result = new ArrayList<>();
+		final int headId = atomStore.putIfAbsent(groundHeadAtom);
 		
 		// Prepare atom representing the rule body.
 		final RuleAtom bodyAtom = new RuleAtom(nonGroundRule, substitution);
@@ -150,6 +144,21 @@ public class NoGoodGenerator {
 		}
 
 		return result;
+	}
+
+	private List<NoGood> generateWeakConstraintNogoods(List<Integer> posLiterals, List<Integer> negLiterals, Atom groundHeadAtom) {
+		int headId;
+		if (!atomStore.contains(groundHeadAtom)) {
+			headId = atomStore.putIfAbsent(groundHeadAtom);
+			// Record weak constraint association only the first time it is encountered.
+			WeakConstraintAtom weakConstraintAtom = (WeakConstraintAtom) groundHeadAtom;
+			weakConstraintRecorder.addWeakConstraint(headId, weakConstraintAtom.getWeight(), weakConstraintAtom.getLevel());
+		} else {
+			headId = atomStore.get(groundHeadAtom);
+		}
+		// Treat weak constraints: generate NoGood for the if-direction (body satisfied causes head to be true).
+		NoGood wcRule = NoGood.fromBodyInternal(posLiterals, negLiterals, atomToLiteral(headId));
+		return Collections.singletonList(wcRule);
 	}
 
 	List<Integer> collectNegLiterals(final InternalRule nonGroundRule, final Substitution substitution) {
