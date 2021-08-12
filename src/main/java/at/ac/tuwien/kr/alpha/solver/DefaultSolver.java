@@ -142,9 +142,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				logStats();
 				return false;
 			}
-			if (enableBranchAndBoundOptimization) {
-				weakConstraintsManager.addWeakConstraintsInformation(grounder.getWeakConstraintInformation());
-			}
 			initialize = false;
 		} else if (assignment.getDecisionLevel() == 0) {
 			logStats();
@@ -222,7 +219,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 					logStats();
 					return false;
 				}
-				weakConstraintsManager.addWeakConstraintsInformation(grounder.getWeakConstraintInformation());
 			} else if (choose()) {
 				LOGGER.debug("Did choice.");
 				didChange = true;
@@ -494,6 +490,10 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		choiceManager.growForMaxAtomId(maxAtomId);
 		branchingHeuristic.growForMaxAtomId(maxAtomId);
 		branchingHeuristic.newNoGoods(obtained.values());
+
+		if (enableBranchAndBoundOptimization) {
+			weakConstraintsManager.addWeakConstraintsInformation(grounder.getWeakConstraintInformation());
+		}
 
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
 		Map.Entry<Integer, NoGood> entry;
