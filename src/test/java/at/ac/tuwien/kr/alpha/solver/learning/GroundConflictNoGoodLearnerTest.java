@@ -1,16 +1,27 @@
 package at.ac.tuwien.kr.alpha.solver.learning;
 
+import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
+import static at.ac.tuwien.kr.alpha.solver.AntecedentTest.antecedentsEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.*;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
-import static at.ac.tuwien.kr.alpha.solver.AntecedentTest.antecedentsEquals;
-import static org.junit.Assert.*;
+import at.ac.tuwien.kr.alpha.solver.Antecedent;
+import at.ac.tuwien.kr.alpha.solver.ConflictCause;
+import at.ac.tuwien.kr.alpha.solver.NoGoodStore;
+import at.ac.tuwien.kr.alpha.solver.NoGoodStoreAlphaRoaming;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 
 /**
  * Copyright (c) 2016-2019, the Alpha Team.
@@ -68,8 +79,8 @@ public class GroundConflictNoGoodLearnerTest {
 		assertEquals(backjumpingDecisionLevel, 2);
 	}
 
-	@Ignore // TrailAssignment no longer propagates at lower decision level.
 	@Test
+	@Disabled("TrailAssignment no longer propagates at lower decision level.")
 	public void subCurrentDLPropagationWithChoiceCauseOfConflict() {
 		GroundConflictNoGoodLearner learner = new GroundConflictNoGoodLearner(assignment, atomStore);
 		NoGood n1 = new NoGood(fromOldLiterals(1, -2));

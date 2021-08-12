@@ -3,10 +3,12 @@ package at.ac.tuwien.kr.alpha.common.graphio;
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
 import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
-import org.junit.Assert;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayOutputStream;
+
+import org.junit.jupiter.api.Test;
 
 public class DependencyGraphWriterTest {
 	private static final String LS = System.lineSeparator();
@@ -55,7 +57,7 @@ public class DependencyGraphWriterTest {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		writer.writeAsDot(depgraph, out);
 		String actualGraph = out.toString();
-		Assert.assertEquals(expectedGraph, actualGraph);
+		assertEquals(expectedGraph, actualGraph);
 	}
 
 }

@@ -25,11 +25,12 @@
  */
 package at.ac.tuwien.kr.alpha.common.terms;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
+
 import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm.MinusTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term.RenameCounter;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Tests {@link MinusTerm}

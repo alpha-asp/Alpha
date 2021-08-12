@@ -27,6 +27,28 @@
  */
 package at.ac.tuwien.kr.alpha.api;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
 import at.ac.tuwien.kr.alpha.AnswerSetsParser;
 import at.ac.tuwien.kr.alpha.api.externals.Externals;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
@@ -46,26 +68,6 @@ import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.test.util.TestUtils;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 public class AlphaTest {
 	private static int invocations;
@@ -81,6 +83,7 @@ public class AlphaTest {
 		return a == 0xF00;
 	}
 
+	@SuppressWarnings("unused")
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static boolean thinger(Thingy thingy) {
 		return true;
@@ -98,7 +101,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	public void addsFacts() throws Exception {
+	public void addsFacts() {
 		Alpha system = new Alpha();
 		Thingy a = new Thingy();
 		Thingy b = new Thingy();
@@ -109,14 +112,16 @@ public class AlphaTest {
 		assertEquals(expected, actual);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void withExternalTypeConflict() throws Exception {
-		Alpha system = new Alpha();
-		InputConfig inputCfg = InputConfig.forString("a :- &isFoo[\"adsfnfdsf\"].");
-		inputCfg.addPredicateMethod("isFoo", Externals.processPredicateMethod(this.getClass().getMethod("isFoo", Integer.class)));
-		Set<AnswerSet> actual = system.solve(system.readProgram(inputCfg)).collect(Collectors.toSet());
-		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
-		assertEquals(expected, actual);
+	@Test
+	public void withExternalTypeConflict() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			Alpha system = new Alpha();
+			InputConfig inputCfg = InputConfig.forString("a :- &isFoo[\"adsfnfdsf\"].");
+			inputCfg.addPredicateMethod("isFoo", Externals.processPredicateMethod(this.getClass().getMethod("isFoo", Integer.class)));
+			Set<AnswerSet> actual = system.solve(system.readProgram(inputCfg)).collect(Collectors.toSet());
+			Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
+			assertEquals(expected, actual);
+		});
 	}
 
 	@Test
@@ -173,14 +178,16 @@ public class AlphaTest {
 		assertEquals(expected, actual);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void smallGraphWithWrongType() throws Exception {
-		Alpha system = new Alpha();
-		InputConfig cfg = InputConfig.forString("a :- &connected[\"hello\",2].");
-		cfg.addPredicateMethod("connected", Externals.processPredicate((Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3)));
-		InputProgram prog = system.readProgram(cfg);
-
-		system.solve(prog).collect(Collectors.toSet());
+	@Test
+	public void smallGraphWithWrongType() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			Alpha system = new Alpha();
+			InputConfig cfg = InputConfig.forString("a :- &connected[\"hello\",2].");
+			cfg.addPredicateMethod("connected", Externals.processPredicate((Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3)));
+			InputProgram prog = system.readProgram(cfg);
+	
+			system.solve(prog).collect(Collectors.toSet());
+		});
 	}
 
 	public static Set<List<ConstantTerm<Integer>>> neighbors(int node) {
@@ -198,7 +205,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	@Ignore("Test program is not safe (external lacking output variables). This should throw some exception.")
+	@Disabled("Test program is not safe (external lacking output variables). This should throw some exception.")
 	public void smallGraphNoNeighbors() throws Exception {
 		Alpha system = new Alpha();
 		InputConfig cfg = InputConfig.forString("noNeighbors(2) :- not &neighbors[2].");
@@ -235,7 +242,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	@Ignore("Test program is not safe (external lacking output variables). This should throw some exception.")
+	@Disabled("Test program is not safe (external lacking output variables). This should throw some exception.")
 	public void smallGraphSingleNeighborNoTerm() throws Exception {
 		Alpha system = new Alpha();
 		InputConfig cfg = InputConfig.forString("success :- &neighbors[1], not &neighbors[2].");
@@ -298,11 +305,13 @@ public class AlphaTest {
 	 * If at the time of a scan, the name of an external is already registered,
 	 * an exception is thrown.
 	 */
-	@Test(expected = IllegalArgumentException.class)
-	public void errorDuplicateExternal() throws Exception {
-		InputConfig cfg = InputConfig.forString("someString.");
-		cfg.addPredicateMethods(Externals.scan(this.getClass()));
-		cfg.addPredicateMethods(Externals.scan(this.getClass()));
+	@Test
+	public void errorDuplicateExternal() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			InputConfig cfg = InputConfig.forString("someString.");
+			cfg.addPredicateMethods(Externals.scan(this.getClass()));
+			cfg.addPredicateMethods(Externals.scan(this.getClass()));
+		});
 	}
 
 	@Test
@@ -318,7 +327,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	@Ignore("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
+	@Disabled("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
 	public void withExternalInvocationCounted1() throws Exception {
 		Alpha system = new Alpha();
 		InputConfig cfg = InputConfig.forString("a :- &isOne[1], &isOne[1].");
@@ -336,7 +345,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	@Ignore("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
+	@Disabled("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
 	public void withExternalInvocationCounted2() throws Exception {
 		Alpha system = new Alpha();
 		InputConfig cfg = InputConfig.forString("a. b :- &isOne[1], &isOne[2].");
@@ -354,7 +363,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	@Ignore("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
+	@Disabled("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
 	public void withExternalInvocationCounted3() throws Exception {
 		Alpha system = new Alpha();
 		InputConfig cfg = InputConfig.forString("a :- &isOne[1], not &isOne[2].");
@@ -413,8 +422,8 @@ public class AlphaTest {
 		InputProgram input = system.readProgramString(progstr);
 		NormalProgram normal = system.normalizeProgram(input);
 		InternalProgram preprocessed = system.performProgramPreprocessing(InternalProgram.fromNormalProgram(normal));
-		Assert.assertFalse("Preprocessed program contains fact derived from stratifiable rule, but should not!",
-				preprocessed.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("q", "a")));
+		assertFalse(preprocessed.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("q", "a")),
+				"Preprocessed program contains fact derived from stratifiable rule, but should not!");
 	}
 
 	/**
@@ -428,8 +437,8 @@ public class AlphaTest {
 		InputProgram input = system.readProgramString(progstr);
 		NormalProgram normal = system.normalizeProgram(input);
 		InternalProgram preprocessed = system.performProgramPreprocessing(InternalProgram.fromNormalProgram(normal));
-		Assert.assertTrue("Preprocessed program does not contain fact derived from stratifiable rule, but should!",
-				preprocessed.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("q", "a")));
+		assertTrue(preprocessed.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("q", "a")),
+				"Preprocessed program does not contain fact derived from stratifiable rule, but should!");
 	}
 
 	/**

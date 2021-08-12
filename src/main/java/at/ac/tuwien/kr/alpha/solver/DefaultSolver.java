@@ -107,9 +107,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		this.assignment = assignment;
 		this.store = store;
 		this.choiceManager = new ChoiceManager(assignment, store);
-		choiceManager.setChecksEnabled(config.isDebugInternalChecks());
+		this.choiceManager.setChecksEnabled(config.isDebugInternalChecks());
 		this.weakConstraintsManager = new WeakConstraintsManager(assignment);
-		weakConstraintsManager.setChecksEnabled(config.isDebugInternalChecks());
+		this.weakConstraintsManager.setChecksEnabled(config.isDebugInternalChecks());
 		this.learner = new GroundConflictNoGoodLearner(assignment, atomStore);
 		this.branchingHeuristic = chainFallbackHeuristic(grounder, assignment, random, heuristicsConfiguration);
 		this.disableJustifications = config.isDisableJustificationSearch();

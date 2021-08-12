@@ -27,25 +27,27 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
-import at.ac.tuwien.kr.alpha.common.IntIterator;
-import org.junit.Before;
-import org.junit.Test;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
+import at.ac.tuwien.kr.alpha.common.IntIterator;
 
 /**
  * Copyright (c) 2018-2020, the Alpha Team.
@@ -59,30 +61,34 @@ public class TrailAssignmentTest {
 		assignment = new TrailAssignment(atomStore);
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		assignment.clear();
 		assignment.growForMaxAtomId();
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void assign() throws Exception {
-		assignment.assign(0, null);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void negativeAtomThrows() throws Exception {
-		assignment.assign(-1, null);
+	@Test
+	public void assignThrowsExceptionOnNullTruth() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			assignment.assign(0, null);
+		});
 	}
 
 	@Test
-	public void alreadyAssignedThrows() throws Exception {
+	public void negativeAtomThrowsException() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			assignment.assign(-1, null);
+		});
+	}
+
+	@Test
+	public void alreadyAssignedThrows() {
 		assertNull(assignment.assign(1, MBT));
 		assertNotNull(assignment.assign(1, FALSE));
 	}
 
 	@Test
-	public void initializeDecisionLevelState() throws Exception {
+	public void initializeDecisionLevelState() {
 		assignment.assign(1, MBT);
 		assignment.choose(2, MBT);
 		assignment.choose(1, TRUE);
@@ -150,7 +156,7 @@ public class TrailAssignmentTest {
 	}
 
 	@Test
-	public void assignmentsToProcess() throws Exception {
+	public void assignmentsToProcess() {
 		assignment.assign(1, MBT);
 
 		Assignment.Pollable queue = assignment.getAssignmentsToProcess();
@@ -167,7 +173,7 @@ public class TrailAssignmentTest {
 	}
 
 	@Test
-	public void newAssignmentsIteratorAndBacktracking() throws Exception {
+	public void newAssignmentsIteratorAndBacktracking() {
 		IntIterator newAssignmentsIterator;
 
 		assignment.assign(1, MBT);
@@ -190,7 +196,7 @@ public class TrailAssignmentTest {
 	}
 
 	@Test
-	public void newAssignmentsIteratorLowerDecisionLevelAndBacktracking() throws Exception {
+	public void newAssignmentsIteratorLowerDecisionLevelAndBacktracking() {
 		IntIterator newAssignmentsIterator;
 
 		assignment.choose(1, MBT);
@@ -205,7 +211,7 @@ public class TrailAssignmentTest {
 	}
 
 	@Test
-	public void iteratorAndBacktracking() throws Exception {
+	public void iteratorAndBacktracking() {
 		Assignment.Pollable assignmentsToProcess = assignment.getAssignmentsToProcess();
 
 		assignment.assign(1, MBT);
@@ -242,7 +248,7 @@ public class TrailAssignmentTest {
 	}
 
 	@Test
-	public void numberOfAssignedAtoms() throws Exception {
+	public void numberOfAssignedAtoms() {
 		assignment.assign(1, MBT);
 		assertEquals(1, assignment.getNumberOfAssignedAtoms());
 		assignment.assign(2, FALSE);
