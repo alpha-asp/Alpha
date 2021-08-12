@@ -1,10 +1,14 @@
 package at.ac.tuwien.kr.alpha.solver.optimization;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.TreeMap;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Copyright (c) 2021, the Alpha Team.
@@ -46,7 +50,7 @@ public class WeightAtLevelsManagerTest {
 		assertTrue(weightAtLevelsManager.isCurrentBetterThanBest());
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test
 	public void addAtomOnHigherThanMaxLevel() {
 		WeightAtLevelsManager weightAtLevelsManager = new WeightAtLevelsManager();
 		weightAtLevelsManager.setMaxLevel(3);
@@ -60,7 +64,9 @@ public class WeightAtLevelsManagerTest {
 		weightAtLevelsManager.decreaseCurrentWeight(0, 2);
 		assertTrue(weightAtLevelsManager.isCurrentBetterThanBest());
 		// Now increase some weight at a level beyond the declared maxLevel, so an Exception is expected here.
-		weightAtLevelsManager.increaseCurrentWeight(4, 3);
+		assertThrows(RuntimeException.class, () -> {
+			weightAtLevelsManager.increaseCurrentWeight(4, 3);
+		});
 	}
 
 	@Test
