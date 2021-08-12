@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -32,10 +33,11 @@ public class WeakConstraintsManager implements Checkable {
 	private final ArrayList<Integer> knownCallbackAtoms;
 	private final ArrayList<WeakConstraintAtomCallback> knownAtomCallbacksForFirstAnswerSet = new ArrayList<>();
 	private boolean foundFirstAnswerSet;
+	private final HashSet<WeakConstraintAtomCallback> aboveMaxLevelTrueAtoms = new HashSet<>();
 
 	public WeakConstraintsManager(WritableAssignment assignment) {
 		this.assignment = assignment;
-		this.weightAtLevelsManager = new WeightAtLevelsManager(this);
+		this.weightAtLevelsManager = new WeightAtLevelsManager();
 		this.knownCallbackAtoms = new ArrayList<>();
 	}
 
@@ -54,6 +56,9 @@ public class WeakConstraintsManager implements Checkable {
 			assignment.registerCallbackOnChange(wcA.atom);
 			assignment.getAtomCallbackManager().recordCallback(wcA.atom, wcA);
 			knownCallbackAtoms.add(wcA.atom);
+			if (assignment.getTruth(wcA.atom) != null) {
+				throw oops("Adding weak constraints information and atom callback already has a truth value assigned.");
+			}
 			if (!foundFirstAnswerSet) {
 				knownAtomCallbacksForFirstAnswerSet.add(wcA);
 			}
@@ -78,41 +83,46 @@ public class WeakConstraintsManager implements Checkable {
 		if (!foundFirstAnswerSet) {
 			// Record old truth value and return if no answer set has been found yet.
 			atomCallback.lastTruthValue = currentAtomTruth;
+			LOGGER.trace("End processing callback as no first answer set has been found.");
 			return;
 		}
 		LOGGER.trace("Current truth value is: {}", currentAtomTruth);
+		atomCallback.lastTruthValue = currentAtomTruth;
 		if (lastTruthValue == null) {
 			// Change from unassigned to some truth value.
 			if (currentAtomTruth == MBT) {
-				weightAtLevelsManager.increaseCurrentWeight(atomCallback);
+				increaseWeight(atomCallback);
 			}
 			// Note: for assignment to FALSE or MBT->TRUE, no change needed.
 		} else {
+			// Decrease if change from TRUE/MBT to unassigned.
 			if (lastTruthValue.toBoolean() && currentAtomTruth == null) {
-				// Change from TRUE/MBT to unassigned.
-				weightAtLevelsManager.decreaseCurrentWeight(atomCallback);
+				decreaseWeight(atomCallback);
 			}
 			// Note: for backtracking from TRUE to MBT no change is needed.
 			if (currentAtomTruth != null && lastTruthValue.toBoolean() && !currentAtomTruth.toBoolean()) {
 				throw oops("Unexpected case of weak constraint atom directly changing truth value from MBT/TRUE to FALSE encountered. Atom/LastTruth/CurrentTruth: " + atom + "/" + lastTruthValue + "/" + currentAtomTruth);
 			}
 		}
-		atomCallback.lastTruthValue = currentAtomTruth;
+		LOGGER.trace("End Processing callback for atom {} with weight at level {}@{}, last truth value was {}, current is {}.", atom, weight, level, lastTruthValue, currentAtomTruth);
 	}
 
-	/**
-	 * For the first answer-set returns all those {@link WeakConstraintAtomCallback}s that are true.
-	 * @return a list of all {@link WeakConstraintAtomCallback}s whose atom is MBT/TRUE.
-	 * Throws an exception if called after the first answer-set has been found.
-	 */
-	public List<WeakConstraintAtomCallback> getTrueWeakConstraintAtomCallbacksOfFirstAnswerSet() {
-		if (foundFirstAnswerSet) {
-			throw oops("Requesting true WeakConstraintAtomCallbacks after first answer-set has been computed.");
+	private void increaseWeight(WeakConstraintAtomCallback atomCallback) {
+		if (weightAtLevelsManager.getMaxLevel() < atomCallback.level) {
+			LOGGER.info("Adding higher level than possible with weightAtLevelsManager: level={} and maxLevel={}, callback is: {}.", atomCallback.level, weightAtLevelsManager.getMaxLevel(), atomCallback);
+			aboveMaxLevelTrueAtoms.add(atomCallback);
+		} else {
+			weightAtLevelsManager.increaseCurrentWeight(atomCallback.level, atomCallback.weight);
 		}
-		return knownAtomCallbacksForFirstAnswerSet.stream().filter(n -> {
-			ThriceTruth truth = assignment.getTruth(n.atom);
-			return truth != null && truth.toBoolean();
-		}).collect(Collectors.toList());
+	}
+
+	private void decreaseWeight(WeakConstraintAtomCallback atomCallback) {
+		if (weightAtLevelsManager.getMaxLevel() < atomCallback.level) {
+			LOGGER.info("Removing higher level than possible with weightAtLevelsManager: level={} and maxLevel={}, callback is: {}.", atomCallback.level, weightAtLevelsManager.getMaxLevel(), atomCallback);
+			aboveMaxLevelTrueAtoms.remove(atomCallback);
+		} else {
+			weightAtLevelsManager.decreaseCurrentWeight(atomCallback.level, atomCallback.weight);
+		}
 	}
 
 	/**
@@ -120,7 +130,10 @@ public class WeakConstraintsManager implements Checkable {
 	 * @return true if the current partial interpretation has worse (or equal) weight than the best-known answer-set.
 	 */
 	public boolean isCurrentBetterThanBest() {
-		boolean isCurrentBetterThanBest = weightAtLevelsManager.isCurrentBetterThanBest();
+		if (!foundFirstAnswerSet) {
+			return true;
+		}
+		boolean isCurrentBetterThanBest = aboveMaxLevelTrueAtoms.isEmpty() && weightAtLevelsManager.isCurrentBetterThanBest();
 		LOGGER.trace("Is current better than best? {}", isCurrentBetterThanBest);
 		return isCurrentBetterThanBest;
 	}
@@ -129,8 +142,39 @@ public class WeakConstraintsManager implements Checkable {
 	 * Mark the current weight as being the best of all currently known answer-sets.
 	 */
 	public void markCurrentWeightAsBestKnown() {
+		if (!foundFirstAnswerSet) {
+			initializeFirstWeightsAtLevel();
+			foundFirstAnswerSet = true;
+		} else {
+			if (!isCurrentBetterThanBest()) {
+				throw oops("WeakConstraintsManager instructed to mark current valuation as best-known, but there is a better one already.");
+			}
+		}
+		if (!aboveMaxLevelTrueAtoms.isEmpty()) {
+			throw oops("WeakConstraintsManager has aboveMaxLevelTrueAtoms but is called to markCurrentWeightsAsBestKnown.");
+		}
 		weightAtLevelsManager.markCurrentWeightAsBestKnown();
-		foundFirstAnswerSet = true;
+	}
+
+	private void initializeFirstWeightsAtLevel() {
+		// First answer set has been found, find its maximum level and inform WeightAtLevelsManager.
+		LOGGER.trace("Initializing for first answer-set.");
+		int highestLevel = 0;
+		List<WeakConstraintAtomCallback> trueWeakConstraintAtomCallbacks = knownAtomCallbacksForFirstAnswerSet
+			.stream()
+			.filter(wca -> assignment.getTruth(wca.atom).toBoolean())
+			.collect(Collectors.toList());
+		for (WeakConstraintAtomCallback weakConstraintAtomCallback : trueWeakConstraintAtomCallbacks) {
+			int level = weakConstraintAtomCallback.level;
+			if (highestLevel < level) {
+				highestLevel = level;
+			}
+		}
+		weightAtLevelsManager.setMaxLevel(highestLevel);
+		// Now inform WeightAtLevelsManager about all true weak constraint atoms.
+		for (WeakConstraintAtomCallback weakConstraintAtomCallback : trueWeakConstraintAtomCallbacks) {
+			weightAtLevelsManager.increaseCurrentWeight(weakConstraintAtomCallback.level, weakConstraintAtomCallback.weight);
+		}
 	}
 
 	/**
@@ -138,6 +182,7 @@ public class WeakConstraintsManager implements Checkable {
 	 * @return a NoGood which excludes the exact weight of the current assignment.
 	 */
 	public NoGood generateExcludingNoGood() {
+		LOGGER.trace("Generating excluding NoGood.");
 		// Collect all currently true/mbt weights and put their respective literals in one nogood.
 		// Note: alternative to searching all known callback atoms would be maintaining a list of true ones, but this is probably less efficient.
 		ArrayList<Integer> trueCallbackAtoms = new ArrayList<>();
@@ -147,6 +192,7 @@ public class WeakConstraintsManager implements Checkable {
 				trueCallbackAtoms.add(atomToLiteral(callbackAtom));
 			}
 		}
+		LOGGER.trace("True weak constraint representing atoms are: {}", trueCallbackAtoms);
 		return NoGood.fromConstraint(trueCallbackAtoms, Collections.emptyList());
 	}
 
@@ -160,6 +206,19 @@ public class WeakConstraintsManager implements Checkable {
 	 * @return a TreeMap mapping levels to weights.
 	 */
 	public TreeMap<Integer, Integer> getCurrentWeightAtLevels() {
-		return weightAtLevelsManager.getCurrentWeightAtLevels();
+		LOGGER.trace("Reporting current weight at levels.");
+		TreeMap<Integer, Integer> weightAtLevels = weightAtLevelsManager.getCurrentWeightAtLevels();
+		if (aboveMaxLevelTrueAtoms.isEmpty()) {
+			LOGGER.trace("Current weight at levels: {}", weightAtLevels);
+			return weightAtLevels;
+		}
+		// Add weights above the maximum level stored in the WeightAtLevelsManager.
+		for (WeakConstraintAtomCallback aboveMaxLevelTrueAtom : aboveMaxLevelTrueAtoms) {
+			Integer weightAtLevel = weightAtLevels.get(aboveMaxLevelTrueAtom.level);
+			weightAtLevel = weightAtLevel == null ? 0 : weightAtLevel;
+			weightAtLevels.putIfAbsent(aboveMaxLevelTrueAtom.level, weightAtLevel + aboveMaxLevelTrueAtom.weight);
+		}
+		LOGGER.trace("Current weight at levels: {}", weightAtLevels);
+		return weightAtLevels;
 	}
 }

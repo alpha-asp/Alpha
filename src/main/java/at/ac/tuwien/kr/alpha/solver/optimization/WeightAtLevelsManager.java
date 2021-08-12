@@ -5,8 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.TreeMap;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -17,13 +15,18 @@ import static java.lang.Math.max;
  * valuation of the best-known answer-set at the time, the other is the (partial) valuation of the currently explored
  * (partial) answer-set.
  *
+ * Weights-at-levels are stored in arrays in reverse order (array position 0 is most important level). Therefore, the
+ * maximum level must be declared upfront. Furthermore, the array may grow if less-important levels are added later and
+ * it is automatically trimmed if highest-level weights are 0 when marking the current valuation as the best-known one.
+ *
+ * Code using this class must therefore ensure not to add weights at levels beyond the current maximum one.
+ *
  * Copyright (c) 2021, the Alpha Team.
  */
 public class WeightAtLevelsManager implements Checkable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(WeightAtLevelsManager.class);
 	private boolean checksEnabled;
 
-	private final WeakConstraintsManager weakConstraintsManager;
 	// Stores weights in inverted order: zero is highest violated level, may also grow to represent negative levels.
 	private ArrayList<Integer> currentWeightAtLevels;
 	private ArrayList<Integer> bestKnownWeightAtLevels;
@@ -34,9 +37,7 @@ public class WeightAtLevelsManager implements Checkable {
 	private boolean isCurrentBetterThanBest;
 	private boolean hasBestKnown;
 
-	public WeightAtLevelsManager(WeakConstraintsManager weakConstraintsManager) {
-		this.weakConstraintsManager = weakConstraintsManager;
-		currentWeightAtLevels = new ArrayList<>();
+	public WeightAtLevelsManager() {
 		bestKnownWeightAtLevels = new ArrayList<>();
 		maxOffsetCurrentIsAllEqualBest = -1;
 		isCurrentBetterThanBest = true;
@@ -54,6 +55,9 @@ public class WeightAtLevelsManager implements Checkable {
 	public boolean isCurrentBetterThanBest() {
 		if (checksEnabled) {
 			runChecks();
+		}
+		if (!hasBestKnown) {
+			throw oops("WeightAtLevelsManager has no best-known valuation yet.");
 		}
 		return isCurrentBetterThanBest;
 	}
@@ -74,14 +78,31 @@ public class WeightAtLevelsManager implements Checkable {
 		return weightPerLevels;
 	}
 
-	public void increaseCurrentWeight(WeakConstraintAtomCallback atom) {
+	/**
+	 * Returns the current maximum level. Note that this may be smaller than a previously set one as the maximum
+	 * level may decrease following the marking of another valuation as best-known.
+	 * @return the current maximum level.
+	 */
+	public int getMaxLevel() {
+		return maxLevel;
+	}
+
+	/**
+	 * Increases the current valuation at the given level by the given weight.
+	 * @param level the level to increase.
+	 * @param weight the weight at the level.
+	 */
+	public void increaseCurrentWeight(int level, int weight) {
 		if (checksEnabled) {
 			runChecks();
 		}
+		if (level > maxLevel) {
+			throw oops("WeightAtLevelsManager invoked to increase violation above maximum declared level.");
+		}
 		// Record the new weight.
-		growForLevel(currentWeightAtLevels, atom.level);
-		int listOffset = levelToListOffset(atom.level);
-		int newWeight = currentWeightAtLevels.get(listOffset) + atom.weight;
+		growForLevel(currentWeightAtLevels, level);
+		int listOffset = levelToListOffset(level);
+		int newWeight = currentWeightAtLevels.get(listOffset) + weight;
 		currentWeightAtLevels.set(listOffset, newWeight);
 
 		// Now check whether current is worse than best known.
@@ -95,20 +116,31 @@ public class WeightAtLevelsManager implements Checkable {
 			maxOffsetCurrentIsAllEqualBest = listOffset - 1;
 		} else if (listOffset == maxOffsetCurrentIsAllEqualBest + 1) {
 			// Weight increased for the first level where current and best-known are not equal.
-			moveUpwardsMaxLevelCurrentIsAllEqual();
+			moveUpwardsMaxOffsetCurrentIsAllEqual();
 			recomputeIsCurrentBetterThanBest();
 		} else {
 			throw oops("Increasing weight of current answer reached unforeseen state.");
 		}
-	}
-
-	public void decreaseCurrentWeight(WeakConstraintAtomCallback atom) {
 		if (checksEnabled) {
 			runChecks();
 		}
+	}
+
+	/**
+	 * Decreases the current valuation at the given level by the given weight.
+	 * @param level the level to decrease.
+	 * @param weight the weight at the level.
+	 */
+	public void decreaseCurrentWeight(int level, int weight) {
+		if (checksEnabled) {
+			runChecks();
+		}
+		if (level > maxLevel) {
+			throw oops("WeightAtLevelsManager invoked to decrease violation above maximum declared level.");
+		}
 		// Record the new weight.
-		int listOffset = levelToListOffset(atom.level);
-		int newWeight = currentWeightAtLevels.get(listOffset) - atom.weight;
+		int listOffset = levelToListOffset(level);
+		int newWeight = currentWeightAtLevels.get(listOffset) - weight;
 		currentWeightAtLevels.set(listOffset, newWeight);
 
 		// Now check whether current is better than best known and adapt maxOffsetCurrentIsAllEqualBest.
@@ -123,14 +155,17 @@ public class WeightAtLevelsManager implements Checkable {
 			return;
 		} else if (listOffset == maxOffsetCurrentIsAllEqualBest + 1) {
 			// Decrease might make current better than best known and change level of equals.
-			moveUpwardsMaxLevelCurrentIsAllEqual();
+			moveUpwardsMaxOffsetCurrentIsAllEqual();
 			recomputeIsCurrentBetterThanBest();
 		} else {
 			throw oops("Decreasing weight of current answer reached unforeseen state.");
 		}
+		if (checksEnabled) {
+			runChecks();
+		}
 	}
 
-	private void moveUpwardsMaxLevelCurrentIsAllEqual() {
+	private void moveUpwardsMaxOffsetCurrentIsAllEqual() {
 		for (int i = max(maxOffsetCurrentIsAllEqualBest, 0); i < currentWeightAtLevels.size(); i++) {
 			int currentLevelWeight = currentWeightAtLevels.get(i);
 			int bestLevelWeight = bestKnownWeightAtLevels.size() > i ? bestKnownWeightAtLevels.get(i) : 0;
@@ -170,18 +205,22 @@ public class WeightAtLevelsManager implements Checkable {
 
 	/**
 	 * Marks the current valuation/weights-at-levels as being the best-known one.
+	 *
+	 * May shrink the underlying maximum level if current highest level(s) are zero.
 	 */
 	public void markCurrentWeightAsBestKnown() {
 		LOGGER.trace("Marking current answer-set as best known.");
 		if (!hasBestKnown) {
-			initializeFirstWeightsAtLevel();
-		} else {
-			trimZeroWeightLevels();
-			bestKnownWeightAtLevels = new ArrayList<>(currentWeightAtLevels);
+			hasBestKnown = true;
+			LOGGER.trace("  Initially, current/best known weights are: {}", currentWeightAtLevels);
 		}
+		trimZeroWeightLevels();
+		bestKnownWeightAtLevels = new ArrayList<>(currentWeightAtLevels);
 		maxOffsetCurrentIsAllEqualBest = bestKnownWeightAtLevels.size() - 1;
-		LOGGER.trace("Max offset current is all equal to best known is: {}", maxOffsetCurrentIsAllEqualBest);
+		LOGGER.trace("  Max offset current is all equal to best known is: {}", maxOffsetCurrentIsAllEqualBest);
+		LOGGER.trace("  Current/Best known weights are: {}", bestKnownWeightAtLevels);
 		isCurrentBetterThanBest = false;
+		LOGGER.trace("End marking current answer-set as best known.");
 	}
 
 	/**
@@ -201,39 +240,21 @@ public class WeightAtLevelsManager implements Checkable {
 		}
 	}
 
-	private void initializeFirstWeightsAtLevel() {
-		// First answer set has been found, take its maximum level as zero-level.
-		LOGGER.trace("Initializing for first answer-set.");
-		HashMap<Integer, Integer> sumWeightsAtLevel = new HashMap<>();
-		int highestLevel = 0;
-		int lowestLevel = 0;
-		for (WeakConstraintAtomCallback atomCallback : weakConstraintsManager.getTrueWeakConstraintAtomCallbacksOfFirstAnswerSet()) {
-			int level = atomCallback.level;
-			// Record if level is highest or lowest so far.
-			if (highestLevel < level) {
-				highestLevel = level;
-			}
-			if (lowestLevel > level) {
-				lowestLevel = level;
-			}
-			// Update weight information.
-			if (sumWeightsAtLevel.get(level) == null) {
-				sumWeightsAtLevel.put(level, atomCallback.weight);
-			} else {
-				int newWeight = sumWeightsAtLevel.get(level) + atomCallback.weight;
-				sumWeightsAtLevel.put(level, newWeight);
-			}
+	/**
+	 * Initializes the maximum level that will ever be encountered while solving.
+	 * This method may only be called once and must be called before the first weights are set/increased.
+	 *
+	 * Note that the maximum level may decrease automatically following calls to markCurrentWeightAsBestKnown.
+	 *
+	 * @param maxLevel the highest level ever to be encountered.
+	 */
+	public void setMaxLevel(int maxLevel) {
+		if (currentWeightAtLevels != null) {
+			throw oops("WeightAtLevelsManager.setMaxLevel called more than once.");
 		}
-		maxLevel = highestLevel;
-		LOGGER.trace("Maximum recorded level (0-offset) is: {} ({})", maxLevel, listOffsetToLevel(0));
-		bestKnownWeightAtLevels = new ArrayList<>();
-		growForLevel(bestKnownWeightAtLevels, lowestLevel);
-		for (Map.Entry<Integer, Integer> levelWeight : sumWeightsAtLevel.entrySet()) {
-			bestKnownWeightAtLevels.set(maxLevel - levelWeight.getKey(), levelWeight.getValue());
-		}
-		currentWeightAtLevels = new ArrayList<>(bestKnownWeightAtLevels);
-		hasBestKnown = true;
-		LOGGER.trace("Initially, current/best known weights are: {}", bestKnownWeightAtLevels);
+		this.maxLevel = maxLevel;
+		LOGGER.trace("Maximum level (0-offset) is set to: {} ({})", maxLevel, listOffsetToLevel(0));
+		currentWeightAtLevels = new ArrayList<>();
 	}
 
 	private int levelToListOffset(int level) {
@@ -257,14 +278,16 @@ public class WeightAtLevelsManager implements Checkable {
 		if (!hasBestKnown && !bestKnownWeightAtLevels.isEmpty()) {
 			throw oops("WeakConstraintManager has best known answer set information but no answer set was found yet.");
 		}
-		if (hasBestKnown && bestKnownWeightAtLevels.get(0) == 0) {
+		if (hasBestKnown && !bestKnownWeightAtLevels.isEmpty() && bestKnownWeightAtLevels.get(0) == 0) {
 			throw oops("WeakConstraintManager has best-known answer set with zero-weights at highest level.");
 		}
-		// Check whether isCurrentBetterThanBest flag is consistent.
-		if (isCurrentBetterThanBest != checkIsCurrentBetterThanBest()) {
-			throw oops("WeakConstraintManager detected valuation of current assignment is inconsistent with state flag.");
+		if (hasBestKnown) {
+			// Check whether isCurrentBetterThanBest flag is consistent.
+			if (isCurrentBetterThanBest != checkIsCurrentBetterThanBest()) {
+				throw oops("WeakConstraintManager detected valuation of current assignment is inconsistent with state flag.");
+			}
+			checkLevelBar();
 		}
-		checkLevelBar();
 		LOGGER.trace("Checks done.");
 	}
 

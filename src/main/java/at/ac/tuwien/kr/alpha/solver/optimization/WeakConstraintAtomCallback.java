@@ -47,4 +47,9 @@ public class WeakConstraintAtomCallback implements AtomCallbackManager.AtomCallb
 	public int hashCode() {
 		return Objects.hash(atom, weight, level);
 	}
+
+	@Override
+	public String toString() {
+		return atom + "[" + weight + "@" + level + "]=" + lastTruthValue;
+	}
 }
