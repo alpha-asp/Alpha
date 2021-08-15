@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 
 import java.util.Set;
 
@@ -15,6 +16,7 @@ public class WeakConstraintsTests {
 
 	@RegressionTest
 	public void simpleWeightsSameLevel(RegressionTestConfig cfg) {
+		TestUtils.ignoreTestForNaiveSolver(cfg);
 		String program = ":~a.[1@0,foo,bar]" +
 			":~b.[2@0,baz]" +
 			"a :- not b. b:- not a.";
@@ -25,6 +27,7 @@ public class WeakConstraintsTests {
 
 	@RegressionTest
 	public void simpleWeightedAnswerSet(RegressionTestConfig cfg) {
+		TestUtils.ignoreTestForNaiveSolver(cfg);
 		String program = ":~a.[2@2,foo,bar]" +
 			":~b.[1@1,baz]" +
 			"a :- not b. b:- not a.";
@@ -34,6 +37,7 @@ public class WeakConstraintsTests {
 
 	@RegressionTest
 	public void simpleWeightedAnswerSetWithNegativeLevel(RegressionTestConfig cfg) {
+		TestUtils.ignoreTestForNaiveSolver(cfg);
 		String program = ":~a.[2@1,foo,bar]" +
 			":~b.[1@-1,baz]" +
 			"a :- not b. b:- not a.";
@@ -43,6 +47,7 @@ public class WeakConstraintsTests {
 
 	@RegressionTest
 	public void simpleMultiLevelWeightedAnswerSet(RegressionTestConfig cfg) {
+		TestUtils.ignoreTestForNaiveSolver(cfg);
 		String program = ":~a.[2@2,foo,bar]" +
 			":~b.[1@1,baz]" +
 			":~b.[3@-4,baz]" +
@@ -53,6 +58,7 @@ public class WeakConstraintsTests {
 
 	@RegressionTest
 	public void sameWeightSummedUpInLevel(RegressionTestConfig cfg) {
+		TestUtils.ignoreTestForNaiveSolver(cfg);
 		String program = "{a;b}." +
 			":- not a, not b." +
 			":~b.[1@3]" +
@@ -64,6 +70,7 @@ public class WeakConstraintsTests {
 
 	@RegressionTest
 	public void sameWeightSameTermNotSummedUpInLevel(RegressionTestConfig cfg) {
+		TestUtils.ignoreTestForNaiveSolver(cfg);
 		String program = "{a;b}." +
 			":- not a, not b." +
 			":~b.[1@3]" +
@@ -75,9 +82,10 @@ public class WeakConstraintsTests {
 
 	@RegressionTest
 	public void negativeWeightThrowsException(RegressionTestConfig cfg) {
+		TestUtils.ignoreTestForNaiveSolver(cfg);
 		String program = "p(1..9)." +
 			"a :- q(X)." +
-			"{ q(X) } :- p(X)." +
+			"{ q(X) } :- p(X), X != 8. % exclude case where violation is 0, which could be encountered before negative weight.\n" +
 			"has_q :- q(X)." +
 			":- not has_q." +
 			":- q(X), q(Y), X != Y." +
@@ -95,6 +103,7 @@ public class WeakConstraintsTests {
 
 	@RegressionTest
 	public void complexValuationWithMultipleWeightsOnMultipleLevels(RegressionTestConfig cfg) {
+		TestUtils.ignoreTestForNaiveSolver(cfg);
 		String program = "dom(1..3)." +
 			"{ a(X) } :- dom(X)." +
 			"{ b(X) } :- dom(X)." +

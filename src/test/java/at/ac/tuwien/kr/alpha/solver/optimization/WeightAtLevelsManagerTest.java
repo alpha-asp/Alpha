@@ -18,6 +18,7 @@ public class WeightAtLevelsManagerTest {
 	@Test
 	public void simpleWeightAtTwoLevels() {
 		WeightAtLevelsManager weightAtLevelsManager = new WeightAtLevelsManager();
+		weightAtLevelsManager.setChecksEnabled(true);
 		weightAtLevelsManager.setMaxLevel(3);
 		assertTrue(weightAtLevelsManager.getCurrentWeightAtLevels().isEmpty());
 		weightAtLevelsManager.increaseCurrentWeight(0, 2);
@@ -38,6 +39,7 @@ public class WeightAtLevelsManagerTest {
 	@Test
 	public void currentIsBestAfterDecrease() {
 		WeightAtLevelsManager weightAtLevelsManager = new WeightAtLevelsManager();
+		weightAtLevelsManager.setChecksEnabled(true);
 		weightAtLevelsManager.setMaxLevel(0);
 		assertTrue(weightAtLevelsManager.getCurrentWeightAtLevels().isEmpty());
 		weightAtLevelsManager.increaseCurrentWeight(0, 2);
@@ -53,6 +55,7 @@ public class WeightAtLevelsManagerTest {
 	@Test
 	public void addAtomOnHigherThanMaxLevel() {
 		WeightAtLevelsManager weightAtLevelsManager = new WeightAtLevelsManager();
+		weightAtLevelsManager.setChecksEnabled(true);
 		weightAtLevelsManager.setMaxLevel(3);
 		assertTrue(weightAtLevelsManager.getCurrentWeightAtLevels().isEmpty());
 		weightAtLevelsManager.increaseCurrentWeight(3, 1);
@@ -72,6 +75,7 @@ public class WeightAtLevelsManagerTest {
 	@Test
 	public void markingCurrentWeightAsBestDecreasesMaximumLevel() {
 		WeightAtLevelsManager weightAtLevelsManager = new WeightAtLevelsManager();
+		weightAtLevelsManager.setChecksEnabled(true);
 		weightAtLevelsManager.setMaxLevel(3);
 		assertTrue(weightAtLevelsManager.getCurrentWeightAtLevels().isEmpty());
 		weightAtLevelsManager.increaseCurrentWeight(1, 1);
@@ -79,5 +83,41 @@ public class WeightAtLevelsManagerTest {
 		assertEquals(3, weightAtLevelsManager.getMaxLevel());
 		weightAtLevelsManager.markCurrentWeightAsBestKnown();
 		assertTrue(weightAtLevelsManager.getMaxLevel() < 3);
+	}
+
+	@Test
+	public void indirectTrimmingCheck() {
+		WeightAtLevelsManager weightAtLevelsManager = new WeightAtLevelsManager();
+		weightAtLevelsManager.setChecksEnabled(true);
+		weightAtLevelsManager.setMaxLevel(4);
+		assertTrue(weightAtLevelsManager.getCurrentWeightAtLevels().isEmpty());
+		weightAtLevelsManager.increaseCurrentWeight(4, 1);
+		weightAtLevelsManager.markCurrentWeightAsBestKnown();
+
+		weightAtLevelsManager.decreaseCurrentWeight(4, 1);
+		weightAtLevelsManager.increaseCurrentWeight(2, 1);
+		weightAtLevelsManager.increaseCurrentWeight(1, 3);
+		weightAtLevelsManager.markCurrentWeightAsBestKnown();
+		weightAtLevelsManager.decreaseCurrentWeight(1, 3);
+		// Note: the below assertion relies on the implementation of WeightAtLevelsManager doing trimming.
+		assertTrue(weightAtLevelsManager.getMaxLevel() < 3);
+	}
+
+	@Test
+	public void trimmingAtLevelZero() {
+		WeightAtLevelsManager weightAtLevelsManager = new WeightAtLevelsManager();
+		weightAtLevelsManager.setChecksEnabled(true);
+		weightAtLevelsManager.setMaxLevel(3);
+		assertTrue(weightAtLevelsManager.getCurrentWeightAtLevels().isEmpty());
+		weightAtLevelsManager.increaseCurrentWeight(2, 1);
+		weightAtLevelsManager.markCurrentWeightAsBestKnown();
+
+		weightAtLevelsManager.decreaseCurrentWeight(2, 1);
+		weightAtLevelsManager.increaseCurrentWeight(1, 1);
+		weightAtLevelsManager.markCurrentWeightAsBestKnown();
+		weightAtLevelsManager.decreaseCurrentWeight(1, 1);
+
+		weightAtLevelsManager.markCurrentWeightAsBestKnown();
+		assertFalse(weightAtLevelsManager.isCurrentBetterThanBest());
 	}
 }

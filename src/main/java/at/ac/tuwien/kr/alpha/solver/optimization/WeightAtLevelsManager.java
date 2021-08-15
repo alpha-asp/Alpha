@@ -260,7 +260,7 @@ public class WeightAtLevelsManager implements Checkable {
 	private int levelToListOffset(int level) {
 		int levelInList = maxLevel - level;
 		if (levelInList < 0) {
-			throw oops("Level optimisation in WeakConstraintsManager is negative.");
+			throw oops("Level optimisation in WeightAtLevelsManager is negative.");
 		}
 		return levelInList;
 	}
@@ -276,19 +276,27 @@ public class WeightAtLevelsManager implements Checkable {
 
 		}
 		if (!hasBestKnown && !bestKnownWeightAtLevels.isEmpty()) {
-			throw oops("WeakConstraintManager has best known answer set information but no answer set was found yet.");
+			throw oops("WeightAtLevelsManager has best known answer set information but no answer set was found yet.");
 		}
-		if (hasBestKnown && !bestKnownWeightAtLevels.isEmpty() && bestKnownWeightAtLevels.get(0) == 0) {
-			throw oops("WeakConstraintManager has best-known answer set with zero-weights at highest level.");
-		}
+		checkBestKnownFreeOfLeadingZeroLevels();
 		if (hasBestKnown) {
 			// Check whether isCurrentBetterThanBest flag is consistent.
 			if (isCurrentBetterThanBest != checkIsCurrentBetterThanBest()) {
-				throw oops("WeakConstraintManager detected valuation of current assignment is inconsistent with state flag.");
+				throw oops("WeightAtLevelsManager detected valuation of current assignment is inconsistent with state flag.");
 			}
 			checkLevelBar();
 		}
 		LOGGER.trace("Checks done.");
+	}
+
+	private void checkBestKnownFreeOfLeadingZeroLevels() {
+		// Tolerate Zero weight if there is only one level.
+		if (!hasBestKnown || bestKnownWeightAtLevels.size() == 1) {
+			return;
+		}
+		if (!bestKnownWeightAtLevels.isEmpty() && bestKnownWeightAtLevels.get(0) == 0) {
+			throw oops("WeightAtLevelsManager has best-known answer set with zero-weights at highest level.");
+		}
 	}
 
 	private void checkLevelBar() {
@@ -302,7 +310,7 @@ public class WeightAtLevelsManager implements Checkable {
 		}
 		// The level bar should be at highestLevelWhereLowerLevelsAreEqual+1.
 		if (maxOffsetCurrentIsAllEqualBest != highestLevelWhereLowerLevelsAreEqual) {
-			throw oops("WeakConstraintManager detected level bar at wrong level, it is " + maxOffsetCurrentIsAllEqualBest
+			throw oops("WeightAtLevelsManager detected level bar at wrong level, it is " + maxOffsetCurrentIsAllEqualBest
 				+ "and should be " + highestLevelWhereLowerLevelsAreEqual);
 		}
 	}
