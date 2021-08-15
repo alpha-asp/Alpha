@@ -16,6 +16,9 @@ public interface AnswerSet extends Comparable<AnswerSet> {
 
 	@Override
 	default int compareTo(AnswerSet other) {
+		if (other.getClass() != this.getClass()) {
+			return 1;
+		}
 		final SortedSet<Predicate> predicates = this.getPredicates();
 		int result = Util.compareSortedSets(predicates, other.getPredicates());
 

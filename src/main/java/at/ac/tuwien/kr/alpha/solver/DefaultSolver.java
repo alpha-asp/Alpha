@@ -27,33 +27,12 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToNegatedLiteral;
-import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
-import static at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
-import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Set;
-import java.util.function.Consumer;
-
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.WeightedAnswerSet;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
@@ -71,6 +50,29 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.ChainedBranchingHeuristics;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
+import at.ac.tuwien.kr.alpha.solver.optimization.WeakConstraintsManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToNegatedLiteral;
+import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
+import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
 
 /**
  * The new default solver employed in Alpha.
@@ -82,6 +84,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	private final NoGoodStore store;
 	private final ChoiceManager choiceManager;
+	private final WeakConstraintsManager weakConstraintsManager;
 	private final WritableAssignment assignment;
 
 	private final GroundConflictNoGoodLearner learner;
@@ -94,6 +97,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final boolean disableJustifications;
 	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
 	private final boolean disableNoGoodDeletion;
+	private final boolean enableBranchAndBoundOptimization;
 
 	private final PerformanceLog performanceLog;
 	
@@ -104,10 +108,13 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		this.store = store;
 		this.choiceManager = new ChoiceManager(assignment, store);
 		this.choiceManager.setChecksEnabled(config.isDebugInternalChecks());
+		this.weakConstraintsManager = new WeakConstraintsManager(assignment);
+		this.weakConstraintsManager.setChecksEnabled(config.isDebugInternalChecks());
 		this.learner = new GroundConflictNoGoodLearner(assignment, atomStore);
 		this.branchingHeuristic = chainFallbackHeuristic(grounder, assignment, random, heuristicsConfiguration);
 		this.disableJustifications = config.isDisableJustificationSearch();
 		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();
+		this.enableBranchAndBoundOptimization = grounder.inputProgramContainsWeakConstraints();
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
 	}
 
@@ -191,6 +198,15 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 					}
 					afterAllAtomsAssigned = false;
 				}
+			} else if (enableBranchAndBoundOptimization && !weakConstraintsManager.isCurrentBetterThanBest()) {
+				// The solver is searching for optimal answer sets and the current assignment is worse than a previously found answer set.
+				NoGood excludingNoGood = weakConstraintsManager.generateExcludingNoGood();
+				Map<Integer, NoGood> obtained = new LinkedHashMap<>();
+				obtained.put(grounder.register(excludingNoGood), excludingNoGood);
+				if (!ingest(obtained)) {
+					logStats();
+					return false;
+				}
 			} else if (didChange) {
 				// Ask the grounder for new NoGoods, then propagate (again).
 				LOGGER.trace("Doing propagation step.");
@@ -210,8 +226,13 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				LOGGER.debug("Closed unassigned known atoms (assigning FALSE).");
 				afterAllAtomsAssigned = true;
 			} else if (assignment.getMBTCount() == 0) {
-				// NOTE: If we would do optimization, we would now have a guaranteed upper bound.
+				// Found an answer-set.
 				AnswerSet as = translate(assignment.getTrueAssignments());
+				if (enableBranchAndBoundOptimization) {
+					// Enrich answer-set with weights information, record current-best upper bound.
+					weakConstraintsManager.markCurrentWeightAsBestKnown();
+					as = new WeightedAnswerSet((BasicAnswerSet)as, weakConstraintsManager.getCurrentWeightAtLevels());
+				}
 				LOGGER.debug("Answer-Set found: {}", as);
 				action.accept(as);
 				logStats();
@@ -469,6 +490,10 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		choiceManager.growForMaxAtomId(maxAtomId);
 		branchingHeuristic.growForMaxAtomId(maxAtomId);
 		branchingHeuristic.newNoGoods(obtained.values());
+
+		if (enableBranchAndBoundOptimization) {
+			weakConstraintsManager.addWeakConstraintsInformation(grounder.getWeakConstraintInformation());
+		}
 
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
 		Map.Entry<Integer, NoGood> entry;

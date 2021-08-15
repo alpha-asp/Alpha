@@ -1,26 +1,12 @@
 package at.ac.tuwien.kr.alpha.test.util;
 
-import static java.util.Collections.emptySet;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
-
-import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.function.Executable;
-
 import at.ac.tuwien.kr.alpha.AnswerSetsParser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.WeightedAnswerSet;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.AbstractProgram;
@@ -40,6 +26,22 @@ import at.ac.tuwien.kr.alpha.solver.RegressionTestConfig;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.function.Executable;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.StringJoiner;
+import java.util.TreeMap;
+
+import static java.util.Collections.emptySet;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestUtils {
 
@@ -116,7 +118,7 @@ public class TestUtils {
 		}
 		return new BasicAtom(pred, trms);
 	}
-	
+
 	private static Solver buildSolverFromSystemConfig(InputProgram prog, SystemConfig cfg) {
 		AtomStore atomStore = new AtomStoreImpl();
 		NormalProgram normalProg = new NormalizeProgramTransformation(cfg.isUseNormalizationGrid()).apply(prog);
@@ -124,15 +126,15 @@ public class TestUtils {
 				: InternalProgram.fromNormalProgram(normalProg);
 		return SolverFactory.getInstance(cfg, atomStore, GrounderFactory.getInstance(cfg.getGrounderName(), preprocessed, atomStore, cfg.isDebugInternalChecks()));
 	}
-	
+
 	public static Solver buildSolverForRegressionTest(InputProgram prog, RegressionTestConfig cfg) {
 		return buildSolverFromSystemConfig(prog, cfg.toSystemConfig());
 	}
-	
+
 	public static Solver buildSolverForRegressionTest(String prog, RegressionTestConfig cfg) {
 		return buildSolverFromSystemConfig(new ProgramParser().parse(prog), cfg.toSystemConfig());
 	}
-	
+
 	public static Solver buildSolverForRegressionTest(AtomStore atomStore, Grounder grounder, RegressionTestConfig cfg) {
 		SystemConfig systemCfg = cfg.toSystemConfig();
 		return SolverFactory.getInstance(systemCfg, atomStore, grounder);
@@ -141,7 +143,7 @@ public class TestUtils {
 	public static Set<AnswerSet> collectRegressionTestAnswerSets(InputProgram prog, RegressionTestConfig cfg) {
 		return buildSolverForRegressionTest(prog, cfg).collectSet();
 	}
-	
+
 	public static Set<AnswerSet> collectRegressionTestAnswerSets(String aspstr, RegressionTestConfig cfg) {
 		InputProgram prog = new ProgramParser().parse(aspstr);
 		return collectRegressionTestAnswerSets(prog, cfg);
@@ -151,28 +153,67 @@ public class TestUtils {
 		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
 		TestUtils.assertAnswerSetsEqual(answerSet, actualAnswerSets);
 	}
-	
+
 	public static void assertRegressionTestAnswerSets(RegressionTestConfig cfg, String program, String... answerSets) {
 		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
-		TestUtils.assertAnswerSetsEqual(answerSets, actualAnswerSets);		
+		TestUtils.assertAnswerSetsEqual(answerSets, actualAnswerSets);
 	}
-	
+
 	public static void assertRegressionTestAnswerSetsWithBase(RegressionTestConfig cfg, String program, String base, String... answerSets) {
 		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
-		TestUtils.assertAnswerSetsEqualWithBase(base, answerSets, actualAnswerSets);		
+		TestUtils.assertAnswerSetsEqualWithBase(base, answerSets, actualAnswerSets);
 	}
-	
+
 	public static void runWithTimeout(RegressionTestConfig cfg, long baseTimeout, long timeoutFactor, Executable action) {
 		long timeout = cfg.isDebugChecks() ? timeoutFactor * baseTimeout : baseTimeout;
 		assertTimeoutPreemptively(Duration.ofMillis(timeout), action);
 	}
-	
+
 	public static void ignoreTestForNaiveSolver(RegressionTestConfig cfg) {
 		Assumptions.assumeFalse(cfg.getSolverName().equals("naive"));
 	}
-	
+
 	public static void ignoreTestForNonDefaultDomainIndependentHeuristics(RegressionTestConfig cfg) {
 		Assumptions.assumeTrue(cfg.getBranchingHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
 	}
-	
+
+
+	public static WeightedAnswerSet weightedAnswerSetFromStrings(String basicAnswerSetAsString, String weightAtLevelsAsString) {
+		BasicAnswerSet basicAnswerSet = (BasicAnswerSet) AnswerSetsParser.parse("{ " + basicAnswerSetAsString + " }").iterator().next();
+		// Extract weights at levels from given string.
+		String[] weightsAtLevels = weightAtLevelsAsString.split(", ");
+		TreeMap<Integer, Integer> weightAtLevelsTreeMap = new TreeMap<>();
+		for (String weightsAtLevel : weightsAtLevels) {
+			String[] wAtL = weightsAtLevel.split("@");
+			weightAtLevelsTreeMap.put(Integer.parseInt(wAtL[1]), Integer.parseInt(wAtL[0]));
+		}
+		return new WeightedAnswerSet(basicAnswerSet, weightAtLevelsTreeMap);
+	}
+
+	public static void assertOptimumAnswerSetEquals(String expectedOptimumAnswerSet, String expectedWeightsAtLevels, Set<AnswerSet> actual) {
+		WeightedAnswerSet optimumAnswerSet = weightedAnswerSetFromStrings(expectedOptimumAnswerSet, expectedWeightsAtLevels);
+
+		// Check the optimum is contained in the set of actual answer sets.
+		if (!actual.contains(optimumAnswerSet)) {
+			throw new AssertionError("Expected optimum answer set is not contained in actual.\n" +
+				"Expected optimum answer set: " + optimumAnswerSet + "\n" +
+				"Actual answer sets: " + actual);
+		}
+		// Ensure that there is no better answer set contained in the actual answer sets.
+		for (AnswerSet actualAnswerSet : actual) {
+			if (actualAnswerSet.equals(optimumAnswerSet)) {
+				// Skip optimum itself.
+				continue;
+			}
+			if (!(actualAnswerSet instanceof WeightedAnswerSet)) {
+				throw new AssertionError("Expecting weighted answer sets but obtained answer set is not: " + actualAnswerSet);
+			}
+			WeightedAnswerSet actualWeightedAnswerSet = (WeightedAnswerSet) actualAnswerSet;
+			if (optimumAnswerSet.compareWeights(actualWeightedAnswerSet) >= 0) {
+				throw new AssertionError("Actual answer set is better than expected one.\n" +
+					"Expected: " + optimumAnswerSet + "\n" +
+					"Actual: " + actualWeightedAnswerSet);
+			}
+		}
+	}
 }
