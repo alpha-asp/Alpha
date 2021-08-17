@@ -93,6 +93,14 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 		String program = "zero_leq_sum :- 0 <= #sum{X : thing(X)}.";
 		assertAnswerSet(program, "zero_leq_sum");
 	}
+	
+	@Test
+	public void aggregateSumLeNegativeSum() {
+		String program = "thing(-3). thing(4). "
+				+ "minus_three_leq_sum :- -3 <= #sum{X : thing(X)}."
+				+ "two_gt_sum :- 2 > #sum{X : thing(X)}.";
+		assertAnswerSet(program, "thing(-3), thing(4), minus_three_leq_sum, two_gt_sum");
+	}
 
 	@Test
 	public void aggregateCountLeWithChoicePositive() {

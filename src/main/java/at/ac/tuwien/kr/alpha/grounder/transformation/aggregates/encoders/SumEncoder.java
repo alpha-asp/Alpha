@@ -1,5 +1,8 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders;
 
+import org.stringtemplate.v4.ST;
+import org.stringtemplate.v4.STGroup;
+
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -9,11 +12,9 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import org.stringtemplate.v4.ST;
-import org.stringtemplate.v4.STGroup;
 
 /**
- * Abstract base class for aggregate encoders handling sum aggregates.
+ * Aggregate encoder handling sum aggregates.
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
