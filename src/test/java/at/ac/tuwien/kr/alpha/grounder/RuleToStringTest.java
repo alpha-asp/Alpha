@@ -25,11 +25,11 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
@@ -96,7 +96,7 @@ public class RuleToStringTest {
 	private BasicRule parseSingleRule(String rule) {
 		InputProgram program = parser.parse(rule);
 		List<BasicRule> rules = program.getRules();
-		assertEquals("Number of rules", 1, rules.size());
+		assertEquals(1, rules.size(), "Number of rules");
 		return rules.get(0);
 	}
 }

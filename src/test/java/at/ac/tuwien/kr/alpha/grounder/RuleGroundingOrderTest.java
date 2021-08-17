@@ -27,13 +27,14 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import org.junit.Test;
 
-import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
@@ -50,7 +51,7 @@ public class RuleGroundingOrderTest {
 
 
 	@Test
-	public void groundingOrder() throws IOException {
+	public void groundingOrder() {
 		String aspStr = "h(X,C) :- p(X,Y), q(A,B), r(Y,A), s(C)." +
 				"j(A,B,X,Y) :- r1(A,B), r1(X,Y), r1(A,X), r1(B,Y), A = B." +
 				"p(a) :- b = a.";
@@ -73,13 +74,15 @@ public class RuleGroundingOrderTest {
 		assertTrue(rgo2.fixedInstantiation());
 	}
 
-	@Test(expected = RuntimeException.class)
-	public void groundingOrderUnsafe() throws IOException {
-		String aspStr = "h(X,C) :- X = Y, Y = C .. 3, C = X.";
-		Alpha system = new Alpha();
-		system.getConfig().setEvaluateStratifiedPart(false);
-		InternalProgram internalPrg = InternalProgram.fromNormalProgram(system.normalizeProgram(system.readProgramString(aspStr)));
-		computeGroundingOrdersForRule(internalPrg, 0);
+	@Test
+	public void groundingOrderUnsafe() {
+		assertThrows(RuntimeException.class, () -> {
+			String aspStr = "h(X,C) :- X = Y, Y = C .. 3, C = X.";
+			Alpha system = new Alpha();
+			system.getConfig().setEvaluateStratifiedPart(false);
+			InternalProgram internalPrg = InternalProgram.fromNormalProgram(system.normalizeProgram(system.readProgramString(aspStr)));
+			computeGroundingOrdersForRule(internalPrg, 0);
+		});
 	}
 	
 	@Test

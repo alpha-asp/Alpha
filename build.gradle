@@ -50,7 +50,8 @@ dependencies {
 	implementation group: 'org.apache.poi',     name: 'poi-ooxml',            version: '4.1.1'
 	implementation group: 'org.antlr',          name: 'ST4',                  version: '${stringtemplateVersion}$'
 
-	testImplementation group: 'junit', name: 'junit', version: '4.12'
+	testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.7.1'
+	
 }
 
 tasks.withType(AntlrTask) {
@@ -121,6 +122,7 @@ jacocoTestReport {
 }
 
 test {
+	useJUnitPlatform()
 	testLogging {
 		exceptionFormat = 'full'
 	}

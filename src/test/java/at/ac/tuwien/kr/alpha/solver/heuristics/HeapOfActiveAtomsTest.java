@@ -25,6 +25,12 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Literals;
@@ -33,11 +39,6 @@ import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.NoGoodStoreAlphaRoaming;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests {@link HeapOfActiveAtoms}, including initial heuristic scores computed by {@link MOMs}.
@@ -52,7 +53,7 @@ public class HeapOfActiveAtomsTest {
 	private VSIDS vsids;
 	private NoGoodStoreAlphaRoaming noGoodStore;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		atomStore = new AtomStoreImpl();
 		assignment = new TrailAssignment(atomStore);

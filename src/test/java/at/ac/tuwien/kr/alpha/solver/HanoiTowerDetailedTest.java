@@ -1,12 +1,13 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import org.antlr.v4.runtime.CharStreams;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
+
+import org.antlr.v4.runtime.CharStreams;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
@@ -38,7 +39,7 @@ public class HanoiTowerDetailedTest {
 		InputProgram prog = programBuilder.build();
 		InternalProgram preprocessed = InternalProgram.fromNormalProgram(alpha.normalizeProgram(prog));
 		Optional<AnswerSet> solveResult = alpha.solve(preprocessed).findFirst();
-		Assert.assertTrue(solveResult.isPresent());
+		assertTrue(solveResult.isPresent());
 	}
 
 }

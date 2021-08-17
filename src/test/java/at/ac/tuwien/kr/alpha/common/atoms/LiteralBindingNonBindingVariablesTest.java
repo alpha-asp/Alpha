@@ -25,10 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Ignore;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,6 +33,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.IntPredicateInterpretation;
@@ -106,7 +106,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	}
 
 	@Test
-	@Ignore("Literals of this kind are compiled away by VariableEqualityRemoval")
+	@Disabled("Literals of this kind are compiled away by VariableEqualityRemoval")
 	public void testPositiveComparisonLiteral_EQ_Bidirectional() {
 		BasicRule rule = parser.parse("p(X) :- q(X,Y), X = Y.").getRules().get(0);
 		Literal literal = rule.getBody().stream().filter((lit) -> lit.getPredicate() == ComparisonOperator.EQ.predicate()).findFirst().get();
@@ -167,7 +167,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	}
 
 	@Test
-	@Ignore("Literals of this kind are compiled away by VariableEqualityRemoval")
+	@Disabled("Literals of this kind are compiled away by VariableEqualityRemoval")
 	public void testNegativeComparisonLiteral_NEQ_Bidirectional() {
 		Literal literal = parser.parse("p(X) :- q(X,Y), not X != Y.").getRules().get(0).getNegativeBody().stream().findFirst().get();
 		assertEquals(true, literal.isNegated());

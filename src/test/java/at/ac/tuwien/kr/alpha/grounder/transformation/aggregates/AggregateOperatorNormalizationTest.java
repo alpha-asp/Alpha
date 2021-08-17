@@ -1,7 +1,10 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
@@ -40,7 +43,7 @@ public class AggregateOperatorNormalizationTest {
 		BasicRule inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_GT_POS_ASP);
 		BasicRule rewritten = AggregateOperatorNormalization.normalize(inputRule);
 		BasicRule expectedRewrittenRule = RuleParser.parse("bla :- dom(X), not X <= #count{N : thing(N)}.");
-		Assert.assertEquals(expectedRewrittenRule, rewritten);
+		assertEquals(expectedRewrittenRule, rewritten);
 	}
 
 	@Test
@@ -56,7 +59,7 @@ public class AggregateOperatorNormalizationTest {
 		BasicRule inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_NE_POS_ASP);
 		BasicRule rewritten = AggregateOperatorNormalization.normalize(inputRule);
 		BasicRule expectedRewrittenRule = RuleParser.parse("bla :- dom(X), not X = #count{N : thing(N)}.");
-		Assert.assertEquals(expectedRewrittenRule, rewritten);
+		assertEquals(expectedRewrittenRule, rewritten);
 	}
 
 	@Test
@@ -80,7 +83,7 @@ public class AggregateOperatorNormalizationTest {
 		BasicRule inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_NE_NEG_ASP);
 		BasicRule rewritten = AggregateOperatorNormalization.normalize(inputRule);
 		BasicRule expectedRewrittenRule = RuleParser.parse("bla :- dom(X), X = #count{N : thing(N)}.");
-		Assert.assertEquals(expectedRewrittenRule, rewritten);
+		assertEquals(expectedRewrittenRule, rewritten);
 	}
 
 	@Test
@@ -88,7 +91,7 @@ public class AggregateOperatorNormalizationTest {
 		BasicRule inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_GT_NEG_ASP);
 		BasicRule rewritten = AggregateOperatorNormalization.normalize(inputRule);
 		BasicRule expectedRewrittenRule = RuleParser.parse("bla :- dom(X), X <= #count{N : thing(N)}.");
-		Assert.assertEquals(expectedRewrittenRule, rewritten);
+		assertEquals(expectedRewrittenRule, rewritten);
 	}
 
 	@Test
@@ -107,9 +110,9 @@ public class AggregateOperatorNormalizationTest {
 				rewrittenAggregate = (AggregateLiteral) lit;
 			}
 		}
-		Assert.assertNotNull(rewrittenAggregate);
-		Assert.assertEquals(expectedRewrittenOperator, rewrittenAggregate.getAtom().getLowerBoundOperator());
-		Assert.assertTrue(expectedRewrittenLiteralPositive == !rewrittenAggregate.isNegated());
+		assertNotNull(rewrittenAggregate);
+		assertEquals(expectedRewrittenOperator, rewrittenAggregate.getAtom().getLowerBoundOperator());
+		assertTrue(expectedRewrittenLiteralPositive == !rewrittenAggregate.isNegated());
 	}
 
 	private static void assertAggregateBoundIncremented(BasicRule sourceRule, BasicRule rewrittenRule) {
@@ -128,14 +131,14 @@ public class AggregateOperatorNormalizationTest {
 				addedComparisonLiteral = (ComparisonLiteral) lit;
 			}
 		}
-		Assert.assertNotNull(addedComparisonLiteral);
-		Assert.assertEquals(addedComparisonLiteral.getAtom().getTerms().get(0), rewrittenAggregate.getAtom().getLowerBoundTerm());
+		assertNotNull(addedComparisonLiteral);
+		assertEquals(addedComparisonLiteral.getAtom().getTerms().get(0), rewrittenAggregate.getAtom().getLowerBoundTerm());
 		Term comparisonRightHandTerm = addedComparisonLiteral.getAtom().getTerms().get(1);
-		Assert.assertTrue(comparisonRightHandTerm instanceof ArithmeticTerm);
+		assertTrue(comparisonRightHandTerm instanceof ArithmeticTerm);
 		ArithmeticTerm incrementTerm = (ArithmeticTerm) comparisonRightHandTerm;
-		Assert.assertEquals(ArithmeticOperator.PLUS, incrementTerm.getArithmeticOperator());
-		Assert.assertEquals(ConstantTerm.getInstance(1), incrementTerm.getRight());
-		Assert.assertEquals(sourceAggregate.getAtom().getLowerBoundTerm(), incrementTerm.getLeft());
+		assertEquals(ArithmeticOperator.PLUS, incrementTerm.getArithmeticOperator());
+		assertEquals(ConstantTerm.getInstance(1), incrementTerm.getRight());
+		assertEquals(sourceAggregate.getAtom().getLowerBoundTerm(), incrementTerm.getLeft());
 	}
 
 }

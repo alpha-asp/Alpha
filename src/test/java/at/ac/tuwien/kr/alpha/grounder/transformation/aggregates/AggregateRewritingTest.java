@@ -1,5 +1,14 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -7,12 +16,6 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class AggregateRewritingTest {
 
@@ -80,7 +83,7 @@ public class AggregateRewritingTest {
 		NormalProgram normalized = alpha.normalizeProgram(input);
 		// System.out.println(normalized);
 		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
-		Assert.assertEquals(1, answerSets.size());
+		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate thing = Predicate.getInstance("thing", 1);
 		Predicate candidate = Predicate.getInstance("candidate", 1);
@@ -88,15 +91,15 @@ public class AggregateRewritingTest {
 
 		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
-		Assert.assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(75))));
-		Assert.assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(76))));
+		assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(75))));
+		assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(76))));
 
-		Assert.assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(2))));
-		Assert.assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(3))));
-		Assert.assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(4))));
+		assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(2))));
+		assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(3))));
+		assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(4))));
 
-		Assert.assertTrue(answerSet.getPredicates().contains(cntLe));
-		Assert.assertTrue(answerSet.getPredicateInstances(cntLe).contains(new BasicAtom(cntLe, ConstantTerm.getInstance(2))));
+		assertTrue(answerSet.getPredicates().contains(cntLe));
+		assertTrue(answerSet.getPredicateInstances(cntLe).contains(new BasicAtom(cntLe, ConstantTerm.getInstance(2))));
 	}
 
 	@Test
@@ -107,19 +110,19 @@ public class AggregateRewritingTest {
 		NormalProgram normalized = alpha.normalizeProgram(input);
 		// System.out.println(normalized);
 		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
-		Assert.assertEquals(1, answerSets.size());
+		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate thing = Predicate.getInstance("thing", 1);
 		Predicate cntThings = Predicate.getInstance("cnt_things", 1);
 
 		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
-		Assert.assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(4))));
-		Assert.assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(5))));
-		Assert.assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(6))));
+		assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(4))));
+		assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(5))));
+		assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(6))));
 
-		Assert.assertTrue(answerSet.getPredicates().contains(cntThings));
-		Assert.assertTrue(answerSet.getPredicateInstances(cntThings).contains(new BasicAtom(cntThings, ConstantTerm.getInstance(3))));
+		assertTrue(answerSet.getPredicates().contains(cntThings));
+		assertTrue(answerSet.getPredicateInstances(cntThings).contains(new BasicAtom(cntThings, ConstantTerm.getInstance(3))));
 	}
 
 	@Test
@@ -131,7 +134,7 @@ public class AggregateRewritingTest {
 		NormalProgram normalized = alpha.normalizeProgram(input);
 		// System.out.println(normalized);
 		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
-		Assert.assertEquals(1, answerSets.size());
+		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate thing = Predicate.getInstance("thing", 1);
 		Predicate candidate = Predicate.getInstance("candidate", 1);
@@ -139,15 +142,15 @@ public class AggregateRewritingTest {
 
 		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
-		Assert.assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(75))));
-		Assert.assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(76))));
+		assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(75))));
+		assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(76))));
 
-		Assert.assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(2))));
-		Assert.assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(3))));
-		Assert.assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(4))));
+		assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(2))));
+		assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(3))));
+		assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(4))));
 
-		Assert.assertTrue(answerSet.getPredicates().contains(cntLe));
-		Assert.assertTrue(answerSet.getPredicateInstances(cntLe).contains(new BasicAtom(cntLe, ConstantTerm.getInstance(2))));
+		assertTrue(answerSet.getPredicates().contains(cntLe));
+		assertTrue(answerSet.getPredicateInstances(cntLe).contains(new BasicAtom(cntLe, ConstantTerm.getInstance(2))));
 	}
 
 	@Test
@@ -158,18 +161,18 @@ public class AggregateRewritingTest {
 		NormalProgram normalized = alpha.normalizeProgram(input);
 		// System.out.println(normalized);
 		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
-		Assert.assertEquals(1, answerSets.size());
+		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate vertexDegree = Predicate.getInstance("graph_vertex_degree", 3);
 
 		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
-		Assert.assertTrue(answerSet.getPredicates().contains(vertexDegree));
-		Assert.assertTrue(answerSet.getPredicateInstances(vertexDegree)
+		assertTrue(answerSet.getPredicates().contains(vertexDegree));
+		assertTrue(answerSet.getPredicateInstances(vertexDegree)
 				.contains(new BasicAtom(vertexDegree, ConstantTerm.getSymbolicInstance("g1"), ConstantTerm.getInstance(1), ConstantTerm.getInstance(2))));
-		Assert.assertTrue(answerSet.getPredicateInstances(vertexDegree)
+		assertTrue(answerSet.getPredicateInstances(vertexDegree)
 				.contains(new BasicAtom(vertexDegree, ConstantTerm.getSymbolicInstance("g1"), ConstantTerm.getInstance(2), ConstantTerm.getInstance(2))));
-		Assert.assertTrue(answerSet.getPredicateInstances(vertexDegree)
+		assertTrue(answerSet.getPredicateInstances(vertexDegree)
 				.contains(new BasicAtom(vertexDegree, ConstantTerm.getSymbolicInstance("g1"), ConstantTerm.getInstance(3), ConstantTerm.getInstance(2))));
 	}
 
@@ -182,14 +185,14 @@ public class AggregateRewritingTest {
 		NormalProgram normalized = alpha.normalizeProgram(input);
 		// System.out.println(normalized);
 		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
-		Assert.assertEquals(1, answerSets.size());
+		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate maxDegreeVertices = Predicate.getInstance("graph_max_degree_vertices", 3);
 
 		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
-		Assert.assertTrue(answerSet.getPredicates().contains(maxDegreeVertices));
-		Assert.assertTrue(answerSet.getPredicateInstances(maxDegreeVertices)
+		assertTrue(answerSet.getPredicates().contains(maxDegreeVertices));
+		assertTrue(answerSet.getPredicateInstances(maxDegreeVertices)
 				.contains(new BasicAtom(maxDegreeVertices, ConstantTerm.getSymbolicInstance("g1"), ConstantTerm.getInstance(2), ConstantTerm.getInstance(3))));
 	}
 
@@ -201,15 +204,15 @@ public class AggregateRewritingTest {
 		NormalProgram normalized = alpha.normalizeProgram(input);
 		// System.out.println(normalized);
 		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
-		Assert.assertEquals(1, answerSets.size());
+		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate greaterMin = Predicate.getInstance("greater_min_acceptable", 1);
 
 		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
-		Assert.assertTrue(answerSet.getPredicates().contains(greaterMin));
-		Assert.assertTrue(answerSet.getPredicateInstances(greaterMin).contains(new BasicAtom(greaterMin, ConstantTerm.getInstance(7))));
-		Assert.assertTrue(answerSet.getPredicateInstances(greaterMin).contains(new BasicAtom(greaterMin, ConstantTerm.getInstance(13))));
+		assertTrue(answerSet.getPredicates().contains(greaterMin));
+		assertTrue(answerSet.getPredicateInstances(greaterMin).contains(new BasicAtom(greaterMin, ConstantTerm.getInstance(7))));
+		assertTrue(answerSet.getPredicateInstances(greaterMin).contains(new BasicAtom(greaterMin, ConstantTerm.getInstance(13))));
 	}
 
 	@Test
@@ -220,15 +223,15 @@ public class AggregateRewritingTest {
 		NormalProgram normalized = alpha.normalizeProgram(input);
 		// System.out.println(normalized);
 		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
-		Assert.assertEquals(1, answerSets.size());
+		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate sumThings = Predicate.getInstance("sum_things", 1);
 
 		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
-		Assert.assertTrue(answerSet.getPredicates().contains(sumThings));
-		Assert.assertEquals(1, answerSet.getPredicateInstances(sumThings).size());
-		Assert.assertTrue(answerSet.getPredicateInstances(sumThings).contains(new BasicAtom(sumThings, ConstantTerm.getInstance(12))));
+		assertTrue(answerSet.getPredicates().contains(sumThings));
+		assertEquals(1, answerSet.getPredicateInstances(sumThings).size());
+		assertTrue(answerSet.getPredicateInstances(sumThings).contains(new BasicAtom(sumThings, ConstantTerm.getInstance(12))));
 	}
 
 	@Test
@@ -239,18 +242,18 @@ public class AggregateRewritingTest {
 		NormalProgram normalized = alpha.normalizeProgram(input);
 		// System.out.println(normalized);
 		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
-		Assert.assertEquals(1, answerSets.size());
+		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate boundLe = Predicate.getInstance("bound_le_sum", 1);
 
 		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
-		Assert.assertTrue(answerSet.getPredicates().contains(boundLe));
-		Assert.assertTrue(answerSet.getPredicateInstances(boundLe).contains(new BasicAtom(boundLe, ConstantTerm.getInstance(11))));
+		assertTrue(answerSet.getPredicates().contains(boundLe));
+		assertTrue(answerSet.getPredicateInstances(boundLe).contains(new BasicAtom(boundLe, ConstantTerm.getInstance(11))));
 	}
 
-	@Ignore("Open issue, as dependency analysis includes cyclic output-dependency, which it should not.")
 	@Test
+	@Disabled("Open issue, as dependency analysis includes cyclic output-dependency, which it should not.")
 	public void setComplexEqualityWithGlobals() {
 		Alpha alpha = new Alpha();
 		alpha.getConfig().setEvaluateStratifiedPart(false);
@@ -258,14 +261,14 @@ public class AggregateRewritingTest {
 		NormalProgram normalized = alpha.normalizeProgram(input);
 		// System.out.println(normalized);
 		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
-		Assert.assertEquals(1, answerSets.size());
+		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate q = Predicate.getInstance("q", 0);
 
 		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
-		Assert.assertTrue(answerSet.getPredicates().contains(q));
-		Assert.assertTrue(answerSet.getPredicateInstances(q).contains(new BasicAtom(q)));
+		assertTrue(answerSet.getPredicates().contains(q));
+		assertTrue(answerSet.getPredicateInstances(q).contains(new BasicAtom(q)));
 	}
 
 }

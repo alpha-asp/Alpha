@@ -25,85 +25,80 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import org.junit.Test;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnswerSet;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnswerSets;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnswerSetsWithBase;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.ignoreTestForNaiveSolver;
 
-import at.ac.tuwien.kr.alpha.api.Alpha;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
-import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
-import at.ac.tuwien.kr.alpha.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests if correct answer sets for programs containing aggregates are computed.
  */
-public abstract class AggregatesTest extends AbstractSolverTests {
+public abstract class AggregatesTest {
 
 	private static final String LS = System.lineSeparator();
 
-	@Test
-	public void aggregateCountLeGroundPositive() {
+	@AggregateRegressionTest
+	public void aggregateCountLeGroundPositive(RegressionTestConfig cfg) {
 		String program = "a." + LS
 				+ "b :- 1 <= #count { 1 : a }.";
-		assertAnswerSet(program, "a,b");
+		assertRegressionTestAnswerSet(cfg, program, "a,b");
 	}
 
 	@Test
-	public void aggregateCountEqSingleElementPositive() {
+	public void aggregateCountEqSingleElementPositive(RegressionTestConfig cfg) {
 		String program = "thing(1..3)."
 				+ "cnt_things(N) :- N = #count{X : thing(X)}.";
-		assertAnswerSet(program, "thing(1), thing(2), thing(3), cnt_things(3)");
+		assertRegressionTestAnswerSet(cfg, program, "thing(1), thing(2), thing(3), cnt_things(3)");
 	}
 
 	@Test
-	public void aggregateCountEqEmptySetPositive() {
+	public void aggregateCountEqEmptySetPositive(RegressionTestConfig cfg) {
 		String program = "cnt_things(N) :- N = #count{X : thing(X)}.";
-		assertAnswerSet(program, "cnt_things(0)");
+		assertRegressionTestAnswerSet(cfg, program, "cnt_things(0)");
 	}
 
 	@Test
-	public void aggregateCountLeEmptySetPositive() {
+	public void aggregateCountLeEmptySetPositive(RegressionTestConfig cfg) {
 		String program = "zero_leq_cnt :- 0 <= #count{X : thing(X)}.";
-		assertAnswerSet(program, "zero_leq_cnt");
+		assertRegressionTestAnswerSet(cfg, program, "zero_leq_cnt");
 	}
 
 	@Test
-	public void aggregateSumEqEmptySetPositive() {
+	public void aggregateSumEqEmptySetPositive(RegressionTestConfig cfg) {
 		String program = "sum_things(S) :- S = #sum{X : thing(X)}.";
-		assertAnswerSet(program, "sum_things(0)");
+		assertRegressionTestAnswerSet(cfg, program, "sum_things(0)");
 	}
 	
 	@Test
-	public void aggregateSumEqNegativeSum() {
+	public void aggregateSumEqNegativeSum(RegressionTestConfig cfg) {
 		String program = "thing(-1). thing(-2). thing(-3). sum_things(S) :- S = #sum{X : thing(X)}.";
-		assertAnswerSet(program, "thing(-1), thing(-2), thing(-3), sum_things(-6)");
+		assertRegressionTestAnswerSet(cfg, program, "thing(-1), thing(-2), thing(-3), sum_things(-6)");
 	}
 	
 	@Test
-	public void aggregateSumEqMixedElementsSum() {
+	public void aggregateSumEqMixedElementsSum(RegressionTestConfig cfg) {
 		String program = "thing(-1). thing(6). thing(-3). sum_things(S) :- S = #sum{X : thing(X)}.";
-		assertAnswerSet(program, "thing(-1), thing(6), thing(-3), sum_things(2)");		
+		assertRegressionTestAnswerSet(cfg, program, "thing(-1), thing(6), thing(-3), sum_things(2)");		
 	}
 
 	@Test
-	public void aggregateSumLeEmptySetPositive() {
+	public void aggregateSumLeEmptySetPositive(RegressionTestConfig cfg) {
 		String program = "zero_leq_sum :- 0 <= #sum{X : thing(X)}.";
-		assertAnswerSet(program, "zero_leq_sum");
+		assertRegressionTestAnswerSet(cfg, program, "zero_leq_sum");
 	}
 	
 	@Test
-	public void aggregateSumLeNegativeSum() {
+	public void aggregateSumLeNegativeSum(RegressionTestConfig cfg) {
 		String program = "thing(-3). thing(4). "
 				+ "minus_three_leq_sum :- -3 <= #sum{X : thing(X)}."
 				+ "two_gt_sum :- 2 > #sum{X : thing(X)}.";
-		assertAnswerSet(program, "thing(-3), thing(4), minus_three_leq_sum, two_gt_sum");
+		assertRegressionTestAnswerSet(cfg, program, "thing(-3), thing(4), minus_three_leq_sum, two_gt_sum");
 	}
 
 	@Test
-	public void aggregateCountLeWithChoicePositive() {
+	public void aggregateCountLeWithChoicePositive(RegressionTestConfig cfg) {
 		String program = "potential_thing(1..4). "
 				+ "{ thing(N) : potential_thing(N)}."
 				+ "two_things_chosen :- thing(N1), thing(N2), N1 != N2."
@@ -111,7 +106,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				+ ":- not two_things_chosen."
 				+ ":- three_things_chosen."
 				+ "two_leq_cnt :- 2 <= #count{ X : thing(X) }.";
-		assertAnswerSetsWithBase(program,
+		assertRegressionTestAnswerSetsWithBase(cfg, program,
 				"potential_thing(1), potential_thing(2), potential_thing(3), potential_thing(4), two_things_chosen, two_leq_cnt",
 				"thing(1), thing(2)",
 				"thing(1), thing(3)",
@@ -122,7 +117,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	}
 
 	@Test
-	public void aggregateCountEqWithChoicePositive() {
+	public void aggregateCountEqWithChoicePositive(RegressionTestConfig cfg) {
 		String program = "potential_thing(1..4). "
 				+ "{ thing(N) : potential_thing(N)}."
 				+ "two_things_chosen :- thing(N1), thing(N2), N1 != N2."
@@ -130,7 +125,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				+ ":- not two_things_chosen."
 				+ ":- three_things_chosen."
 				+ "cnt_things(CNT) :- CNT = #count{ X : thing(X) }.";
-		assertAnswerSetsWithBase(program,
+		assertRegressionTestAnswerSetsWithBase(cfg, program,
 				"potential_thing(1), potential_thing(2), potential_thing(3), potential_thing(4), two_things_chosen, cnt_things(2)",
 				"thing(1), thing(2)",
 				"thing(1), thing(3)",
@@ -141,7 +136,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	}
 
 	@Test
-	public void aggregateSumEqWithChoicePositive() {
+	public void aggregateSumEqWithChoicePositive(RegressionTestConfig cfg) {
 		String program = "potential_thing(1..4). "
 				+ "{ thing(N) : potential_thing(N)}."
 				+ "two_things_chosen :- thing(N1), thing(N2), N1 != N2."
@@ -149,7 +144,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				+ ":- not two_things_chosen."
 				+ ":- three_things_chosen."
 				+ "sum_things(SUM) :- SUM = #sum{ X : thing(X) }.";
-		assertAnswerSetsWithBase(program,
+		assertRegressionTestAnswerSetsWithBase(cfg, program,
 				"potential_thing(1), potential_thing(2), potential_thing(3), potential_thing(4), two_things_chosen",
 				"thing(1), thing(2), sum_things(3)",
 				"thing(1), thing(3), sum_things(4)",
@@ -160,7 +155,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	}
 	
 	@Test
-	public void aggregateSumEqOverMixedValuesWithChoicePositive() {
+	public void aggregateSumEqOverMixedValuesWithChoicePositive(RegressionTestConfig cfg) {
 		String program = "potential_thing(-2). potential_thing(-1). potential_thing(0). potential_thing(1). "
 				+ "{ thing(N) : potential_thing(N)}."
 				+ "two_things_chosen :- thing(N1), thing(N2), N1 != N2."
@@ -168,7 +163,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				+ ":- not two_things_chosen."
 				+ ":- three_things_chosen."
 				+ "sum_things(SUM) :- SUM = #sum{ X : thing(X) }.";
-		assertAnswerSetsWithBase(program,
+		assertRegressionTestAnswerSetsWithBase(cfg, program,
 				"potential_thing(-2), potential_thing(-1), potential_thing(0), potential_thing(1), two_things_chosen",
 				"thing(-2), thing(-1), sum_things(-3)",
 				"thing(-2), thing(0), sum_things(-2)",
@@ -179,7 +174,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	}
 
 	@Test
-	public void aggregateSumBetweenNegative() {
+	public void aggregateSumBetweenNegative(RegressionTestConfig cfg) {
 		String program = "potential_thing(1..4). "
 				+ "{ thing(N) : potential_thing(N)}."
 				+ "two_things_chosen :- thing(N1), thing(N2), N1 != N2."
@@ -189,7 +184,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				+ "sum_not_five :- not 4 < #sum{ X : thing(X) } < 6."
 				+ ":- not sum_not_five."
 				+ "sum_things(SUM) :- SUM = #sum{ X : thing(X) }.";
-		assertAnswerSetsWithBase(program,
+		assertRegressionTestAnswerSetsWithBase(cfg, program,
 				"potential_thing(1), potential_thing(2), potential_thing(3), potential_thing(4), two_things_chosen, sum_not_five",
 				"thing(1), thing(2), sum_things(3)",
 				"thing(1), thing(3), sum_things(4)",
@@ -198,7 +193,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	}
 
 	@Test
-	public void aggregateMaxNegative() {
+	public void aggregateMaxNegative(RegressionTestConfig cfg) {
 		String program = "potential_thing(1..4). "
 				+ "{ thing(N) : potential_thing(N) }."
 				+ "one_chosen :- thing(_)."
@@ -206,31 +201,31 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				+ ":- thing(N1), thing(N2), N1 != N2."
 				+ "max_chosen :- thing(X), not X < #max{M : potential_thing(M)}."
 				+ ":- not max_chosen.";
-		assertAnswerSet(program,
+		assertRegressionTestAnswerSet(cfg, program,
 				"potential_thing(1), potential_thing(2), potential_thing(3), potential_thing(4), one_chosen, max_chosen, thing(4)");
 	}
 
 	@Test
-	public void aggregateCountGroundNegative() {
+	public void aggregateCountGroundNegative(RegressionTestConfig cfg) {
 		String program = "{a}." + LS
 				+ "b :- not c." + LS
 				+ "c :- 1 <= #count { 1 : a }.";
-		assertAnswerSets(program, "a,c", "b");
+		assertRegressionTestAnswerSets(cfg, program, "a,c", "b");
 	}
 
 	@Test
-	public void aggregateCountNonGroundPositive() {
+	public void aggregateCountNonGroundPositive(RegressionTestConfig cfg) {
 		String program = "n(1..3)." + LS
 				+ "{x(N)} :- n(N)." + LS
 				+ "min(3)." + LS
 				+ "ok :- min(M), M <= #count { N : n(N), x(N) }.";
-		assertAnswerSetsWithBase(program, "n(1), n(2), n(3), min(3)",
+		assertRegressionTestAnswerSetsWithBase(cfg, program, "n(1), n(2), n(3), min(3)",
 				"", "x(1)", "x(2)", "x(3)", "x(1), x(2)", "x(1), x(3)",
 				"x(2), x(3)", "x(1), x(2), x(3), ok");
 	}
 
 	@Test
-	public void aggregateCountNonGroundLowerAndUpper() {
+	public void aggregateCountNonGroundLowerAndUpper(RegressionTestConfig cfg) {
 		String program = "n(1..3)." + LS
 				+ "{x(N)} :- n(N)." + LS
 				+ "min(2)." + LS
@@ -238,20 +233,20 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				+ "ok :- min(M), M <= #count { N : n(N), x(N) }, not exceedsMax." + LS
 				+ "exceedsMax :- max(M), M1 = M + 1, M1 <= #count { N : n(N), x(N) }.";
 		System.out.println(program);
-		assertAnswerSetsWithBase(program, "n(1), n(2), n(3), min(2), max(2)",
+		assertRegressionTestAnswerSetsWithBase(cfg, program, "n(1), n(2), n(3), min(2), max(2)",
 				"", "x(1)", "x(2)", "x(3)", "x(1), x(2), ok", "x(1), x(3), ok",
 				"x(2), x(3), ok", "x(1), x(2), x(3), exceedsMax");
 	}
 
 	@Test
-	public void aggregateSumGroundLower() {
+	public void aggregateSumGroundLower(RegressionTestConfig cfg) {
 		String program = "a." + LS
 				+ "b :- 5 <= #sum { 2 : a; 3 }.";
-		assertAnswerSet(program, "a,b");
+		assertRegressionTestAnswerSet(cfg, program, "a,b");
 	}
 
 	@Test
-	public void aggregateSumNonGroundLowerAndUpper() {
+	public void aggregateSumNonGroundLowerAndUpper(RegressionTestConfig cfg) {
 		String program = "n(1..3)." + LS
 				+ "{x(N)} :- n(N)." + LS
 				+ "min(3)." + LS
@@ -259,32 +254,32 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				+ "ok :- min(M), M <= #sum { N : n(N), x(N) }, not exceedsMax." + LS
 				+ "exceedsMax :- max(M), M1 = M + 1, M1 <= #sum { N : n(N), x(N) }.";
 		System.out.println(program);
-		assertAnswerSetsWithBase(program, "n(1), n(2), n(3), min(3), max(4)",
+		assertRegressionTestAnswerSetsWithBase(cfg, program, "n(1), n(2), n(3), min(3), max(4)",
 				"", "x(1)", "x(2)", "x(3), ok", "x(1), x(2), ok", "x(1), x(3), ok",
 				"x(2), x(3), exceedsMax", "x(1), x(2), x(3), exceedsMax");
 	}
 
 	@Test
-	public void aggregateSumNonGroundLower() {
+	public void aggregateSumNonGroundLower(RegressionTestConfig cfg) {
 		String program = "n(1..3)." + LS
 				+ "{x(N)} :- n(N)." + LS
 				+ "min(3)." + LS
 				+ "ok :- min(M), M <= #sum { N : n(N), x(N) }.";
 		System.out.println(program);
-		assertAnswerSetsWithBase(program, "n(1), n(2), n(3), min(3)",
+		assertRegressionTestAnswerSetsWithBase(cfg, program, "n(1), n(2), n(3), min(3)",
 				"", "x(1)", "x(2)", "x(3), ok", "x(1), x(2), ok", "x(1), x(3), ok",
 				"x(2), x(3), ok", "x(1), x(2), x(3), ok");
 	}
 
 	@Test
-	public void aggregateSumComputed() {
-		ignoreTestForNaiveSolver(); // Do not run this test case with the naive solver.
+	public void aggregateSumComputed(RegressionTestConfig cfg) {
+		ignoreTestForNaiveSolver(cfg); // Do not run this test case with the naive solver.
 		String program = "n(1..3)." + LS
 				+ "{x(N)} :- n(N)." + LS
 				+ "potential_sum(0..6)." + LS
 				+ "min(S) :- S <= #sum { N : n(N), x(N) }, potential_sum(S)." + LS
 				+ "sum(S) :- min(S), not min(Sp1), Sp1 = S+1.";
-		assertAnswerSetsWithBase(program, "n(1), n(2), n(3), potential_sum(0), potential_sum(1), "
+		assertRegressionTestAnswerSetsWithBase(cfg, program, "n(1), n(2), n(3), potential_sum(0), potential_sum(1), "
 				+ "potential_sum(2), potential_sum(3), potential_sum(4), potential_sum(5), potential_sum(6)",
 				"min(0), sum(0)",
 				"x(1), min(0), min(1), sum(1)",
@@ -297,40 +292,26 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	}
 
 	@Test
-	public void aggregateCountGlobalVariable() {
+	public void aggregateCountGlobalVariable(RegressionTestConfig cfg) {
 		String program = "box(1..2)." + LS
 				+ "in(1,1)." + LS
 				+ "in(1,2)." + LS
 				+ "in(2,2)." + LS
 				+ "full(B) :- box(B), 2 <= #count { I : in(I,B) }.";
-		assertAnswerSetsWithBase(program, "box(1), box(2), in(1,1), in(1,2), in(2,2)",
+		assertRegressionTestAnswerSetsWithBase(cfg, program, "box(1), box(2), in(1,1), in(1,2), in(2,2)",
 				"full(2)");
 	}
 
 	@Test
-	public void aggregateSumGlobalVariable() {
+	public void aggregateSumGlobalVariable(RegressionTestConfig cfg) {
 		String program = "box(1..2)." + LS
 				+ "item_size(I,I) :- I=1..2." + LS
 				+ "in(1,1)." + LS
 				+ "in(1,2)." + LS
 				+ "in(2,2)." + LS
 				+ "full(B) :- box(B), 3 <= #sum { S : item_size(I,S), in(I,B) }.";
-		assertAnswerSetsWithBase(program, "box(1), box(2), item_size(1,1), item_size(2,2), in(1,1), in(1,2), in(2,2)",
+		assertRegressionTestAnswerSetsWithBase(cfg, program, "box(1), box(2), item_size(1,1), item_size(2,2), in(1,1), in(1,2), in(2,2)",
 				"full(2)");
 	}
-
-	@Override
-	protected Solver getInstance(InputProgram program) {
-		SystemConfig config = this.buildSystemConfig();
-		config.setUseNormalizationGrid(useCountingGridNormalization());
-		Alpha system = new Alpha(config);
-		AtomStore atomStore = new AtomStoreImpl();
-		NormalProgram normal = system.normalizeProgram(program);
-		InternalProgram preprocessed = InternalProgram.fromNormalProgram(normal);
-		return super.getInstance(atomStore,
-				GrounderFactory.getInstance(grounderName, preprocessed, atomStore, p -> true, new GrounderHeuristicsConfiguration(), true));
-	}
-
-	protected abstract boolean useCountingGridNormalization();
 
 }

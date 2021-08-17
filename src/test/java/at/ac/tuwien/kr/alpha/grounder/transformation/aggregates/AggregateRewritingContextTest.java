@@ -1,5 +1,15 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
+
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
@@ -7,13 +17,6 @@ import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Predicate;
 
 public class AggregateRewritingContextTest {
 
@@ -64,41 +67,41 @@ public class AggregateRewritingContextTest {
 	public void minEqAggregateNoGlobalVars() {
 		AggregateRewritingContext ctx = rewritingContextForAspString(CTX_TEST_MIN_EQ_ASP);
 		Map<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateInfo>> functionsToRewrite = ctx.getAggregateFunctionsToRewrite();
-		Assert.assertEquals(1, functionsToRewrite.size());
+		assertEquals(1, functionsToRewrite.size());
 		ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> minEq = new ImmutablePair<>(AggregateFunctionSymbol.MIN, ComparisonOperator.EQ);
-		Assert.assertTrue(functionsToRewrite.containsKey(minEq));
+		assertTrue(functionsToRewrite.containsKey(minEq));
 		Set<AggregateInfo> minEqAggregateInfos = functionsToRewrite.get(minEq);
-		Assert.assertEquals(1, minEqAggregateInfos.size());
+		assertEquals(1, minEqAggregateInfos.size());
 		AggregateInfo info = minEqAggregateInfos.iterator().next();
-		Assert.assertTrue(info.getGlobalVariables().isEmpty());
+		assertTrue(info.getGlobalVariables().isEmpty());
 	}
 
 	@Test
 	public void countEqAggregateNoGlobalVars() {
 		AggregateRewritingContext ctx = rewritingContextForAspString(CTX_TEST_CNT_EQ_ASP);
 		Map<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateInfo>> functionsToRewrite = ctx.getAggregateFunctionsToRewrite();
-		Assert.assertEquals(1, functionsToRewrite.size());
+		assertEquals(1, functionsToRewrite.size());
 		ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> cntEq = new ImmutablePair<>(AggregateFunctionSymbol.COUNT, ComparisonOperator.EQ);
-		Assert.assertTrue(functionsToRewrite.containsKey(cntEq));
+		assertTrue(functionsToRewrite.containsKey(cntEq));
 		Set<AggregateInfo> cntEqAggregateInfos = functionsToRewrite.get(cntEq);
-		Assert.assertEquals(1, cntEqAggregateInfos.size());
+		assertEquals(1, cntEqAggregateInfos.size());
 		AggregateInfo info = cntEqAggregateInfos.iterator().next();
-		Assert.assertTrue(info.getGlobalVariables().isEmpty());
+		assertTrue(info.getGlobalVariables().isEmpty());
 	}
 
 	@Test
 	public void countEqMaxEqGlobalVars() {
 		AggregateRewritingContext ctx = rewritingContextForAspString(CTX_TEST_GRAPH_ASP);
 		Map<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateInfo>> functionsToRewrite = ctx.getAggregateFunctionsToRewrite();
-		Assert.assertEquals(2, functionsToRewrite.size());
+		assertEquals(2, functionsToRewrite.size());
 		ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> cntEq = new ImmutablePair<>(AggregateFunctionSymbol.COUNT, ComparisonOperator.EQ);
 		ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> maxEq = new ImmutablePair<>(AggregateFunctionSymbol.MAX, ComparisonOperator.EQ);
-		Assert.assertTrue(functionsToRewrite.containsKey(cntEq));
-		Assert.assertTrue(functionsToRewrite.containsKey(maxEq));
+		assertTrue(functionsToRewrite.containsKey(cntEq));
+		assertTrue(functionsToRewrite.containsKey(maxEq));
 		Set<AggregateInfo> cntEqIds = functionsToRewrite.get(cntEq);
 		Set<AggregateInfo> maxEqIds = functionsToRewrite.get(maxEq);
-		Assert.assertEquals(2, cntEqIds.size());
-		Assert.assertEquals(1, maxEqIds.size());
+		assertEquals(2, cntEqIds.size());
+		assertEquals(1, maxEqIds.size());
 		Predicate<AggregateInfo> vertexDegreeCount = (info) -> {
 			if (info.getLiteral().getAtom().getAggregateElements().size() != 2) {
 				return false;
@@ -140,8 +143,8 @@ public class AggregateRewritingContextTest {
 				verifiedMaxDegreeVerticesCount = true;
 			}
 		}
-		Assert.assertTrue(verifiedDegreeCount);
-		Assert.assertTrue(verifiedMaxDegreeVerticesCount);
+		assertTrue(verifiedDegreeCount);
+		assertTrue(verifiedMaxDegreeVerticesCount);
 	}
 
 }

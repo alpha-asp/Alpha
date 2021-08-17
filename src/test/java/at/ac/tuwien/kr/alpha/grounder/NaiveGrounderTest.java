@@ -27,13 +27,13 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static at.ac.tuwien.kr.alpha.test.util.TestUtils.atom;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -79,7 +79,7 @@ public class NaiveGrounderTest {
 	final Literal litAX = PROGRAM_PART_PARSER.parseLiteral("a(X)");
 	final Literal litA1 = PROGRAM_PART_PARSER.parseLiteral("a(1)");
 
-	@Before
+	@BeforeEach
 	public void resetRuleIdGenerator() {
 		InternalRule.resetIdGenerator();
 	}
@@ -205,7 +205,7 @@ public class NaiveGrounderTest {
 				+ "x :- p1(X), p2(X), q1(Y), q2(Y). "
 				+ "p2(X) :- something(X). "
 				+ "q2(X) :- something(X). ";
-		Alpha system = new Alpha();
+		Alpha system  = new Alpha();
 		system.getConfig().setEvaluateStratifiedPart(false);
 		InternalProgram program = InternalProgram.fromNormalProgram(
 				system.normalizeProgram(
@@ -246,7 +246,7 @@ public class NaiveGrounderTest {
 	}
 
 	@Test
-	@Ignore("Currently, rule grounding is not switched off by a true negative body atom")
+	@Disabled("Currently, rule grounding is not switched off by a true negative body atom")
 	public void testGroundingOfRuleSwitchedOffByTrueNegativeBody() {
 		InputProgram program = PROGRAM_PARSER.parse("a(1). "
 				+ "c(X) :- a(X), not b(X). "
