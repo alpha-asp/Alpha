@@ -38,13 +38,17 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	/**
 	 * Creates a new {@link AggregateRewriting} transformation.
 	 * 
-	 * @param useSortingCircuit if true, literals of form "X <= #count{...}" will be rewritten using a sorting grid-based
-	 *                          encoding.
+	 * @param useSortingCircuit       if true, literals of form "X <= #count{...}" will be rewritten using a sorting
+	 *                                grid-based
+	 *                                encoding.
+	 * @param supportNegativeIntegers if true, use ASP encodings for "#sum{...}" literals that support summation over all
+	 *                                (including negative) integers. Note that these encodings are less performant than
+	 *                                their simpler counterparts that only support positive integers (eused when flag set to false)
 	 */
-	public AggregateRewriting(boolean useSortingCircuit) {
+	public AggregateRewriting(boolean useSortingCircuit, boolean supportNegativeIntegers) {
 		this.countLessOrEqualEncoder = CountEncoder.buildCountLessOrEqualEncoder(useSortingCircuit);
-		this.sumLessOrEqualEncoder = SumEncoder.buildSumLessOrEqualEncoder();
-		this.sumEqualsEncoder = SumEncoder.buildSumEqualsEncoder();
+		this.sumLessOrEqualEncoder = SumEncoder.buildSumLessOrEqualEncoder(supportNegativeIntegers);
+		this.sumEqualsEncoder = SumEncoder.buildSumEqualsEncoder(supportNegativeIntegers);
 		this.countEqualsEncoder = CountEncoder.buildCountEqualsEncoder();
 		this.minEncoder = new MinMaxEncoder(AggregateFunctionSymbol.MIN);
 		this.maxEncoder = new MinMaxEncoder(AggregateFunctionSymbol.MAX);
@@ -83,7 +87,8 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 		InputProgram.Builder resultBuilder = InputProgram.builder().addRules(outputRules).addFacts(inputProgram.getFacts())
 				.addInlineDirectives(inputProgram.getInlineDirectives());
 		// Add sub-programs deriving respective aggregate literals.
-		for (Map.Entry<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateInfo>> aggToRewrite : ctx.getAggregateFunctionsToRewrite().entrySet()) {
+		for (Map.Entry<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateInfo>> aggToRewrite : ctx.getAggregateFunctionsToRewrite()
+				.entrySet()) {
 			ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> func = aggToRewrite.getKey();
 			AbstractAggregateEncoder encoder = getEncoderForAggregateFunction(func.left, func.right);
 			resultBuilder.accumulate(encoder.encodeAggregateLiterals(aggToRewrite.getValue()));

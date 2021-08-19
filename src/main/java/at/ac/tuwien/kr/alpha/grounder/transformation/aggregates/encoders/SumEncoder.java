@@ -26,16 +26,19 @@ public final class SumEncoder extends StringtemplateBasedAggregateEncoder {
 	private static final ST SUM_LE_TEMPLATE = AGGREGATE_ENCODINGS.getInstanceOf("sum_le");
 	private static final ST SUM_EQ_TEMPLATE = AGGREGATE_ENCODINGS.getInstanceOf("sum_eq");
 
+	private static final ST SIMPLE_SUM_LE_TEMPLATE = AGGREGATE_ENCODINGS.getInstanceOf("sum_le_simple");
+	private static final ST SIMPLE_SUM_EQ_TEMPLATE = AGGREGATE_ENCODINGS.getInstanceOf("sum_eq_simple");
+
 	private SumEncoder(ComparisonOperator acceptedOperator, ST encodingTemplate) {
 		super(AggregateFunctionSymbol.SUM, acceptedOperator, encodingTemplate);
 	}
 
-	public static SumEncoder buildSumLessOrEqualEncoder() {
-		return new SumEncoder(ComparisonOperator.LE, SUM_LE_TEMPLATE);
+	public static SumEncoder buildSumLessOrEqualEncoder(boolean supportNegativeIntegers) {
+		return new SumEncoder(ComparisonOperator.LE, supportNegativeIntegers ? SUM_LE_TEMPLATE : SIMPLE_SUM_LE_TEMPLATE);
 	}
 
-	public static SumEncoder buildSumEqualsEncoder() {
-		return new SumEncoder(ComparisonOperator.EQ, SUM_EQ_TEMPLATE);
+	public static SumEncoder buildSumEqualsEncoder(boolean supportNegativeIntegers) {
+		return new SumEncoder(ComparisonOperator.EQ, supportNegativeIntegers ? SUM_EQ_TEMPLATE : SIMPLE_SUM_EQ_TEMPLATE);
 	}
 
 	/**

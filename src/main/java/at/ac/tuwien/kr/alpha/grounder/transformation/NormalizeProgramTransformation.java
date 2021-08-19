@@ -4,6 +4,7 @@ import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewriting;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingConfig;
 
 /**
  * Encapsulates all transformations necessary to transform a given program into a @{link NormalProgram} that is
@@ -13,10 +14,10 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewriti
  */
 public class NormalizeProgramTransformation extends ProgramTransformation<InputProgram, NormalProgram> {
 
-	private boolean useNormalizationGrid;
+	private final AggregateRewritingConfig aggregateRewritingCfg;
 
-	public NormalizeProgramTransformation(boolean useNormalizationGrid) {
-		this.useNormalizationGrid = useNormalizationGrid;
+	public NormalizeProgramTransformation(AggregateRewritingConfig aggregateCfg) {
+		this.aggregateRewritingCfg = aggregateCfg;
 	}
 
 	@Override
@@ -27,7 +28,7 @@ public class NormalizeProgramTransformation extends ProgramTransformation<InputP
 		// Transform choice rules.
 		tmpPrg = new ChoiceHeadToNormal().apply(tmpPrg);
 		// Transform cardinality aggregates.
-		tmpPrg = new AggregateRewriting(!useNormalizationGrid).apply(tmpPrg);
+		tmpPrg = new AggregateRewriting(aggregateRewritingCfg.isUseSortingGridEncoding(), aggregateRewritingCfg.isSupportNegativeValuesInSums()).apply(tmpPrg);
 		// Transform enumeration atoms.
 		tmpPrg = new EnumerationRewriting().apply(tmpPrg);
 		EnumerationAtom.resetEnumerations();
