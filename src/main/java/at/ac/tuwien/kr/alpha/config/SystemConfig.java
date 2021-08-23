@@ -63,8 +63,7 @@ public class SystemConfig {
 	public static final String DEFAULT_GROUNDER_TOLERANCE_RULES = GrounderHeuristicsConfiguration.STRICT_STRING;
 	public static final boolean DEFAULT_GROUNDER_ACCUMULATOR_ENABLED = false;
 	public static final String DEFAULT_ATOM_SEPARATOR = ", ";
-	public static final AggregateRewritingConfig DEFAULT_AGGREGATE_REWRITING_CONFIG = new AggregateRewritingConfig(
-			AggregateRewritingConfig.DEFAULT_USE_SORTING_GRID, AggregateRewritingConfig.DEFAULT_SUPPORT_NEGATIVE_INTEGERS);
+	public static final AggregateRewritingConfig DEFAULT_AGGREGATE_REWRITING_CONFIG = new AggregateRewritingConfig();
 
 	private String grounderName = DEFAULT_GROUNDER_NAME;
 	private String solverName = DEFAULT_SOLVER_NAME;
