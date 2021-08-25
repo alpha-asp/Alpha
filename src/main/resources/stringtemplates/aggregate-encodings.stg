@@ -168,6 +168,7 @@ cnt_le_counting_grid (id, result_predicate, element_tuple, bound )::=<<
  * CAUTION: This encoding only supports sums over positive integers.
  */
 sum_le_simple (id, result_predicate, element_tuple, bound )::=<<
+	#enumeration_predicate_is enum.
 	$! We have found a result when either the bound is LEQ zero or we have a candidate that, added to an intermediate sum exceeds the bound !$
 	$result_predicate$(ARGS, K) :- $bound$(ARGS, K), K <= 0.
 	$result_predicate$(ARGS, K) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, $id$_input_value_at_index(ARGS, F, I), $bound$(ARGS, K), K <= S + F.

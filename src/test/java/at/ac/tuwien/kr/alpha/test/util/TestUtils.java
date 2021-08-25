@@ -216,5 +216,9 @@ public class TestUtils {
 	public static void ignoreTestForNonDefaultDomainIndependentHeuristics(RegressionTestConfig cfg) {
 		Assumptions.assumeTrue(cfg.getBranchingHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
 	}
+	
+	public static void ignoreTestForSimplifiedSumAggregates(RegressionTestConfig cfg) {
+		Assumptions.assumeTrue(cfg.isSupportNegativeSumElements());
+	}
 
 }

@@ -54,7 +54,6 @@ public class SystemConfig {
 	public static final boolean DEFAULT_QUIET = false;
 	public static final boolean DEFAULT_DISABLE_JUSTIFICATION_SEARCH = false;
 	public static final boolean DEFAULT_DEBUG_INTERNAL_CHECKS = false;
-	public static final boolean DEFAULT_USE_NORMALIZATION_GRID = false;
 	public static final boolean DEFAULT_SORT_ANSWER_SETS = false;
 	public static final List<Integer> DEFAULT_REPLAY_CHOICES = Collections.emptyList();
 	public static final boolean DEFAULT_STRATIFIED_EVALUATION = true;
@@ -76,7 +75,6 @@ public class SystemConfig {
 	private boolean quiet = DEFAULT_QUIET;
 	private boolean printStats = DEFAULT_PRINT_STATS;
 	private boolean disableJustificationSearch = DEFAULT_DISABLE_JUSTIFICATION_SEARCH;
-	private boolean useNormalizationGrid = DEFAULT_USE_NORMALIZATION_GRID;
 	private boolean sortAnswerSets = DEFAULT_SORT_ANSWER_SETS;
 	private List<Integer> replayChoices = DEFAULT_REPLAY_CHOICES;
 	private boolean evaluateStratifiedPart = DEFAULT_STRATIFIED_EVALUATION;
@@ -181,14 +179,6 @@ public class SystemConfig {
 
 	public void setDisableJustificationSearch(boolean disableJustificationSearch) {
 		this.disableJustificationSearch = disableJustificationSearch;
-	}
-
-	public boolean isUseNormalizationGrid() {
-		return this.useNormalizationGrid;
-	}
-
-	public void setUseNormalizationGrid(boolean useNormalizationGrid) {
-		this.useNormalizationGrid = useNormalizationGrid;
 	}
 
 	public boolean isSortAnswerSets() {

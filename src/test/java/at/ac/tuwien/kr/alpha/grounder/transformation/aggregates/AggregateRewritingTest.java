@@ -129,7 +129,7 @@ public class AggregateRewritingTest {
 	public void countLeCountingGridSimple() {
 		Alpha alpha = new Alpha();
 		alpha.getConfig().setEvaluateStratifiedPart(false);
-		alpha.getConfig().setUseNormalizationGrid(true);
+		alpha.getConfig().getAggregateRewritingConfig().setUseSortingGridEncoding(false);
 		InputProgram input = alpha.readProgramString(CNT_LE1_ASP);
 		NormalProgram normalized = alpha.normalizeProgram(input);
 		// System.out.println(normalized);

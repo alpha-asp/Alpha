@@ -1,11 +1,11 @@
 package at.ac.tuwien.kr.alpha.solver;
 
+import org.junit.jupiter.params.provider.Arguments;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
-import org.junit.jupiter.params.provider.Arguments;
 
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
@@ -13,8 +13,9 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heurist
 public class RegressionTestConfigProvider {
 
 	private static final boolean DEFAULT_USE_SORTING_GRID = true;
+	private static final boolean DEFAULT_SUPPORT_NEGATIVE_SUM_ELEMENTS = true;
 
-	private static List<RegressionTestConfig> buildConfigs(boolean useSortingGridForAggregates) {
+	private static List<RegressionTestConfig> buildConfigs(boolean useSortingGridForAggregates, boolean supportNegativeSumElements) {
 		// Check whether we are running in a CI environment.
 		boolean ci = Boolean.valueOf(System.getenv("CI"));
 
@@ -50,7 +51,7 @@ public class RegressionTestConfigProvider {
 									configsToTest.add(new RegressionTestConfig(
 											solverName, grounder, atomStoreName, BranchingHeuristicFactory.Heuristic.valueOf(branchingHeuristicName),
 											seed, enableDebugChecks, grounderTolerance, gtrValue, disableInstanceRemoval, evaluateStratified,
-											useSortingGridForAggregates));
+											useSortingGridForAggregates, supportNegativeSumElements));
 								}
 							}
 						}
@@ -64,7 +65,7 @@ public class RegressionTestConfigProvider {
 
 	public static List<Arguments> provideConfigs() {
 		List<Arguments> retVal = new ArrayList<>();
-		for (RegressionTestConfig cfg : buildConfigs(DEFAULT_USE_SORTING_GRID)) {
+		for (RegressionTestConfig cfg : buildConfigs(DEFAULT_USE_SORTING_GRID, DEFAULT_SUPPORT_NEGATIVE_SUM_ELEMENTS)) {
 			retVal.add(Arguments.of(cfg));
 		}
 		return retVal;
@@ -72,10 +73,13 @@ public class RegressionTestConfigProvider {
 
 	public static List<Arguments> provideAggregateTestConfigs() {
 		List<Arguments> retVal = new ArrayList<>();
-		for (RegressionTestConfig cfg : buildConfigs(true)) {
+		for (RegressionTestConfig cfg : buildConfigs(true, true)) {
 			retVal.add(Arguments.of(cfg));
 		}
-		for (RegressionTestConfig cfg : buildConfigs(false)) {
+		for (RegressionTestConfig cfg : buildConfigs(false, true)) {
+			retVal.add(Arguments.of(cfg));
+		}
+		for (RegressionTestConfig cfg : buildConfigs(true, false)) {
 			retVal.add(Arguments.of(cfg));
 		}
 		return retVal;
