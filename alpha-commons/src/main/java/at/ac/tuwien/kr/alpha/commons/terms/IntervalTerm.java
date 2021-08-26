@@ -3,12 +3,12 @@ package at.ac.tuwien.kr.alpha.commons.terms;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.util.Interner;
+import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 /**
  * An IntervalTerm represents the shorthand notation for a set of rules where all elements in this interval occur once, e.g., fact(2..5).

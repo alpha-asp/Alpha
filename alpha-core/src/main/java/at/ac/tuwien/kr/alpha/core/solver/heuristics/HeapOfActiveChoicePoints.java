@@ -34,7 +34,7 @@ import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.api.Util.oops;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
 
 /**

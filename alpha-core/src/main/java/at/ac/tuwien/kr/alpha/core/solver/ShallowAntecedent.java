@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static at.ac.tuwien.kr.alpha.api.Util.oops;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 
 /**
  * Represents a shallow {@link Antecedent} that must be instantiated before use.

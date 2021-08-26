@@ -7,12 +7,12 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.util.Interner;
+import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 /**
  * Copyright (c) 2016-2017, the Alpha Team.

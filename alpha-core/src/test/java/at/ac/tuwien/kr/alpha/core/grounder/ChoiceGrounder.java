@@ -27,9 +27,9 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import static at.ac.tuwien.kr.alpha.api.Util.entriesToMap;
-import static at.ac.tuwien.kr.alpha.api.Util.entry;
 import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.entriesToMap;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.entry;
 import static at.ac.tuwien.kr.alpha.core.common.NoGood.headFirst;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;

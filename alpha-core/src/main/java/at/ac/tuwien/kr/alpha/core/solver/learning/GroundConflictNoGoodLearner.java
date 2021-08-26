@@ -40,9 +40,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 import static at.ac.tuwien.kr.alpha.core.atoms.Literals.*;
 import static at.ac.tuwien.kr.alpha.core.solver.NoGoodStore.LBD_NO_VALUE;
-import static at.ac.tuwien.kr.alpha.api.Util.oops;
 
 /**
  * Conflict-driven learning on ground clauses.

@@ -42,7 +42,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import at.ac.tuwien.kr.alpha.api.Util;
+import at.ac.tuwien.kr.alpha.commons.util.Util;
 import at.ac.tuwien.kr.alpha.core.solver.Antecedent;
 
 public class NoGood implements NoGoodInterface, Comparable<NoGood> {

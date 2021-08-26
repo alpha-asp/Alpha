@@ -30,12 +30,12 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
-import at.ac.tuwien.kr.alpha.api.grounder.Instance;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
+import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
 
 /**
  * Abstract base implementation of {@link LiteralInstantiationStrategy} that outlines a basic workflow for

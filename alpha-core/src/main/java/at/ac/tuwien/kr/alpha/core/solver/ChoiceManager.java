@@ -38,7 +38,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import static at.ac.tuwien.kr.alpha.api.Util.oops;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToLiteral;
 
 /**

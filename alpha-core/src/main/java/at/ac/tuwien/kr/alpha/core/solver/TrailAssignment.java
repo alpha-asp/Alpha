@@ -27,8 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static at.ac.tuwien.kr.alpha.api.Util.arrayGrowthSize;
-import static at.ac.tuwien.kr.alpha.api.Util.oops;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.arrayGrowthSize;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToLiteral;
 import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isPositive;

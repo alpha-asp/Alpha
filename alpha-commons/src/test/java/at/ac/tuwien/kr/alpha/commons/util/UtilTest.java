@@ -1,6 +1,8 @@
-package at.ac.tuwien.kr.alpha.api;
+package at.ac.tuwien.kr.alpha.commons.util;
 
 import org.junit.Test;
+
+import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 public class UtilTest {
 	@Test(expected = RuntimeException.class)

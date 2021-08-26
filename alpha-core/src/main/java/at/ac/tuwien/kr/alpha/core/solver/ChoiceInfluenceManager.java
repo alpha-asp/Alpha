@@ -27,10 +27,10 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
+import static at.ac.tuwien.kr.alpha.commons.util.Util.arrayGrowthSize;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.TRUE;
-import static at.ac.tuwien.kr.alpha.api.Util.arrayGrowthSize;
-import static at.ac.tuwien.kr.alpha.api.Util.oops;
 
 import java.util.Arrays;
 import java.util.HashSet;

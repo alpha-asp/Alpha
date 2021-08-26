@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import static at.ac.tuwien.kr.alpha.api.Util.oops;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 
 import java.util.ArrayList;
 import java.util.Iterator;

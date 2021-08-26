@@ -30,7 +30,6 @@ package at.ac.tuwien.kr.alpha.core.atoms;
 import java.util.Arrays;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.VariableNormalizableAtom;
@@ -40,6 +39,7 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 /**
  * Helper for treating IntervalTerms in rules.

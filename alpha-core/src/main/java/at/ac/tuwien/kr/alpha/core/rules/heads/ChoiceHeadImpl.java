@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.core.rules.heads;
 
-import static at.ac.tuwien.kr.alpha.api.Util.join;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.join;
 
 import java.util.List;
 

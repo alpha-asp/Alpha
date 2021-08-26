@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.commons.util;
 
-import static at.ac.tuwien.kr.alpha.api.Util.oops;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 
 /**
  * Generates unique, sequential integers starting at 0, i.e., it maintains a counter that is incremented for each getNextId().

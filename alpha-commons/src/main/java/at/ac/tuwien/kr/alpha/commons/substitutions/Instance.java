@@ -1,13 +1,13 @@
-package at.ac.tuwien.kr.alpha.api.grounder;
+package at.ac.tuwien.kr.alpha.commons.substitutions;
 
-import static at.ac.tuwien.kr.alpha.api.Util.join;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.join;
 
 import java.util.Arrays;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 /**
  * An instance is a positional association of terms, e.g., representing a variable substitution, or a ground instance of

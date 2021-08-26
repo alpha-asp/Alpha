@@ -3,11 +3,11 @@ package at.ac.tuwien.kr.alpha.core.programs;
 import java.util.Collections;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 /**
  * The parent type for all kinds of programs. Defines a program's basic structure (facts + rules + inlineDirectives)
