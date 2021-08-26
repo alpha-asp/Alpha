@@ -53,7 +53,7 @@ public class TermTest {
 	}
 
 	@Test
-	public void testTermOrdering() throws Exception {
+	public void testTermOrdering() {
 		Term cts = Terms.newConstant("abc");
 		Term cti = Terms.newConstant(2);
 		Term cto = Terms.newConstant(new UUID(0, 0));
