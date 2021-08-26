@@ -117,37 +117,6 @@ public class AggregatesTest {
 				"");
 	}
 	
-	
-//	public static void main(String[] args) {
-//		RegressionTestConfig cfg = new RegressionTestConfig(
-//				"default",
-//				"naive",
-//				"alpharoaming",
-//				BranchingHeuristicFactory.Heuristic.VSIDS,
-//				0,
-//				false,
-//				"strict",
-//				"strict",
-//				false,
-//				false,
-//				true,
-//				false
-//				);
-//		String program = "thing(3). thing(-5). thing(5). "
-//				+ "{summed_up_thing(X) : thing(X)}. "
-//				+ "seven_le :- 7 <= #sum{X : summed_up_thing(X)}.";
-//		assertRegressionTestAnswerSetsWithBase(cfg, program,
-//				"thing(-5), thing(3), thing(5)",
-//				"seven_le, summed_up_thing(3), summed_up_thing(5)",
-//				"summed_up_thing(5)",
-//				"summed_up_thing(3)",
-//				"summed_up_thing(-5)",
-//				"summed_up_thing(-5), summed_up_thing(3), summed_up_thing(5)",
-//				"summed_up_thing(-5), summed_up_thing(3)",
-//				"summed_up_thing(-5), summed_up_thing(5)",
-//				"");
-//	}
-	
 	@AggregateRegressionTest
 	public void aggregateCountLeWithChoicePositive(RegressionTestConfig cfg) {
 		String program = "potential_thing(1..4). "
