@@ -55,13 +55,13 @@ import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.config.Heuristic;
 import at.ac.tuwien.kr.alpha.api.config.InputConfig;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.solver.heuristics.Heuristic;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.commons.Predicates;

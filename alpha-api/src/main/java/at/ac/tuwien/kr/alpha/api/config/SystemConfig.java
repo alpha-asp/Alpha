@@ -27,10 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.api.config;
 
-import at.ac.tuwien.kr.alpha.api.grounder.heuristics.GrounderHeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.api.solver.BinaryNoGoodPropagationEstimationStrategy;
-import at.ac.tuwien.kr.alpha.api.solver.heuristics.Heuristic;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

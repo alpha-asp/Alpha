@@ -33,7 +33,7 @@ import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 
-import at.ac.tuwien.kr.alpha.api.solver.heuristics.Heuristic;
+import at.ac.tuwien.kr.alpha.api.config.Heuristic;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.solver.ChoiceManager;

@@ -28,10 +28,10 @@
 package at.ac.tuwien.kr.alpha.app.config;
 
 import at.ac.tuwien.kr.alpha.api.config.AlphaConfig;
+import at.ac.tuwien.kr.alpha.api.config.BinaryNoGoodPropagationEstimationStrategy;
+import at.ac.tuwien.kr.alpha.api.config.Heuristic;
 import at.ac.tuwien.kr.alpha.api.config.InputConfig;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.solver.BinaryNoGoodPropagationEstimationStrategy;
-import at.ac.tuwien.kr.alpha.api.solver.heuristics.Heuristic;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;

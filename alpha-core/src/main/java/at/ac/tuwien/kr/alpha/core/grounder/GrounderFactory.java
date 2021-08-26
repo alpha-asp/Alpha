@@ -27,8 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder;
 
+import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.config.InputConfig;
-import at.ac.tuwien.kr.alpha.api.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.grounder.bridges.Bridge;

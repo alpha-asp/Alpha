@@ -49,8 +49,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;

@@ -23,7 +23,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.api.grounder.heuristics;
+package at.ac.tuwien.kr.alpha.api.config;
 
 /* TODO this should be javadoc but has a problem with the ref to a component from core module:
 * Contains configuration parameters for heuristics used by {@link at.ac.tuwien.kr.alpha.grounder.Grounder}s.

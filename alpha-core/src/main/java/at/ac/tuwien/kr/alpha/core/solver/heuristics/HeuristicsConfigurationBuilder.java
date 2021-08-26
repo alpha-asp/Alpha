@@ -25,8 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.api.solver.BinaryNoGoodPropagationEstimationStrategy;
-import at.ac.tuwien.kr.alpha.api.solver.heuristics.Heuristic;
+import at.ac.tuwien.kr.alpha.api.config.BinaryNoGoodPropagationEstimationStrategy;
+import at.ac.tuwien.kr.alpha.api.config.Heuristic;
 
 import java.util.List;
 

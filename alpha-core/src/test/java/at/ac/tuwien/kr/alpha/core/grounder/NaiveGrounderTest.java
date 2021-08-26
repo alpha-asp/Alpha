@@ -40,8 +40,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;

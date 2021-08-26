@@ -30,7 +30,7 @@ import java.io.IOException;
 import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.Solver;
-import at.ac.tuwien.kr.alpha.api.grounder.heuristics.GrounderHeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;

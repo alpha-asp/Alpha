@@ -38,7 +38,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.solver.heuristics.Heuristic;
+import at.ac.tuwien.kr.alpha.api.config.Heuristic;
 
 /**
  * Tests {@link AbstractSolver} using some pigeon-hole test cases (see https://en.wikipedia.org/wiki/Pigeonhole_principle).

@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.api.solver.heuristics;
+package at.ac.tuwien.kr.alpha.api.config;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
