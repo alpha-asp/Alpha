@@ -23,8 +23,6 @@ public class RegressionTestConfigProvider {
 	/**
 	 * Creates a list of {@link RegressionTestConfig}s with all config combinations that are to be tested im methods tagged using "RegressionTest" annotation.
 	 * Exact number of combinations depends on the "CI" environment variable that can be used to signal that a test is being run in a CI environment.
-	 * @param useSortingGridForAggregates
-	 * @param supportNegativeSumElements
 	 * @return
 	 */
 	private static List<RegressionTestConfig> buildConfigs() {
