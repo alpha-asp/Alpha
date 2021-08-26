@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha;
+package at.ac.tuwien.kr.alpha.test.util;
 
 import java.util.Collections;
 import java.util.Set;
