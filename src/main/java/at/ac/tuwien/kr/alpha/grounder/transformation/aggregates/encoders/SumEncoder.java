@@ -26,19 +26,19 @@ public final class SumEncoder extends StringtemplateBasedAggregateEncoder {
 	private static final ST SUM_LE_TEMPLATE = AGGREGATE_ENCODINGS.getInstanceOf("sum_le");
 	private static final ST SUM_EQ_TEMPLATE = AGGREGATE_ENCODINGS.getInstanceOf("sum_eq");
 
-	private static final ST SIMPLE_SUM_LE_TEMPLATE = AGGREGATE_ENCODINGS.getInstanceOf("sum_le_simple");
-	private static final ST SIMPLE_SUM_EQ_TEMPLATE = AGGREGATE_ENCODINGS.getInstanceOf("sum_eq_simple");
+	private static final ST NON_NEG_ELEMENTS_SUM_LE_TEMPLATE = AGGREGATE_ENCODINGS.getInstanceOf("sum_le_no_negative_elements");
+	private static final ST NON_NEG_ELEMENTS_SUM_EQ_TEMPLATE = AGGREGATE_ENCODINGS.getInstanceOf("sum_eq_no_negative_elements");
 
 	private SumEncoder(ComparisonOperator acceptedOperator, ST encodingTemplate) {
 		super(AggregateFunctionSymbol.SUM, acceptedOperator, encodingTemplate);
 	}
 
 	public static SumEncoder buildSumLessOrEqualEncoder(boolean supportNegativeIntegers) {
-		return new SumEncoder(ComparisonOperator.LE, supportNegativeIntegers ? SUM_LE_TEMPLATE : SIMPLE_SUM_LE_TEMPLATE);
+		return new SumEncoder(ComparisonOperator.LE, supportNegativeIntegers ? SUM_LE_TEMPLATE : NON_NEG_ELEMENTS_SUM_LE_TEMPLATE);
 	}
 
 	public static SumEncoder buildSumEqualsEncoder(boolean supportNegativeIntegers) {
-		return new SumEncoder(ComparisonOperator.EQ, supportNegativeIntegers ? SUM_EQ_TEMPLATE : SIMPLE_SUM_EQ_TEMPLATE);
+		return new SumEncoder(ComparisonOperator.EQ, supportNegativeIntegers ? SUM_EQ_TEMPLATE : NON_NEG_ELEMENTS_SUM_EQ_TEMPLATE);
 	}
 
 	/**

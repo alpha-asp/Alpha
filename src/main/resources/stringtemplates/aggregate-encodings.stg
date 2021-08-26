@@ -167,7 +167,7 @@ cnt_le_counting_grid (id, result_predicate, element_tuple, bound )::=<<
  *
  * CAUTION: This encoding only supports sums over positive integers.
  */
-sum_le_simple (id, result_predicate, element_tuple, bound )::=<<
+sum_le_no_negative_elements (id, result_predicate, element_tuple, bound )::=<<
 	#enumeration_predicate_is enum.
 	$! We have found a result when either the bound is LEQ zero or we have a candidate that, added to an intermediate sum exceeds the bound !$
 	$result_predicate$(ARGS, K) :- $bound$(ARGS, K), K <= 0.
@@ -219,7 +219,7 @@ sum_le (id, result_predicate, element_tuple, bound)::=<<
  * CAUTION: This encoding can not handle summation over negative integers!
  *
  **/
-sum_eq_simple (id, result_predicate, element_tuple, bound )::=<<
+sum_eq_no_negative_elements (id, result_predicate, element_tuple, bound )::=<<
 	#enumeration_predicate_is enum.
 	$! The first term of each aggregate element goes into the sum !$
 	$id$_input_value_at_index(ARGS, VAL, IDX) :- $element_tuple$(ARGS, TPL, VAL), enum(ARGS, TPL, IDX).
