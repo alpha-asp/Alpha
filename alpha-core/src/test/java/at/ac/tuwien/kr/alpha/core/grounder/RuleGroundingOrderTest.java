@@ -27,14 +27,14 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
 import java.util.function.Function;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
@@ -60,7 +60,7 @@ public class RuleGroundingOrderTest {
 
 
 	@Test
-	public void groundingOrder() throws IOException {
+	public void groundingOrder() {
 		String aspStr = "h(X,C) :- p(X,Y), q(A,B), r(Y,A), s(C)." +
 				"j(A,B,X,Y) :- r1(A,B), r1(X,Y), r1(A,X), r1(B,Y), A = B." +
 				"p(a) :- b = a.";
@@ -81,11 +81,13 @@ public class RuleGroundingOrderTest {
 		assertTrue(rgo2.hasFixedInstantiation());
 	}
 
-	@Test(expected = RuntimeException.class)
-	public void groundingOrderUnsafe() throws IOException {
-		String aspStr = "h(X,C) :- X = Y, Y = C .. 3, C = X.";
-		CompiledProgram prog = PARSE_AND_PREPROCESS.apply(aspStr);
-		computeGroundingOrdersForRule(prog, 0);
+	@Test
+	public void groundingOrderUnsafe() {
+		assertThrows(RuntimeException.class, () -> {
+			String aspStr = "h(X,C) :- X = Y, Y = C .. 3, C = X.";
+			CompiledProgram prog = PARSE_AND_PREPROCESS.apply(aspStr);
+			computeGroundingOrdersForRule(prog, 0);
+		});
 	}
 	
 	@Test

@@ -26,9 +26,9 @@
 package at.ac.tuwien.kr.alpha.core.grounder;
 
 import static at.ac.tuwien.kr.alpha.TestUtil.atom;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,9 +36,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
@@ -87,7 +87,7 @@ public class NaiveGrounderTest {
 	final Literal litAX = PROGRAM_PART_PARSER.parseLiteral("a(X)");
 	final Literal litA1 = PROGRAM_PART_PARSER.parseLiteral("a(1)");
 
-	@Before
+	@BeforeEach
 	public void resetRuleIdGenerator() {
 		InternalRule.resetIdGenerator();
 	}
@@ -249,7 +249,7 @@ public class NaiveGrounderTest {
 	}
 
 	@Test
-	@Ignore("Currently, rule grounding is not switched off by a true negative body atom")
+	@Disabled("Currently, rule grounding is not switched off by a true negative body atom")
 	public void testGroundingOfRuleSwitchedOffByTrueNegativeBody() {
 		ASPCore2Program program = PROGRAM_PARSER.parse("a(1). "
 				+ "c(X) :- a(X), not b(X). "

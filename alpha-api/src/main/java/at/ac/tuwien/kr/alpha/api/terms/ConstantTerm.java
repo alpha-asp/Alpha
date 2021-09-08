@@ -4,4 +4,6 @@ public interface ConstantTerm<T extends Comparable<T>> extends Term {
 	
 	T getObject();
 	
+	boolean isSymbolic();
+	
 }

@@ -25,14 +25,14 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.core.atoms.Literals;
@@ -69,7 +69,7 @@ public class VSIDSTest {
 	private int lit3 = Literals.atomToLiteral(3);
 	private int lit4 = Literals.atomToLiteral(4);
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		atomStore = new AtomStoreImpl();
 		AtomStoreTest.fillAtomStore(atomStore, 4);

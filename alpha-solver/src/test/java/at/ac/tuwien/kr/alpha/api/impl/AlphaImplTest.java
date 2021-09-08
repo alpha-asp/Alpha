@@ -32,13 +32,16 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -47,9 +50,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +80,6 @@ import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 import at.ac.tuwien.kr.alpha.core.util.AnswerSetsParser;
-import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 
 public class AlphaImplTest {
 	
@@ -125,6 +126,7 @@ public class AlphaImplTest {
 		return a == 0xF00;
 	}
 
+	@SuppressWarnings("unused")
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static boolean thinger(Thingy thingy) {
 		return true;
@@ -142,7 +144,7 @@ public class AlphaImplTest {
 	}
 
 	@Test
-	public void addsFacts() throws Exception {
+	public void addsFacts() {
 		Alpha system = new AlphaImpl();
 		Thingy a = new Thingy();
 		Thingy b = new Thingy();
@@ -153,14 +155,16 @@ public class AlphaImplTest {
 		assertEquals(expected, actual);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void withExternalTypeConflict() throws Exception {
+	@Test
+	public void withExternalTypeConflict() {
+		assertThrows(IllegalArgumentException.class, () -> {
 		Alpha system = new AlphaImpl();
 		InputConfig inputCfg = InputConfig.forString("a :- &isFoo[\"adsfnfdsf\"].");
 		inputCfg.addPredicateMethod("isFoo", Externals.processPredicateMethod(this.getClass().getMethod("isFoo", Integer.class)));
 		Set<AnswerSet> actual = system.solve(system.readProgram(inputCfg)).collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
+});
 	}
 
 	@Test
@@ -217,14 +221,16 @@ public class AlphaImplTest {
 		assertEquals(expected, actual);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void smallGraphWithWrongType() throws Exception {
+	@Test
+	public void smallGraphWithWrongType() {
+		assertThrows(IllegalArgumentException.class, () -> {
 		Alpha system = new AlphaImpl();
 		InputConfig cfg = InputConfig.forString("a :- &connected[\"hello\",2].");
 		cfg.addPredicateMethod("connected", Externals.processPredicate((Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3)));
 		ASPCore2Program prog = system.readProgram(cfg);
 
 		system.solve(prog).collect(Collectors.toSet());
+		});
 	}
 
 	public static Set<List<ConstantTerm<Integer>>> neighbors(int node) {
@@ -242,7 +248,7 @@ public class AlphaImplTest {
 	}
 
 	@Test
-	@Ignore("Test program is not safe (external lacking output variables). This should throw some exception.")
+	@Disabled("Test program is not safe (external lacking output variables). This should throw some exception.")
 	public void smallGraphNoNeighbors() throws Exception {
 		Alpha system = new AlphaImpl();
 		InputConfig cfg = InputConfig.forString("noNeighbors(2) :- not &neighbors[2].");
@@ -279,7 +285,7 @@ public class AlphaImplTest {
 	}
 
 	@Test
-	@Ignore("Test program is not safe (external lacking output variables). This should throw some exception.")
+	@Disabled("Test program is not safe (external lacking output variables). This should throw some exception.")
 	public void smallGraphSingleNeighborNoTerm() throws Exception {
 		Alpha system = new AlphaImpl();
 		InputConfig cfg = InputConfig.forString("success :- &neighbors[1], not &neighbors[2].");
@@ -342,11 +348,13 @@ public class AlphaImplTest {
 	 * If at the time of a scan, the name of an external is already registered,
 	 * an exception is thrown.
 	 */
-	@Test(expected = IllegalArgumentException.class)
-	public void errorDuplicateExternal() throws Exception {
+	@Test
+	public void errorDuplicateExternal() {
+		assertThrows(IllegalArgumentException.class, () -> {
 		InputConfig cfg = InputConfig.forString("someString.");
 		cfg.addPredicateMethods(Externals.scan(this.getClass()));
 		cfg.addPredicateMethods(Externals.scan(this.getClass()));
+});
 	}
 
 	@Test
@@ -362,7 +370,7 @@ public class AlphaImplTest {
 	}
 
 	@Test
-	@Ignore("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
+	@Disabled("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
 	public void withExternalInvocationCounted1() throws Exception {
 		Alpha system = new AlphaImpl();
 		InputConfig cfg = InputConfig.forString("a :- &isOne[1], &isOne[1].");
@@ -380,7 +388,7 @@ public class AlphaImplTest {
 	}
 
 	@Test
-	@Ignore("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
+	@Disabled("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
 	public void withExternalInvocationCounted2() throws Exception {
 		Alpha system = new AlphaImpl();
 		InputConfig cfg = InputConfig.forString("a. b :- &isOne[1], &isOne[2].");
@@ -398,7 +406,7 @@ public class AlphaImplTest {
 	}
 
 	@Test
-	@Ignore("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
+	@Disabled("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
 	public void withExternalInvocationCounted3() throws Exception {
 		Alpha system = new AlphaImpl();
 		InputConfig cfg = InputConfig.forString("a :- &isOne[1], not &isOne[2].");
@@ -425,8 +433,8 @@ public class AlphaImplTest {
 		for (AnswerSet as : answerSets) {
 			for (Atom atom : as.getPredicateInstances(Predicates.getPredicate("resultstring", 1))) {
 				String resultstring = ((ConstantTerm<String>) atom.getTerms().get(0)).getObject();
-				Assert.assertEquals(6, resultstring.length());
-				Assert.assertTrue(resultstring.contains("foo"));
+				assertEquals(6, resultstring.length());
+				assertTrue(resultstring.contains("foo"));
 			}
 		}
 	}
@@ -437,14 +445,14 @@ public class AlphaImplTest {
 		Alpha alpha = new AlphaImpl();
 		ASPCore2Program prog = alpha.readProgram(InputConfig.forString(NEGATED_EXTERNAL_ASP));
 		Set<AnswerSet> answerSets = alpha.solve(prog).collect(Collectors.toSet());
-		Assert.assertEquals(31, answerSets.size());
+		assertEquals(31, answerSets.size());
 		// Verify every result string has length 6 and contains "foo"
 		for (AnswerSet as : answerSets) {
 			for (Atom atom : as.getPredicateInstances(Predicates.getPredicate("resultstring", 1))) {
 				String resultstring = ((ConstantTerm<String>) atom.getTerms().get(0)).getObject();
 				LOGGER.debug("ResultString is {}", resultstring);
-				Assert.assertEquals(6, resultstring.length());
-				Assert.assertTrue(resultstring.contains("foo"));
+				assertEquals(6, resultstring.length());
+				assertTrue(resultstring.contains("foo"));
 			}
 		}
 	}
@@ -492,8 +500,8 @@ public class AlphaImplTest {
 		ASPCore2Program input = system.readProgramString(progstr);
 		NormalProgram normal = system.normalizeProgram(input);
 		CompiledProgram preprocessed = system.performProgramPreprocessing(normal);
-		Assert.assertFalse("Preprocessed program contains fact derived from stratifiable rule, but should not!",
-				preprocessed.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("q", "a")));
+		assertFalse(preprocessed.getFacts().contains(Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newSymbolicConstant("a"))), 
+				"Preprocessed program contains fact derived from stratifiable rule, but should not!");
 	}
 
 	/**
@@ -508,8 +516,8 @@ public class AlphaImplTest {
 		ASPCore2Program input = system.readProgramString(progstr);
 		NormalProgram normal = system.normalizeProgram(input);
 		CompiledProgram preprocessed = system.performProgramPreprocessing(normal);
-		Assert.assertTrue("Preprocessed program does not contain fact derived from stratifiable rule, but should!",
-				preprocessed.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("q", "a")));
+		assertTrue(preprocessed.getFacts().contains(Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newSymbolicConstant("a"))),
+				"Preprocessed program does not contain fact derived from stratifiable rule, but should!");
 	}
 
 	/**
@@ -594,12 +602,13 @@ public class AlphaImplTest {
 		assertFalse(system.solve(prog).limit(limit).collect(Collectors.toList()).isEmpty());
 	}
 	
+	// Detailed reproduction test-case for github issue #239.
 	@Test
 	public void testLearnedUnaryNoGoodCausingOutOfOrderLiteralsConflict() throws IOException {
 		final ProgramParser parser = new ProgramParserImpl();
 		InputProgram.Builder bld = InputProgram.builder();
-		bld.accumulate(parser.parse(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp")));
-		bld.accumulate(parser.parse(Paths.get("src", "test", "resources", "HanoiTower_instances", "simple.asp")));
+		bld.accumulate(parser.parse(Files.newInputStream(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp"), StandardOpenOption.READ)));
+		bld.accumulate(parser.parse(Files.newInputStream(Paths.get("src", "test", "resources", "HanoiTower_instances", "simple.asp"), StandardOpenOption.READ)));
 		InputProgram parsedProgram = bld.build();
 		
 		SystemConfig config = new SystemConfig();
@@ -617,6 +626,6 @@ public class AlphaImplTest {
 		Alpha alpha = new AlphaImpl(config);
 		Optional<AnswerSet> answerSet = alpha.solve(parsedProgram).findFirst();
 		assertTrue(answerSet.isPresent());
-	}	
+	}
 	
 }

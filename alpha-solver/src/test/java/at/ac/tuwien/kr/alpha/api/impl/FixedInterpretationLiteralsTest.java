@@ -1,5 +1,9 @@
 package at.ac.tuwien.kr.alpha.api.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,8 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
@@ -35,6 +38,7 @@ public class FixedInterpretationLiteralsTest {
 	 * Dummy input param which is not used exists solely to avoid producing an edge
 	 * case where there is output, but no input
 	 */
+	@SuppressWarnings("unused")
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static Set<List<ConstantTerm<String>>> connection(String dummy) {
 		Set<List<ConstantTerm<String>>> retVal = new HashSet<>();
@@ -84,111 +88,111 @@ public class FixedInterpretationLiteralsTest {
 	@Test
 	public void positiveNumericComparison() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		Assert.assertTrue(answer.isPresent());
+		assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("positive_numeric_comparison", 0)));
+		assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("positive_numeric_comparison", 0)));
 	}
 
 	@Test
 	public void negativeNumericComparison() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		Assert.assertTrue(answer.isPresent());
+		assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("negative_numeric_comparison", 0)));
+		assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("negative_numeric_comparison", 0)));
 	}
 
 	@Test
 	public void positiveUnaryExternal() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		Assert.assertTrue(answer.isPresent());
+		assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("positive_unary_external", 0)));
+		assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("positive_unary_external", 0)));
 	}
 
 	@Test
 	public void negativeUnaryExternal() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		Assert.assertTrue(answer.isPresent());
+		assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("negative_unary_external", 0)));
+		assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("negative_unary_external", 0)));
 	}
 
 	@Test
 	public void positiveExternalWithOutput() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		Assert.assertTrue(answer.isPresent());
+		assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("positive_external_with_output", 0)));
+		assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("positive_external_with_output", 0)));
 	}
 
 	@Test
 	public void positiveExternalWithOutputDontfire() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		Assert.assertTrue(answer.isPresent());
+		assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertFalse(answerSet.getPredicates().contains(Predicates.getPredicate("positive_external_with_output_dontfire", 0)));
+		assertFalse(answerSet.getPredicates().contains(Predicates.getPredicate("positive_external_with_output_dontfire", 0)));
 	}
 
 	@Test
 	public void negativeExternalWithOutput() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		Assert.assertTrue(answer.isPresent());
+		assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("negative_external_with_output", 0)));
+		assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("negative_external_with_output", 0)));
 	}
 
 	@Test
 	public void negativeExternalWithOutputDontfire() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		Assert.assertTrue(answer.isPresent());
+		assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertFalse(answerSet.getPredicates().contains(Predicates.getPredicate("negative_external_with_output_dontfire", 0)));
+		assertFalse(answerSet.getPredicates().contains(Predicates.getPredicate("negative_external_with_output_dontfire", 0)));
 	}
 
 	@Test
 	public void negativeExternalMultioutput() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		Assert.assertTrue(answer.isPresent());
+		assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("negative_external_multioutput", 0)));
+		assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("negative_external_multioutput", 0)));
 	}
 
 	@Test
 	public void negativeExternalMultioutputDontfire() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		Assert.assertTrue(answer.isPresent());
+		assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertFalse(answerSet.getPredicates().contains(Predicates.getPredicate("negative_external_multioutput_dontfire", 0)));
+		assertFalse(answerSet.getPredicates().contains(Predicates.getPredicate("negative_external_multioutput_dontfire", 0)));
 	}
 
 	@Test
 	public void positiveExternalMultioutput() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		Assert.assertTrue(answer.isPresent());
+		assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("positive_external_multioutput", 0)));
+		assertTrue(answerSet.getPredicates().contains(Predicates.getPredicate("positive_external_multioutput", 0)));
 	}
 
 	@Test
 	public void positiveExternalMultioutputDontfire() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		Assert.assertTrue(answer.isPresent());
+		assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
-		Assert.assertFalse(answerSet.getPredicates().contains(Predicates.getPredicate("positive_external_multioutput_dontfire", 0)));
+		assertFalse(answerSet.getPredicates().contains(Predicates.getPredicate("positive_external_multioutput_dontfire", 0)));
 	}
 
 	@Test
 	public void positiveExternalBindingOutput() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		Assert.assertTrue(answer.isPresent());
+		assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
 		Predicate pred = Predicates.getPredicate("positive_external_binding_output", 2);
-		Assert.assertTrue(answerSet.getPredicates().contains(pred));
+		assertTrue(answerSet.getPredicates().contains(pred));
 		Set<Atom> instances = answerSet.getPredicateInstances(pred);
-		Assert.assertEquals(3, instances.size());
-		Assert.assertTrue(instances.contains(Atoms.newBasicAtom(pred, Terms.newConstant("Klagenfurt"), Terms.newConstant("Villach"))));
-		Assert.assertTrue(instances.contains(Atoms.newBasicAtom(pred, Terms.newConstant("Klagenfurt"), Terms.newConstant("Graz"))));
-		Assert.assertTrue(instances.contains(Atoms.newBasicAtom(pred, Terms.newConstant("Villach"), Terms.newConstant("Salzburg"))));
+		assertEquals(3, instances.size());
+		assertTrue(instances.contains(Atoms.newBasicAtom(pred, Terms.newConstant("Klagenfurt"), Terms.newConstant("Villach"))));
+		assertTrue(instances.contains(Atoms.newBasicAtom(pred, Terms.newConstant("Klagenfurt"), Terms.newConstant("Graz"))));
+		assertTrue(instances.contains(Atoms.newBasicAtom(pred, Terms.newConstant("Villach"), Terms.newConstant("Salzburg"))));
 	}
 
 }

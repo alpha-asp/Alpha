@@ -25,11 +25,11 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
@@ -100,7 +100,7 @@ public class RuleToStringTest {
 	private Rule<Head> parseSingleRule(String rule) {
 		ASPCore2Program program = parser.parse(rule);
 		List<Rule<Head>> rules = program.getRules();
-		assertEquals("Number of rules", 1, rules.size());
+		assertEquals(1, rules.size(), "Number of rules");
 		return rules.get(0);
 	}
 }

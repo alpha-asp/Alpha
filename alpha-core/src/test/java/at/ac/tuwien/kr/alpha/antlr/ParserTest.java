@@ -27,9 +27,10 @@
  */
 package at.ac.tuwien.kr.alpha.antlr;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
@@ -41,8 +42,7 @@ import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
@@ -69,57 +69,61 @@ public class ParserTest {
 	private final ProgramParserImpl parser = new ProgramParserImpl();
 
 	@Test
-	public void parseFact() throws IOException {
+	public void parseFact() {
 		ASPCore2Program parsedProgram = parser.parse("p(a,b).");
 
-		assertEquals("Program contains one fact.", 1, parsedProgram.getFacts().size());
-		assertEquals("Predicate name of fact is p.", "p", parsedProgram.getFacts().get(0).getPredicate().getName());
-		assertEquals("Fact has two terms.", 2, parsedProgram.getFacts().get(0).getPredicate().getArity());
-		assertEquals("First term is a.", "a", (parsedProgram.getFacts().get(0).getTerms().get(0)).toString());
-		assertEquals("Second term is b.", "b", (parsedProgram.getFacts().get(0).getTerms().get(1)).toString());
+		assertEquals(1, parsedProgram.getFacts().size(), "Program contains one fact.");
+		assertEquals("p", parsedProgram.getFacts().get(0).getPredicate().getName(), "Predicate name of fact is p.");
+		assertEquals(2, parsedProgram.getFacts().get(0).getPredicate().getArity(), "Fact has two terms.");
+		assertEquals("a", (parsedProgram.getFacts().get(0).getTerms().get(0)).toString(), "First term is a.");
+		assertEquals("b", (parsedProgram.getFacts().get(0).getTerms().get(1)).toString(), "Second term is b.");
 	}
 
 	@Test
-	public void parseFactWithFunctionTerms() throws IOException {
+	public void parseFactWithFunctionTerms() {
 		ASPCore2Program parsedProgram = parser.parse("p(f(a),g(h(Y))).");
 
-		assertEquals("Program contains one fact.", 1, parsedProgram.getFacts().size());
-		assertEquals("Predicate name of fact is p.", "p", parsedProgram.getFacts().get(0).getPredicate().getName());
-		assertEquals("Fact has two terms.", 2, parsedProgram.getFacts().get(0).getPredicate().getArity());
-		assertEquals("First term is function term f.", "f", ((FunctionTerm) parsedProgram.getFacts().get(0).getTerms().get(0)).getSymbol());
-		assertEquals("Second term is function term g.", "g", ((FunctionTerm) parsedProgram.getFacts().get(0).getTerms().get(1)).getSymbol());
+		assertEquals(1, parsedProgram.getFacts().size(), "Program contains one fact.");
+		assertEquals("p", parsedProgram.getFacts().get(0).getPredicate().getName(), "Predicate name of fact is p.");
+		assertEquals(2, parsedProgram.getFacts().get(0).getPredicate().getArity(), "Fact has two terms.");
+		assertEquals("f", ((FunctionTerm) parsedProgram.getFacts().get(0).getTerms().get(0)).getSymbol(), "First term is function term f.");
+		assertEquals("g", ((FunctionTerm) parsedProgram.getFacts().get(0).getTerms().get(1)).getSymbol(), "Second term is function term g.");
 	}
 
 	@Test
-	public void parseSmallProgram() throws IOException {
+	public void parseSmallProgram() {
 		ASPCore2Program parsedProgram = parser.parse(
 				"a :- b, not d." + System.lineSeparator() +
 						"c(X) :- p(X,a,_), q(Xaa,xaa)." + System.lineSeparator() +
 						":- f(Y).");
 
-		assertEquals("Program contains three rules.", 3, parsedProgram.getRules().size());
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void parseBadSyntax() throws IOException {
-		parser.parse("Wrong Syntax.");
+		assertEquals(3, parsedProgram.getRules().size(), "Program contains three rules.");
 	}
 
 	@Test
-	public void parseBuiltinAtom() throws IOException {
+	public void parseBadSyntax() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			parser.parse("Wrong Syntax.");
+		});
+	}
+
+	@Test
+	public void parseBuiltinAtom() {
 		ASPCore2Program parsedProgram = parser.parse("a :- p(X), X != Y, q(Y).");
 		assertEquals(1, parsedProgram.getRules().size());
 		assertEquals(3, parsedProgram.getRules().get(0).getBody().size());
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test
 	// Change expected after Alpha can deal with disjunction.
-	public void parseProgramWithDisjunctionInHead() throws IOException {
-		parser.parse("r(X) | q(X) :- q(X)." + System.lineSeparator() + "q(a)." + System.lineSeparator());
+	public void parseProgramWithDisjunctionInHead() {
+		assertThrows(UnsupportedOperationException.class, () -> {
+			parser.parse("r(X) | q(X) :- q(X)." + System.lineSeparator() + "q(a)." + System.lineSeparator());
+		});
 	}
 
 	@Test
-	public void parseInterval() throws IOException {
+	public void parseInterval() {
 		ASPCore2Program parsedProgram = parser.parse("fact(2..5). p(X) :- q(a, 3 .. X).");
 		IntervalTerm factInterval = (IntervalTerm) parsedProgram.getFacts().get(0).getTerms().get(0);
 		assertTrue(factInterval.equals(IntervalTerm.getInstance(Terms.newConstant(2), Terms.newConstant(5))));
@@ -128,7 +132,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void parseChoiceRule() throws IOException {
+	public void parseChoiceRule() {
 		ASPCore2Program parsedProgram = parser.parse("dom(1). dom(2). { a ; b } :- dom(X).");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
 		assertEquals(2, choiceHead.getChoiceElements().size());
@@ -139,7 +143,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void parseChoiceRuleBounded() throws IOException {
+	public void parseChoiceRuleBounded() {
 		ASPCore2Program parsedProgram = parser.parse("dom(1). dom(2). 1 < { a: p(v,w), not r; b } <= 13 :- dom(X). foo.");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
 		assertEquals(2, choiceHead.getChoiceElements().size());
@@ -170,22 +174,26 @@ public class ParserTest {
 		assertEquals(expected, actual);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testMalformedInputNotIgnored() {
 		String program = "foo(a) :- p(b).\n" +
 				"// rule :- q.\n" +
 				"r(1).\n" +
 				"r(2).\n";
-		parser.parse(program);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testMissingDotNotIgnored() {
-		parser.parse("p(X,Y) :- q(X), r(Y) p(a). q(b).");
+		assertThrows(IllegalArgumentException.class, () -> {
+			parser.parse(program);
+		});
 	}
 
 	@Test
-	public void parseEnumerationDirective() throws IOException {
+	public void testMissingDotNotIgnored() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			parser.parse("p(X,Y) :- q(X), r(Y) p(a). q(b).");
+		});
+	}
+
+	@Test
+	public void parseEnumerationDirective() {
 		ASPCore2Program parsedProgram = parser.parse("p(a,1)." +
 				"# enumeration_predicate_is mune." +
 				"r(X) :- p(X), mune(X)." +
@@ -195,7 +203,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void cardinalityAggregate() throws IOException {
+	public void cardinalityAggregate() {
 		ASPCore2Program parsedProgram = parser.parse("num(K) :-  K <= #count {X,Y,Z : p(X,Y,Z) }, dom(K).");
 		Optional<Literal> optionalBodyElement = parsedProgram.getRules().get(0).getBody().stream().filter((lit) -> lit instanceof AggregateLiteral).findFirst();
 		assertTrue(optionalBodyElement.isPresent());
@@ -216,10 +224,10 @@ public class ParserTest {
 	public void stringWithEscapedQuotes() throws IOException {
 		CharStream stream = CharStreams.fromStream(ParserTest.class.getResourceAsStream("/escaped_quotes.asp"));
 		ASPCore2Program prog = parser.parse(stream);
-		Assert.assertEquals(1, prog.getFacts().size());
+		assertEquals(1, prog.getFacts().size());
 		Atom stringAtom = prog.getFacts().get(0);
 		String stringWithQuotes = stringAtom.getTerms().get(0).toString();
-		Assert.assertEquals("\"a string with \"quotes\"\"", stringWithQuotes);
+		assertEquals("\"a string with \"quotes\"\"", stringWithQuotes);
 	}
 
 }

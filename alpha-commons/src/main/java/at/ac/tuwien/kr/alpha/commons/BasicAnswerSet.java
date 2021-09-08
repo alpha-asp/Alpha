@@ -4,11 +4,13 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySortedSet;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.AnswerSetQuery;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
@@ -115,5 +117,10 @@ class BasicAnswerSet implements AnswerSet {
 		}
 
 		return 0;
+	}
+
+	@Override
+	public List<Atom> query(AnswerSetQuery query) {
+		return query.applyTo(this);
 	}
 }

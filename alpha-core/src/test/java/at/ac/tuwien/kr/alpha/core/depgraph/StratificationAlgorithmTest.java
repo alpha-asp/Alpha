@@ -1,12 +1,11 @@
 package at.ac.tuwien.kr.alpha.core.depgraph;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
@@ -81,7 +80,7 @@ public class StratificationAlgorithmTest {
 	}
 
 	@Test
-	public void stratifyWithNegativeDependencyTest() throws IOException {
+	public void stratifyWithNegativeDependencyTest() {
 		StringBuilder bld = new StringBuilder();
 		bld.append("b :- a.").append("\n");
 		bld.append("c :- b.").append("\n");

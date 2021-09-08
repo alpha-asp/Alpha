@@ -1,9 +1,10 @@
 package at.ac.tuwien.kr.alpha.app;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.ByteArrayOutputStream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
@@ -56,7 +57,7 @@ public class DependencyGraphWriterTest {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		writer.writeAsDot(depgraph, out);
 		String actualGraph = out.toString();
-		Assert.assertEquals(expectedGraph, actualGraph);
+		assertEquals(expectedGraph, actualGraph);
 	}
 
 }

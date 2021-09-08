@@ -25,11 +25,11 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.core.atoms.Literals;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
@@ -53,7 +53,7 @@ public class HeapOfActiveAtomsTest {
 	private VSIDS vsids;
 	private NoGoodStoreAlphaRoaming noGoodStore;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		atomStore = new AtomStoreImpl();
 		assignment = new TrailAssignment(atomStore);

@@ -25,70 +25,81 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.collectRegressionTestAnswerSets;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.runWithTimeout;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertFalse;
+import org.junit.jupiter.api.Disabled;
 
 /**
  * Tests {@link AbstractSolver} using some configuration test cases in which subparts are assigned to parts.
  *
  */
-public class PartSubpartConfigurationTest extends AbstractSolverTests {
-	@Test(timeout = 1000)
-	public void testN2() throws IOException {
-		testPartSubpart(2);
+public class PartSubpartConfigurationTest {
+	
+	private static final int DEBUG_TIMEOUT_FACTOR = 5;
+	
+	@RegressionTest
+	public void testN2(RegressionTestConfig cfg) {
+		long timeout = 1000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(2, cfg));
 	}
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN4() throws IOException {
-		testPartSubpart(4);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testN4(RegressionTestConfig cfg) {
+		long timeout = 60000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(4, cfg));
 	}
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN8() throws IOException {
-		testPartSubpart(8);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testN8(RegressionTestConfig cfg) {
+		long timeout = 60000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(8, cfg));
 	}
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN16() throws IOException {
-		testPartSubpart(16);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testN16(RegressionTestConfig cfg) {
+		long timeout = 60000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(16, cfg));
 	}
 
-	@Test(timeout = 61000)
-	@Ignore("disabled to save resources during CI")
-	public void testN32() throws IOException {
-		testPartSubpart(32);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testN32(RegressionTestConfig cfg) {
+		long timeout = 61000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(32, cfg));
 	}
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN60() throws IOException {
-		testPartSubpart(60);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testN60(RegressionTestConfig cfg) {
+		long timeout = 60000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(60, cfg));
 	}
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN75() throws IOException {
-		testPartSubpart(75);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testN75(RegressionTestConfig cfg) {
+		long timeout = 60000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(75, cfg));
 	}
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN100() throws IOException {
-		testPartSubpart(100);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testN100(RegressionTestConfig cfg) {
+		long timeout = 60000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(100, cfg));
 	}
 
-	private void testPartSubpart(int n) throws IOException {
+	private void testPartSubpart(int n, RegressionTestConfig cfg) {
 		List<String> rules = new ArrayList<>();
 		for (int i = 1; i <= n; i++) {
 			rules.add(String.format("n(%d).", i));
@@ -105,7 +116,7 @@ public class PartSubpartConfigurationTest extends AbstractSolverTests {
 			":- subpart(SP1,P), subpart(SP2, P), SP1!=SP2, subpartid(SP1,ID), subpartid(SP2,ID)."
 		));
 
-		assertFalse(collectSet(concat(rules)).isEmpty());
+		assertFalse(collectRegressionTestAnswerSets(concat(rules), cfg).isEmpty());
 		// TODO: check correctness of answer set
 	}
 

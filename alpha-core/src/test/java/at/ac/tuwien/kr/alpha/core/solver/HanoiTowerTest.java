@@ -25,15 +25,15 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static org.junit.Assert.assertTrue;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.runWithTimeout;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.SortedSet;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,64 +41,70 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 
 /**
  * Tests {@link AbstractSolver} using some hanoi tower test cases (see https://en.wikipedia.org/wiki/Tower_of_Hanoi).
  *
  */
-public class HanoiTowerTest extends AbstractSolverTests {
+public class HanoiTowerTest {
 
+	@SuppressWarnings("unused")
 	private static final Logger LOGGER = LoggerFactory.getLogger(HanoiTowerTest.class);
 
-	private final ProgramParser parser = new ProgramParserImpl();
+	private static final int DEBUG_TIMEOUT_FACTOR = 5;
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testInstance1() throws IOException {
-		testHanoiTower(1);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testInstance1(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower(1, cfg));
 	}
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testInstance2() throws IOException {
-		testHanoiTower(2);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testInstance2(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower(2, cfg));
 	}
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testInstance3() throws IOException {
-		testHanoiTower(3);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testInstance3(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower(3, cfg));
 	}
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testInstance4() throws IOException {
-		testHanoiTower(4);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testInstance4(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower(4, cfg));
 	}
 
-	@Test(timeout = 60000)
-	public void testSimple() throws IOException {
-		ignoreTestForNaiveSolver();
-		ignoreNonDefaultDomainIndependentHeuristics();
-		testHanoiTower("simple");
+	@RegressionTest
+	public void testSimple(RegressionTestConfig cfg) {
+		TestUtils.ignoreTestForNaiveSolver(cfg);
+		TestUtils.ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
+		long timeout = 60000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower("simple", cfg));
 	}
 
-	private void testHanoiTower(int instance) throws IOException {
-		testHanoiTower(String.valueOf(instance));
+	private void testHanoiTower(int instance, RegressionTestConfig cfg) throws IOException {
+		testHanoiTower(String.valueOf(instance), cfg);
 	}
 
-	private void testHanoiTower(String instance) throws IOException {
+	private void testHanoiTower(String instance, RegressionTestConfig cfg) throws IOException {
 		ASPCore2Program prog = new ProgramParserImpl().parse(
 				Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp"),
 				Paths.get("src", "test", "resources", "HanoiTower_instances", instance + ".asp"));
-		Solver solver = getInstance(prog);
+		Solver solver = TestUtils.buildSolverForRegressionTest(prog, cfg);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		assertTrue(answerSet.isPresent());
 		checkGoal(prog, answerSet.get());
@@ -120,7 +126,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 				Term expectedBottom = atom.getTerms().get(1);
 				Term expectedSteps = Terms.newConstant(steps);
 				Atom expectedAtom = Atoms.newBasicAtom(on, expectedSteps, expectedBottom, expectedTop);
-				assertTrue("Answer set does not contain " + expectedAtom, onInstancesInAnswerSet.contains(expectedAtom));
+				assertTrue(onInstancesInAnswerSet.contains(expectedAtom), "Answer set does not contain " + expectedAtom);
 			}
 		}
 	}

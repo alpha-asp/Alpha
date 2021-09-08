@@ -26,13 +26,13 @@
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
 import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToLiteral;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
@@ -50,7 +50,7 @@ public class ReplayHeuristicTest {
 	private final boolean debugInternalChecks = true;
 	private ChoiceManager choiceManager;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		AtomStore atomStore = new AtomStoreImpl();
 		WritableAssignment assignment = new TrailAssignment(atomStore);

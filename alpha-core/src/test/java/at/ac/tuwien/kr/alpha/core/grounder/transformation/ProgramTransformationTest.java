@@ -1,13 +1,14 @@
 package at.ac.tuwien.kr.alpha.core.grounder.transformation;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.function.Function;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +33,7 @@ public class ProgramTransformationTest {
 	private ChoiceHeadToNormal choiceToNormal = new ChoiceHeadToNormal();
 	private IntervalTermToIntervalAtom intervalRewriting = new IntervalTermToIntervalAtom();
 
+	@SuppressWarnings("resource")
 	private static String readTestResource(String resource) throws IOException {
 		InputStream is = ProgramTransformationTest.class.getResourceAsStream(TESTFILES_PATH + resource);
 		BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -53,8 +55,8 @@ public class ProgramTransformationTest {
 			I transformInput = prepareFunc.apply(inputProg);
 			String beforeTransformProg = transformInput.toString();
 			O transformedProg = transform.apply(transformInput);
-			Assert.assertEquals("Transformation result doesn't match expected result", expectedResult, transformedProg.toString());
-			Assert.assertEquals("Transformation modified source program (breaks immutability!)", beforeTransformProg, transformInput.toString());
+			assertEquals(expectedResult, transformedProg.toString(), "Transformation result doesn't match expected result");
+			assertEquals(beforeTransformProg, transformInput.toString(), "Transformation modified source program (breaks immutability!)");
 		} catch (Exception ex) {
 			LOGGER.error("Exception in test, nested exception: " + ex.getMessage(), ex);
 			throw new RuntimeException(ex);
@@ -81,6 +83,7 @@ public class ProgramTransformationTest {
 		genericTransformationTest(intervalRewriting, NormalProgramImpl::fromInputProgram, "interval-comparison_atom");
 	}
 
+	@SuppressWarnings("unused")
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate(name = "say_true")
 	public static boolean sayTrue(int val) {
 		// Dummy method so we can have an external in the transformation test.

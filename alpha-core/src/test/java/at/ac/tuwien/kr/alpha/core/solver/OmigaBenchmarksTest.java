@@ -30,68 +30,84 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 
 /**
  * Tests {@link AbstractSolver} using Omiga benchmark problems.
  *
  */
-public class OmigaBenchmarksTest extends AbstractSolverTests {
+public class OmigaBenchmarksTest {
 
+	@SuppressWarnings("unused")
 	private static final Logger LOGGER = LoggerFactory.getLogger(OmigaBenchmarksTest.class);
 
-	@Test(timeout = 10000)
-	public void test3Col_10_18() throws IOException {
-		test("3col", "3col-10-18.txt");
+	private static final int DEBUG_TIMEOUT_FACTOR = 15;
+
+	@RegressionTest
+	public void test3Col_10_18(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test("3col", "3col-10-18.txt", cfg));
 	}
 
-	@Test(timeout = 10000)
-	public void test3Col_20_38() throws IOException {
-		test("3col", "3col-20-38.txt");
+	@RegressionTest
+	public void test3Col_20_38(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test("3col", "3col-20-38.txt", cfg));
 	}
 
-	@Test(timeout = 15000)
-	public void testCutedge_100_30() throws IOException {
-		test("cutedge", "cutedge-100-30.txt");
+	@RegressionTest
+	public void testCutedge_100_30(RegressionTestConfig cfg) {
+		long timeout = 15000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test("cutedge", "cutedge-100-30.txt", cfg));
 	}
 
-	@Test(timeout = 15000)
-	public void testCutedge_100_50() throws IOException {
-		test("cutedge", "cutedge-100-50.txt");
+	@RegressionTest
+	public void testCutedge_100_50(RegressionTestConfig cfg) {
+		long timeout = 15000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test("cutedge", "cutedge-100-50.txt", cfg));
 	}
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testLocstrat_200() throws IOException {
-		test("locstrat", "locstrat-200.txt");
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testLocstrat_200(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test("locstrat", "locstrat-200.txt", cfg));
 	}
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testLocstrat_400() throws IOException {
-		test("locstrat", "locstrat-400.txt");
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testLocstrat_400(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test("locstrat", "locstrat-400.txt", cfg));
 	}
 
-	@Test(timeout = 15000)
-	public void testReach_1() throws IOException {
-		ignoreTestForNaiveSolver();
-		ignoreNonDefaultDomainIndependentHeuristics();
-		test("reach", "reach-1.txt");
+	@RegressionTest
+	public void testReach_1(RegressionTestConfig cfg) {
+		long timeout = 15000L;
+		TestUtils.ignoreTestForNaiveSolver(cfg);
+		TestUtils.ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test("reach", "reach-1.txt", cfg));
 	}
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testReach_4() throws IOException {
-		test("reach", "reach-4.txt");
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testReach_4(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test("reach", "reach-4.txt", cfg));
 	}
 
-	private void test(String folder, String aspFileName) throws IOException {
-		Optional<AnswerSet> answerSet = getInstance(Files.newInputStream(Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName))).stream().findFirst();
+	private void test(String folder, String aspFileName, RegressionTestConfig cfg) throws IOException {
+		@SuppressWarnings("unused")
+		Optional<AnswerSet> answerSet = TestUtils
+				.buildSolverForRegressionTest(
+						new ProgramParserImpl().parse(Files.newInputStream(Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName))), cfg)
+				.stream().findFirst();
 		// System.out.println(answerSet);
 		// TODO: check correctness of answer set
 	}

@@ -2,14 +2,14 @@ package at.ac.tuwien.kr.alpha.solver.learning;
 
 import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
 import static at.ac.tuwien.kr.alpha.core.solver.AntecedentTest.antecedentsEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
@@ -80,8 +80,8 @@ public class GroundConflictNoGoodLearnerTest {
 		assertEquals(backjumpingDecisionLevel, 2);
 	}
 
-	@Ignore // TrailAssignment no longer propagates at lower decision level.
 	@Test
+	@Disabled("TrailAssignment no longer propagates at lower decision level.")
 	public void subCurrentDLPropagationWithChoiceCauseOfConflict() {
 		GroundConflictNoGoodLearner learner = new GroundConflictNoGoodLearner(assignment, atomStore);
 		NoGood n1 = new NoGood(fromOldLiterals(1, -2));

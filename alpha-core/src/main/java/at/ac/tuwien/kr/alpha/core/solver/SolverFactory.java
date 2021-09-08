@@ -37,6 +37,7 @@ import at.ac.tuwien.kr.alpha.core.solver.heuristics.HeuristicsConfigurationBuild
 import java.util.Random;
 
 public final class SolverFactory {
+	
 	public static Solver getInstance(SystemConfig config, AtomStore atomStore, Grounder grounder) {
 		final String solverName = config.getSolverName();
 		final String nogoodStoreName = config.getNogoodStoreName();

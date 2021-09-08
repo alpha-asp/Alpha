@@ -29,6 +29,9 @@ dependencies {
 
     // Re-introduce antlr4-runtime as compile dependency.
     implementation group: 'org.antlr', name: 'antlr4-runtime', version: "${antlrVersion}"
+    
+	testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.7.1'
+
 }
 
 tasks.withType(AntlrTask) {
@@ -61,6 +64,10 @@ jacocoTestReport {
 
 java {
 	withSourcesJar()
+}
+
+test {
+	useJUnitPlatform()
 }
 
 publishing {

@@ -155,4 +155,9 @@ class ConstantTermImpl<T extends Comparable<T>> extends AbstractTerm implements 
 	public T getObject() {
 		return object;
 	}
+
+	@Override
+	public boolean isSymbolic() {
+		return this.symbolic;
+	}
 }

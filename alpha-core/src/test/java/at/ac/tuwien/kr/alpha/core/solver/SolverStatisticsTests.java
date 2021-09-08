@@ -25,13 +25,13 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeTrue;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.buildSolverForRegressionTest;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
@@ -40,39 +40,39 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.DummyGrounder;
 
-public class SolverStatisticsTests extends AbstractSolverTests {
+public class SolverStatisticsTests {
 
 	private AtomStore atomStore;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		this.atomStore = new AtomStoreImpl();
 	}
 
-	@Test
-	public void checkStatsStringZeroChoices() {
-		Solver solver = getInstance("a.");
+	@RegressionTest
+	public void checkStatsStringZeroChoices(RegressionTestConfig cfg) {
+		Solver solver = buildSolverForRegressionTest("a.", cfg);
 		assumeTrue(solver instanceof StatisticsReportingSolver);
 		collectAnswerSetsAndCheckStats(solver, 1, 0, 0, 0, 0, 0, 0, 0);
 	}
 
-	@Test
-	public void checkStatsStringOneChoice() {
-		Solver solver = getInstance("a :- not b. b :- not a.");
+	@RegressionTest
+	public void checkStatsStringOneChoice(RegressionTestConfig cfg) {
+		Solver solver = buildSolverForRegressionTest("a :- not b. b :- not a.", cfg);
 		assumeTrue(solver instanceof StatisticsReportingSolver);
 		collectAnswerSetsAndCheckStats(solver, 2, 1, 1, 1, 1, 0, 0, 0);
 	}
 
-	@Test
-	public void checkNoGoodCounterStatsByTypeUsingDummyGrounder() {
-		Solver solver = getInstance(atomStore, new DummyGrounder(atomStore));
+	@RegressionTest
+	public void checkNoGoodCounterStatsByTypeUsingDummyGrounder(RegressionTestConfig cfg) {
+		Solver solver = buildSolverForRegressionTest(atomStore, new DummyGrounder(atomStore), cfg);
 		assumeTrue(solver instanceof StatisticsReportingSolver);
 		collectAnswerSetsAndCheckNoGoodCounterStatsByType(solver, 4, 0, 0, 0);
 	}
 
-	@Test
-	public void checkNoGoodCounterStatsByCardinalityUsingDummyGrounder() {
-		Solver solver = getInstance(atomStore, new DummyGrounder(atomStore));
+	@RegressionTest
+	public void checkNoGoodCounterStatsByCardinalityUsingDummyGrounder(RegressionTestConfig cfg) {
+		Solver solver = buildSolverForRegressionTest(atomStore, new DummyGrounder(atomStore), cfg);
 		assumeTrue(solver instanceof StatisticsReportingSolver);
 		collectAnswerSetsAndCheckNoGoodCounterStatsByCardinality(solver, 2, 1, 1);
 	}

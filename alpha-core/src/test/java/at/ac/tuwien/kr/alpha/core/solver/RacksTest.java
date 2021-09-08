@@ -25,32 +25,43 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.runWithTimeout;
+
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.junit.jupiter.api.Disabled;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
 /**
  * Tests {@link AbstractSolver} using a racks configuration problem.
  *
  */
-@Ignore("disabled to save resources during CI")
-public class RacksTest extends AbstractSolverTests {
-	@Test(timeout = 10000)
-	public void testRacks() throws IOException {
-		test();
+@Disabled("disabled to save resources during CI")
+public class RacksTest {
+
+	private static final long DEBUG_TIMEOUT_FACTOR = 5;
+
+	@RegressionTest
+	public void testRacks(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(cfg));
 	}
 
-	private void test() throws IOException {
-		Solver solver = getInstance(Files.newInputStream(Paths.get("benchmarks", "siemens", "racks", "racks.lp")));
+	private void test(RegressionTestConfig cfg) throws IOException {
+		CharStream programInputStream = CharStreams.fromPath(
+				Paths.get("benchmarks", "siemens", "racks", "racks.lp"));
+		Solver solver = buildSolverForRegressionTest(new ProgramParserImpl().parse(programInputStream), cfg);
+		@SuppressWarnings("unused")
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
-		//System.out.println(answerSet);
+		// System.out.println(answerSet);
 		// TODO: check correctness of answer set
 	}
 }

@@ -26,14 +26,14 @@
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
 import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Random;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
@@ -59,7 +59,7 @@ public class BerkMinTest {
 	
 	private BerkMin berkmin;
 	
-	@Before
+	@BeforeEach
 	public void setUp() {
 		AtomStore atomStore = new AtomStoreImpl();
 		AtomStoreTest.fillAtomStore(atomStore, 2);
@@ -181,6 +181,7 @@ public class BerkMinTest {
 	public void learnNoGood() {
 		NoGood learnedNoGood = NoGood.learnt(fromOldLiterals(1, 2));
 		int backjumpLevel = 1;
+		@SuppressWarnings("unused")
 		boolean clearLastChoiceAfterBackjump = true;
 		Collection<Integer> resolutionAtoms = Collections.emptySet();
 		berkmin.analyzedConflict(new ConflictAnalysisResult(learnedNoGood, backjumpLevel,

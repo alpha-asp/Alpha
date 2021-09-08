@@ -27,8 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -37,8 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
@@ -159,6 +158,7 @@ public class StratifiedEvaluationTest {
 		TestUtils.assertAnswerSetsEqual("stuff(1), stuff(2), smallStuff(1)", answerSets);
 	}
 
+	@SuppressWarnings("unused")
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static boolean sayTrue(Object o) {
 		return true;
@@ -184,7 +184,7 @@ public class StratifiedEvaluationTest {
 	public void testPartnerUnitsProblemTopologicalOrder() throws IOException {
 		ASPCore2Program prg = parser.parse(StratifiedEvaluationTest.class.getResourceAsStream("/partial-eval/pup_topological_order.asp"));
 		CompiledProgram evaluated = new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normalizer.apply(prg)));
-		assertTrue("Not all rules eliminated by stratified evaluation", evaluated.getRules().isEmpty());
+		assertTrue(evaluated.getRules().isEmpty(), "Not all rules eliminated by stratified evaluation");
 		assertEquals(57, evaluated.getFacts().size());
 	}
 
@@ -253,9 +253,9 @@ public class StratifiedEvaluationTest {
 		BasicAtom rank2 = Atoms.newBasicAtom(rank, Terms.newSymbolicConstant("b"), Terms.newConstant(2));
 		BasicAtom rank3 = Atoms.newBasicAtom(rank, Terms.newSymbolicConstant("c"), Terms.newConstant(3));
 		List<Atom> evaluatedFacts = evaluated.getFacts();
-		Assert.assertTrue(evaluatedFacts.contains(rank1));
-		Assert.assertTrue(evaluatedFacts.contains(rank2));
-		Assert.assertTrue(evaluatedFacts.contains(rank3));
+		assertTrue(evaluatedFacts.contains(rank1));
+		assertTrue(evaluatedFacts.contains(rank2));
+		assertTrue(evaluatedFacts.contains(rank3));
 	}
 
 }

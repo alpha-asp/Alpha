@@ -7,15 +7,15 @@ import static at.ac.tuwien.kr.alpha.core.solver.AntecedentTest.antecedentsEquals
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.TRUE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
@@ -40,7 +40,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		store = new NoGoodStoreAlphaRoaming(assignment);
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		store.clear();
 		store.growForMaxAtomId(fromOldLiterals(200));
@@ -572,8 +572,8 @@ public class NoGoodStoreAlphaRoamingTest {
 		assertEquals(TRUE, assignment.getTruth(1));
 	}
 
-	@Ignore // TrailAssignment no longer propagates at lower decision level.
 	@Test
+	@Disabled("TrailAssignment no longer propagates at lower decision level.")
 	public void propagationAtLowerDecisionLevel() {
 		NoGood noGood = headFirst(fromOldLiterals(-1, 2, -3));
 		assertNull(assignment.choose(3, FALSE));

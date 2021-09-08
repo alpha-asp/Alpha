@@ -2,8 +2,8 @@ package at.ac.tuwien.kr.alpha.commons;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
@@ -24,8 +24,9 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class BasicAnswerSetTest {
+	
 	@Test
-	public void areAnswerSetsEqual() throws Exception {
+	public void areAnswerSetsEqual() {
 		Predicate a = Predicates.getPredicate("a", 0);
 		Predicate foo = Predicates.getPredicate("foo", 1);
 		SortedSet<Predicate> fooAndA = new TreeSet<>(asList(foo, a));

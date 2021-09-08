@@ -34,8 +34,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
@@ -73,7 +73,7 @@ public class AlphaHeuristicTestAssumptions {
 	private TestableChoiceManager choiceManager;
 	private AtomStore atomStore;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		String testProgram = ""
 				+ "b1."

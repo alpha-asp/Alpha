@@ -46,11 +46,6 @@ public class ProgramParserImpl implements ProgramParser {
 	public ASPCore2Program parse(String s, Map<String, PredicateInterpretation> externals) {
 		try {
 			return parse(CharStreams.fromString(s), externals);
-		} catch (IOException e) {
-			// In this case we assume that something went fundamentally
-			// wrong when using a String as input. The caller probably
-			// assumes that I/O on a String should always be fine.
-			throw new RuntimeException("Encountered I/O-related exception while parsing a String.", e);
 		} catch (RecognitionException | ParseCancellationException e) {
 			// If there were issues parsing the given string, we
 			// throw something that suggests that the input string
@@ -59,11 +54,11 @@ public class ProgramParserImpl implements ProgramParser {
 		}
 	}
 
-	public ASPCore2Program parse(CharStream stream) throws IOException {
+	public ASPCore2Program parse(CharStream stream) {
 		return parse(stream, Collections.emptyMap());
 	}
 
-	public ASPCore2Program parse(CharStream stream, Map<String, PredicateInterpretation> externals) throws IOException {
+	public ASPCore2Program parse(CharStream stream, Map<String, PredicateInterpretation> externals) {
 		//@formatter:off
 		/*
 		 * // In order to require less memory: use unbuffered streams and avoid constructing a full parse tree. 

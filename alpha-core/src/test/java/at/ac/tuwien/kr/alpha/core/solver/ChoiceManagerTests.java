@@ -26,12 +26,12 @@
 package at.ac.tuwien.kr.alpha.core.solver;
 
 import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collection;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
@@ -45,12 +45,12 @@ import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 
-public class ChoiceManagerTests extends AbstractSolverTests {
+public class ChoiceManagerTests {
 	private Grounder grounder;
 	private ChoiceManager choiceManager;
 	private AtomStore atomStore;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		String testProgram = "h :- b1, b2, not b3, not b4.";
 		ASPCore2Program parsedProgram = new ProgramParserImpl().parse(testProgram);
@@ -71,7 +71,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 				int atom = atomOf(literal);
 				String atomToString = atomStore.atomToString(atom);
 				if (atomToString.startsWith(RuleAtom.PREDICATE.getName())) {
-					assertTrue("Atom not choice: " + atomToString, choiceManager.isAtomChoice(atom));
+					assertTrue(choiceManager.isAtomChoice(atom), "Atom not choice: " + atomToString);
 				}
 			}
 		}
