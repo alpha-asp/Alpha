@@ -43,7 +43,7 @@ tasks.withType(AntlrTask) {
 			"-package", "at.ac.tuwien.kr.alpha.antlr",
 			"-Werror",
 			"-Xlog",
-			"-lib", "src/main/antlr/at/ac/tuwien/kr/alpha/antlr"
+			"-lib", "src/main/antlr/at/ac/tuwien/kr/alpha/core/antlr"
 	]
 }
 
