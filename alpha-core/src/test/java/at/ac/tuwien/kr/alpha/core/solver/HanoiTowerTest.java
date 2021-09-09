@@ -46,7 +46,7 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 
 /**
@@ -101,7 +101,7 @@ public class HanoiTowerTest {
 	}
 
 	private void testHanoiTower(String instance, RegressionTestConfig cfg) throws IOException {
-		ASPCore2Program prog = new ProgramParserImpl().parse(
+		ASPCore2Program prog = new ASPCore2ProgramParserImpl().parse(
 				Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp"),
 				Paths.get("src", "test", "resources", "HanoiTower_instances", instance + ".asp"));
 		Solver solver = TestUtils.buildSolverForRegressionTest(prog, cfg);

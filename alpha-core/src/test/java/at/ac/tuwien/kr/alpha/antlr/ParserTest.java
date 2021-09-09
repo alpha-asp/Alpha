@@ -60,13 +60,13 @@ import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ParserTest {
-	private final ProgramParserImpl parser = new ProgramParserImpl();
+	private final ASPCore2ProgramParserImpl parser = new ASPCore2ProgramParserImpl();
 
 	@Test
 	public void parseFact() {
@@ -168,7 +168,7 @@ public class ParserTest {
 				"",
 				"Test!")));
 
-		final String actual = new ProgramParserImpl().parse(CharStreams.fromChannel(input)).toString();
+		final String actual = new ASPCore2ProgramParserImpl().parse(CharStreams.fromChannel(input)).toString();
 		final String expected = "p(a)." + System.lineSeparator();
 
 		assertEquals(expected, actual);

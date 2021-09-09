@@ -55,8 +55,8 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.grounder.instantiation.BindingResult;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramPartParser;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramPartParser;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
@@ -76,8 +76,8 @@ import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
  * If unit tests in this class begin to fail due to such improvements to preprocessing, this issue must be addressed.
  */
 public class NaiveGrounderTest {
-	private static final ProgramParser PROGRAM_PARSER = new ProgramParserImpl();
-	private static final ProgramPartParser PROGRAM_PART_PARSER = new ProgramPartParser();
+	private static final ProgramParser PROGRAM_PARSER = new ASPCore2ProgramParserImpl();
+	private static final ASPCore2ProgramPartParser PROGRAM_PART_PARSER = new ASPCore2ProgramPartParser();
 	private static final NormalizeProgramTransformation NORMALIZE_TRANSFORM = new NormalizeProgramTransformation(false);
 
 	final Literal litP1X = PROGRAM_PART_PARSER.parseLiteral("p1(X)");

@@ -39,7 +39,7 @@ import org.junit.jupiter.api.Disabled;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 
 /**
@@ -244,7 +244,7 @@ public class HeadBodyTransformationTests {
 	private ASPCore2Program checkNumberOfRulesAndParse(List<String> strRules, int numberOfRules) {
 		assertEquals(numberOfRules, strRules.size());
 		String strProgram = strRules.stream().collect(Collectors.joining(System.lineSeparator()));
-		ASPCore2Program parsedProgram = new ProgramParserImpl().parse(strProgram);
+		ASPCore2Program parsedProgram = new ASPCore2ProgramParserImpl().parse(strProgram);
 		assertEquals(numberOfRules, parsedProgram.getRules().size());
 		return parsedProgram;
 	}

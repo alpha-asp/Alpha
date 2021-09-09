@@ -40,7 +40,7 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
@@ -53,7 +53,7 @@ public class ChoiceManagerTests {
 	@BeforeEach
 	public void setUp() {
 		String testProgram = "h :- b1, b2, not b3, not b4.";
-		ASPCore2Program parsedProgram = new ProgramParserImpl().parse(testProgram);
+		ASPCore2Program parsedProgram = new ASPCore2ProgramParserImpl().parse(testProgram);
 		CompiledProgram internalProgram = InternalProgram.fromNormalProgram(new NormalizeProgramTransformation(false).apply(parsedProgram));
 		atomStore = new AtomStoreImpl();
 		grounder = new NaiveGrounder(internalProgram, atomStore, true);

@@ -5,11 +5,11 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramPartParser;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramPartParser;
 
 public final class Substitutions {
 
-	private static final ProgramPartParser PROGRAM_PART_PARSER = new ProgramPartParser();
+	private static final ASPCore2ProgramPartParser PROGRAM_PART_PARSER = new ASPCore2ProgramPartParser();
 
 	private Substitutions() {
 		throw new AssertionError("Cannot instantiate utility class!");

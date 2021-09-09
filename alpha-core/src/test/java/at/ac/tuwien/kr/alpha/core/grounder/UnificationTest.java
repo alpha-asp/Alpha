@@ -9,14 +9,14 @@ import org.junit.jupiter.api.Test;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramPartParser;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramPartParser;
 
 /**
  * Copyright (c) 2021, the Alpha Team.
  */
 public class UnificationTest {
 
-	private ProgramPartParser partsParser = new ProgramPartParser();
+	private ASPCore2ProgramPartParser partsParser = new ASPCore2ProgramPartParser();
 
 	@Test
 	public void simpleGroundUnification() {

@@ -16,13 +16,13 @@ import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph.SCComponent;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph.Node;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 
 public class StratificationAlgorithmTest {
 
-	private ProgramParser parser = new ProgramParserImpl();
+	private ProgramParser parser = new ASPCore2ProgramParserImpl();
 	private NormalizeProgramTransformation normalizeTransform = new NormalizeProgramTransformation(false);	
 	
 	private boolean predicateIsBeforePredicateInOrder(Predicate predBefore, Predicate predAfter, List<SCComponent> order) {

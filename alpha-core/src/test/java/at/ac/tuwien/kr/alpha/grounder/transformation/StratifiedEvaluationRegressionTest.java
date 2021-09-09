@@ -28,7 +28,7 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
@@ -105,7 +105,7 @@ public class StratifiedEvaluationRegressionTest {
 @ParameterizedTest	        @MethodSource("at.ac.tuwien.kr.alpha.grounder.transformation.StratifiedEvaluationRegressionTest#params")
 	public void runTest(String aspString, Consumer<CompiledProgram> programVerifier, Consumer<Set<AnswerSet>> resultVerifier) {
 		// Parse and pre-evaulate program
-		ProgramParser parser = new ProgramParserImpl();
+		ProgramParser parser = new ASPCore2ProgramParserImpl();
 		ASPCore2Program prog = parser.parse(aspString);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(new NormalizeProgramTransformation(false).apply(prog));
 		CompiledProgram evaluated = new StratifiedEvaluation().apply(analyzed);

@@ -16,7 +16,7 @@ import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.ChoiceHeadToNormal;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.IntervalTermToIntervalAtom;
@@ -28,7 +28,7 @@ public class ProgramTransformationTest {
 
 	private static final String TESTFILES_PATH = "/transform-test/";
 
-	private static final ProgramParser PARSER = new ProgramParserImpl();
+	private static final ProgramParser PARSER = new ASPCore2ProgramParserImpl();
 
 	private ChoiceHeadToNormal choiceToNormal = new ChoiceHeadToNormal();
 	private IntervalTermToIntervalAtom intervalRewriting = new IntervalTermToIntervalAtom();

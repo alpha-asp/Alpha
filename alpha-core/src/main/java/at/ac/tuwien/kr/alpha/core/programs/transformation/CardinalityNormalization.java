@@ -21,7 +21,7 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
@@ -32,7 +32,7 @@ import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 public class CardinalityNormalization extends ProgramTransformation<ASPCore2Program, ASPCore2Program> {
 
 	private int aggregateCount;
-	private ProgramParserImpl parser = new ProgramParserImpl();
+	private ASPCore2ProgramParserImpl parser = new ASPCore2ProgramParserImpl();
 	private final boolean useSortingCircuitEncoding;
 
 	public CardinalityNormalization() {
@@ -95,7 +95,7 @@ public class CardinalityNormalization extends ProgramTransformation<ASPCore2Prog
 		List<Rule<Head>> rewrittenRules = rewriteAggregates(inputProgram.getRules());
 
 		String usedCardinalityEncoding = useSortingCircuitEncoding ? cardinalitySortingCircuit : cardinalityCountingGrid;
-		ASPCore2Program cardinalityEncoding = PredicateInternalizer.makePredicatesInternal(new ProgramParserImpl().parse(usedCardinalityEncoding));
+		ASPCore2Program cardinalityEncoding = PredicateInternalizer.makePredicatesInternal(new ASPCore2ProgramParserImpl().parse(usedCardinalityEncoding));
 		programBuilder.addRules(rewrittenRules);
 
 		// Add enumeration rule that uses the special EnumerationAtom.

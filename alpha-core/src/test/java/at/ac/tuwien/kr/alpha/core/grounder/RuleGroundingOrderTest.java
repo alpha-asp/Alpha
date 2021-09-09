@@ -38,8 +38,8 @@ import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramPartParser;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramPartParser;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
@@ -50,13 +50,13 @@ import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
  */
 public class RuleGroundingOrderTest {
 
-	private static final ProgramParser PARSER = new ProgramParserImpl();
+	private static final ProgramParser PARSER = new ASPCore2ProgramParserImpl();
 	private static final NormalizeProgramTransformation NORMALIZE_TRANSFORM = new NormalizeProgramTransformation(false);
 	private static final Function<String, CompiledProgram> PARSE_AND_PREPROCESS = (str) -> {
 		return InternalProgram.fromNormalProgram(NORMALIZE_TRANSFORM.apply(PARSER.parse(str)));
 	};
 	
-	private static final ProgramPartParser PROGRAM_PART_PARSER = new ProgramPartParser();
+	private static final ASPCore2ProgramPartParser PROGRAM_PART_PARSER = new ASPCore2ProgramPartParser();
 
 
 	@Test

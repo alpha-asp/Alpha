@@ -33,7 +33,7 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
@@ -131,7 +131,7 @@ public class TestUtils {
 	}
 	
 	public static Solver buildSolverForRegressionTest(String prog, RegressionTestConfig cfg) {
-		return buildSolverFromSystemConfig(new ProgramParserImpl().parse(prog), cfg.toSystemConfig());
+		return buildSolverFromSystemConfig(new ASPCore2ProgramParserImpl().parse(prog), cfg.toSystemConfig());
 	}
 	
 	public static Solver buildSolverForRegressionTest(AtomStore atomStore, Grounder grounder, RegressionTestConfig cfg) {
@@ -144,7 +144,7 @@ public class TestUtils {
 	}
 	
 	public static Set<AnswerSet> collectRegressionTestAnswerSets(String aspstr, RegressionTestConfig cfg) {
-		ASPCore2Program prog = new ProgramParserImpl().parse(aspstr);
+		ASPCore2Program prog = new ASPCore2ProgramParserImpl().parse(aspstr);
 		return collectRegressionTestAnswerSets(prog, cfg);
 	}
 

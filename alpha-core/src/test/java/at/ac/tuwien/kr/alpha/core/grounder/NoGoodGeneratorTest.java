@@ -42,7 +42,7 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.Literals;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
@@ -54,7 +54,7 @@ import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
  */
 public class NoGoodGeneratorTest {
 
-	private static final ProgramParser PARSER = new ProgramParserImpl();
+	private static final ProgramParser PARSER = new ASPCore2ProgramParserImpl();
 	private static final NormalizeProgramTransformation NORMALIZE_TRANSFORM = new NormalizeProgramTransformation(false);
 
 	private static final ConstantTerm<String> A = Terms.newSymbolicConstant("a");

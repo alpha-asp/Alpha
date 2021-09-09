@@ -45,7 +45,7 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
 /**
@@ -184,7 +184,7 @@ public class ThreeColouringTestWithRandom {
 	}
 
 	private void testThreeColouring(int n, boolean shuffle, int seed, RegressionTestConfig cfg) {
-		ASPCore2Program tmpPrg = new ProgramParserImpl()
+		ASPCore2Program tmpPrg = new ASPCore2ProgramParserImpl()
 				.parse("col(V,C) :- v(V), c(C), not ncol(V,C)." + "ncol(V,C) :- col(V,D), c(C), C != D." + ":- e(V,U), col(V,C), col(U,C).");
 		InputProgram.Builder prgBuilder = InputProgram.builder().accumulate(tmpPrg);
 		prgBuilder.addFacts(createColors("1", "2", "3"));

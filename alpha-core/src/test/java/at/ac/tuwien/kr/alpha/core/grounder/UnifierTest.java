@@ -40,7 +40,7 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 
 public class UnifierTest extends SubstitutionTest {
 
@@ -77,7 +77,7 @@ public class UnifierTest extends SubstitutionTest {
 	}
 
 	private BasicAtom parseAtom(String atom) {
-		ProgramParser programParser = new ProgramParserImpl();
+		ProgramParser programParser = new ASPCore2ProgramParserImpl();
 		ASPCore2Program program = programParser.parse(atom + ".");
 		return (BasicAtom) program.getFacts().get(0);
 	}

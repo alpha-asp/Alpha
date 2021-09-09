@@ -57,7 +57,7 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
@@ -69,7 +69,7 @@ import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 
 public class StratifiedEvaluationTest {
 
-	private final ProgramParser parser = new ProgramParserImpl();
+	private final ProgramParser parser = new ASPCore2ProgramParserImpl();
 	private final NormalizeProgramTransformation normalizer = new NormalizeProgramTransformation(false);
 	private final StratifiedEvaluation evaluator = new StratifiedEvaluation();
 	private final Function<String, CompiledProgram> parseAndEvaluate = (str) -> {
@@ -169,7 +169,7 @@ public class StratifiedEvaluationTest {
 		String asp = "claimedTruth(bla). truth(X) :- claimedTruth(X), &sayTrue[X]. lie(X) :- claimedTruth(X), not &sayTrue[X].";
 		Map<String, PredicateInterpretation> externals = new HashMap<>();
 		externals.put("sayTrue", Externals.processPredicateMethod(this.getClass().getMethod("sayTrue", Object.class)));
-		ProgramParser parserWithExternals = new ProgramParserImpl();
+		ProgramParser parserWithExternals = new ASPCore2ProgramParserImpl();
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalizer.apply(parserWithExternals.parse(asp, externals)));
 		CompiledProgram evaluated = new StratifiedEvaluation().apply(analyzed);
 		Set<AnswerSet> answerSets = solveCompiledProg.apply(evaluated);

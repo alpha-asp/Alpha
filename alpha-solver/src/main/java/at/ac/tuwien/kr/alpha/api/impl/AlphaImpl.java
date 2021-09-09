@@ -64,7 +64,7 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
@@ -78,7 +78,7 @@ public class AlphaImpl implements Alpha {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlphaImpl.class);
 
 	private SystemConfig config = new SystemConfig(); // The config is initialized with default values.
-	private ProgramParser parser = new ProgramParserImpl();
+	private ProgramParser parser = new ASPCore2ProgramParserImpl();
 
 	public AlphaImpl(SystemConfig cfg) {
 		this.config = cfg;

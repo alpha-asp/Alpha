@@ -48,7 +48,7 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
@@ -60,7 +60,7 @@ import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
  */
 public class AnalyzeUnjustifiedTest {
 
-	private final ProgramParser parser = new ProgramParserImpl();
+	private final ProgramParser parser = new ASPCore2ProgramParserImpl();
 	private final NormalizeProgramTransformation normalize = new NormalizeProgramTransformation(false);
 	private final Function<String, CompiledProgram> parseAndPreprocess = (str) -> {
 		return InternalProgram.fromNormalProgram(normalize.apply(parser.parse(str)));

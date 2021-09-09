@@ -17,14 +17,14 @@ import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph.Node;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.test.util.DependencyGraphUtils;
 
 public class DependencyGraphImplTest {
 
-	private ProgramParser parser = new ProgramParserImpl();
+	private ProgramParser parser = new ASPCore2ProgramParserImpl();
 	private NormalizeProgramTransformation normalizeTransform = new NormalizeProgramTransformation(false);
 	
 	// Currently not used anywhere, but keep as it might come in handy

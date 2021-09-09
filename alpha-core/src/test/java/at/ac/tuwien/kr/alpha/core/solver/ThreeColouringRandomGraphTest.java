@@ -42,7 +42,7 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
 public class ThreeColouringRandomGraphTest {
@@ -98,7 +98,7 @@ public class ThreeColouringRandomGraphTest {
 	}
 
 	private void testThreeColouring(int nVertices, int nEdges, RegressionTestConfig cfg) {
-		ASPCore2Program tmpPrg = new ProgramParserImpl().parse(
+		ASPCore2Program tmpPrg = new ASPCore2ProgramParserImpl().parse(
 				"blue(N) :- v(N), not red(N), not green(N)." +
 				"red(N) :- v(N), not blue(N), not green(N)." +
 				"green(N) :- v(N), not red(N), not blue(N)." +

@@ -23,7 +23,7 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 
 /**
  * Test for basic functionality of various implementations of {@link Atom}.
@@ -39,7 +39,7 @@ public class AtomsTest {
 		externals = new HashMap<>();
 		externals.put("isFoo", Externals.processPredicateMethod(AtomsTest.class.getMethod("isFoo", int.class)));
 		externals.put("extWithOutput", Externals.processPredicateMethod(AtomsTest.class.getMethod("extWithOutput", int.class)));
-		parser = new ProgramParserImpl();
+		parser = new ASPCore2ProgramParserImpl();
 	}
 
 	@Predicate

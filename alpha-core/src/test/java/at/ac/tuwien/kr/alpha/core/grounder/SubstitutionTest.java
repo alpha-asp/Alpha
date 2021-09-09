@@ -52,7 +52,7 @@ import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
@@ -60,7 +60,7 @@ import at.ac.tuwien.kr.alpha.core.util.Substitutions;
 import at.ac.tuwien.kr.alpha.test.util.SubstitutionTestUtil;
 
 public class SubstitutionTest {
-	private static final ProgramParser PARSER = new ProgramParserImpl();
+	private static final ProgramParser PARSER = new ASPCore2ProgramParserImpl();
 
 	private static final ConstantTerm<String> A = Terms.newSymbolicConstant("a");
 	private static final ConstantTerm<String> B = Terms.newSymbolicConstant("b");

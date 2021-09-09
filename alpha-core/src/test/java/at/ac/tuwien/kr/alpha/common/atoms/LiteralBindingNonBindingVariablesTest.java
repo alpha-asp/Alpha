@@ -46,7 +46,7 @@ import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.IntPredicateInterpretation;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 
 /**
  * Tests the behaviour of {@link Literal#getBindingVariables()} and {@link Literal#getNonBindingVariables()}
@@ -56,7 +56,7 @@ import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 public class LiteralBindingNonBindingVariablesTest {
 
 	private final Map<String, PredicateInterpretation> externals = new HashMap<>();
-	private final ProgramParser parser = new ProgramParserImpl();
+	private final ProgramParser parser = new ASPCore2ProgramParserImpl();
 
 	@Test
 	public void testPositiveBasicLiteral() {

@@ -20,7 +20,7 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
@@ -34,7 +34,7 @@ import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 public class SumNormalization extends ProgramTransformation<ASPCore2Program, ASPCore2Program> {
 
 	private int aggregateCount;
-	private ProgramParserImpl parser = new ProgramParserImpl();
+	private ASPCore2ProgramParserImpl parser = new ASPCore2ProgramParserImpl();
 
 	private ASPCore2Program parse(String program) {
 		return parser.parse(program);
@@ -57,7 +57,7 @@ public class SumNormalization extends ProgramTransformation<ASPCore2Program, ASP
 
 		InputProgram.Builder prgBuilder = InputProgram.builder();
 		prgBuilder.addFacts(inputProgram.getFacts());
-		ASPCore2Program summationEncoding = makePredicatesInternal(new ProgramParserImpl().parse(summationSubprogram));
+		ASPCore2Program summationEncoding = makePredicatesInternal(new ASPCore2ProgramParserImpl().parse(summationSubprogram));
 		prgBuilder.accumulate(summationEncoding);
 		prgBuilder.addRules(rewrittenRules);
 

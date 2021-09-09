@@ -30,13 +30,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 
 public class ProgramTest {
 	
 	@Test
 	public void testToString() {
-		ASPCore2Program parsedProgram = new ProgramParserImpl().parse(
+		ASPCore2Program parsedProgram = new ASPCore2ProgramParserImpl().parse(
 				"p(a)." + System.lineSeparator() +
 					"q(X) :- p(X)." + System.lineSeparator() +
 					"p(b).");

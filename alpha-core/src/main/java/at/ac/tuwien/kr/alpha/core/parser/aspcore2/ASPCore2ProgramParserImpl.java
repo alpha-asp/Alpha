@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.parser;
+package at.ac.tuwien.kr.alpha.core.parser.aspcore2;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,17 +22,18 @@ import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
+import at.ac.tuwien.kr.alpha.core.parser.CustomErrorListener;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
-public class ProgramParserImpl implements ProgramParser {
+public class ASPCore2ProgramParserImpl implements ProgramParser {
 
 	private final Map<String, PredicateInterpretation> preloadedExternals = new HashMap<>();
 
-	public ProgramParserImpl() {
+	public ASPCore2ProgramParserImpl() {
 		this.preloadedExternals.putAll(Externals.getStandardLibraryExternals());
 	}
 
-	public ProgramParserImpl(Map<String, PredicateInterpretation> externals) {
+	public ASPCore2ProgramParserImpl(Map<String, PredicateInterpretation> externals) {
 		this();
 		this.preloadedExternals.putAll(externals);
 	}
@@ -126,7 +127,7 @@ public class ProgramParserImpl implements ProgramParser {
 		}
 
 		// Construct internal program representation.
-		ParseTreeVisitor visitor = new ParseTreeVisitor(knownExternals);
+		ASPCore2ParseTreeVisitor visitor = new ASPCore2ParseTreeVisitor(knownExternals);
 		return visitor.translate(programContext);
 	}
 

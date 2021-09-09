@@ -25,7 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.parser;
+package at.ac.tuwien.kr.alpha.core.parser.aspcore2;
 
 import static java.util.Collections.emptyList;
 
@@ -73,6 +73,7 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
+import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 import at.ac.tuwien.kr.alpha.core.rules.heads.ChoiceHeadImpl;
@@ -80,20 +81,20 @@ import at.ac.tuwien.kr.alpha.core.rules.heads.ChoiceHeadImpl.ChoiceElementImpl;
 import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2021, the Alpha Team.
  */
-public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
+public class ASPCore2ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	private final Map<String, PredicateInterpretation> externals;
 	private final boolean acceptVariables;
 
 	private InputProgram.Builder programBuilder;
 	private InlineDirectives inlineDirectives;
 
-	public ParseTreeVisitor(Map<String, PredicateInterpretation> externals) {
+	public ASPCore2ParseTreeVisitor(Map<String, PredicateInterpretation> externals) {
 		this(externals, true);
 	}
 
-	public ParseTreeVisitor(Map<String, PredicateInterpretation> externals, boolean acceptVariables) {
+	public ASPCore2ParseTreeVisitor(Map<String, PredicateInterpretation> externals, boolean acceptVariables) {
 		this.externals = externals;
 		this.acceptVariables = acceptVariables;
 	}
@@ -237,6 +238,11 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			return visitChoice(ctx.choice());
 		}
 		return visitDisjunction(ctx.disjunction());
+	}
+
+	public Object visitAction(ASPCore2Parser.ActionContext ctx) {
+		// Actions are an Evolog-specific feature and therefore not supported by the ASPCore2 parser.
+		throw notSupported(ctx);
 	}
 
 	@Override

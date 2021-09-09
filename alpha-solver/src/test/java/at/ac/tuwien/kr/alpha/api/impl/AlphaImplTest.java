@@ -74,7 +74,7 @@ import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.MethodPredicateInt
 import at.ac.tuwien.kr.alpha.core.externals.AspStandardLibrary;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
@@ -605,7 +605,7 @@ public class AlphaImplTest {
 	// Detailed reproduction test-case for github issue #239.
 	@Test
 	public void testLearnedUnaryNoGoodCausingOutOfOrderLiteralsConflict() throws IOException {
-		final ProgramParser parser = new ProgramParserImpl();
+		final ProgramParser parser = new ASPCore2ProgramParserImpl();
 		InputProgram.Builder bld = InputProgram.builder();
 		bld.accumulate(parser.parse(Files.newInputStream(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp"), StandardOpenOption.READ)));
 		bld.accumulate(parser.parse(Files.newInputStream(Paths.get("src", "test", "resources", "HanoiTower_instances", "simple.asp"), StandardOpenOption.READ)));

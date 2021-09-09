@@ -43,7 +43,7 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
@@ -62,7 +62,7 @@ import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
  */
 public class AlphaHeuristicTestAssumptions {
 	
-	private final ProgramParser parser = new ProgramParserImpl();
+	private final ProgramParser parser = new ASPCore2ProgramParserImpl();
 	private final NormalizeProgramTransformation normalizer = new NormalizeProgramTransformation(false);
 	private final Function<String, CompiledProgram> parseAndPreprocess = (str) -> {
 		return InternalProgram.fromNormalProgram(normalizer.apply(parser.parse(str)));
