@@ -9,8 +9,8 @@ import java.util.Set;
 import org.apache.commons.collections4.SetUtils;
 
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 /**

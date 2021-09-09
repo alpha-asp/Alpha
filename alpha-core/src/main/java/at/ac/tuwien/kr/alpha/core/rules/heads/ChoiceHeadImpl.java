@@ -7,7 +7,7 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead;
+import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 
 /**

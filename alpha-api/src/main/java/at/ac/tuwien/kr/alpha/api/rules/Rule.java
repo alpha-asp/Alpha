@@ -4,6 +4,7 @@ import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 
 public interface Rule<H extends Head> {
 

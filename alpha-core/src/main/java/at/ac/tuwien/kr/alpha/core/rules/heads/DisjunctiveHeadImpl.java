@@ -5,7 +5,7 @@ import static at.ac.tuwien.kr.alpha.commons.util.Util.join;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.rules.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.api.rules.heads.DisjunctiveHead;
 
 /**
  * Copyright (c) 2017, the Alpha Team.

@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
-import at.ac.tuwien.kr.alpha.api.rules.Head;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
