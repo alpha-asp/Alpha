@@ -40,7 +40,7 @@ tasks.withType(AntlrTask) {
 			"-visitor",
 			"-no-listener",
 			"-long-messages",
-			"-package", "at.ac.tuwien.kr.alpha.antlr",
+			"-package", "at.ac.tuwien.kr.alpha.core.antlr",
 			"-Werror",
 			"-Xlog",
 			"-lib", "src/main/antlr/at/ac/tuwien/kr/alpha/core/antlr"
