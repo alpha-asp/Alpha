@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.core.rules.heads;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
+import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 
 /**
  * Represents a normal head, i.e., a head that is an Atom.

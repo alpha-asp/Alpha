@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.api.rules;
+package at.ac.tuwien.kr.alpha.api.rules.heads;
 
 import java.util.List;
 
