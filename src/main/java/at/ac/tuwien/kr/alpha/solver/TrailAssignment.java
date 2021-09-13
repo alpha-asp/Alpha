@@ -31,6 +31,7 @@ import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.IntIterator;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicInfluencerAtom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -517,7 +518,9 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	public boolean closeUnassignedAtoms() {
 		boolean didAssign = false;
 		for (int i = 1; i <= atomStore.getMaxAtomId(); i++) {
-			if (!isAssigned(i)) {
+			if (!isAssigned(i) && !(atomStore.get(i) instanceof HeuristicInfluencerAtom)) {
+				// HeuristicInfluencerAtom may stay unassigned because they are irrelevant in answer sets.
+				// here they are ignored to avoid conflicts (which can occur when a heuristic becomes applicable due to atoms being assigned false during closing)
 				assign(i, FALSE, CLOSING_INDICATOR_ANTECEDENT);
 				didAssign = true;
 			}
