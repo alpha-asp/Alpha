@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Siemens AG
+ * Copyright (c) 2018-2021 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,6 @@ public class HouseTest extends AbstractSolverTests {
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("currently needs too much time") // TODO: profiling
 	public void testHouse_emptyconfig_p05t025() throws IOException {
 		testHouse("emptyconfig_p05t025");
 	}
@@ -107,7 +106,7 @@ public class HouseTest extends AbstractSolverTests {
 	private void testHouse(String instanceId) throws IOException {
 
 		InputProgram parsedProgram = parser
-				.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "House", "house_alpha_2020-02-21.asp")));
+				.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "House", "house_alpha_2021-02-04.asp")));
 		parsedProgram = InputProgram.builder(parsedProgram).accumulate(
 				parser.parse(CharStreams
 						.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "House", "instances_alpha", instanceId + ".edb"))))
@@ -127,7 +126,6 @@ public class HouseTest extends AbstractSolverTests {
 	 * <li>Each room houses things of only one persons in its cabinets.</li>
 	 * <li>Long things have to be packed in high cabinets</li>
 	 * <li>At most either 2 high things or 1 high and 2 short or 4 short cabinets are allowed to be in a room</li>
-	 * <li>TODO: additional constraints from <b>re</b>configuration problem</li>
 	 * </ul>
 	 * 
 	 * @param answerSet

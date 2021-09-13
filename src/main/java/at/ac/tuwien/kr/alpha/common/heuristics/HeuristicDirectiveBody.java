@@ -31,7 +31,9 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -41,12 +43,13 @@ import static at.ac.tuwien.kr.alpha.Util.join;
 
 public class HeuristicDirectiveBody {
 
-	private final List<HeuristicDirectiveAtom> bodyAtomsPositive;
-	private final List<HeuristicDirectiveAtom> bodyAtomsNegative;
+	private final Set<HeuristicDirectiveAtom> bodyAtomsPositive;
+	private final Set<HeuristicDirectiveAtom> bodyAtomsNegative;
 
-	public HeuristicDirectiveBody(List<HeuristicDirectiveAtom> bodyAtomsPositive, List<HeuristicDirectiveAtom> bodyAtomsNegative) {
-		this.bodyAtomsPositive = Collections.unmodifiableList(bodyAtomsPositive);
-		this.bodyAtomsNegative = Collections.unmodifiableList(bodyAtomsNegative);
+	public HeuristicDirectiveBody(Collection<HeuristicDirectiveAtom> bodyAtomsPositive, Collection<HeuristicDirectiveAtom> bodyAtomsNegative) {
+		// transform list to linked set to enable equality check with set semantics:
+		this.bodyAtomsPositive = Collections.unmodifiableSet(new LinkedHashSet<>(bodyAtomsPositive));
+		this.bodyAtomsNegative = Collections.unmodifiableSet(new LinkedHashSet<>(bodyAtomsNegative));
 	}
 
 	public HeuristicDirectiveBody(List<HeuristicDirectiveLiteral> bodyLiterals) {
@@ -56,11 +59,11 @@ public class HeuristicDirectiveBody {
 		);
 	}
 
-	public List<HeuristicDirectiveAtom> getBodyAtomsPositive() {
+	public Collection<HeuristicDirectiveAtom> getBodyAtomsPositive() {
 		return bodyAtomsPositive;
 	}
 
-	public List<HeuristicDirectiveAtom> getBodyAtomsNegative() {
+	public Collection<HeuristicDirectiveAtom> getBodyAtomsNegative() {
 		return bodyAtomsNegative;
 	}
 

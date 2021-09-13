@@ -80,7 +80,7 @@ public class PartnerUnitsTest extends AbstractSolverTests {
 	
 	private void testPartnerUnits_generated(String instanceId) throws IOException {
 		InputProgram parsedProgram = parser
-				.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "PartnerUnits", "pup.alpha_heu_20200220.asp")));
+				.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "PartnerUnits", "pup.alpha_heu_20210205.asp")));
 		parsedProgram = InputProgram.builder(parsedProgram)
 				.accumulate(parser.parse(CharStreams
 						.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "PartnerUnits", "instances", "generated", instanceId))))

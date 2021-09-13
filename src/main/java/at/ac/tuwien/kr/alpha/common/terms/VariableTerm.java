@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2018, the Alpha Team.
+/*
+ * Copyright (c) 2016-2018, 2021, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -30,17 +30,17 @@ package at.ac.tuwien.kr.alpha.common.terms;
 import at.ac.tuwien.kr.alpha.common.Interner;
 import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import com.google.common.annotations.VisibleForTesting;
 
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Copyright (c) 2016-2018, the Alpha Team.
- */
 public class VariableTerm extends Term {
 	private static final Interner<VariableTerm> INTERNER = new Interner<>();
 
 	private static final String ANONYMOUS_VARIABLE_PREFIX = "_";
+
+	@VisibleForTesting
 	public static final IntIdGenerator ANONYMOUS_VARIABLE_COUNTER = new IntIdGenerator();
 
 	private final String variableName;

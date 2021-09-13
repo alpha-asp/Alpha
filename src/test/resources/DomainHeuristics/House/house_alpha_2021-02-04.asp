@@ -1,4 +1,4 @@
-% in this version, unused cost rules are removed
+% this version contains two minor corrections to house_alpha_2020-02-21.asp
 
 % INITIAL PROBLEM
 cabinetDomain(C) :- cabinetDomainNew(C).
@@ -22,7 +22,7 @@ thingHasCabinet(T) :- cabinetTOthing(C,T).
 
 % association roomTOcabinet
 % 1 <= {roomTOcabinet(R,C) : roomDomain(R)} <= 1 :- cabinet(C).
-{ roomTOcabinet(R,C) } :- roomDomain(R), cabinet(C), not n_roomTOcabinet(R,C).
+{ roomTOcabinet(R,C) } :- roomDomain(R), cabinet(C).
 cabinetHasRoom(C) :- roomTOcabinet(R,C).
 :- cabinet(C), not cabinetHasRoom(C).
 :- cabinet(C), roomDomain(R1), roomTOcabinet(R1,C), roomDomain(R2), roomTOcabinet(R2,C), R1 < R2.
@@ -133,12 +133,12 @@ otherPersonTOroom(P,R)    :- roomTOcabinet(R,C), personTOcabinet(P2,C), person(P
 #heuristic reuse(roomTOcabinet(R,C))  : legacyConfig(roomTOcabinet(R,C)). [2@4]
 #heuristic reuse(personTOroom(P,R))  : legacyConfig(personTOroom(P,R)). [1@4]
 % then fill cabinets with things (assigning long things before short things):
-#heuristic cabinetTOthing(C,T) : cabinetDomain(C), not fullCabinet(C), not assignedThing(T), personTOthing(P,T), not otherPersonTOcabinet(P,C), maxCabinet(MC), W=MC-C+10,     thingLong(T). [W@3]
-#heuristic cabinetTOthing(C,T) : cabinetDomain(C), not fullCabinet(C), not assignedThing(T), personTOthing(P,T), not otherPersonTOcabinet(P,C), maxCabinet(MC), W=MC-C+10, not thingLong(T). [W@2]
+#heuristic cabinetTOthing(C,T) : cabinetDomain(C), not fullCabinet(C), not T assignedThing(T), personTOthing(P,T), not otherPersonTOcabinet(P,C), maxCabinet(MC), W=MC-C,     thingLong(T). [W@3]
+#heuristic cabinetTOthing(C,T) : cabinetDomain(C), not fullCabinet(C), not T assignedThing(T), personTOthing(P,T), not otherPersonTOcabinet(P,C), maxCabinet(MC), W=MC-C, not thingLong(T). [W@2]
 % then fill rooms with cabinets:
-#heuristic roomTOcabinet(R,C)  : roomDomain(R), not fullRoom(R), cabinet(C), not assignedCabinet(C), personTOcabinet(P,C), not otherPersonTOroom(P,R), maxRoom(MR), W=MR-R+10. [W@1]
+#heuristic roomTOcabinet(R,C)  : roomDomain(R), not fullRoom(R), cabinet(C), not T assignedCabinet(C), personTOcabinet(P,C), not otherPersonTOroom(P,R), maxRoom(MR), W=MR-R. [W@1]
 % when all things and cabinets are assigned, close remaining choices:
-#heuristic -cabinet(C) : not cabinet(C), cabinetDomain(C). [5]
-#heuristic -room(R) : not room(R), roomDomain(R). [5]
-#heuristic -cabinetTOthing(C,T) : not cabinetTOthing(C,T), cabinetDomain(C), thing(T). [5]
-#heuristic -roomTOcabinet(R,C) : not roomTOcabinet(R,C), roomDomain(R), cabinet(C). [5]
+#heuristic F cabinet(C) : not cabinet(C), cabinetDomain(C).
+#heuristic F room(R) : not room(R), roomDomain(R).
+#heuristic F cabinetTOthing(C,T) : not cabinetTOthing(C,T), cabinetDomain(C), thing(T).
+#heuristic F roomTOcabinet(R,C) : not roomTOcabinet(R,C), roomDomain(R), cabinet(C).

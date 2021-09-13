@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Siemens AG
+ * Copyright (c) 2018-2021 Siemens AG
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,8 +37,6 @@ import java.util.PriorityQueue;
 
 /**
  * Stores a mapping between heuristic IDs and their corresponding domain-specific heuristic values.
- * 
- * The mapping is stored in the form of a hierarchical map.
  */
 public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuristicsStore {
 

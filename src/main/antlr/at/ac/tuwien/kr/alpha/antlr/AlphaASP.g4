@@ -17,7 +17,7 @@ statement : head DOT                     # statement_fact
           | WCONS body? DOT weight_annotation        # statement_weightConstraint
           | directive                    # statement_directive;   // NOT Core2 syntax.
 
-naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
+naf_literal : NAF? atom;
 
 atom : (external_atom | classical_literal | builtin_atom);
 
@@ -37,6 +37,8 @@ term : ID                                   # term_const
      | term (PLUS | MINUS) term             # term_plusminusArithTerm
      | term BITXOR term                     # term_bitxorArithTerm
      ;
+
+interval : (lowerNum=NUMBER | lowerVar=variable) DOT DOT (upperNum=NUMBER | upperVar=variable); // NOT Core2 syntax, but widespread
 
 directive : directive_enumeration | directive_heuristic;  // NOT Core2 syntax, allows solver specific directives. Further directives shall be added here.
 

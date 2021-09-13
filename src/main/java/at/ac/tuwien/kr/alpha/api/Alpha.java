@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2019, the Alpha Team.
+/*
+ * Copyright (c) 2017-2021, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -222,9 +222,8 @@ public class Alpha {
 		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
 		heuristicsConfigurationBuilder.setHeuristic(this.config.getBranchingHeuristic());
 		heuristicsConfigurationBuilder.setMomsStrategy(this.config.getMomsStrategy());
-		// TODO: can we recognize if the program contains heuristic directives at this point, or are they already compiled away?
-		// heuristicsConfigurationBuilder.setRespectDomspecHeuristics(!this.config.isIgnoreDomspecHeuristics() && program.getInlineDirectives().hasDirectives(InlineDirectives.DIRECTIVE.heuristic));
-		heuristicsConfigurationBuilder.setRespectDomspecHeuristics(!this.config.isIgnoreDomspecHeuristics());
+		final boolean existsHeuristicRule = program.existsHeuristicRule();
+		heuristicsConfigurationBuilder.setRespectDomspecHeuristics(!this.config.isIgnoreDomspecHeuristics() && existsHeuristicRule);
 		heuristicsConfigurationBuilder.setReplayChoices(this.config.getReplayChoices());
 		return heuristicsConfigurationBuilder.build();
 	}

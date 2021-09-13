@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Siemens AG
+ * Copyright (c) 2018-2021 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
 import org.junit.Test;
 
+import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -47,6 +48,7 @@ public class HeuristicDirectiveToRuleTest {
 				+ "#heuristic b(N) : a(N). [N@2]");
 
 		program = new HeuristicDirectiveToRule(heuristicsConfiguration).apply(program);
+		assertEquals(emptyList(), program.getInlineDirectives().getDirectives());
 		assertEquals("_h(N, 2, true, b(N), condpos(tm(a(N))), condneg) :- a(N).", program.getRules().get(program.getRules().size() - 1).toString());
 	}
 	
@@ -57,6 +59,7 @@ public class HeuristicDirectiveToRuleTest {
 				+ "#heuristic F b(N) : T a(N), not F b(N). [N@2]");
 
 		program = new HeuristicDirectiveToRule(heuristicsConfiguration).apply(program);
+		assertEquals(emptyList(), program.getInlineDirectives().getDirectives());
 		assertEquals("_h(N, 2, false, b(N), condpos(t(a(N))), condneg(f(b(N)))) :- a(N).", program.getRules().get(program.getRules().size() - 1).toString());
 	}
 
@@ -67,6 +70,7 @@ public class HeuristicDirectiveToRuleTest {
 				+ "#heuristic F b(N) : T a(N), Nm1 = N - 1, not F b(Nm1). [N@2]");
 
 		program = new HeuristicDirectiveToRule(heuristicsConfiguration).apply(program);
+		assertEquals(emptyList(), program.getInlineDirectives().getDirectives());
 		assertEquals("_h(N, 2, false, b(N), condpos(t(a(N))), condneg(f(b(Nm1)))) :- a(N), Nm1 = N - 1.", program.getRules().get(program.getRules().size() - 1).toString());
 	}
 
@@ -77,6 +81,7 @@ public class HeuristicDirectiveToRuleTest {
 				+ "#heuristic F b(N) : T a(N), T b(M), not N < M. [N@2]");
 
 		program = new HeuristicDirectiveToRule(heuristicsConfiguration).apply(program);
+		assertEquals(emptyList(), program.getInlineDirectives().getDirectives());
 		assertEquals("_h(N, 2, false, b(N), condpos(t(a(N)), t(b(M))), condneg) :- a(N), b(M), not N < M.", program.getRules().get(program.getRules().size() - 1).toString());
 	}
 

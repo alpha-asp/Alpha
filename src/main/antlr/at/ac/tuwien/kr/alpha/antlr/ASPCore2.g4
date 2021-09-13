@@ -44,7 +44,7 @@ weight_at_level : term (AT term)? (COMMA terms)?;
 
 naf_literals : naf_literal (COMMA naf_literals)?;
 
-naf_literal : NAF? (classical_literal | builtin_atom);
+naf_literal : NAF? atom;
 
 atom : (classical_literal | builtin_atom);
 
@@ -71,8 +71,6 @@ term : ID                                   # term_const
      | term (PLUS | MINUS) term             # term_plusminusArithTerm
      | term BITXOR term                     # term_bitxorArithTerm
      ;
-
-interval : (lowerNum=NUMBER | lowerVar=variable) DOT DOT (upperNum=NUMBER | upperVar=variable); // NOT Core2 syntax, but widespread
 
 basic_terms : basic_term (COMMA basic_terms)? ;
 

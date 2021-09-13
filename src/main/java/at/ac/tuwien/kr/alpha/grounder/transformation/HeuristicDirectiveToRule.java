@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Siemens AG
+ * Copyright (c) 2018-2021 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -67,7 +67,7 @@ public class HeuristicDirectiveToRule extends ProgramTransformation<InputProgram
 		copiedDirectives.accumulate(inputProgram.getInlineDirectives());
 
 		if (respectDomspecHeuristics) {
-			Iterator<Directive> directivesIterator = heuristicDirectives.iterator();
+			Iterator<Directive> directivesIterator = copiedDirectives.getDirectives(InlineDirectives.DIRECTIVE.heuristic).iterator();
 			while (directivesIterator.hasNext()) {
 				Directive directive = directivesIterator.next();
 				transformAndAddToProgram((HeuristicDirective) directive, prgBuilder);

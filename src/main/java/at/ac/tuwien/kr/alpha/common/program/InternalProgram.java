@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2020, the Alpha Team.
+ * Copyright (c) 2017-2021, the Alpha Team.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,7 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 	private final Map<Predicate, LinkedHashSet<InternalRule>> predicateDefiningRules = new LinkedHashMap<>();
 	private final Facts facts = new Facts();
 	private final Map<Integer, InternalRule> rulesById = new LinkedHashMap<>();
+	private boolean existsHeuristicRule;
 
 	public InternalProgram(List<InternalRule> rules, List<Atom> facts) {
 		super(rules, facts, null);
@@ -90,6 +91,8 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 			rulesById.put(rule.getRuleId(), rule);
 			if (!rule.isConstraint() && !rule.isHeuristicRule()) {
 				recordDefiningRule(rule.getHeadAtom().getPredicate(), rule);
+			} else if (rule.isHeuristicRule()) {
+				this.existsHeuristicRule = true;
 			}
 		}
 	}
@@ -114,6 +117,10 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 	public boolean existsRuleWithPredicateInHead(final Predicate predicate) {
 		final HashSet<InternalRule> definingRules = predicateDefiningRules.get(predicate);
 		return definingRules != null && !definingRules.isEmpty();
+	}
+
+	public boolean existsHeuristicRule() {
+		return existsHeuristicRule;
 	}
 
 }

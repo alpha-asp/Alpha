@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2020, the Alpha Team.
+ * Copyright (c) 2017-2021, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -44,6 +44,8 @@ import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -55,9 +57,9 @@ import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.toSig
  * An internal atom that stores information on domain-specific heuristics.
  *
  * For example, the information from the heuristic directive:
- * 	<code>#heuristic b(1) : T a(0), MT a(1), M a(2), F a(3), not T a(4), not MT a(5), not M a(6), not F a(7). [3@2]</code>
+ * 	<code>#heuristic b(1) : T a(0), MT a(1), F a(2), not T a(3), not MT a(4), not F a(5). [3@2]</code>
  * is encoded in a heuristic atom in the following form:
- * 	<code>_h(3, 2, true, b(1), condpos(t(a(0)), tm(a(1)), m(a(2)), f(a(3))), condneg(t(a(4)), tm(a(5)), m(a(6)), f(a(7))))</code>
+ * 	<code>_h(3, 2, true, b(1), condpos(t(a(0)), tm(a(1)), f(a(2))), condneg(t(a(3)), tm(a(4)), f(a(5))))</code>
  *
  */
 public class HeuristicAtom extends Atom {
@@ -72,7 +74,7 @@ public class HeuristicAtom extends Atom {
 	private final FunctionTerm negativeCondition;
 	private final boolean ground;
 
-	private HeuristicAtom(WeightAtLevel weightAtLevel, ThriceTruth headSign, FunctionTerm headAtom, FunctionTerm positiveCondition, FunctionTerm negativeCondition) {
+	public HeuristicAtom(WeightAtLevel weightAtLevel, ThriceTruth headSign, FunctionTerm headAtom, FunctionTerm positiveCondition, FunctionTerm negativeCondition) {
 		this.weightAtLevel = weightAtLevel;
 		this.headSign = headSign;
 		this.headAtom = headAtom;
@@ -98,16 +100,20 @@ public class HeuristicAtom extends Atom {
 		return PREDICATE;
 	}
 
+	/**
+	 * Returns an unmodifiable list of this atom's terms
+	 * (because changes to the returned list would NOT be reflected in the heuristic atom's terms!)
+	 */
 	@Override
 	public List<Term> getTerms() {
-		return Arrays.asList(
+		return Collections.unmodifiableList(Arrays.asList(
 				weightAtLevel.getWeight(),
 				weightAtLevel.getLevel(),
 				ConstantTerm.getInstance(headSign.toBoolean()),
 				headAtom,
 				positiveCondition,
 				negativeCondition
-		);
+		));
 	}
 
 	@Override
@@ -193,7 +199,7 @@ public class HeuristicAtom extends Atom {
 		);
 	}
 
-	private static FunctionTerm conditionToFunctionTerm(List<HeuristicDirectiveAtom> heuristicDirectiveAtoms, String topLevelFunctionName) {
+	private static FunctionTerm conditionToFunctionTerm(Collection<HeuristicDirectiveAtom> heuristicDirectiveAtoms, String topLevelFunctionName) {
 		final List<Term> terms = new ArrayList<>(heuristicDirectiveAtoms.size());
 		for (HeuristicDirectiveAtom heuristicDirectiveAtom : heuristicDirectiveAtoms) {
 			final Atom atom = heuristicDirectiveAtom.getAtom();

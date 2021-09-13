@@ -26,8 +26,8 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.NoGoodInterface;
 import at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type;
+import at.ac.tuwien.kr.alpha.common.NoGoodInterface;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -127,3 +127,4 @@ public class NoGoodCounter {
 	}
 	
 }
+

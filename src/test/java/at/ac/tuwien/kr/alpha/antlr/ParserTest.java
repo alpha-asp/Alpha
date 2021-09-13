@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020, the Alpha Team.
+ * Copyright (c) 2016-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -355,7 +355,7 @@ public class ParserTest {
 				+ "#heuristic c(X) : T F p(X,a,_), not c(X).");
 
 		HeuristicDirective directive = getFirstHeuristicDirective(parsedProgram);
-		assertEquals(asSet(TRUE, FALSE), directive.getBody().getBodyAtomsPositive().get(0).getSigns());
+		assertEquals(asSet(TRUE, FALSE), directive.getBody().getBodyAtomsPositive().iterator().next().getSigns());
 	}
 
 	@Test
@@ -364,7 +364,7 @@ public class ParserTest {
 				+ "#heuristic c(X) : TM p(X,a,_), not c(X).");
 
 		HeuristicDirective directive = getFirstHeuristicDirective(parsedProgram);
-		assertEquals(asSet(TRUE, MBT), directive.getBody().getBodyAtomsPositive().get(0).getSigns());
+		assertEquals(asSet(TRUE, MBT), directive.getBody().getBodyAtomsPositive().iterator().next().getSigns());
 	}
 
 	@Test(expected = RuntimeException.class)

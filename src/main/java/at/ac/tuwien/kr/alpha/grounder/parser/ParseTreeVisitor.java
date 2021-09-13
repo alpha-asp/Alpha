@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020, the Alpha Team.
+ * Copyright (c) 2016-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -99,6 +99,11 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 		this.acceptVariables = acceptVariables;
 	}
 
+	void initialize() {
+		inlineDirectives = new InlineDirectives();
+		programBuilder = InputProgram.builder();
+	}
+
 	private UnsupportedOperationException notSupported(RuleContext ctx) {
 		return new UnsupportedOperationException("Unsupported syntax encountered: " + ctx.getText());
 	}
@@ -165,8 +170,7 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 		if (ctx.statements() == null) {
 			return InputProgram.EMPTY;
 		}
-		inlineDirectives = new InlineDirectives();
-		programBuilder = InputProgram.builder();
+		initialize();
 		visitStatements(ctx.statements());
 		programBuilder.addInlineDirectives(inlineDirectives);
 		return programBuilder.build();
@@ -204,10 +208,11 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 	}
 
 	@Override
-	public Object visitStatement_rule(AlphaASPParser.Statement_ruleContext ctx) {
+	public BasicRule visitStatement_rule(AlphaASPParser.Statement_ruleContext ctx) {
 		// head CONS body DOT
-		programBuilder.addRule(new BasicRule(visitHead(ctx.head()), visitBody(ctx.body())));
-		return null;
+		final BasicRule rule = new BasicRule(visitHead(ctx.head()), visitBody(ctx.body()));
+		programBuilder.addRule(rule);
+		return rule;
 	}
 
 	@Override
@@ -460,20 +465,22 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 
 	@Override
 	public Literal visitNaf_literal(AlphaASPParser.Naf_literalContext ctx) {
-		// naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
+		// naf_literal : NAF? atom;
 		boolean isCurrentLiteralNegated = ctx.NAF() != null;
-		if (ctx.builtin_atom() != null) {
-			return new ComparisonLiteral(visitBuiltin_atom(ctx.builtin_atom()), !isCurrentLiteralNegated);
-		} else if (ctx.classical_literal() != null) {
-			return new BasicLiteral(visitClassical_literal(ctx.classical_literal()), !isCurrentLiteralNegated);
-		} else if (ctx.external_atom() != null) {
-			return new ExternalLiteral(visitExternal_atom(ctx.external_atom()), !isCurrentLiteralNegated);
+		Atom atom = visitAtom(ctx.atom());
+		if (atom instanceof ComparisonAtom) {
+			return new ComparisonLiteral((ComparisonAtom) atom, !isCurrentLiteralNegated);
+		} else if (atom instanceof BasicAtom) {
+			return new BasicLiteral((BasicAtom) atom, !isCurrentLiteralNegated);
+		} else if (atom instanceof ExternalAtom) {
+			return new ExternalLiteral((ExternalAtom) atom, !isCurrentLiteralNegated);
 		}
 		throw notSupported(ctx);
 	}
 
 	@Override
 	public Atom visitAtom(AlphaASPParser.AtomContext ctx) {
+		// atom : (external_atom | classical_literal | builtin_atom);
 		if (ctx.builtin_atom() != null) {
 			return visitBuiltin_atom(ctx.builtin_atom());
 		} else if (ctx.classical_literal() != null) {
@@ -614,8 +621,9 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 		final HeuristicDirectiveAtom head = visitHeuristic_head_atom(ctx.heuristic_head_atom());
 		final HeuristicDirectiveBody body = visitHeuristic_body(ctx.heuristic_body());
 		final WeightAtLevel weightAtLevel = visitHeuristic_weight_annotation(ctx.heuristic_weight_annotation());
-		inlineDirectives.addDirective(DIRECTIVE.heuristic, new HeuristicDirective(head, body, weightAtLevel));
-		return null;
+		HeuristicDirective heuristicDirective = new HeuristicDirective(head, body, weightAtLevel);
+		inlineDirectives.addDirective(DIRECTIVE.heuristic, heuristicDirective);
+		return heuristicDirective;
 	}
 
 	@Override
