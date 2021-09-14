@@ -33,17 +33,17 @@ import java.util.List;
 import com.google.common.annotations.VisibleForTesting;
 
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingInfoImpl;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
  * Represents a normal rule or a constraint for the semi-naive grounder.
@@ -93,7 +93,7 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 	}
 
 	public static CompiledRule fromNormalRule(Rule<NormalHead> rule) {
-		return new InternalRule(rule.isConstraint() ? null : new NormalHeadImpl(rule.getHeadAtom()), new ArrayList<>(rule.getBody()));
+		return new InternalRule(rule.isConstraint() ? null : Heads.newNormalHead(rule.getHead().getAtom()), new ArrayList<>(rule.getBody()));
 	}
 
 	/**
@@ -106,7 +106,7 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 	@Override
 	public InternalRule renameVariables(String newVariablePostfix) {
 		List<VariableTerm> occurringVariables = new ArrayList<>();
-		Atom headAtom = this.getHeadAtom();
+		BasicAtom headAtom = this.getHeadAtom();
 		occurringVariables.addAll(headAtom.getOccurringVariables());
 		for (Literal literal : this.getBody()) {
 			occurringVariables.addAll(literal.getOccurringVariables());
@@ -116,12 +116,12 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 			final String newVariableName = occurringVariable.toString() + newVariablePostfix;
 			variableReplacement.put(occurringVariable, Terms.newVariable(newVariableName));
 		}
-		Atom renamedHeadAtom = headAtom.substitute(variableReplacement);
+		BasicAtom renamedHeadAtom = headAtom.substitute(variableReplacement);
 		ArrayList<Literal> renamedBody = new ArrayList<>(this.getBody().size());
 		for (Literal literal : this.getBody()) {
 			renamedBody.add(literal.substitute(variableReplacement));
 		}
-		return new InternalRule(new NormalHeadImpl(renamedHeadAtom), renamedBody);
+		return new InternalRule(Heads.newNormalHead(renamedHeadAtom), renamedBody);
 	}
 
 	/**

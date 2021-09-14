@@ -49,7 +49,7 @@ public class InternalProgram extends AbstractProgram<CompiledRule> implements Co
 				if (!r.getHead().isGround()) {
 					throw new IllegalArgumentException("InternalProgram does not support non-ground rules with empty bodies! (Head = " + r.getHead().toString() + ")");
 				}
-				facts.add(r.getHeadAtom());
+				facts.add(r.getHead().getAtom());
 			} else {
 				internalRules.add(InternalRule.fromNormalRule(r));
 			}

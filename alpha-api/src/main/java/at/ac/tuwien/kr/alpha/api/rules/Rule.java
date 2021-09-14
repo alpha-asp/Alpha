@@ -2,7 +2,6 @@ package at.ac.tuwien.kr.alpha.api.rules;
 
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 
@@ -13,9 +12,6 @@ public interface Rule<H extends Head> {
 	Set<Literal> getBody();
 
 	boolean isConstraint();
-	
-	// TODO clean up programs/rules mess
-	Atom getHeadAtom();
 	
 	Set<Literal> getPositiveBody();
 	

@@ -55,9 +55,9 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead;
+import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead.ChoiceElement;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead.ChoiceElement;
 import at.ac.tuwien.kr.alpha.api.terms.ArithmeticOperator;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
@@ -68,6 +68,7 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.literals.Literals;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2BaseVisitor;
@@ -76,9 +77,6 @@ import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.heads.ChoiceHeadImpl;
-import at.ac.tuwien.kr.alpha.core.rules.heads.ChoiceHeadImpl.ChoiceElementImpl;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
  * Copyright (c) 2016-2021, the Alpha Team.
@@ -228,7 +226,7 @@ public class ASPCore2ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		if (ctx.disjunction() != null) {
 			throw notSupported(ctx);
 		}
-		return new NormalHeadImpl(visitClassical_literal(ctx.classical_literal()));
+		return Heads.newNormalHead(visitClassical_literal(ctx.classical_literal()));
 	}
 
 	@Override
@@ -261,7 +259,7 @@ public class ASPCore2ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			ut = (Term) visit(ctx.ut);
 			uop = visitBinop(ctx.uop);
 		}
-		return new ChoiceHeadImpl(visitChoice_elements(ctx.choice_elements()), lt, lop, ut, uop);
+		return Heads.newChoiceHead(visitChoice_elements(ctx.choice_elements()), lt, lop, ut, uop);
 	}
 
 	@Override
@@ -282,9 +280,9 @@ public class ASPCore2ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		// choice_element : classical_literal (COLON naf_literals?)?;
 		BasicAtom atom = (BasicAtom) visitClassical_literal(ctx.classical_literal());
 		if (ctx.naf_literals() != null) {
-			return new ChoiceElementImpl(atom, visitNaf_literals(ctx.naf_literals()));
+			return Heads.newChoiceElement(atom, visitNaf_literals(ctx.naf_literals()));
 		} else {
-			return new ChoiceElementImpl(atom, Collections.emptyList());
+			return Heads.newChoiceElement(atom, Collections.emptyList());
 		}
 	}
 

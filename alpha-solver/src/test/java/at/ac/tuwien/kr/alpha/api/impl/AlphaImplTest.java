@@ -69,6 +69,7 @@ import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.literals.Literals;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.MethodPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.core.externals.AspStandardLibrary;
@@ -78,7 +79,6 @@ import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 import at.ac.tuwien.kr.alpha.core.util.AnswerSetsParser;
 
 public class AlphaImplTest {
@@ -317,7 +317,7 @@ public class AlphaImplTest {
 		SubThingy thingy = new SubThingy();
 
 		BasicRule rule = new BasicRule(
-				new NormalHeadImpl(Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newConstant("x"))),
+				Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newConstant("x"))),
 				singletonList(Literals.fromAtom(Atoms.newExternalAtom(Predicates.getPredicate("thinger", 1),
 						new MethodPredicateInterpretation(this.getClass().getMethod("thinger", Thingy.class)), singletonList(Terms.newConstant(thingy)),
 						emptyList()), true)));

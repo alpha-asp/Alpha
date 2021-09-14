@@ -6,6 +6,7 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.BasicLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
@@ -13,15 +14,15 @@ import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
  *
  * Rewrites all predicates of a given Program such that they are internal and hence hidden from answer sets.
  *
- * Copyright (c) 2018-2020, the Alpha Team.
+ * Copyright (c) 2018-2021, the Alpha Team.
  */
 public class PredicateInternalizer {
 
@@ -40,10 +41,10 @@ public class PredicateInternalizer {
 	private static Rule<Head> makePredicateInternal(Rule<Head> rule) {
 		Head newHead = null;
 		if (rule.getHead() != null) {
-			if (!(rule.getHead() instanceof NormalHeadImpl)) {
+			if (!(rule.getHead() instanceof NormalHead)) {
 				throw new UnsupportedOperationException("Cannot make predicates in rules internal whose head is not normal.");
 			}
-			newHead = new NormalHeadImpl(makePredicateInternal(((NormalHead) rule.getHead()).getAtom()));
+			newHead = Heads.newNormalHead(makePredicateInternal(((NormalHead) rule.getHead()).getAtom()));
 		}
 		List<Literal> newBody = new ArrayList<>();
 		for (Literal bodyElement : rule.getBody()) {
@@ -58,7 +59,7 @@ public class PredicateInternalizer {
 		return new BasicRule(newHead, newBody);
 	}
 
-	private static Atom makePredicateInternal(Atom atom) {
+	private static BasicAtom makePredicateInternal(Atom atom) {
 		Predicate newInternalPredicate = Predicates.getPredicate(atom.getPredicate().getName(), atom.getPredicate().getArity(), true);
 		return Atoms.newBasicAtom(newInternalPredicate, atom.getTerms());
 	}

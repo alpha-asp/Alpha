@@ -34,22 +34,23 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead;
+import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead.ChoiceElement;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.heads.ChoiceHeadImpl;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
- * Copyright (c) 2017-2020, the Alpha Team.
+ * Copyright (c) 2017-2021, the Alpha Team.
  */
 // TODO this could already give NormalProgram as result type
 public class ChoiceHeadToNormal extends ProgramTransformation<ASPCore2Program, ASPCore2Program> {
@@ -74,18 +75,18 @@ public class ChoiceHeadToNormal extends ProgramTransformation<ASPCore2Program, A
 			// Remove this rule, as it will be transformed.
 			ruleIterator.remove();
 
-			ChoiceHeadImpl choiceHead = (ChoiceHeadImpl) ruleHead;
+			ChoiceHead choiceHead = (ChoiceHead) ruleHead;
 			// Choice rules with boundaries are not yet supported.
 			if (choiceHead.getLowerBound() != null || choiceHead.getUpperBound() != null) {
 				throw new UnsupportedOperationException("Found choice rule with bounds, which are not yet supported. Rule is: " + rule);
 			}
 
 			// Only rewrite rules with a choice in their head.
-			for (ChoiceHeadImpl.ChoiceElement choiceElement : choiceHead.getChoiceElements()) {
+			for (ChoiceElement choiceElement : choiceHead.getChoiceElements()) {
 				// Create two guessing rules for each choiceElement.
 
 				// Construct common body to both rules.
-				Atom head = choiceElement.getChoiceAtom();
+				BasicAtom head = choiceElement.getChoiceAtom();
 				List<Literal> ruleBody = new ArrayList<>(rule.getBody());
 				ruleBody.addAll(choiceElement.getConditionLiterals());
 
@@ -100,16 +101,16 @@ public class ChoiceHeadToNormal extends ProgramTransformation<ASPCore2Program, A
 				List<Term> headTerms = new ArrayList<>(head.getTerms());
 				headTerms.add(0, Terms.newConstant("1")); // FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for
 																	// classical negative atoms.
-				Atom negHead = Atoms.newBasicAtom(negPredicate, headTerms);
+				BasicAtom negHead = Atoms.newBasicAtom(negPredicate, headTerms);
 
 				// Construct two guessing rules.
 				List<Literal> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithNegHead.add(Atoms.newBasicAtom(head.getPredicate(), head.getTerms()).toLiteral(false));
-				additionalRules.add(new BasicRule(new NormalHeadImpl(negHead), guessingRuleBodyWithNegHead));
+				additionalRules.add(new BasicRule(Heads.newNormalHead(negHead), guessingRuleBodyWithNegHead));
 
 				List<Literal> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithHead.add(Atoms.newBasicAtom(negPredicate, headTerms).toLiteral(false));
-				additionalRules.add(new BasicRule(new NormalHeadImpl(head), guessingRuleBodyWithHead));
+				additionalRules.add(new BasicRule(Heads.newNormalHead(head), guessingRuleBodyWithHead));
 
 				// TODO: when cardinality constraints are possible, process the boundaries by adding a constraint with a cardinality check.
 			}

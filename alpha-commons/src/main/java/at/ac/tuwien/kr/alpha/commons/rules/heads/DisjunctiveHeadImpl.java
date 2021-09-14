@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.rules.heads;
+package at.ac.tuwien.kr.alpha.commons.rules.heads;
 
 import static at.ac.tuwien.kr.alpha.commons.util.Util.join;
 
@@ -10,10 +10,11 @@ import at.ac.tuwien.kr.alpha.api.rules.heads.DisjunctiveHead;
 /**
  * Copyright (c) 2017, the Alpha Team.
  */
-public class DisjunctiveHeadImpl implements DisjunctiveHead {
-	public final List<Atom> disjunctiveAtoms;
+class DisjunctiveHeadImpl implements DisjunctiveHead {
+	
+	final List<Atom> disjunctiveAtoms;
 
-	public DisjunctiveHeadImpl(List<Atom> disjunctiveAtoms) {
+	DisjunctiveHeadImpl(List<Atom> disjunctiveAtoms) {
 		this.disjunctiveAtoms = disjunctiveAtoms;
 		if (disjunctiveAtoms != null && disjunctiveAtoms.size() > 1) {
 			throw new UnsupportedOperationException("Disjunction in rule heads is not yet supported");
