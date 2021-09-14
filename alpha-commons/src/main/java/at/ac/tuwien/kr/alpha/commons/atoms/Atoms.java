@@ -7,6 +7,7 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.ActionAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunction;
@@ -56,6 +57,10 @@ public final class Atoms {
 
 	public static ExternalAtom newExternalAtom(Predicate predicate, PredicateInterpretation interpretation, List<Term> input, List<Term> output) {
 		return new ExternalAtomImpl(predicate, interpretation, input, output);
+	}
+	
+	public static ActionAtom newActionAtom() {
+		return null;
 	}
 
 }

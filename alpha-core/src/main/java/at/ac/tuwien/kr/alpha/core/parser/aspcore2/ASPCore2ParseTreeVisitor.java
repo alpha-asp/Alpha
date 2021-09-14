@@ -240,6 +240,7 @@ public class ASPCore2ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		return visitDisjunction(ctx.disjunction());
 	}
 
+	@Override
 	public Object visitAction(ASPCore2Parser.ActionContext ctx) {
 		// Actions are an Evolog-specific feature and therefore not supported by the ASPCore2 parser.
 		throw notSupported(ctx);
