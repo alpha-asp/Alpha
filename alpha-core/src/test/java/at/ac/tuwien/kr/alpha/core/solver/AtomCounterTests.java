@@ -36,12 +36,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom;
@@ -50,7 +51,6 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 public class AtomCounterTests {
 
@@ -62,7 +62,7 @@ public class AtomCounterTests {
 	}
 
 	@Test
-	public void testGetNumberOfAtoms() throws NoSuchMethodException {
+	public void testGetNumberOfAtoms() {
 		final AtomCounter atomCounter = atomStore.getAtomCounter();
 
 		expectGetNumberOfAtoms(atomCounter, "BasicAtomImpl", 0);
@@ -83,7 +83,7 @@ public class AtomCounterTests {
 	}
 
 	@Test
-	public void testGetStatsByType() throws NoSuchMethodException {
+	public void testGetStatsByType() {
 		final AtomCounter atomCounter = atomStore.getAtomCounter();
 
 		createBasicAtom1();
@@ -122,8 +122,8 @@ public class AtomCounterTests {
 	}
 
 	private void createRuleAtom() {
-		Atom atomAA = Atoms.newBasicAtom(Predicates.getPredicate("aa", 0));
-		CompiledRule ruleAA = new InternalRule(new NormalHeadImpl(atomAA),
+		BasicAtom atomAA = Atoms.newBasicAtom(Predicates.getPredicate("aa", 0));
+		CompiledRule ruleAA = new InternalRule(Heads.newNormalHead(atomAA),
 				Collections.singletonList(Atoms.newBasicAtom(Predicates.getPredicate("bb", 0)).toLiteral(false)));
 		atomStore.putIfAbsent(new RuleAtom(ruleAA, new BasicSubstitution()));
 	}

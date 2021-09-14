@@ -34,18 +34,19 @@ import java.util.Map;
 
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
  * Rewrites all interval terms in a rule into a new variable and an IntervalAtom.
@@ -69,8 +70,10 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		for (Literal literal : rule.getBody()) {
 			rewrittenBody.add(rewriteLiteral(literal, intervalReplacements));
 		}
-		NormalHead rewrittenHead = rule.isConstraint() ? null :
-			new NormalHeadImpl(rewriteLiteral(rule.getHeadAtom().toLiteral(), intervalReplacements).getAtom());
+		// Note that this cast is safe: NormalHead can only have a BasicAtom, so literalizing and getting back the Atom destroys type information,
+		// but should never yield anything other than a BasicAtom
+		NormalHead rewrittenHead = rule.isConstraint() ? null
+				: Heads.newNormalHead((BasicAtom) rewriteLiteral(rule.getHead().getAtom().toLiteral(), intervalReplacements).getAtom());
 
 		// If intervalReplacements is empty, no IntervalTerms have been found, keep rule as is.
 		if (intervalReplacements.isEmpty()) {

@@ -1,17 +1,17 @@
-package at.ac.tuwien.kr.alpha.core.rules.heads;
+package at.ac.tuwien.kr.alpha.commons.rules.heads;
 
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 
 /**
  * Represents a normal head, i.e., a head that is an Atom.
  * Copyright (c) 2019, the Alpha Team.
  */
-public class NormalHeadImpl implements NormalHead {
+class NormalHeadImpl implements NormalHead {
 
-	private final Atom atom;
+	private final BasicAtom atom;
 
-	public NormalHeadImpl(Atom atom) {
+	NormalHeadImpl(BasicAtom atom) {
 		this.atom = atom;
 	}
 
@@ -22,7 +22,7 @@ public class NormalHeadImpl implements NormalHead {
 	}
 
 	@Override
-	public Atom getAtom() {
+	public BasicAtom getAtom() {
 		return atom;
 	}
 

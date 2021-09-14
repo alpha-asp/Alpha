@@ -1,11 +1,11 @@
-package at.ac.tuwien.kr.alpha.core.rules.heads;
+package at.ac.tuwien.kr.alpha.commons.rules.heads;
 
 import static at.ac.tuwien.kr.alpha.commons.util.Util.join;
 
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
@@ -13,9 +13,10 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 /**
  * Represents the head of a choice rule.
  * 
- * Copyright (c) 2017-2019, the Alpha Team.
+ * Copyright (c) 2017-2021, the Alpha Team.
  */
-public class ChoiceHeadImpl implements ChoiceHead {
+class ChoiceHeadImpl implements ChoiceHead {
+	
 	private final List<ChoiceElement> choiceElements;
 
 	private final Term lowerBound;
@@ -24,11 +25,11 @@ public class ChoiceHeadImpl implements ChoiceHead {
 	private final Term upperBound;
 	private final ComparisonOperator upperOp;
 
-	public static class ChoiceElementImpl implements ChoiceElement {
-		public final Atom choiceAtom;
+	static class ChoiceElementImpl implements ChoiceElement {
+		public final BasicAtom choiceAtom;
 		public final List<Literal> conditionLiterals;
 
-		public ChoiceElementImpl(Atom choiceAtom, List<Literal> conditionLiterals) {
+		public ChoiceElementImpl(BasicAtom choiceAtom, List<Literal> conditionLiterals) {
 			this.choiceAtom = choiceAtom;
 			this.conditionLiterals = conditionLiterals;
 		}
@@ -45,7 +46,7 @@ public class ChoiceHeadImpl implements ChoiceHead {
 		}
 
 		@Override
-		public Atom getChoiceAtom() {
+		public BasicAtom getChoiceAtom() {
 			return choiceAtom;
 		}
 
@@ -80,7 +81,7 @@ public class ChoiceHeadImpl implements ChoiceHead {
 		return upperBound;
 	}
 
-	public ChoiceHeadImpl(List<ChoiceElement> choiceElements, Term lowerBound, ComparisonOperator lowerOp, Term upperBound,
+	ChoiceHeadImpl(List<ChoiceElement> choiceElements, Term lowerBound, ComparisonOperator lowerOp, Term upperBound,
 			ComparisonOperator upperOp) {
 		this.choiceElements = choiceElements;
 		this.lowerBound = lowerBound;

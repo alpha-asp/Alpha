@@ -10,7 +10,6 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
@@ -18,13 +17,13 @@ import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
  * Copyright (c) 2017-2020, the Alpha Team.
@@ -215,7 +214,7 @@ public class CardinalityNormalization extends ProgramTransformation<ASPCore2Prog
 				elementSubstitution.put(Terms.newVariable("ELEMENT_TUPLE"), elementTuple);
 
 				// Create new rule for input.
-				Atom inputHeadAtom = aggregateInputAtom.substitute(elementSubstitution);
+				BasicAtom inputHeadAtom = aggregateInputAtom.substitute(elementSubstitution);
 				List<Literal> elementLiterals = new ArrayList<>(aggregateElement.getElementLiterals());
 
 				// If there are global variables used inside the aggregate, add original rule body
@@ -223,14 +222,14 @@ public class CardinalityNormalization extends ProgramTransformation<ASPCore2Prog
 				if (!globalVariables.isEmpty()) {
 					elementLiterals.addAll(rewrittenBody);
 				}
-				BasicRule inputRule = new BasicRule(new NormalHeadImpl(inputHeadAtom), elementLiterals);
+				BasicRule inputRule = new BasicRule(Heads.newNormalHead(inputHeadAtom), elementLiterals);
 				additionalRules.add(inputRule);
 			}
 
 			// Create lower bound for the aggregate.
-			Atom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateSubstitution);
+			BasicAtom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateSubstitution);
 			List<Literal> lowerBoundBody = rewrittenBody; // Note: this is only correct if no other aggregate occurs in the rule.
-			additionalRules.add(new BasicRule(new NormalHeadImpl(lowerBoundHeadAtom), lowerBoundBody));
+			additionalRules.add(new BasicRule(Heads.newNormalHead(lowerBoundHeadAtom), lowerBoundBody));
 
 		}
 		rewrittenBody.addAll(aggregateOutputAtoms);

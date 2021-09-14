@@ -9,7 +9,6 @@ import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
@@ -17,13 +16,13 @@ import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
  * Rewrites #sum aggregates into normal rules.
@@ -177,21 +176,21 @@ public class SumNormalization extends ProgramTransformation<ASPCore2Program, ASP
 				elementUnifier.put(Terms.newVariable("FIRST_VARIABLE"), elementTuple.getTerms().get(0));
 
 				// Create new rule for input.
-				Atom inputHeadAtom = aggregateInputAtom.substitute(elementUnifier);
+				BasicAtom inputHeadAtom = aggregateInputAtom.substitute(elementUnifier);
 				List<Literal> elementLiterals = new ArrayList<>(aggregateElement.getElementLiterals());
 
 				// If there are global variables used inside the aggregate, add original rule body (minus the aggregate itself) to input rule.
 				if (!globalVariables.isEmpty()) {
 					elementLiterals.addAll(rewrittenBody);
 				}
-				BasicRule inputRule = new BasicRule(new NormalHeadImpl(inputHeadAtom), elementLiterals);
+				BasicRule inputRule = new BasicRule(Heads.newNormalHead(inputHeadAtom), elementLiterals);
 				additionalRules.add(inputRule);
 			}
 
 			// Create lower bound for the aggregate.
-			Atom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateUnifier);
+			BasicAtom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateUnifier);
 			List<Literal> lowerBoundBody = rewrittenBody; // Note: this is only correct if no other aggregate occurs in the rule.
-			additionalRules.add(new BasicRule(new NormalHeadImpl(lowerBoundHeadAtom), lowerBoundBody));
+			additionalRules.add(new BasicRule(Heads.newNormalHead(lowerBoundHeadAtom), lowerBoundBody));
 		}
 		if (aggregatesInRule > 0) {
 			rewrittenBody.addAll(aggregateOutputAtoms);

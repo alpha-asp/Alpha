@@ -45,10 +45,10 @@ import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
  * Removes variable equalities from rules by replacing one variable with the other.
@@ -111,7 +111,7 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 		}
 
 		List<Literal> rewrittenBody = new ArrayList<>(rule.getBody());
-		NormalHead rewrittenHead = rule.isConstraint() ? null : new NormalHeadImpl(rule.getHeadAtom());
+		NormalHead rewrittenHead = rule.isConstraint() ? null : Heads.newNormalHead(rule.getHeadAtom());
 
 		// Use substitution for actual replacement.
 		Unifier replacementSubstitution = new Unifier();

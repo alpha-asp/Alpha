@@ -29,7 +29,6 @@ package at.ac.tuwien.kr.alpha.core.rules;
 
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
@@ -44,12 +43,6 @@ public class BasicRule extends AbstractRule<Head> implements Rule<Head> {
 
 	public BasicRule(Head head, List<Literal> body) {
 		super(head, body);
-	}
-
-	@Override
-	public Atom getHeadAtom() {
-		// TODO this only makes sense for NormalRule
-		throw new UnsupportedOperationException("Only here for compatibility, this will be removed!");
 	}
 
 }

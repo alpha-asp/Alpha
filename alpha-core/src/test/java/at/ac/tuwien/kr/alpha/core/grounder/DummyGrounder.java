@@ -55,6 +55,7 @@ import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.commons.AnswerSets;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
@@ -64,7 +65,6 @@ import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
  * Represents a small ASP program {@code { c :- a, b.  a.  b. }}.
@@ -93,8 +93,8 @@ public class DummyGrounder implements Grounder {
 	private byte[] currentTruthValues = new byte[]{-2, -1, -1, -1, -1};
 	private static Atom atomAA = Atoms.newBasicAtom(Predicates.getPredicate("a", 0));
 	private static Atom atomBB = Atoms.newBasicAtom(Predicates.getPredicate("b", 0));
-	private static Atom atomCC = Atoms.newBasicAtom(Predicates.getPredicate("c", 0));
-	private static BasicRule ruleABC = new BasicRule(new NormalHeadImpl(atomCC), Arrays.asList(atomAA.toLiteral(), atomBB.toLiteral()));
+	private static BasicAtom atomCC = Atoms.newBasicAtom(Predicates.getPredicate("c", 0));
+	private static BasicRule ruleABC = new BasicRule(Heads.newNormalHead(atomCC), Arrays.asList(atomAA.toLiteral(), atomBB.toLiteral()));
 	private static Atom rule1 = new RuleAtom(InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(ruleABC)), new BasicSubstitution());
 	private Set<Integer> returnedNogoods = new HashSet<>();
 

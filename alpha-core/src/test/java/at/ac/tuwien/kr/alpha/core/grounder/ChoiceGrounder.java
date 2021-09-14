@@ -55,6 +55,7 @@ import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.commons.AnswerSets;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
@@ -65,7 +66,6 @@ import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
  * Represents a small ASP program with choices {@code { aa :- not bb.  bb :- not aa. }}.
@@ -114,10 +114,10 @@ public class ChoiceGrounder implements Grounder {
 		entry(ATOM_BR1, ATOM_DIS_BR1),
 		entry(ATOM_BR2, ATOM_DIS_BR2)
 	).collect(entriesToMap());
-	private static Atom atomAA = Atoms.newBasicAtom(Predicates.getPredicate("aa", 0));
-	private static Atom atomBB = Atoms.newBasicAtom(Predicates.getPredicate("bb", 0));
-	private static BasicRule ruleAA = new BasicRule(new NormalHeadImpl(atomAA), Collections.singletonList(Atoms.newBasicAtom(Predicates.getPredicate("bb", 0)).toLiteral(false)));
-	private static BasicRule ruleBB = new BasicRule(new NormalHeadImpl(atomBB), Collections.singletonList(Atoms.newBasicAtom(Predicates.getPredicate("aa", 0)).toLiteral(false)));
+	private static BasicAtom atomAA = Atoms.newBasicAtom(Predicates.getPredicate("aa", 0));
+	private static BasicAtom atomBB = Atoms.newBasicAtom(Predicates.getPredicate("bb", 0));
+	private static BasicRule ruleAA = new BasicRule(Heads.newNormalHead(atomAA), Collections.singletonList(Atoms.newBasicAtom(Predicates.getPredicate("bb", 0)).toLiteral(false)));
+	private static BasicRule ruleBB = new BasicRule(Heads.newNormalHead(atomBB), Collections.singletonList(Atoms.newBasicAtom(Predicates.getPredicate("aa", 0)).toLiteral(false)));
 	private static Atom rule1 = new RuleAtom(InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(ruleAA)), new BasicSubstitution());
 	private static Atom rule2 = new RuleAtom(InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(ruleBB)), new BasicSubstitution());
 	private static Atom atomEnBR1 = ChoiceAtom.on(1);
