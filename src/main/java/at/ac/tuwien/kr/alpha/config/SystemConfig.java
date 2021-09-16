@@ -27,14 +27,15 @@
  */
 package at.ac.tuwien.kr.alpha.config;
 
-import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingConfig;
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 
 public class SystemConfig {
 
@@ -53,7 +54,6 @@ public class SystemConfig {
 	public static final boolean DEFAULT_QUIET = false;
 	public static final boolean DEFAULT_DISABLE_JUSTIFICATION_SEARCH = false;
 	public static final boolean DEFAULT_DEBUG_INTERNAL_CHECKS = false;
-	public static final boolean DEFAULT_USE_NORMALIZATION_GRID = false;
 	public static final boolean DEFAULT_SORT_ANSWER_SETS = false;
 	public static final List<Integer> DEFAULT_REPLAY_CHOICES = Collections.emptyList();
 	public static final boolean DEFAULT_STRATIFIED_EVALUATION = true;
@@ -62,27 +62,28 @@ public class SystemConfig {
 	public static final String DEFAULT_GROUNDER_TOLERANCE_RULES = GrounderHeuristicsConfiguration.STRICT_STRING;
 	public static final boolean DEFAULT_GROUNDER_ACCUMULATOR_ENABLED = false;
 	public static final String DEFAULT_ATOM_SEPARATOR = ", ";
+	public static final AggregateRewritingConfig DEFAULT_AGGREGATE_REWRITING_CONFIG = new AggregateRewritingConfig();
 
-	private String grounderName = SystemConfig.DEFAULT_GROUNDER_NAME;
-	private String solverName = SystemConfig.DEFAULT_SOLVER_NAME;
-	private String nogoodStoreName = SystemConfig.DEFAULT_NOGOOD_STORE_NAME;
-	private boolean deterministic = SystemConfig.DEFAULT_DETERMINISTIC;
-	private long seed = SystemConfig.DEFAULT_SEED;
-	private boolean debugInternalChecks = SystemConfig.DEFAULT_DEBUG_INTERNAL_CHECKS;
-	private Heuristic branchingHeuristic = SystemConfig.DEFAULT_BRANCHING_HEURISTIC;
-	private BinaryNoGoodPropagationEstimation.Strategy momsStrategy = SystemConfig.DEFAULT_MOMS_STRATEGY;
-	private boolean quiet = SystemConfig.DEFAULT_QUIET;
-	private boolean printStats = SystemConfig.DEFAULT_PRINT_STATS;
-	private boolean disableJustificationSearch = SystemConfig.DEFAULT_DISABLE_JUSTIFICATION_SEARCH;
-	private boolean useNormalizationGrid = SystemConfig.DEFAULT_USE_NORMALIZATION_GRID;
-	private boolean sortAnswerSets = SystemConfig.DEFAULT_SORT_ANSWER_SETS;
-	private List<Integer> replayChoices = SystemConfig.DEFAULT_REPLAY_CHOICES;
-	private boolean evaluateStratifiedPart = SystemConfig.DEFAULT_STRATIFIED_EVALUATION;
-	private boolean disableNoGoodDeletion = SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION;
+	private String grounderName = DEFAULT_GROUNDER_NAME;
+	private String solverName = DEFAULT_SOLVER_NAME;
+	private String nogoodStoreName = DEFAULT_NOGOOD_STORE_NAME;
+	private boolean deterministic = DEFAULT_DETERMINISTIC;
+	private long seed = DEFAULT_SEED;
+	private boolean debugInternalChecks = DEFAULT_DEBUG_INTERNAL_CHECKS;
+	private Heuristic branchingHeuristic = DEFAULT_BRANCHING_HEURISTIC;
+	private BinaryNoGoodPropagationEstimation.Strategy momsStrategy = DEFAULT_MOMS_STRATEGY;
+	private boolean quiet = DEFAULT_QUIET;
+	private boolean printStats = DEFAULT_PRINT_STATS;
+	private boolean disableJustificationSearch = DEFAULT_DISABLE_JUSTIFICATION_SEARCH;
+	private boolean sortAnswerSets = DEFAULT_SORT_ANSWER_SETS;
+	private List<Integer> replayChoices = DEFAULT_REPLAY_CHOICES;
+	private boolean evaluateStratifiedPart = DEFAULT_STRATIFIED_EVALUATION;
+	private boolean disableNoGoodDeletion = DEFAULT_DISABLE_NOGOOD_DELETION;
 	private String grounderToleranceConstraints = DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS;
 	private String grounderToleranceRules = DEFAULT_GROUNDER_TOLERANCE_RULES;
 	private boolean grounderAccumulatorEnabled = DEFAULT_GROUNDER_ACCUMULATOR_ENABLED;
 	private String atomSeparator = DEFAULT_ATOM_SEPARATOR;
+	private AggregateRewritingConfig aggregateRewritingConfig = DEFAULT_AGGREGATE_REWRITING_CONFIG;
 
 	public String getGrounderName() {
 		return this.grounderName;
@@ -151,7 +152,7 @@ public class SystemConfig {
 	public void setMomsStrategy(BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
 		this.momsStrategy = momsStrategy;
 	}
-	
+
 	public void setMomsStrategyName(String momsStrategyName) {
 		this.momsStrategy = BinaryNoGoodPropagationEstimation.Strategy.valueOf(momsStrategyName);
 	}
@@ -178,14 +179,6 @@ public class SystemConfig {
 
 	public void setDisableJustificationSearch(boolean disableJustificationSearch) {
 		this.disableJustificationSearch = disableJustificationSearch;
-	}
-
-	public boolean isUseNormalizationGrid() {
-		return this.useNormalizationGrid;
-	}
-
-	public void setUseNormalizationGrid(boolean useNormalizationGrid) {
-		this.useNormalizationGrid = useNormalizationGrid;
 	}
 
 	public boolean isSortAnswerSets() {
@@ -255,4 +248,13 @@ public class SystemConfig {
 	public void setAtomSeparator(String atomSeparator) {
 		this.atomSeparator = atomSeparator;
 	}
+
+	public AggregateRewritingConfig getAggregateRewritingConfig() {
+		return this.aggregateRewritingConfig;
+	}
+
+	public void setAggregateRewritingConfig(AggregateRewritingConfig aggregateRewritingConfig) {
+		this.aggregateRewritingConfig = aggregateRewritingConfig;
+	}
+	
 }
