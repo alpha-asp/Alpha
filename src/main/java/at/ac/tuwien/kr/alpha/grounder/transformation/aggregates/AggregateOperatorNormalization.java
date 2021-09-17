@@ -1,12 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
 
-import static at.ac.tuwien.kr.alpha.common.ComparisonOperator.EQ;
-import static at.ac.tuwien.kr.alpha.common.ComparisonOperator.LE;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
@@ -15,11 +8,19 @@ import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
+import at.ac.tuwien.kr.alpha.common.rule.WeakConstraint;
 import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm.ArithmeticOperator;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static at.ac.tuwien.kr.alpha.common.ComparisonOperator.EQ;
+import static at.ac.tuwien.kr.alpha.common.ComparisonOperator.LE;
 
 /**
  * Transforms an {@link InputProgram} such that, for all aggregate (body-)literals, only the comparison operators "="
@@ -54,6 +55,10 @@ public final class AggregateOperatorNormalization {
 		List<Literal> rewrittenBody = new ArrayList<>();
 		for (Literal lit : rule.getBody()) {
 			rewrittenBody.addAll(rewriteLiteral(lit));
+		}
+		if (rule instanceof WeakConstraint) {
+			WeakConstraint wcRule = (WeakConstraint) rule;
+			return new WeakConstraint(rewrittenBody, wcRule.getWeight(), wcRule.getLevel(), wcRule.getTermList());
 		}
 		return new BasicRule(rule.getHead(), rewrittenBody);
 	}

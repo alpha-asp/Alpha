@@ -38,6 +38,7 @@ public class WeakConstraint extends BasicRule {
 
 	@Override
 	public String toString() {
-		return Util.join(":~ ", getBody(), ".");
+		String weightInformation = Util.join("[" + weight + "@" + level + (termList.isEmpty() ? "" : ", "), termList, "]");
+		return Util.join(":~ ", getBody(), "." + weightInformation);
 	}
 }

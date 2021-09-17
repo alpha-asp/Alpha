@@ -1,27 +1,5 @@
 package at.ac.tuwien.kr.alpha.test.util;
 
-import static java.util.Collections.emptySet;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import com.ibm.icu.impl.Assert;
-
-import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.function.Executable;
-
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.stream.Collectors;
-
-import at.ac.tuwien.kr.alpha.AnswerSetsParser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
@@ -50,17 +28,21 @@ import at.ac.tuwien.kr.alpha.solver.RegressionTestConfig;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import com.ibm.icu.impl.Assert;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.function.Executable;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.emptySet;
 import static org.junit.jupiter.api.Assertions.assertEquals;

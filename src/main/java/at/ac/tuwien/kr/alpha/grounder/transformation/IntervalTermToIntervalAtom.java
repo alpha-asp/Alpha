@@ -72,7 +72,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 			}
 		}
 		NormalHead rewrittenHead = rule.isConstraint() ? null :
-			new NormalHead(rewriteLiteral(rule.getHeadAtom().toLiteral(), intervalReplacements).getAtom());
+			new NormalHead(rewriteAtom(rule.getHeadAtom(), intervalReplacements));
 
 		// If intervalReplacements is empty, no IntervalTerms have been found, keep rule as is.
 		if (intervalReplacements.isEmpty()) {
@@ -106,6 +106,14 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 			}
 		}
 		Atom atom = lit.getAtom();
+		Atom rewrittenAtom = rewriteAtom(atom, intervalReplacement);
+		if (rewrittenAtom != atom) {
+			return lit.isNegated() ? rewrittenAtom.toLiteral().negate() : rewrittenAtom.toLiteral();
+		}
+		return lit;
+	}
+
+	private static Atom rewriteAtom(Atom atom, Map<VariableTerm, IntervalTerm> intervalReplacement) {
 		List<Term> termList = new ArrayList<>(atom.getTerms());
 		boolean didChange = false;
 		for (int i = 0; i < termList.size(); i++) {
@@ -124,10 +132,9 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 			}
 		}
 		if (didChange) {
-			Atom rewrittenAtom = atom.withTerms(termList);
-			return lit.isNegated() ? rewrittenAtom.toLiteral().negate() : rewrittenAtom.toLiteral();
+			return atom.withTerms(termList);
 		}
-		return lit;
+		return atom;
 	}
 
 	private static FunctionTerm rewriteFunctionTerm(FunctionTerm functionTerm, Map<VariableTerm, IntervalTerm> intervalReplacement) {
