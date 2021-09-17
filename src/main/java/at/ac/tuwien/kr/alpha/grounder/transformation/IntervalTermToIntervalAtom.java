@@ -28,6 +28,8 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
@@ -45,8 +47,9 @@ import java.util.Map;
 
 /**
  * Rewrites all interval terms in a rule into a new variable and an IntervalAtom.
+ * Literals of the form "X = A..B" are rewritten with X being used directly and no new variable being introduced.
  *
- * Copyright (c) 2017-2019, the Alpha Team.
+ * Copyright (c) 2017-2021, the Alpha Team.
  */
 public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProgram, NormalProgram> {
 	private static final String INTERVAL_VARIABLE_PREFIX = "_Interval";
@@ -63,10 +66,13 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		List<Literal> rewrittenBody = new ArrayList<>();
 
 		for (Literal literal : rule.getBody()) {
-			rewrittenBody.add(rewriteLiteral(literal, intervalReplacements));
+			Literal rewrittenLiteral = rewriteLiteral(literal, intervalReplacements);
+			if (rewrittenLiteral != null) {
+				rewrittenBody.add(rewrittenLiteral);
+			}
 		}
 		NormalHead rewrittenHead = rule.isConstraint() ? null :
-			new NormalHead(rewriteAtom(rule.getHeadAtom(), intervalReplacements));
+			new NormalHead(rewriteLiteral(rule.getHeadAtom().toLiteral(), intervalReplacements).getAtom());
 
 		// If intervalReplacements is empty, no IntervalTerms have been found, keep rule as is.
 		if (intervalReplacements.isEmpty()) {
@@ -82,8 +88,24 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 
 	/**
 	 * Replaces every IntervalTerm by a new variable and returns a mapping of the replaced VariableTerm -> IntervalTerm.
+	 * @return the rewritten literal or null if the literal should be dropped from the final rule.
 	 */
-	private static Atom rewriteAtom(Atom atom, Map<VariableTerm, IntervalTerm> intervalReplacement) {
+	private static Literal rewriteLiteral(Literal lit, Map<VariableTerm, IntervalTerm> intervalReplacement) {
+		// Treat special case: if the literal is of the form "X = A .. B", use X in the interval replacement directly and drop the equality from the final rule.
+		if (lit instanceof ComparisonLiteral && ((ComparisonLiteral)lit).isNormalizedEquality()) {
+			ComparisonAtom equalityLiteral = (ComparisonAtom) lit.getAtom();
+			if (equalityLiteral.getTerms().get(0) instanceof VariableTerm && equalityLiteral.getTerms().get(1) instanceof IntervalTerm) {
+				// Literal is of the form "X = A .. B".
+				intervalReplacement.put((VariableTerm)equalityLiteral.getTerms().get(0), (IntervalTerm)equalityLiteral.getTerms().get(1));
+				return null;
+			}
+			if (equalityLiteral.getTerms().get(1) instanceof VariableTerm && equalityLiteral.getTerms().get(0) instanceof IntervalTerm) {
+				// Literal is of the form "A .. B = X".
+				intervalReplacement.put((VariableTerm)equalityLiteral.getTerms().get(1), (IntervalTerm)equalityLiteral.getTerms().get(0));
+				return null;
+			}
+		}
+		Atom atom = lit.getAtom();
 		List<Term> termList = new ArrayList<>(atom.getTerms());
 		boolean didChange = false;
 		for (int i = 0; i < termList.size(); i++) {
@@ -102,18 +124,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 			}
 		}
 		if (didChange) {
-			return atom.withTerms(termList);
-		}
-		return atom;
-	}
-
-	/**
-	 * Replaces every IntervalTerm by a new variable and returns a mapping of the replaced VariableTerm -> IntervalTerm.
-	 */
-	private static Literal rewriteLiteral(Literal lit, Map<VariableTerm, IntervalTerm> intervalReplacement) {
-		Atom atom = lit.getAtom();
-		Atom rewrittenAtom = rewriteAtom(atom, intervalReplacement);
-		if (rewrittenAtom != atom) {
+			Atom rewrittenAtom = atom.withTerms(termList);
 			return lit.isNegated() ? rewrittenAtom.toLiteral().negate() : rewrittenAtom.toLiteral();
 		}
 		return lit;

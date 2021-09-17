@@ -547,7 +547,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				if (originalTolerance > 0) {
 					LOGGER.trace("No substitutions yielded by literal instantiator for literal {}," +
 						" but using permissive heuristic, therefore pushing the literal back.", currentLiteral);
-					// This occurs when the grounder heuristic in use is a "permissive" one, 
+					// This occurs when the grounder heuristic in use is a "permissive" one,
 					// i.e. it is deemed acceptable to have ground rules where a number of body atoms are not yet assigned a truth value by the solver.
 					return pushBackAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution);
 				} else {

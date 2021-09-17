@@ -29,9 +29,9 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.Arrays;
-
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -84,7 +84,7 @@ public class SubstitutionTest {
 		FunctionTerm groundFunctionTerm = FunctionTerm.getInstance("f", B, C);
 		Instance qfBC = new Instance(groundFunctionTerm);
 		Term nongroundFunctionTerm = FunctionTerm.getInstance("f", B, X);
-		BasicAtom qfBX = new BasicAtom(Predicate.getInstance("q", 2), nongroundFunctionTerm);
+		BasicAtom qfBX = new BasicAtom(Predicate.getInstance("q", 1), nongroundFunctionTerm);
 
 		Substitution substitution1 = Substitution.specializeSubstitution(qfBX, qfBC, substitution);
 

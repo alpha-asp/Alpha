@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 
-import at.ac.tuwien.kr.alpha.AnswerSetsParser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -55,6 +54,7 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
+import at.ac.tuwien.kr.alpha.test.util.AnswerSetsParser;
 
 public class SolverTests {
 	
