@@ -7,8 +7,9 @@ import java.util.Map;
 import org.antlr.v4.runtime.CharStreams;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.AbstractProgramParser;
 
 public class Programs {
 
@@ -16,8 +17,8 @@ public class Programs {
 		throw new AssertionError("This is a pure utility class and should therefore not be instantiated!");
 	}
 
-	public static ASPCore2Program fromInputStream(InputStream is, Map<String, PredicateInterpretation> externals) throws IOException {
-		ASPCore2ProgramParserImpl parser = new ASPCore2ProgramParserImpl();
+	public static InputProgram fromInputStream(InputStream is, Map<String, PredicateInterpretation> externals) throws IOException {
+		AbstractProgramParser parser = new ASPCore2ProgramParser();
 		return parser.parse(CharStreams.fromStream(is), externals);
 	}
 

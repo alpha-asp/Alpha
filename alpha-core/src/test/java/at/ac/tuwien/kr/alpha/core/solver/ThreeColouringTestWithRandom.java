@@ -38,15 +38,15 @@ import org.junit.jupiter.api.Disabled;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 
 /**
  * Tests {@link AbstractSolver} using some three-coloring test cases, as described in: 
@@ -184,9 +184,9 @@ public class ThreeColouringTestWithRandom {
 	}
 
 	private void testThreeColouring(int n, boolean shuffle, int seed, RegressionTestConfig cfg) {
-		ASPCore2Program tmpPrg = new ASPCore2ProgramParserImpl()
+		InputProgram tmpPrg = new ASPCore2ProgramParser()
 				.parse("col(V,C) :- v(V), c(C), not ncol(V,C)." + "ncol(V,C) :- col(V,D), c(C), C != D." + ":- e(V,U), col(V,C), col(U,C).");
-		InputProgram.Builder prgBuilder = InputProgram.builder().accumulate(tmpPrg);
+		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder().accumulate(tmpPrg);
 		prgBuilder.addFacts(createColors("1", "2", "3"));
 		prgBuilder.addFacts(createVertices(n));
 		prgBuilder.addFacts(createEdges(n, shuffle, seed));

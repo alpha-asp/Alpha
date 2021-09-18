@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 
 /**
@@ -106,7 +106,7 @@ public class OmigaBenchmarksTest {
 		@SuppressWarnings("unused")
 		Optional<AnswerSet> answerSet = TestUtils
 				.buildSolverForRegressionTest(
-						new ASPCore2ProgramParserImpl().parse(Files.newInputStream(Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName))), cfg)
+						new ASPCore2ProgramParser().parse(Files.newInputStream(Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName))), cfg)
 				.stream().findFirst();
 		// System.out.println(answerSet);
 		// TODO: check correctness of answer set

@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
@@ -20,8 +20,9 @@ import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.AbstractProgramParser;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 /**
@@ -30,17 +31,17 @@ import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
  *
  * Copyright (c) 2018-2020, the Alpha Team.
  */
-public class SumNormalization extends ProgramTransformation<ASPCore2Program, ASPCore2Program> {
+public class SumNormalization extends ProgramTransformation<InputProgram, InputProgram> {
 
 	private int aggregateCount;
-	private ASPCore2ProgramParserImpl parser = new ASPCore2ProgramParserImpl();
+	private AbstractProgramParser parser = new ASPCore2ProgramParser();
 
-	private ASPCore2Program parse(String program) {
+	private InputProgram parse(String program) {
 		return parser.parse(program);
 	}
 
 	@Override
-	public ASPCore2Program apply(ASPCore2Program inputProgram) {
+	public InputProgram apply(InputProgram inputProgram) {
 		if (!rewritingNecessary(inputProgram)) {
 			return inputProgram;
 		}
@@ -54,9 +55,9 @@ public class SumNormalization extends ProgramTransformation<ASPCore2Program, ASP
 		// Connect/Rewrite every aggregate in each rule.
 		List<Rule<Head>> rewrittenRules = rewriteAggregates(inputProgram.getRules());
 
-		InputProgram.Builder prgBuilder = InputProgram.builder();
+		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder();
 		prgBuilder.addFacts(inputProgram.getFacts());
-		ASPCore2Program summationEncoding = makePredicatesInternal(new ASPCore2ProgramParserImpl().parse(summationSubprogram));
+		InputProgram summationEncoding = makePredicatesInternal(new ASPCore2ProgramParser().parse(summationSubprogram));
 		prgBuilder.accumulate(summationEncoding);
 		prgBuilder.addRules(rewrittenRules);
 
@@ -78,7 +79,7 @@ public class SumNormalization extends ProgramTransformation<ASPCore2Program, ASP
 	 * @param program the program.
 	 * @return true if sum aggregates occur, false otherwise.
 	 */
-	private boolean rewritingNecessary(ASPCore2Program program) {
+	private boolean rewritingNecessary(InputProgram program) {
 		for (Rule<Head> rule : program.getRules()) {
 			for (Literal lit : rule.getBody()) {
 				if (lit instanceof AggregateLiteral) {

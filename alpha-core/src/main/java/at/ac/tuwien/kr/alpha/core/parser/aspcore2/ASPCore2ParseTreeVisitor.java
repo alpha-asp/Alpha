@@ -46,6 +46,7 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -75,7 +76,7 @@ import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 /**
@@ -85,7 +86,7 @@ public class ASPCore2ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	private final Map<String, PredicateInterpretation> externals;
 	private final boolean acceptVariables;
 
-	private InputProgram.Builder programBuilder;
+	private InputProgramImpl.Builder programBuilder;
 	private InlineDirectives inlineDirectives;
 
 	public ASPCore2ParseTreeVisitor(Map<String, PredicateInterpretation> externals) {
@@ -161,10 +162,10 @@ public class ASPCore2ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		}
 
 		if (ctx.statements() == null) {
-			return InputProgram.EMPTY;
+			return InputProgramImpl.EMPTY;
 		}
 		inlineDirectives = new InlineDirectivesImpl();
-		programBuilder = InputProgram.builder();
+		programBuilder = InputProgramImpl.builder();
 		visitStatements(ctx.statements());
 		programBuilder.addInlineDirectives(inlineDirectives);
 		return programBuilder.build();

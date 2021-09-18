@@ -53,7 +53,7 @@ import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpreta
 import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.config.InputConfig;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
@@ -64,10 +64,10 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
@@ -78,7 +78,7 @@ public class AlphaImpl implements Alpha {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlphaImpl.class);
 
 	private SystemConfig config = new SystemConfig(); // The config is initialized with default values.
-	private ProgramParser parser = new ASPCore2ProgramParserImpl();
+	private ProgramParser parser = new ASPCore2ProgramParser();
 
 	public AlphaImpl(SystemConfig cfg) {
 		this.config = cfg;
@@ -88,9 +88,9 @@ public class AlphaImpl implements Alpha {
 	}
 
 	@Override
-	public ASPCore2Program readProgram(InputConfig cfg) throws IOException {
-		InputProgram.Builder prgBuilder = InputProgram.builder();
-		ASPCore2Program tmpProg;
+	public InputProgram readProgram(InputConfig cfg) throws IOException {
+		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder();
+		InputProgram tmpProg;
 		if (!cfg.getFiles().isEmpty()) {
 			tmpProg = readProgramFiles(cfg.isLiterate(), cfg.getPredicateMethods(), cfg.getFiles());
 			prgBuilder.accumulate(tmpProg);
@@ -103,14 +103,14 @@ public class AlphaImpl implements Alpha {
 	}
 
 	@Override
-	public ASPCore2Program readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException {
+	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException {
 		return readProgramFiles(literate, externals, paths.stream().map(Paths::get).collect(Collectors.toList()).toArray(new Path[] {}));
 	}
 
 	@Override
-	public ASPCore2Program readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
-		InputProgram.Builder prgBuilder = InputProgram.builder();
-		ASPCore2Program tmpProg;
+	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
+		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder();
+		InputProgram tmpProg;
 		for (Path path : paths) {
 			InputStream stream;
 			if (!literate) {
@@ -125,17 +125,17 @@ public class AlphaImpl implements Alpha {
 	}
 
 	@Override
-	public ASPCore2Program readProgramString(String aspString, Map<String, PredicateInterpretation> externals) {
+	public InputProgram readProgramString(String aspString, Map<String, PredicateInterpretation> externals) {
 		return parser.parse(aspString, externals);
 	}
 
 	@Override
-	public ASPCore2Program readProgramString(String aspString) {
+	public InputProgram readProgramString(String aspString) {
 		return readProgramString(aspString, Collections.emptyMap());
 	}
 
 	@Override
-	public NormalProgram normalizeProgram(ASPCore2Program program) {
+	public NormalProgram normalizeProgram(InputProgram program) {
 		return new NormalizeProgramTransformation(config.isUseNormalizationGrid()).apply(program);
 	}
 
@@ -156,7 +156,7 @@ public class AlphaImpl implements Alpha {
 	 * program analysis and normalization aren't of interest.
 	 */
 	@Override
-	public Stream<AnswerSet> solve(ASPCore2Program program) {
+	public Stream<AnswerSet> solve(InputProgram program) {
 		return solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
@@ -165,7 +165,7 @@ public class AlphaImpl implements Alpha {
 	 * details of the program analysis and normalization aren't of interest.
 	 */
 	@Override
-	public Stream<AnswerSet> solve(ASPCore2Program program, java.util.function.Predicate<Predicate> filter) {
+	public Stream<AnswerSet> solve(InputProgram program, java.util.function.Predicate<Predicate> filter) {
 		NormalProgram normalized = normalizeProgram(program);
 		return solve(normalized, filter);
 	}
@@ -230,7 +230,7 @@ public class AlphaImpl implements Alpha {
 	}
 
 	@Override
-	public DebugSolvingContext prepareDebugSolve(ASPCore2Program program) {
+	public DebugSolvingContext prepareDebugSolve(InputProgram program) {
 		return prepareDebugSolve(program, InputConfig.DEFAULT_FILTER);
 	}
 
@@ -240,7 +240,7 @@ public class AlphaImpl implements Alpha {
 	}	
 	
 	@Override
-	public DebugSolvingContext prepareDebugSolve(final ASPCore2Program program, java.util.function.Predicate<Predicate> filter) {
+	public DebugSolvingContext prepareDebugSolve(final InputProgram program, java.util.function.Predicate<Predicate> filter) {
 		return prepareDebugSolve(normalizeProgram(program), filter);
 	}
 
@@ -288,7 +288,7 @@ public class AlphaImpl implements Alpha {
 	}
 
 	@Override
-	public Solver prepareSolverFor(ASPCore2Program program, java.util.function.Predicate<Predicate> filter) {
+	public Solver prepareSolverFor(InputProgram program, java.util.function.Predicate<Predicate> filter) {
 		return prepareSolverFor(normalizeProgram(program), filter);
 	}
 

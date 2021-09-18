@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Disabled;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 
 /**
  * Tests {@link AbstractSolver} using a racks configuration problem.
@@ -58,7 +58,7 @@ public class RacksTest {
 	private void test(RegressionTestConfig cfg) throws IOException {
 		CharStream programInputStream = CharStreams.fromPath(
 				Paths.get("benchmarks", "siemens", "racks", "racks.lp"));
-		Solver solver = buildSolverForRegressionTest(new ASPCore2ProgramParserImpl().parse(programInputStream), cfg);
+		Solver solver = buildSolverForRegressionTest(new ASPCore2ProgramParser().parse(programInputStream), cfg);
 		@SuppressWarnings("unused")
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		// System.out.println(answerSet);

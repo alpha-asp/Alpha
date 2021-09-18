@@ -43,9 +43,10 @@ import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
 
 /**
- * A parser that, in contrast to {@link ASPCore2ProgramParserImpl}, does not parse full programs but only program parts like
+ * A parser that, in contrast to {@link AbstractProgramParser}, does not parse full programs but only program parts like
  * atoms, terms and such.
  */
+// TODO adapt this and create evolog version
 public class ASPCore2ProgramPartParser {
 	private final ASPCore2ParseTreeVisitor visitor = new ASPCore2ParseTreeVisitor(Collections.emptyMap(), true);
 

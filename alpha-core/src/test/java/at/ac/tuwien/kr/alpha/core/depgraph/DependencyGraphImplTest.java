@@ -10,21 +10,21 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph.Node;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.test.util.DependencyGraphUtils;
 
 public class DependencyGraphImplTest {
 
-	private ProgramParser parser = new ASPCore2ProgramParserImpl();
+	private ProgramParser parser = new ASPCore2ProgramParser();
 	private NormalizeProgramTransformation normalizeTransform = new NormalizeProgramTransformation(false);
 	
 	// Currently not used anywhere, but keep as it might come in handy
@@ -65,7 +65,7 @@ public class DependencyGraphImplTest {
 
 	@Test
 	public void reachabilityCheckSimpleTest() {
-		ASPCore2Program prog = parser.parse("b :- a.");
+		InputProgram prog = parser.parse("b :- a.");
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
@@ -89,7 +89,7 @@ public class DependencyGraphImplTest {
 		bld.append("c :- b.").append("\n");
 		bld.append("d :- c.").append("\n");
 		
-		ASPCore2Program prog = parser.parse(bld.toString());
+		InputProgram prog = parser.parse(bld.toString());
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
@@ -124,7 +124,7 @@ public class DependencyGraphImplTest {
 		bld.append("a :- d.").append("\n");
 		bld.append("x :- d, f1.");
 
-		ASPCore2Program prog = parser.parse(bld.toString());
+		InputProgram prog = parser.parse(bld.toString());
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
@@ -164,7 +164,7 @@ public class DependencyGraphImplTest {
 		bld.append("b :- a.").append("\n");
 		bld.append("a :- b.").append("\n");
 
-		ASPCore2Program prog = parser.parse(bld.toString());
+		InputProgram prog = parser.parse(bld.toString());
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
@@ -203,7 +203,7 @@ public class DependencyGraphImplTest {
 			"y :- b, d, x.\n" +
 			"z :- x, y, z.";
 
-		ASPCore2Program prog = parser.parse(inputProgram);
+		InputProgram prog = parser.parse(inputProgram);
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();

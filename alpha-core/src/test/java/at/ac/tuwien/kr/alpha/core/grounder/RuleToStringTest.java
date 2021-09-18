@@ -31,11 +31,11 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
@@ -45,7 +45,7 @@ import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
  * Tests {@link BasicRule#toString()} and {@link InternalRule#toString()}.
  */
 public class RuleToStringTest {
-	private final ProgramParser parser = new ASPCore2ProgramParserImpl();
+	private final ProgramParser parser = new ASPCore2ProgramParser();
 	
 	@Test
 	public void positiveRuleToString() {
@@ -98,7 +98,7 @@ public class RuleToStringTest {
 	}
 
 	private Rule<Head> parseSingleRule(String rule) {
-		ASPCore2Program program = parser.parse(rule);
+		InputProgram program = parser.parse(rule);
 		List<Rule<Head>> rules = program.getRules();
 		assertEquals(1, rules.size(), "Number of rules");
 		return rules.get(0);

@@ -19,7 +19,7 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.config.Heuristic;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.Program;
@@ -33,7 +33,7 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
@@ -118,7 +118,7 @@ public class TestUtils {
 		return Atoms.newBasicAtom(pred, trms);
 	}
 
-	private static Solver buildSolverFromSystemConfig(ASPCore2Program prog, SystemConfig cfg) {
+	private static Solver buildSolverFromSystemConfig(InputProgram prog, SystemConfig cfg) {
 		AtomStore atomStore = new AtomStoreImpl();
 		NormalProgram normalProg = new NormalizeProgramTransformation(cfg.isUseNormalizationGrid()).apply(prog);
 		InternalProgram preprocessed = cfg.isEvaluateStratifiedPart() ? new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normalProg))
@@ -126,12 +126,12 @@ public class TestUtils {
 		return SolverFactory.getInstance(cfg, atomStore, GrounderFactory.getInstance(cfg.getGrounderName(), preprocessed, atomStore, cfg.isDebugInternalChecks()));
 	}
 	
-	public static Solver buildSolverForRegressionTest(ASPCore2Program prog, RegressionTestConfig cfg) {
+	public static Solver buildSolverForRegressionTest(InputProgram prog, RegressionTestConfig cfg) {
 		return buildSolverFromSystemConfig(prog, cfg.toSystemConfig());
 	}
 	
 	public static Solver buildSolverForRegressionTest(String prog, RegressionTestConfig cfg) {
-		return buildSolverFromSystemConfig(new ASPCore2ProgramParserImpl().parse(prog), cfg.toSystemConfig());
+		return buildSolverFromSystemConfig(new ASPCore2ProgramParser().parse(prog), cfg.toSystemConfig());
 	}
 	
 	public static Solver buildSolverForRegressionTest(AtomStore atomStore, Grounder grounder, RegressionTestConfig cfg) {
@@ -139,12 +139,12 @@ public class TestUtils {
 		return SolverFactory.getInstance(systemCfg, atomStore, grounder);
 	}
 
-	public static Set<AnswerSet> collectRegressionTestAnswerSets(ASPCore2Program prog, RegressionTestConfig cfg) {
+	public static Set<AnswerSet> collectRegressionTestAnswerSets(InputProgram prog, RegressionTestConfig cfg) {
 		return buildSolverForRegressionTest(prog, cfg).collectSet();
 	}
 	
 	public static Set<AnswerSet> collectRegressionTestAnswerSets(String aspstr, RegressionTestConfig cfg) {
-		ASPCore2Program prog = new ASPCore2ProgramParserImpl().parse(aspstr);
+		InputProgram prog = new ASPCore2ProgramParser().parse(aspstr);
 		return collectRegressionTestAnswerSets(prog, cfg);
 	}
 

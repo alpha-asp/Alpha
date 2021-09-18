@@ -32,7 +32,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
@@ -42,7 +42,7 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.Literals;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
@@ -54,7 +54,7 @@ import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
  */
 public class NoGoodGeneratorTest {
 
-	private static final ProgramParser PARSER = new ASPCore2ProgramParserImpl();
+	private static final ProgramParser PARSER = new ASPCore2ProgramParser();
 	private static final NormalizeProgramTransformation NORMALIZE_TRANSFORM = new NormalizeProgramTransformation(false);
 
 	private static final ConstantTerm<String> A = Terms.newSymbolicConstant("a");
@@ -69,7 +69,7 @@ public class NoGoodGeneratorTest {
 	 */
 	@Test
 	public void collectNeg_ContainsOnlyPositiveLiterals() {
-		ASPCore2Program input = PARSER.parse("p(a,b). " 
+		InputProgram input = PARSER.parse("p(a,b). " 
 				+ "q(a,b) :- not nq(a,b). " 
 				+ "nq(a,b) :- not q(a,b).");
 		NormalProgram normal = NORMALIZE_TRANSFORM.apply(input);

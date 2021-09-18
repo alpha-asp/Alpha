@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
@@ -28,7 +28,7 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
@@ -105,8 +105,8 @@ public class StratifiedEvaluationRegressionTest {
 @ParameterizedTest	        @MethodSource("at.ac.tuwien.kr.alpha.grounder.transformation.StratifiedEvaluationRegressionTest#params")
 	public void runTest(String aspString, Consumer<CompiledProgram> programVerifier, Consumer<Set<AnswerSet>> resultVerifier) {
 		// Parse and pre-evaulate program
-		ProgramParser parser = new ASPCore2ProgramParserImpl();
-		ASPCore2Program prog = parser.parse(aspString);
+		ProgramParser parser = new ASPCore2ProgramParser();
+		InputProgram prog = parser.parse(aspString);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(new NormalizeProgramTransformation(false).apply(prog));
 		CompiledProgram evaluated = new StratifiedEvaluation().apply(analyzed);
 		// Verify stratified evaluation result

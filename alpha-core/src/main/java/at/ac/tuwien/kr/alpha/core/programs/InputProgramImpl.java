@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
@@ -43,15 +43,15 @@ import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
  * <p>
  * Copyright (c) 2017-2019, the Alpha Team.
  */
-public class InputProgram extends AbstractProgram<Rule<Head>> implements ASPCore2Program{
+public class InputProgramImpl extends AbstractProgram<Rule<Head>> implements InputProgram {
 
-	public static final InputProgram EMPTY = new InputProgram(Collections.emptyList(), Collections.emptyList(), new InlineDirectivesImpl());
+	public static final InputProgramImpl EMPTY = new InputProgramImpl(Collections.emptyList(), Collections.emptyList(), new InlineDirectivesImpl());
 
-	public InputProgram(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
+	public InputProgramImpl(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
 		super(rules, facts, inlineDirectives);
 	}
 
-	public InputProgram() {
+	public InputProgramImpl() {
 		super(new ArrayList<>(), new ArrayList<>(), new InlineDirectivesImpl());
 	}
 
@@ -59,12 +59,12 @@ public class InputProgram extends AbstractProgram<Rule<Head>> implements ASPCore
 		return new Builder();
 	}
 
-	public static Builder builder(ASPCore2Program prog) {
+	public static Builder builder(InputProgram prog) {
 		return new Builder(prog);
 	}
 
 	/**
-	 * Builder for more complex program construction scenarios, ensuring that an {@link InputProgram} is immutable
+	 * Builder for more complex program construction scenarios, ensuring that an {@link InputProgramImpl} is immutable
 	 */
 	public static class Builder {
 
@@ -72,7 +72,7 @@ public class InputProgram extends AbstractProgram<Rule<Head>> implements ASPCore
 		private List<Atom> facts = new ArrayList<>();
 		private InlineDirectives inlineDirectives = new InlineDirectivesImpl();
 
-		public Builder(ASPCore2Program prog) {
+		public Builder(InputProgram prog) {
 			this.addRules(prog.getRules());
 			this.addFacts(prog.getFacts());
 			this.addInlineDirectives(prog.getInlineDirectives());
@@ -107,12 +107,12 @@ public class InputProgram extends AbstractProgram<Rule<Head>> implements ASPCore
 			return this;
 		}
 
-		public Builder accumulate(ASPCore2Program prog) {
+		public Builder accumulate(InputProgram prog) {
 			return this.addRules(prog.getRules()).addFacts(prog.getFacts()).addInlineDirectives(prog.getInlineDirectives());
 		}
 
 		public InputProgram build() {
-			return new InputProgram(this.rules, this.facts, this.inlineDirectives);
+			return new InputProgramImpl(this.rules, this.facts, this.inlineDirectives);
 		}
 	}
 

@@ -43,7 +43,7 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -57,7 +57,7 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
@@ -69,7 +69,7 @@ import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 
 public class StratifiedEvaluationTest {
 
-	private final ProgramParser parser = new ASPCore2ProgramParserImpl();
+	private final ProgramParser parser = new ASPCore2ProgramParser();
 	private final NormalizeProgramTransformation normalizer = new NormalizeProgramTransformation(false);
 	private final StratifiedEvaluation evaluator = new StratifiedEvaluation();
 	private final Function<String, CompiledProgram> parseAndEvaluate = (str) -> {
@@ -169,7 +169,7 @@ public class StratifiedEvaluationTest {
 		String asp = "claimedTruth(bla). truth(X) :- claimedTruth(X), &sayTrue[X]. lie(X) :- claimedTruth(X), not &sayTrue[X].";
 		Map<String, PredicateInterpretation> externals = new HashMap<>();
 		externals.put("sayTrue", Externals.processPredicateMethod(this.getClass().getMethod("sayTrue", Object.class)));
-		ProgramParser parserWithExternals = new ASPCore2ProgramParserImpl();
+		ProgramParser parserWithExternals = new ASPCore2ProgramParser();
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalizer.apply(parserWithExternals.parse(asp, externals)));
 		CompiledProgram evaluated = new StratifiedEvaluation().apply(analyzed);
 		Set<AnswerSet> answerSets = solveCompiledProg.apply(evaluated);
@@ -182,7 +182,7 @@ public class StratifiedEvaluationTest {
 	 */
 	@Test
 	public void testPartnerUnitsProblemTopologicalOrder() throws IOException {
-		ASPCore2Program prg = parser.parse(StratifiedEvaluationTest.class.getResourceAsStream("/partial-eval/pup_topological_order.asp"));
+		InputProgram prg = parser.parse(StratifiedEvaluationTest.class.getResourceAsStream("/partial-eval/pup_topological_order.asp"));
 		CompiledProgram evaluated = new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normalizer.apply(prg)));
 		assertTrue(evaluated.getRules().isEmpty(), "Not all rules eliminated by stratified evaluation");
 		assertEquals(57, evaluated.getFacts().size());
@@ -203,7 +203,7 @@ public class StratifiedEvaluationTest {
 				+ "inc_value(4), inc_value(5), inc_value(6), inc_value(7), "
 				+ "inc_value(8)";
 		//@formatter:on
-		ASPCore2Program prog = Programs.fromInputStream(
+		InputProgram prog = Programs.fromInputStream(
 				StratifiedEvaluationTest.class.getResourceAsStream("/partial-eval/recursive_w_negated_condition.asp"),
 				new HashMap<>());
 		

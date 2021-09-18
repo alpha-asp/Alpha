@@ -56,7 +56,7 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.core.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.util.AnswerSetsParser;
 
 public class SolverTests {
@@ -79,7 +79,7 @@ public class SolverTests {
 
 		final Atom fact = Atoms.newBasicAtom(Predicates.getPredicate("foo", 1), Terms.newConstant(thingy));
 
-		final InputProgram program = new InputProgram(
+		final InputProgramImpl program = new InputProgramImpl(
 			Collections.emptyList(),
 			Collections.singletonList(fact),
 			new InlineDirectivesImpl()

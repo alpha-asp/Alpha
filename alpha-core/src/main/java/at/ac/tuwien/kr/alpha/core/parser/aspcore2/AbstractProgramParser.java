@@ -15,36 +15,35 @@ import org.antlr.v4.runtime.DefaultErrorStrategy;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
+import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.CustomErrorListener;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 
-public class ASPCore2ProgramParserImpl implements ProgramParser {
+public abstract class AbstractProgramParser implements ProgramParser {
 
-	private final Map<String, PredicateInterpretation> preloadedExternals = new HashMap<>();
-
-	public ASPCore2ProgramParserImpl() {
-		this.preloadedExternals.putAll(Externals.getStandardLibraryExternals());
+	private final Map<String, PredicateInterpretation> preloadedExternals = new HashMap<>(Externals.getStandardLibraryExternals());
+	
+	public AbstractProgramParser() {
 	}
-
-	public ASPCore2ProgramParserImpl(Map<String, PredicateInterpretation> externals) {
-		this();
+	
+	public AbstractProgramParser(Map<String, PredicateInterpretation> externals) {
 		this.preloadedExternals.putAll(externals);
 	}
 	
 	@Override
-	public ASPCore2Program parse(String s) {
+	public InputProgram parse(String s) {
 		return parse(s, Collections.emptyMap());
 	}
 
 	@Override
-	public ASPCore2Program parse(String s, Map<String, PredicateInterpretation> externals) {
+	public InputProgram parse(String s, Map<String, PredicateInterpretation> externals) {
 		try {
 			return parse(CharStreams.fromString(s), externals);
 		} catch (RecognitionException | ParseCancellationException e) {
@@ -55,11 +54,11 @@ public class ASPCore2ProgramParserImpl implements ProgramParser {
 		}
 	}
 
-	public ASPCore2Program parse(CharStream stream) {
+	public InputProgram parse(CharStream stream) {
 		return parse(stream, Collections.emptyMap());
 	}
 
-	public ASPCore2Program parse(CharStream stream, Map<String, PredicateInterpretation> externals) {
+	public InputProgram parse(CharStream stream, Map<String, PredicateInterpretation> externals) {
 		//@formatter:off
 		/*
 		 * // In order to require less memory: use unbuffered streams and avoid constructing a full parse tree. 
@@ -132,18 +131,18 @@ public class ASPCore2ProgramParserImpl implements ProgramParser {
 	}
 
 	@Override
-	public ASPCore2Program parse(InputStream programSource, Map<String, PredicateInterpretation> externalPredicateDefinitions) throws IOException {
+	public InputProgram parse(InputStream programSource, Map<String, PredicateInterpretation> externalPredicateDefinitions) throws IOException {
 		return parse(CharStreams.fromStream(programSource), externalPredicateDefinitions);
 	}
 
 	@Override
-	public ASPCore2Program parse(Path programPath, Map<String, PredicateInterpretation> externalPredicateDefinitions) throws IOException {
+	public InputProgram parse(Path programPath, Map<String, PredicateInterpretation> externalPredicateDefinitions) throws IOException {
 		return parse(CharStreams.fromPath(programPath), externalPredicateDefinitions);
 	}
 
 	@Override
-	public ASPCore2Program parse(Map<String, PredicateInterpretation> externalPredicateDefinitions, Path... programSources) throws IOException {
-		InputProgram.Builder bld = InputProgram.builder();
+	public InputProgram parse(Map<String, PredicateInterpretation> externalPredicateDefinitions, Path... programSources) throws IOException {
+		InputProgramImpl.Builder bld = InputProgramImpl.builder();
 		for (Path src : programSources) {
 			bld.accumulate(parse(src, externalPredicateDefinitions));
 		}
@@ -151,11 +150,18 @@ public class ASPCore2ProgramParserImpl implements ProgramParser {
 	}
 
 	@Override
-	public ASPCore2Program parse(Iterable<Path> programSources, Map<String, PredicateInterpretation> externalPredicateDefinitions) throws IOException {
-		InputProgram.Builder bld = InputProgram.builder();
+	public InputProgram parse(Iterable<Path> programSources, Map<String, PredicateInterpretation> externalPredicateDefinitions) throws IOException {
+		InputProgramImpl.Builder bld = InputProgramImpl.builder();
 		for (Path src : programSources) {
 			bld.accumulate(parse(src, externalPredicateDefinitions));
 		}
 		return bld.build();
 	}
+	
+	protected abstract ParseTreeVisitor<Object> createParseTreeVisitor();
+
+	public Map<String, PredicateInterpretation> getPreloadedExternals() {
+		return this.preloadedExternals;
+	}
+
 }

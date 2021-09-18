@@ -10,34 +10,34 @@ import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpreta
 
 public interface ProgramParser {
 
-	default ASPCore2Program parse(String programString) {
+	default InputProgram parse(String programString) {
 		return parse(programString, Collections.emptyMap());
 	}
 
-	default ASPCore2Program parse(InputStream programSource) throws IOException {
+	default InputProgram parse(InputStream programSource) throws IOException {
 		return parse(programSource, Collections.emptyMap());
 	}
 
-	default ASPCore2Program parse(Path programPath) throws IOException {
+	default InputProgram parse(Path programPath) throws IOException {
 		return parse(programPath, Collections.emptyMap());
 	}
 
-	default ASPCore2Program parse(Path... programSources) throws IOException {
+	default InputProgram parse(Path... programSources) throws IOException {
 		return parse(Collections.emptyMap(), programSources);
 	}
 
-	default ASPCore2Program parse(Iterable<Path> programSources) throws IOException {
+	default InputProgram parse(Iterable<Path> programSources) throws IOException {
 		return parse(programSources, Collections.emptyMap());
 	}
 
-	ASPCore2Program parse(String programString, Map<String, PredicateInterpretation> externalPredicateDefinitions);
+	InputProgram parse(String programString, Map<String, PredicateInterpretation> externalPredicateDefinitions);
 
-	ASPCore2Program parse(InputStream programSource, Map<String, PredicateInterpretation> externalPredicateDefinitions) throws IOException;
+	InputProgram parse(InputStream programSource, Map<String, PredicateInterpretation> externalPredicateDefinitions) throws IOException;
 
-	ASPCore2Program parse(Path programPath, Map<String, PredicateInterpretation> externalPredicateDefinitions) throws IOException;
+	InputProgram parse(Path programPath, Map<String, PredicateInterpretation> externalPredicateDefinitions) throws IOException;
 
-	ASPCore2Program parse(Map<String, PredicateInterpretation> externalPredicateDefinitions, Path... programSources) throws IOException;
+	InputProgram parse(Map<String, PredicateInterpretation> externalPredicateDefinitions, Path... programSources) throws IOException;
 
-	ASPCore2Program parse(Iterable<Path> programSources, Map<String, PredicateInterpretation> externalPredicateDefinitions) throws IOException;
+	InputProgram parse(Iterable<Path> programSources, Map<String, PredicateInterpretation> externalPredicateDefinitions) throws IOException;
 
 }

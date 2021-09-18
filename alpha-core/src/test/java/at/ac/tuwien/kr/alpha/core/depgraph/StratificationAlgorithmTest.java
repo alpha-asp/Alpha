@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
@@ -16,13 +16,13 @@ import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph.SCComponent;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph.Node;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 
 public class StratificationAlgorithmTest {
 
-	private ProgramParser parser = new ASPCore2ProgramParserImpl();
+	private ProgramParser parser = new ASPCore2ProgramParser();
 	private NormalizeProgramTransformation normalizeTransform = new NormalizeProgramTransformation(false);	
 	
 	private boolean predicateIsBeforePredicateInOrder(Predicate predBefore, Predicate predAfter, List<SCComponent> order) {
@@ -43,7 +43,7 @@ public class StratificationAlgorithmTest {
 
 	@Test
 	public void stratifyOneRuleTest() {
-		ASPCore2Program prog = parser.parse("a :- b.");
+		InputProgram prog = parser.parse("a :- b.");
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
@@ -62,7 +62,7 @@ public class StratificationAlgorithmTest {
 		StringBuilder bld = new StringBuilder();
 		bld.append("b :- a.").append("\n");
 		bld.append("c :- b.").append("\n");
-		ASPCore2Program prog = parser.parse(bld.toString());
+		InputProgram prog = parser.parse(bld.toString());
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
@@ -86,7 +86,7 @@ public class StratificationAlgorithmTest {
 		bld.append("c :- b.").append("\n");
 		bld.append("d :- not c.").append("\n");
 		bld.append("e :- d.").append("\n");
-		ASPCore2Program prog = parser.parse(bld.toString());
+		InputProgram prog = parser.parse(bld.toString());
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
@@ -111,7 +111,7 @@ public class StratificationAlgorithmTest {
 		StringBuilder bld = new StringBuilder();
 		bld.append("ancestor_of(X, Y) :- parent_of(X, Y).");
 		bld.append("ancestor_of(X, Z) :- parent_of(X, Y), ancestor_of(Y, Z).");
-		ASPCore2Program prog = parser.parse(bld.toString());
+		InputProgram prog = parser.parse(bld.toString());
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
@@ -143,7 +143,7 @@ public class StratificationAlgorithmTest {
 		bld.append("n :- m, not i, not j.");
 		bld.append("p :- not m, not n.");
 
-		ASPCore2Program prog = parser.parse(bld.toString());
+		InputProgram prog = parser.parse(bld.toString());
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
@@ -187,7 +187,7 @@ public class StratificationAlgorithmTest {
 		bld.append("n :- m, not i, not j.");
 		bld.append("p :- not m, not n.");
 
-		ASPCore2Program prog = parser.parse(bld.toString());
+		InputProgram prog = parser.parse(bld.toString());
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
@@ -220,7 +220,7 @@ public class StratificationAlgorithmTest {
 		bld.append("c :- b.");
 		bld.append("c :- a.");
 
-		ASPCore2Program prog = parser.parse(bld.toString());
+		InputProgram prog = parser.parse(bld.toString());
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();

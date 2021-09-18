@@ -36,14 +36,14 @@ import java.util.Random;
 import org.junit.jupiter.api.Disabled;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 
 public class ThreeColouringRandomGraphTest {
 	
@@ -98,14 +98,14 @@ public class ThreeColouringRandomGraphTest {
 	}
 
 	private void testThreeColouring(int nVertices, int nEdges, RegressionTestConfig cfg) {
-		ASPCore2Program tmpPrg = new ASPCore2ProgramParserImpl().parse(
+		InputProgram tmpPrg = new ASPCore2ProgramParser().parse(
 				"blue(N) :- v(N), not red(N), not green(N)." +
 				"red(N) :- v(N), not blue(N), not green(N)." +
 				"green(N) :- v(N), not red(N), not blue(N)." +
 				":- e(N1,N2), blue(N1), blue(N2)." +
 				":- e(N1,N2), red(N1), red(N2)." +
 				":- e(N1,N2), green(N1), green(N2).");
-		InputProgram.Builder prgBuilder = InputProgram.builder(tmpPrg);
+		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder(tmpPrg);
 		prgBuilder.addFacts(createVertices(nVertices));
 		prgBuilder.addFacts(createEdges(nVertices, nEdges));
 		InputProgram program = prgBuilder.build();

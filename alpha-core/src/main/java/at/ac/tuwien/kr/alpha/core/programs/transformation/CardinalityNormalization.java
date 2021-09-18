@@ -8,7 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
@@ -21,17 +21,18 @@ import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.AbstractProgramParser;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 /**
  * Copyright (c) 2017-2020, the Alpha Team.
  */
-public class CardinalityNormalization extends ProgramTransformation<ASPCore2Program, ASPCore2Program> {
+public class CardinalityNormalization extends ProgramTransformation<InputProgram, InputProgram> {
 
 	private int aggregateCount;
-	private ASPCore2ProgramParserImpl parser = new ASPCore2ProgramParserImpl();
+	private AbstractProgramParser parser = new ASPCore2ProgramParser();
 	private final boolean useSortingCircuitEncoding;
 
 	public CardinalityNormalization() {
@@ -42,16 +43,16 @@ public class CardinalityNormalization extends ProgramTransformation<ASPCore2Prog
 		this.useSortingCircuitEncoding = useSortingCircuitEncoding;
 	}
 
-	private ASPCore2Program parse(String program) {
+	private InputProgram parse(String program) {
 		return parser.parse(program);
 	}
 
 	@Override
-	public ASPCore2Program apply(ASPCore2Program inputProgram) {
+	public InputProgram apply(InputProgram inputProgram) {
 		if (!this.rewritingNecessary(inputProgram)) {
 			return inputProgram;
 		}
-		InputProgram.Builder programBuilder = InputProgram.builder();
+		InputProgramImpl.Builder programBuilder = InputProgramImpl.builder();
 		programBuilder.addFacts(inputProgram.getFacts());
 		programBuilder.addInlineDirectives(inputProgram.getInlineDirectives());
 		//@formatter:off
@@ -94,7 +95,7 @@ public class CardinalityNormalization extends ProgramTransformation<ASPCore2Prog
 		List<Rule<Head>> rewrittenRules = rewriteAggregates(inputProgram.getRules());
 
 		String usedCardinalityEncoding = useSortingCircuitEncoding ? cardinalitySortingCircuit : cardinalityCountingGrid;
-		ASPCore2Program cardinalityEncoding = PredicateInternalizer.makePredicatesInternal(new ASPCore2ProgramParserImpl().parse(usedCardinalityEncoding));
+		InputProgram cardinalityEncoding = PredicateInternalizer.makePredicatesInternal(new ASPCore2ProgramParser().parse(usedCardinalityEncoding));
 		programBuilder.addRules(rewrittenRules);
 
 		// Add enumeration rule that uses the special EnumerationAtom.
@@ -119,7 +120,7 @@ public class CardinalityNormalization extends ProgramTransformation<ASPCore2Prog
 	 * @param program the program.
 	 * @return true if count aggregates occur, false otherwise.
 	 */
-	private boolean rewritingNecessary(ASPCore2Program program) {
+	private boolean rewritingNecessary(InputProgram program) {
 		for (Rule<Head> rule : program.getRules()) {
 			for (Literal lit : rule.getBody()) {
 				if (lit instanceof AggregateLiteral) {

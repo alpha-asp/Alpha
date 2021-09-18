@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
@@ -40,7 +40,7 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 
 public class UnifierTest extends SubstitutionTest {
 
@@ -77,8 +77,8 @@ public class UnifierTest extends SubstitutionTest {
 	}
 
 	private BasicAtom parseAtom(String atom) {
-		ProgramParser programParser = new ASPCore2ProgramParserImpl();
-		ASPCore2Program program = programParser.parse(atom + ".");
+		ProgramParser programParser = new ASPCore2ProgramParser();
+		InputProgram program = programParser.parse(atom + ".");
 		return (BasicAtom) program.getFacts().get(0);
 	}
 }

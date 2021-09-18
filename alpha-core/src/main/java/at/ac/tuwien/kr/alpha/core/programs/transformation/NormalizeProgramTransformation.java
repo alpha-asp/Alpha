@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
@@ -11,7 +11,7 @@ import at.ac.tuwien.kr.alpha.core.transformation.ArithmeticTermsRewriting;
  * 
  * Copyright (c) 2019-2021, the Alpha Team.
  */
-public class NormalizeProgramTransformation extends ProgramTransformation<ASPCore2Program, NormalProgram> {
+public class NormalizeProgramTransformation extends ProgramTransformation<InputProgram, NormalProgram> {
 
 	private boolean useNormalizationGrid;
 
@@ -20,8 +20,8 @@ public class NormalizeProgramTransformation extends ProgramTransformation<ASPCor
 	}
 
 	@Override
-	public NormalProgram apply(ASPCore2Program inputProgram) {
-		ASPCore2Program tmpPrg;
+	public NormalProgram apply(InputProgram inputProgram) {
+		InputProgram tmpPrg;
 		// Transform choice rules.
 		tmpPrg = new ChoiceHeadToNormal().apply(inputProgram);
 		// Transform cardinality aggregates.

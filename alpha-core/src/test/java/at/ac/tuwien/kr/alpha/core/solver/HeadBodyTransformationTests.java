@@ -38,8 +38,8 @@ import org.junit.jupiter.api.Disabled;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 
 /**
@@ -178,7 +178,7 @@ public class HeadBodyTransformationTests {
 		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramA_TransformationA(16), cfg));
 	}
 
-	private void test(ASPCore2Program program, RegressionTestConfig cfg) {
+	private void test(InputProgram program, RegressionTestConfig cfg) {
 		Solver solver = TestUtils.buildSolverForRegressionTest(program, cfg);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		assertFalse(answerSet.isPresent());
@@ -189,7 +189,7 @@ public class HeadBodyTransformationTests {
 	 * 
 	 * @param n
 	 */
-	private ASPCore2Program constructProgramB(int n) {
+	private InputProgram constructProgramB(int n) {
 		int numberOfRules = 3 * n + 1;
 		List<String> strRules = new ArrayList<>(numberOfRules);
 		strRules.add("x :- not x.");
@@ -203,7 +203,7 @@ public class HeadBodyTransformationTests {
 	 * 
 	 * @param n
 	 */
-	private ASPCore2Program constructProgramB_TransformationB(int n) {
+	private InputProgram constructProgramB_TransformationB(int n) {
 		int numberOfRules = 6 * n + 2;
 		List<String> strRules = new ArrayList<>(numberOfRules);
 		strRules.add("b_notX :- not x.");
@@ -218,7 +218,7 @@ public class HeadBodyTransformationTests {
 	 * 
 	 * @param n
 	 */
-	private ASPCore2Program constructProgramA(int n) {
+	private InputProgram constructProgramA(int n) {
 		int numberOfRules = 4 * n + 1;
 		List<String> strRules = new ArrayList<>(numberOfRules);
 		strRules.add(createXCRule(n));
@@ -232,7 +232,7 @@ public class HeadBodyTransformationTests {
 	 * 
 	 * @param n
 	 */
-	private ASPCore2Program constructProgramA_TransformationA(int n) {
+	private InputProgram constructProgramA_TransformationA(int n) {
 		int numberOfRules = 7 * n + 2;
 		List<String> strRules = new ArrayList<>(numberOfRules);
 		strRules.addAll(createXCRules_TransformationA(n));
@@ -241,10 +241,10 @@ public class HeadBodyTransformationTests {
 		return checkNumberOfRulesAndParse(strRules, numberOfRules);
 	}
 
-	private ASPCore2Program checkNumberOfRulesAndParse(List<String> strRules, int numberOfRules) {
+	private InputProgram checkNumberOfRulesAndParse(List<String> strRules, int numberOfRules) {
 		assertEquals(numberOfRules, strRules.size());
 		String strProgram = strRules.stream().collect(Collectors.joining(System.lineSeparator()));
-		ASPCore2Program parsedProgram = new ASPCore2ProgramParserImpl().parse(strProgram);
+		InputProgram parsedProgram = new ASPCore2ProgramParser().parse(strProgram);
 		assertEquals(numberOfRules, parsedProgram.getRules().size());
 		return parsedProgram;
 	}
