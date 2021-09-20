@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
@@ -61,13 +62,13 @@ import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
  *
  */
 public class AlphaHeuristicTestAssumptions {
-	
+
 	private final ProgramParser parser = new ProgramParserImpl();
-	private final NormalizeProgramTransformation normalizer = new NormalizeProgramTransformation(false);
+	private final NormalizeProgramTransformation normalizer = new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
 	private final Function<String, CompiledProgram> parseAndPreprocess = (str) -> {
 		return InternalProgram.fromNormalProgram(normalizer.apply(parser.parse(str)));
 	};
-	
+
 	private Grounder grounder;
 	private WritableAssignment assignment;
 	private TestableChoiceManager choiceManager;
@@ -128,7 +129,7 @@ public class AlphaHeuristicTestAssumptions {
 				other++;
 			}
 		}
-		
+
 		System.out.println(noGoods.stream().map(atomStore::noGoodToString).collect(Collectors.joining(", ")));
 
 		assertEquals("Unexpected number of bodyNotHead nogoods", 5, bodyNotHead);

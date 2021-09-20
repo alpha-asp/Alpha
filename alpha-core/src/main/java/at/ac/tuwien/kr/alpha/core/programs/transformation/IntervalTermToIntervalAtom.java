@@ -35,6 +35,8 @@ import java.util.Map;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
@@ -69,11 +71,11 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		List<Literal> rewrittenBody = new ArrayList<>();
 
 		for (Literal literal : rule.getBody()) {
-                        Literal rewrittenLiteral = rewriteLiteral(literal, intervalReplacements);
+			Literal rewrittenLiteral = rewriteLiteral(literal, intervalReplacements);
 			if (rewrittenLiteral != null) {
 				rewrittenBody.add(rewrittenLiteral);
-			}	
-               }
+			}
+		}
 		// Note that this cast is safe: NormalHead can only have a BasicAtom, so literalizing and getting back the Atom destroys type information,
 		// but should never yield anything other than a BasicAtom
 		NormalHead rewrittenHead = rule.isConstraint() ? null
@@ -93,20 +95,22 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 
 	/**
 	 * Replaces every IntervalTerm by a new variable and returns a mapping of the replaced VariableTerm -> IntervalTerm.
+	 * 
 	 * @return the rewritten literal or null if the literal should be dropped from the final rule.
 	 */
 	private static Literal rewriteLiteral(Literal lit, Map<VariableTerm, IntervalTerm> intervalReplacement) {
-		// Treat special case: if the literal is of the form "X = A .. B", use X in the interval replacement directly and drop the equality from the final rule.
-		if (lit instanceof ComparisonLiteral && ((ComparisonLiteral)lit).isNormalizedEquality()) {
+		// Treat special case: if the literal is of the form "X = A .. B", use X in the interval replacement directly and drop the equality from the
+		// final rule.
+		if (lit instanceof ComparisonLiteral && ((ComparisonLiteral) lit).isNormalizedEquality()) {
 			ComparisonAtom equalityLiteral = (ComparisonAtom) lit.getAtom();
 			if (equalityLiteral.getTerms().get(0) instanceof VariableTerm && equalityLiteral.getTerms().get(1) instanceof IntervalTerm) {
 				// Literal is of the form "X = A .. B".
-				intervalReplacement.put((VariableTerm)equalityLiteral.getTerms().get(0), (IntervalTerm)equalityLiteral.getTerms().get(1));
+				intervalReplacement.put((VariableTerm) equalityLiteral.getTerms().get(0), (IntervalTerm) equalityLiteral.getTerms().get(1));
 				return null;
 			}
 			if (equalityLiteral.getTerms().get(1) instanceof VariableTerm && equalityLiteral.getTerms().get(0) instanceof IntervalTerm) {
 				// Literal is of the form "A .. B = X".
-				intervalReplacement.put((VariableTerm)equalityLiteral.getTerms().get(1), (IntervalTerm)equalityLiteral.getTerms().get(0));
+				intervalReplacement.put((VariableTerm) equalityLiteral.getTerms().get(1), (IntervalTerm) equalityLiteral.getTerms().get(0));
 				return null;
 			}
 		}

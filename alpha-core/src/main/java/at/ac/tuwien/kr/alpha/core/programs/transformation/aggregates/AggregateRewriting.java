@@ -1,32 +1,36 @@
-package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
+package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.AbstractAggregateEncoder;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.CountEncoder;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.MinMaxEncoder;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.SumEncoder;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
+import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.literals.Literals;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.AbstractAggregateEncoder;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.CountEncoder;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.MinMaxEncoder;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.SumEncoder;
+import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 /**
  * Rewrites {@link AggregateLiteral}s in programs to semantically equivalent, aggregate-free sub-programs.
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
-public class AggregateRewriting extends ProgramTransformation<InputProgram, InputProgram> {
+public class AggregateRewriting extends ProgramTransformation<ASPCore2Program, ASPCore2Program> {
 
 	private final AbstractAggregateEncoder countEqualsEncoder;
 	private final AbstractAggregateEncoder countLessOrEqualEncoder;
@@ -67,14 +71,14 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	 * deriving the result literal is added that is semantically equivalent to the replaced aggregate literal.
 	 */
 	@Override
-	public InputProgram apply(InputProgram inputProgram) {
+	public ASPCore2Program apply(ASPCore2Program inputProgram) {
 		AggregateRewritingContext ctx = new AggregateRewritingContext();
-		List<BasicRule> outputRules = new ArrayList<>();
-		for (BasicRule inputRule : inputProgram.getRules()) {
+		List<Rule<Head>> outputRules = new ArrayList<>();
+		for (Rule<Head> inputRule : inputProgram.getRules()) {
 			// Split literals with two operators.
-			for (BasicRule splitRule : AggregateLiteralSplitting.split(inputRule)) {
+			for (Rule<Head> splitRule : AggregateLiteralSplitting.split(inputRule)) {
 				// Normalize operators on aggregate literals after splitting.
-				BasicRule operatorNormalizedRule = AggregateOperatorNormalization.normalize(splitRule);
+				Rule<Head> operatorNormalizedRule = AggregateOperatorNormalization.normalize(splitRule);
 				boolean hasAggregate = ctx.registerRule(operatorNormalizedRule);
 				// Only keep rules without aggregates. The ones with aggregates are registered in the context and taken care of later.
 				if (!hasAggregate) {
@@ -99,9 +103,9 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	private AbstractAggregateEncoder getEncoderForAggregateFunction(AggregateFunctionSymbol function, ComparisonOperator operator) {
 		switch (function) {
 			case COUNT:
-				if (operator == ComparisonOperator.EQ) {
+				if (operator.equals(ComparisonOperators.EQ)) {
 					return countEqualsEncoder;
-				} else if (operator == ComparisonOperator.LE) {
+				} else if (operator.equals(ComparisonOperators.LE)) {
 					return countLessOrEqualEncoder;
 				} else {
 					throw new UnsupportedOperationException("No fitting encoder for aggregate function " + function + "and operator " + operator + "!");
@@ -111,9 +115,9 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 			case MAX:
 				return maxEncoder;
 			case SUM:
-				if (operator == ComparisonOperator.EQ) {
+				if (operator.equals(ComparisonOperators.EQ)) {
 					return sumEqualsEncoder;
-				} else if (operator == ComparisonOperator.LE) {
+				} else if (operator.equals(ComparisonOperators.LE)) {
 					return sumLessOrEqualEncoder;
 				} else {
 					throw new UnsupportedOperationException("No fitting encoder for aggregate function " + function + "and operator " + operator + "!");
@@ -130,14 +134,14 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	 * @param ctx the {@link AggregateRewritingContext} containing information about all aggregates.
 	 * @return for each rule, its rewritten version where aggregates are replaced with output atoms of the encoding.
 	 */
-	private static List<BasicRule> rewriteRulesWithAggregates(AggregateRewritingContext ctx) {
-		List<BasicRule> rewrittenRules = new ArrayList<>();
-		for (BasicRule rule : ctx.getRulesWithAggregates()) {
+	private static List<Rule<Head>> rewriteRulesWithAggregates(AggregateRewritingContext ctx) {
+		List<Rule<Head>> rewrittenRules = new ArrayList<>();
+		for (Rule<Head> rule : ctx.getRulesWithAggregates()) {
 			List<Literal> rewrittenBody = new ArrayList<>();
 			for (Literal lit : rule.getBody()) {
 				if (lit instanceof AggregateLiteral) {
 					AggregateInfo aggregateInfo = ctx.getAggregateInfo((AggregateLiteral) lit);
-					rewrittenBody.add(new BasicLiteral(aggregateInfo.getOutputAtom(), !lit.isNegated()));
+					rewrittenBody.add(Literals.fromAtom(aggregateInfo.getOutputAtom(), !lit.isNegated()));
 				} else {
 					rewrittenBody.add(lit);
 				}

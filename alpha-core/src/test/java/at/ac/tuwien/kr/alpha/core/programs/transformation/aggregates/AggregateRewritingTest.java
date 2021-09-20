@@ -1,23 +1,47 @@
-package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
+package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
+import java.util.function.Function;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import at.ac.tuwien.kr.alpha.api.Alpha;
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
+import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
 
 public class AggregateRewritingTest {
+
+	private static final ProgramParser PARSER = new ProgramParserImpl();
+	private static final Function<String, List<AnswerSet>> NORMALIZE_AND_SOLVE = (str) -> {
+		SystemConfig cfg = new SystemConfig();
+		ASPCore2Program prog = PARSER.parse(str);
+		NormalProgram normalized = new NormalizeProgramTransformation(cfg.getAggregateRewritingConfig()).apply(prog);
+		CompiledProgram compiled = InternalProgram.fromNormalProgram(normalized);
+		AtomStore atomStore = new AtomStoreImpl();
+		Grounder grounder = GrounderFactory.getInstance("naive", compiled, atomStore, cfg.isDebugInternalChecks());
+		Solver solver = SolverFactory.getInstance(cfg, atomStore, grounder);
+		return solver.collectList();
+	};
 
 	//@formatter:off
 	// Smoke-test case for "X <= #count{...}" aggregate
@@ -77,198 +101,152 @@ public class AggregateRewritingTest {
 
 	@Test
 	public void countLeSortingGridSimple() {
-		Alpha alpha = new Alpha();
-		alpha.getConfig().setEvaluateStratifiedPart(false);
-		InputProgram input = alpha.readProgramString(CNT_LE1_ASP);
-		NormalProgram normalized = alpha.normalizeProgram(input);
-		// System.out.println(normalized);
-		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
+		List<AnswerSet> answerSets = NORMALIZE_AND_SOLVE.apply(CNT_LE1_ASP);
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
-		Predicate thing = Predicate.getInstance("thing", 1);
-		Predicate candidate = Predicate.getInstance("candidate", 1);
-		Predicate cntLe = Predicate.getInstance("cnt_le", 1);
+		Predicate thing = Predicates.getPredicate("thing", 1);
+		Predicate candidate = Predicates.getPredicate("candidate", 1);
+		Predicate cntLe = Predicates.getPredicate("cnt_le", 1);
 
 		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
-		assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(75))));
-		assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(76))));
+		assertTrue(answerSet.getPredicateInstances(thing).contains(Atoms.newBasicAtom(thing, Terms.newConstant(75))));
+		assertTrue(answerSet.getPredicateInstances(thing).contains(Atoms.newBasicAtom(thing, Terms.newConstant(76))));
 
-		assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(2))));
-		assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(3))));
-		assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(4))));
+		assertTrue(answerSet.getPredicateInstances(candidate).contains(Atoms.newBasicAtom(candidate, Terms.newConstant(2))));
+		assertTrue(answerSet.getPredicateInstances(candidate).contains(Atoms.newBasicAtom(candidate, Terms.newConstant(3))));
+		assertTrue(answerSet.getPredicateInstances(candidate).contains(Atoms.newBasicAtom(candidate, Terms.newConstant(4))));
 
 		assertTrue(answerSet.getPredicates().contains(cntLe));
-		assertTrue(answerSet.getPredicateInstances(cntLe).contains(new BasicAtom(cntLe, ConstantTerm.getInstance(2))));
+		assertTrue(answerSet.getPredicateInstances(cntLe).contains(Atoms.newBasicAtom(cntLe, Terms.newConstant(2))));
 	}
 
 	@Test
 	public void countEqSimple() {
-		Alpha alpha = new Alpha();
-		alpha.getConfig().setEvaluateStratifiedPart(false);
-		InputProgram input = alpha.readProgramString(CNT_EQ1_ASP);
-		NormalProgram normalized = alpha.normalizeProgram(input);
-		// System.out.println(normalized);
-		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
+		List<AnswerSet> answerSets = NORMALIZE_AND_SOLVE.apply(CNT_EQ1_ASP);
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
-		Predicate thing = Predicate.getInstance("thing", 1);
-		Predicate cntThings = Predicate.getInstance("cnt_things", 1);
+		Predicate thing = Predicates.getPredicate("thing", 1);
+		Predicate cntThings = Predicates.getPredicate("cnt_things", 1);
 
 		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
-		assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(4))));
-		assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(5))));
-		assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(6))));
+		assertTrue(answerSet.getPredicateInstances(thing).contains(Atoms.newBasicAtom(thing, Terms.newConstant(4))));
+		assertTrue(answerSet.getPredicateInstances(thing).contains(Atoms.newBasicAtom(thing, Terms.newConstant(5))));
+		assertTrue(answerSet.getPredicateInstances(thing).contains(Atoms.newBasicAtom(thing, Terms.newConstant(6))));
 
 		assertTrue(answerSet.getPredicates().contains(cntThings));
-		assertTrue(answerSet.getPredicateInstances(cntThings).contains(new BasicAtom(cntThings, ConstantTerm.getInstance(3))));
+		assertTrue(answerSet.getPredicateInstances(cntThings).contains(Atoms.newBasicAtom(cntThings, Terms.newConstant(3))));
 	}
 
 	@Test
 	public void countLeCountingGridSimple() {
-		Alpha alpha = new Alpha();
-		alpha.getConfig().setEvaluateStratifiedPart(false);
-		alpha.getConfig().getAggregateRewritingConfig().setUseSortingGridEncoding(false);
-		InputProgram input = alpha.readProgramString(CNT_LE1_ASP);
-		NormalProgram normalized = alpha.normalizeProgram(input);
-		// System.out.println(normalized);
-		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
+		List<AnswerSet> answerSets = NORMALIZE_AND_SOLVE.apply(CNT_LE1_ASP);
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
-		Predicate thing = Predicate.getInstance("thing", 1);
-		Predicate candidate = Predicate.getInstance("candidate", 1);
-		Predicate cntLe = Predicate.getInstance("cnt_le", 1);
+		Predicate thing = Predicates.getPredicate("thing", 1);
+		Predicate candidate = Predicates.getPredicate("candidate", 1);
+		Predicate cntLe = Predicates.getPredicate("cnt_le", 1);
 
 		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
-		assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(75))));
-		assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(76))));
+		assertTrue(answerSet.getPredicateInstances(thing).contains(Atoms.newBasicAtom(thing, Terms.newConstant(75))));
+		assertTrue(answerSet.getPredicateInstances(thing).contains(Atoms.newBasicAtom(thing, Terms.newConstant(76))));
 
-		assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(2))));
-		assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(3))));
-		assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(4))));
+		assertTrue(answerSet.getPredicateInstances(candidate).contains(Atoms.newBasicAtom(candidate, Terms.newConstant(2))));
+		assertTrue(answerSet.getPredicateInstances(candidate).contains(Atoms.newBasicAtom(candidate, Terms.newConstant(3))));
+		assertTrue(answerSet.getPredicateInstances(candidate).contains(Atoms.newBasicAtom(candidate, Terms.newConstant(4))));
 
 		assertTrue(answerSet.getPredicates().contains(cntLe));
-		assertTrue(answerSet.getPredicateInstances(cntLe).contains(new BasicAtom(cntLe, ConstantTerm.getInstance(2))));
+		assertTrue(answerSet.getPredicateInstances(cntLe).contains(Atoms.newBasicAtom(cntLe, Terms.newConstant(2))));
 	}
 
 	@Test
 	public void countEqGlobalVars() {
-		Alpha alpha = new Alpha();
-		alpha.getConfig().setEvaluateStratifiedPart(false);
-		InputProgram input = alpha.readProgramString(VERTEX_DEGREE_ASP);
-		NormalProgram normalized = alpha.normalizeProgram(input);
-		// System.out.println(normalized);
-		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
+		List<AnswerSet> answerSets = NORMALIZE_AND_SOLVE.apply(VERTEX_DEGREE_ASP);
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
-		Predicate vertexDegree = Predicate.getInstance("graph_vertex_degree", 3);
+		Predicate vertexDegree = Predicates.getPredicate("graph_vertex_degree", 3);
 
 		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
 		assertTrue(answerSet.getPredicates().contains(vertexDegree));
 		assertTrue(answerSet.getPredicateInstances(vertexDegree)
-				.contains(new BasicAtom(vertexDegree, ConstantTerm.getSymbolicInstance("g1"), ConstantTerm.getInstance(1), ConstantTerm.getInstance(2))));
+				.contains(Atoms.newBasicAtom(vertexDegree, Terms.newSymbolicConstant("g1"), Terms.newConstant(1), Terms.newConstant(2))));
 		assertTrue(answerSet.getPredicateInstances(vertexDegree)
-				.contains(new BasicAtom(vertexDegree, ConstantTerm.getSymbolicInstance("g1"), ConstantTerm.getInstance(2), ConstantTerm.getInstance(2))));
+				.contains(Atoms.newBasicAtom(vertexDegree, Terms.newSymbolicConstant("g1"), Terms.newConstant(2), Terms.newConstant(2))));
 		assertTrue(answerSet.getPredicateInstances(vertexDegree)
-				.contains(new BasicAtom(vertexDegree, ConstantTerm.getSymbolicInstance("g1"), ConstantTerm.getInstance(3), ConstantTerm.getInstance(2))));
+				.contains(Atoms.newBasicAtom(vertexDegree, Terms.newSymbolicConstant("g1"), Terms.newConstant(3), Terms.newConstant(2))));
 	}
 
 	@Test
 	// Test "count eq" and "max eq" together with global vars
 	public void graphVerticesOfMaxDegree() {
-		Alpha alpha = new Alpha();
-		alpha.getConfig().setEvaluateStratifiedPart(false);
-		InputProgram input = alpha.readProgramString(NUM_MAX_DEGREE_VERTICES_ASP);
-		NormalProgram normalized = alpha.normalizeProgram(input);
-		// System.out.println(normalized);
-		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
+		List<AnswerSet> answerSets = NORMALIZE_AND_SOLVE.apply(NUM_MAX_DEGREE_VERTICES_ASP);
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
-		Predicate maxDegreeVertices = Predicate.getInstance("graph_max_degree_vertices", 3);
+		Predicate maxDegreeVertices = Predicates.getPredicate("graph_max_degree_vertices", 3);
 
 		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
 		assertTrue(answerSet.getPredicates().contains(maxDegreeVertices));
 		assertTrue(answerSet.getPredicateInstances(maxDegreeVertices)
-				.contains(new BasicAtom(maxDegreeVertices, ConstantTerm.getSymbolicInstance("g1"), ConstantTerm.getInstance(2), ConstantTerm.getInstance(3))));
+				.contains(Atoms.newBasicAtom(maxDegreeVertices, Terms.newSymbolicConstant("g1"), Terms.newConstant(2), Terms.newConstant(3))));
 	}
 
 	@Test
 	public void greaterMin() {
-		Alpha alpha = new Alpha();
-		alpha.getConfig().setEvaluateStratifiedPart(false);
-		InputProgram input = alpha.readProgramString(MIN_GT1_ASP);
-		NormalProgram normalized = alpha.normalizeProgram(input);
-		// System.out.println(normalized);
-		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
+		List<AnswerSet> answerSets = NORMALIZE_AND_SOLVE.apply(MIN_GT1_ASP);
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
-		Predicate greaterMin = Predicate.getInstance("greater_min_acceptable", 1);
+		Predicate greaterMin = Predicates.getPredicate("greater_min_acceptable", 1);
 
 		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
 		assertTrue(answerSet.getPredicates().contains(greaterMin));
-		assertTrue(answerSet.getPredicateInstances(greaterMin).contains(new BasicAtom(greaterMin, ConstantTerm.getInstance(7))));
-		assertTrue(answerSet.getPredicateInstances(greaterMin).contains(new BasicAtom(greaterMin, ConstantTerm.getInstance(13))));
+		assertTrue(answerSet.getPredicateInstances(greaterMin).contains(Atoms.newBasicAtom(greaterMin, Terms.newConstant(7))));
+		assertTrue(answerSet.getPredicateInstances(greaterMin).contains(Atoms.newBasicAtom(greaterMin, Terms.newConstant(13))));
 	}
 
 	@Test
 	public void sumEquals1() {
-		Alpha alpha = new Alpha();
-		alpha.getConfig().setEvaluateStratifiedPart(false);
-		InputProgram input = alpha.readProgramString(SUM_EQ1_ASP);
-		NormalProgram normalized = alpha.normalizeProgram(input);
-		// System.out.println(normalized);
-		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
+		List<AnswerSet> answerSets = NORMALIZE_AND_SOLVE.apply(SUM_EQ1_ASP);
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
-		Predicate sumThings = Predicate.getInstance("sum_things", 1);
+		Predicate sumThings = Predicates.getPredicate("sum_things", 1);
 
 		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
 		assertTrue(answerSet.getPredicates().contains(sumThings));
 		assertEquals(1, answerSet.getPredicateInstances(sumThings).size());
-		assertTrue(answerSet.getPredicateInstances(sumThings).contains(new BasicAtom(sumThings, ConstantTerm.getInstance(12))));
+		assertTrue(answerSet.getPredicateInstances(sumThings).contains(Atoms.newBasicAtom(sumThings, Terms.newConstant(12))));
 	}
 
 	@Test
 	public void sumLessOrEqual1() {
-		Alpha alpha = new Alpha();
-		alpha.getConfig().setEvaluateStratifiedPart(false);
-		InputProgram input = alpha.readProgramString(SUM_LE1_ASP);
-		NormalProgram normalized = alpha.normalizeProgram(input);
-		// System.out.println(normalized);
-		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
+		List<AnswerSet> answerSets = NORMALIZE_AND_SOLVE.apply(SUM_LE1_ASP);
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
-		Predicate boundLe = Predicate.getInstance("bound_le_sum", 1);
+		Predicate boundLe = Predicates.getPredicate("bound_le_sum", 1);
 
 		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
 		assertTrue(answerSet.getPredicates().contains(boundLe));
-		assertTrue(answerSet.getPredicateInstances(boundLe).contains(new BasicAtom(boundLe, ConstantTerm.getInstance(11))));
+		assertTrue(answerSet.getPredicateInstances(boundLe).contains(Atoms.newBasicAtom(boundLe, Terms.newConstant(11))));
 	}
 
 	@Test
 	@Disabled("Open issue, as dependency analysis includes cyclic output-dependency, which it should not.")
 	public void setComplexEqualityWithGlobals() {
-		Alpha alpha = new Alpha();
-		alpha.getConfig().setEvaluateStratifiedPart(false);
-		InputProgram input = alpha.readProgramString(COMPLEX_EQUALITY_WITH_GLOBALS);
-		NormalProgram normalized = alpha.normalizeProgram(input);
-		// System.out.println(normalized);
-		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
+		List<AnswerSet> answerSets = NORMALIZE_AND_SOLVE.apply(COMPLEX_EQUALITY_WITH_GLOBALS);
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
-		Predicate q = Predicate.getInstance("q", 0);
+		Predicate q = Predicates.getPredicate("q", 0);
 
 		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
 		assertTrue(answerSet.getPredicates().contains(q));
-		assertTrue(answerSet.getPredicateInstances(q).contains(new BasicAtom(q)));
+		assertTrue(answerSet.getPredicateInstances(q).contains(Atoms.newBasicAtom(q)));
 	}
 
 }

@@ -57,7 +57,7 @@ import at.ac.tuwien.kr.alpha.core.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.core.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.core.util.AnswerSetsParser;
+import at.ac.tuwien.kr.alpha.core.test.util.AnswerSetsParser;
 
 public class SolverTests {
 	

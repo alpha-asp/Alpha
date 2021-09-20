@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
@@ -25,7 +26,7 @@ import at.ac.tuwien.kr.alpha.test.util.DependencyGraphUtils;
 public class DependencyGraphImplTest {
 
 	private ProgramParser parser = new ProgramParserImpl();
-	private NormalizeProgramTransformation normalizeTransform = new NormalizeProgramTransformation(false);
+	private NormalizeProgramTransformation normalizeTransform = new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
 	
 	// Currently not used anywhere, but keep as it might come in handy
 	@SuppressWarnings("unused")

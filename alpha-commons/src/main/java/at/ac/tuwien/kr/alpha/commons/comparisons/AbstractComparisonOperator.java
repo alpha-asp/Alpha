@@ -1,5 +1,7 @@
 package at.ac.tuwien.kr.alpha.commons.comparisons;
 
+import java.util.Objects;
+
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
@@ -33,5 +35,25 @@ abstract class AbstractComparisonOperator implements ComparisonOperator {
 
 	@Override
 	public abstract boolean compare(Term t1, Term t2);
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(symbol);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		AbstractComparisonOperator other = (AbstractComparisonOperator) obj;
+		return Objects.equals(this.symbol, other.symbol);
+	}
 
 }

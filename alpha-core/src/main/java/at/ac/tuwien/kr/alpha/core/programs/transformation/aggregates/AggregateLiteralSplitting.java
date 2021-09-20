@@ -1,15 +1,20 @@
-package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
-
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 /**
  * Splits aggregate literals with both "lower" and "upper" bound operators into literals with only one operator each.
@@ -34,7 +39,7 @@ public final class AggregateLiteralSplitting {
 		throw new UnsupportedOperationException("Utility class - cannot instantiate!");
 	}
 
-	public static List<BasicRule> split(BasicRule sourceRule) {
+	public static List<Rule<Head>> split(Rule<Head> sourceRule) {
 		// Check if body contains aggregates that need to be split.
 		for (Literal lit : sourceRule.getBody()) {
 			if (lit instanceof AggregateLiteral && shouldRewrite((AggregateLiteral) lit)) {
@@ -45,7 +50,7 @@ public final class AggregateLiteralSplitting {
 		return Collections.singletonList(sourceRule);
 	}
 
-	private static List<BasicRule> splitAggregatesInRule(BasicRule sourceRule) {
+	private static List<Rule<Head>> splitAggregatesInRule(Rule<Head> sourceRule) {
 		// Rule contains some aggregates that need splitting.
 		// Aggregates may require splitting in two literals, or in two rules.
 		List<Literal> commonBodyLiterals = new ArrayList<>();
@@ -64,7 +69,7 @@ public final class AggregateLiteralSplitting {
 		List<Literal> commonBody = new ArrayList<>(commonBodyLiterals);
 		commonBody.addAll(twoLiteralsSplitAggregates);
 		List<List<Literal>> rewrittenBodies = new ArrayList<>();
-		rewrittenBodies.add(commonBody);	// Initialize list of rules with the common body.
+		rewrittenBodies.add(commonBody); // Initialize list of rules with the common body.
 		// For n twoRulesSplitAggregates we need 2^n rules, so
 		// for each of the n pairs in twoRulesSplitAggregates we duplicate the list of rewritten bodies.
 		for (ImmutablePair<Literal, Literal> ruleSplitAggregate : twoRulesSplitAggregates) {
@@ -79,21 +84,22 @@ public final class AggregateLiteralSplitting {
 			}
 		}
 		// Third, turn computed bodies into rules again.
-		List<BasicRule> rewrittenRules = new ArrayList<>();
+		List<Rule<Head>> rewrittenRules = new ArrayList<>();
 		for (List<Literal> rewrittenBody : rewrittenBodies) {
 			rewrittenRules.add(new BasicRule(sourceRule.getHead(), rewrittenBody));
 		}
 		return rewrittenRules;
 	}
 
-	private static void splitCombinedAggregateLiteral(Literal literal, List<Literal> twoLiteralsSplitAggregates, List<ImmutablePair<Literal, Literal>> twoRulesSplitAggregates) {
+	private static void splitCombinedAggregateLiteral(Literal literal, List<Literal> twoLiteralsSplitAggregates,
+			List<ImmutablePair<Literal, Literal>> twoRulesSplitAggregates) {
 		AggregateLiteral aggLit = (AggregateLiteral) literal;
 		ImmutablePair<AggregateAtom, AggregateAtom> splitAggregate = splitCombinedAggregateAtom(aggLit.getAtom());
 		if (literal.isNegated()) {
 			// Negated aggregate require splitting in two rules.
 			twoRulesSplitAggregates.add(new ImmutablePair<>(
-				splitAggregate.left.toLiteral(false),
-				splitAggregate.right.toLiteral(false)));
+					splitAggregate.left.toLiteral(false),
+					splitAggregate.right.toLiteral(false)));
 		} else {
 			// Positive aggregate requires two literals in the body.
 			twoLiteralsSplitAggregates.add(splitAggregate.left.toLiteral(true));
@@ -106,30 +112,28 @@ public final class AggregateLiteralSplitting {
 	}
 
 	private static ImmutablePair<AggregateAtom, AggregateAtom> splitCombinedAggregateAtom(AggregateAtom atom) {
-		AggregateAtom leftHandAtom = new AggregateAtom(atom.getLowerBoundOperator(), atom.getLowerBoundTerm(), atom.getAggregatefunction(),
+		AggregateAtom leftHandAtom = Atoms.newAggregateAtom(atom.getLowerBoundOperator(), atom.getLowerBoundTerm(), atom.getAggregateFunction(),
 				atom.getAggregateElements());
-		AggregateAtom rightHandAtom = new AggregateAtom(switchOperands(atom.getUpperBoundOperator()), atom.getUpperBoundTerm(),
-				atom.getAggregatefunction(), atom.getAggregateElements());
+		AggregateAtom rightHandAtom = Atoms.newAggregateAtom(switchOperands(atom.getUpperBoundOperator()), atom.getUpperBoundTerm(),
+				atom.getAggregateFunction(), atom.getAggregateElements());
 		return new ImmutablePair<>(leftHandAtom, rightHandAtom);
 	}
 
 	private static ComparisonOperator switchOperands(ComparisonOperator op) {
-		switch (op) {
-			case EQ:
-				return op;
-			case NE:
-				return op;
-			case LT:
-				return ComparisonOperator.GT;
-			case LE:
-				return ComparisonOperator.GE;
-			case GT:
-				return ComparisonOperator.LT;
-			case GE:
-				return ComparisonOperator.LE;
-			default:
-				throw new IllegalArgumentException("Unsupported ComparisonOperator " + op + "!");
+		if (op.equals(ComparisonOperators.EQ)) {
+			return op;
+		} else if (op.equals(ComparisonOperators.NE)) {
+			return op;
+		} else if (op.equals(ComparisonOperators.LT)) {
+			return ComparisonOperators.GT;
+		} else if (op.equals(ComparisonOperators.LE)) {
+			return ComparisonOperators.GE;
+		} else if (op.equals(ComparisonOperators.GT)) {
+			return ComparisonOperators.LT;
+		} else if (op.equals(ComparisonOperators.GE)) {
+			return ComparisonOperators.LE;
+		} else {
+			throw new IllegalArgumentException("Unsupported ComparisonOperator " + op + "!");
 		}
 	}
-
 }

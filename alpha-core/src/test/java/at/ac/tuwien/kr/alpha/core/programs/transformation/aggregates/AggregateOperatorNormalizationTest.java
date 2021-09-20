@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
+package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -6,16 +6,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm;
-import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm.ArithmeticOperator;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.test.util.RuleParser;
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.terms.ArithmeticOperator;
+import at.ac.tuwien.kr.alpha.api.terms.ArithmeticTerm;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.core.test.util.RuleParser;
 
 public class AggregateOperatorNormalizationTest {
 
@@ -40,69 +42,69 @@ public class AggregateOperatorNormalizationTest {
 
 	@Test
 	public void gtPositive() {
-		BasicRule inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_GT_POS_ASP);
-		BasicRule rewritten = AggregateOperatorNormalization.normalize(inputRule);
-		BasicRule expectedRewrittenRule = RuleParser.parse("bla :- dom(X), not X <= #count{N : thing(N)}.");
+		Rule<Head> inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_GT_POS_ASP);
+		Rule<Head> rewritten = AggregateOperatorNormalization.normalize(inputRule);
+		Rule<Head> expectedRewrittenRule = RuleParser.parse("bla :- dom(X), not X <= #count{N : thing(N)}.");
 		assertEquals(expectedRewrittenRule, rewritten);
 	}
 
 	@Test
 	public void ltPositive() {
-		BasicRule inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_LT_POS_ASP);
-		BasicRule rewritten = AggregateOperatorNormalization.normalize(inputRule);
-		assertOperatorNormalized(rewritten, ComparisonOperator.LE, true);
+		Rule<Head> inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_LT_POS_ASP);
+		Rule<Head> rewritten = AggregateOperatorNormalization.normalize(inputRule);
+		assertOperatorNormalized(rewritten, ComparisonOperators.LE, true);
 		assertAggregateBoundIncremented(inputRule, rewritten);
 	}
 
 	@Test
 	public void nePositive() {
-		BasicRule inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_NE_POS_ASP);
-		BasicRule rewritten = AggregateOperatorNormalization.normalize(inputRule);
-		BasicRule expectedRewrittenRule = RuleParser.parse("bla :- dom(X), not X = #count{N : thing(N)}.");
+		Rule<Head> inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_NE_POS_ASP);
+		Rule<Head> rewritten = AggregateOperatorNormalization.normalize(inputRule);
+		Rule<Head> expectedRewrittenRule = RuleParser.parse("bla :- dom(X), not X = #count{N : thing(N)}.");
 		assertEquals(expectedRewrittenRule, rewritten);
 	}
 
 	@Test
 	public void gePositive() {
-		BasicRule inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_GE_POS_ASP);
-		BasicRule rewritten = AggregateOperatorNormalization.normalize(inputRule);
-		assertOperatorNormalized(rewritten, ComparisonOperator.LE, false);
+		Rule<Head> inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_GE_POS_ASP);
+		Rule<Head> rewritten = AggregateOperatorNormalization.normalize(inputRule);
+		assertOperatorNormalized(rewritten, ComparisonOperators.LE, false);
 		assertAggregateBoundIncremented(inputRule, rewritten);
 	}
 
 	@Test
 	public void ltNegative() {
-		BasicRule inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_LT_NEG_ASP);
-		BasicRule rewritten = AggregateOperatorNormalization.normalize(inputRule);
-		assertOperatorNormalized(rewritten, ComparisonOperator.LE, false);
+		Rule<Head> inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_LT_NEG_ASP);
+		Rule<Head> rewritten = AggregateOperatorNormalization.normalize(inputRule);
+		assertOperatorNormalized(rewritten, ComparisonOperators.LE, false);
 		assertAggregateBoundIncremented(inputRule, rewritten);
 	}
 
 	@Test
 	public void neNegative() {
-		BasicRule inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_NE_NEG_ASP);
-		BasicRule rewritten = AggregateOperatorNormalization.normalize(inputRule);
-		BasicRule expectedRewrittenRule = RuleParser.parse("bla :- dom(X), X = #count{N : thing(N)}.");
+		Rule<Head> inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_NE_NEG_ASP);
+		Rule<Head> rewritten = AggregateOperatorNormalization.normalize(inputRule);
+		Rule<Head> expectedRewrittenRule = RuleParser.parse("bla :- dom(X), X = #count{N : thing(N)}.");
 		assertEquals(expectedRewrittenRule, rewritten);
 	}
 
 	@Test
 	public void gtNegative() {
-		BasicRule inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_GT_NEG_ASP);
-		BasicRule rewritten = AggregateOperatorNormalization.normalize(inputRule);
-		BasicRule expectedRewrittenRule = RuleParser.parse("bla :- dom(X), X <= #count{N : thing(N)}.");
+		Rule<Head> inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_GT_NEG_ASP);
+		Rule<Head> rewritten = AggregateOperatorNormalization.normalize(inputRule);
+		Rule<Head> expectedRewrittenRule = RuleParser.parse("bla :- dom(X), X <= #count{N : thing(N)}.");
 		assertEquals(expectedRewrittenRule, rewritten);
 	}
 
 	@Test
 	public void geNegative() {
-		BasicRule inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_GE_NEG_ASP);
-		BasicRule rewritten = AggregateOperatorNormalization.normalize(inputRule);
-		assertOperatorNormalized(rewritten, ComparisonOperator.LE, true);
+		Rule<Head> inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_GE_NEG_ASP);
+		Rule<Head> rewritten = AggregateOperatorNormalization.normalize(inputRule);
+		assertOperatorNormalized(rewritten, ComparisonOperators.LE, true);
 		assertAggregateBoundIncremented(inputRule, rewritten);
 	}
 
-	private static void assertOperatorNormalized(BasicRule rewrittenRule, ComparisonOperator expectedRewrittenOperator,
+	private static void assertOperatorNormalized(Rule<Head> rewrittenRule, ComparisonOperator expectedRewrittenOperator,
 			boolean expectedRewrittenLiteralPositive) {
 		AggregateLiteral rewrittenAggregate = null;
 		for (Literal lit : rewrittenRule.getBody()) {
@@ -115,7 +117,7 @@ public class AggregateOperatorNormalizationTest {
 		assertTrue(expectedRewrittenLiteralPositive == !rewrittenAggregate.isNegated());
 	}
 
-	private static void assertAggregateBoundIncremented(BasicRule sourceRule, BasicRule rewrittenRule) {
+	private static void assertAggregateBoundIncremented(Rule<Head> sourceRule, Rule<Head> rewrittenRule) {
 		AggregateLiteral sourceAggregate = null;
 		for (Literal lit : sourceRule.getBody()) {
 			if (lit instanceof AggregateLiteral) {
@@ -136,9 +138,9 @@ public class AggregateOperatorNormalizationTest {
 		Term comparisonRightHandTerm = addedComparisonLiteral.getAtom().getTerms().get(1);
 		assertTrue(comparisonRightHandTerm instanceof ArithmeticTerm);
 		ArithmeticTerm incrementTerm = (ArithmeticTerm) comparisonRightHandTerm;
-		assertEquals(ArithmeticOperator.PLUS, incrementTerm.getArithmeticOperator());
-		assertEquals(ConstantTerm.getInstance(1), incrementTerm.getRight());
-		assertEquals(sourceAggregate.getAtom().getLowerBoundTerm(), incrementTerm.getLeft());
+		assertEquals(ArithmeticOperator.PLUS, incrementTerm.getOperator());
+		assertEquals(Terms.newConstant(1), incrementTerm.getRightOperand());
+		assertEquals(sourceAggregate.getAtom().getLowerBoundTerm(), incrementTerm.getLeftOperand());
 	}
 
 }

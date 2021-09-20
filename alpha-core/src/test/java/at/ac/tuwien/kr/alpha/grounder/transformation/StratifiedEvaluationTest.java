@@ -70,7 +70,7 @@ import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 public class StratifiedEvaluationTest {
 
 	private final ProgramParser parser = new ProgramParserImpl();
-	private final NormalizeProgramTransformation normalizer = new NormalizeProgramTransformation(false);
+	private final NormalizeProgramTransformation normalizer = new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
 	private final StratifiedEvaluation evaluator = new StratifiedEvaluation();
 	private final Function<String, CompiledProgram> parseAndEvaluate = (str) -> {
 		return evaluator.apply(AnalyzedProgram.analyzeNormalProgram(normalizer.apply(parser.parse(str))));

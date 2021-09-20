@@ -27,12 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.commons.util;
 
-import org.stringtemplate.v4.ST;
-import org.stringtemplate.v4.STGroup;
-import org.stringtemplate.v4.STGroupFile;
-
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -45,6 +40,10 @@ import java.util.StringJoiner;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.stringtemplate.v4.ST;
+import org.stringtemplate.v4.STGroup;
+import org.stringtemplate.v4.STGroupFile;
 
 // TODO shouldn't be public API
 public class Util {
@@ -115,7 +114,7 @@ public class Util {
 		});
 	}
 
-	public static ReadableByteChannel streamToChannel(Stream<String> lines) throws IOException {
+	public static ReadableByteChannel streamToChannel(Stream<String> lines) {
 		return Channels.newChannel(new ByteArrayInputStream(lines.collect(Collectors.joining(System.lineSeparator())).getBytes(StandardCharsets.UTF_8)));
 	}
 

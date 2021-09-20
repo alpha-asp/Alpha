@@ -1,10 +1,11 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
+import at.ac.tuwien.kr.alpha.api.config.AggregateRewritingConfig;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
-import at.ac.tuwien.kr.alpha.core.transformation.ArithmeticTermsRewriting;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewriting;
 
 /**
  * Encapsulates all transformations necessary to transform a given program into a @{link NormalProgram} that is understood by Alpha internally

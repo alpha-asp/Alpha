@@ -27,11 +27,12 @@
  */
 package at.ac.tuwien.kr.alpha.app.config;
 
-import at.ac.tuwien.kr.alpha.api.config.AlphaConfig;
-import at.ac.tuwien.kr.alpha.api.config.BinaryNoGoodPropagationEstimationStrategy;
-import at.ac.tuwien.kr.alpha.api.config.Heuristic;
-import at.ac.tuwien.kr.alpha.api.config.InputConfig;
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -44,16 +45,12 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
-
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingConfig;
-import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import at.ac.tuwien.kr.alpha.api.config.AggregateRewritingConfig;
+import at.ac.tuwien.kr.alpha.api.config.AlphaConfig;
+import at.ac.tuwien.kr.alpha.api.config.BinaryNoGoodPropagationEstimationStrategy;
+import at.ac.tuwien.kr.alpha.api.config.Heuristic;
+import at.ac.tuwien.kr.alpha.api.config.InputConfig;
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 
 /**
  * Parses given argument lists (as passed when Alpha is called from command line) into {@link SystemConfig}s and

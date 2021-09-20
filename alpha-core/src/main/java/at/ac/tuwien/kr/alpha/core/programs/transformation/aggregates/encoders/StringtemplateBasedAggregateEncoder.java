@@ -1,22 +1,29 @@
-package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders;
-
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.grounder.transformation.EnumerationRewriting;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
-import org.apache.commons.collections4.ListUtils;
-import org.stringtemplate.v4.ST;
+package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders;
 
 import java.util.ArrayList;
 import java.util.Collections;
+
+import org.apache.commons.collections4.ListUtils;
+import org.stringtemplate.v4.ST;
+
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.EnumerationRewriting;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
+import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 /**
  * Abstract base class for aggregate encoders making use of stringtemplates in their rewriting workflow.
@@ -30,16 +37,16 @@ import java.util.Collections;
  */
 public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggregateEncoder {
 
-	private final ProgramParser parser = new ProgramParser();
+	private final ProgramParser parser = new ProgramParserImpl();
 	private final ST encodingTemplate;
 	private final boolean needsBoundRule;
 
 	protected StringtemplateBasedAggregateEncoder(AggregateFunctionSymbol aggregateFunctionToEncode, ComparisonOperator acceptedOperator, ST encodingTemplate) {
 		super(aggregateFunctionToEncode, Collections.singleton(acceptedOperator));
 		this.encodingTemplate = encodingTemplate;
-		if (acceptedOperator == ComparisonOperator.EQ) {
+		if (acceptedOperator.equals(ComparisonOperators.EQ)) {
 			this.needsBoundRule = false;
-		} else if (acceptedOperator == ComparisonOperator.LE) {
+		} else if (acceptedOperator.equals(ComparisonOperators.LE)) {
 			this.needsBoundRule = true;
 		} else {
 			throw new IllegalArgumentException("This encoder is incompatible with comparison operator: " + acceptedOperator);
@@ -47,7 +54,7 @@ public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggreg
 	}
 
 	@Override
-	protected InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode) {
+	protected ASPCore2Program encodeAggregateResult(AggregateInfo aggregateToEncode) {
 		String aggregateId = aggregateToEncode.getId();
 
 		/*
@@ -55,7 +62,7 @@ public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggreg
 		 * The bound is (in case of encodings for "<=" comparisons) the value that should be tested for being a lower bound, or
 		 * else zero.
 		 */
-		BasicRule boundRule = null;
+		Rule<Head> boundRule = null;
 		if (this.needsBoundRule) {
 			boundRule = this.buildBoundRule(aggregateToEncode);
 		} else {
@@ -75,27 +82,27 @@ public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggreg
 		String coreEncodingAsp = coreEncodingTemplate.render();
 
 		// Create the basic program
-		InputProgram coreEncoding = new EnumerationRewriting().apply(parser.parse(coreEncodingAsp));
+		ASPCore2Program coreEncoding = new EnumerationRewriting().apply(parser.parse(coreEncodingAsp));
 
 		// Add the programatically created bound rule and return
 		return new InputProgram(ListUtils.union(coreEncoding.getRules(), Collections.singletonList(boundRule)), coreEncoding.getFacts(),
-				new InlineDirectives());
+				new InlineDirectivesImpl());
 	}
 
 	private String getBoundPredicateName(String aggregateId) {
 		return aggregateId + "_bound";
 	}
 
-	private BasicRule buildZeroBoundRule(AggregateInfo aggregateToEncode) {
-		BasicAtom bound = new BasicAtom(Predicate.getInstance(getBoundPredicateName(aggregateToEncode.getId()), 2),
-				aggregateToEncode.getAggregateArguments(), ConstantTerm.getInstance(0));
-		return new BasicRule(new NormalHead(bound), new ArrayList<>(aggregateToEncode.getDependencies()));
+	private Rule<Head> buildZeroBoundRule(AggregateInfo aggregateToEncode) {
+		BasicAtom bound = Atoms.newBasicAtom(Predicates.getPredicate(getBoundPredicateName(aggregateToEncode.getId()), 2),
+				aggregateToEncode.getAggregateArguments(), Terms.newConstant(0));
+		return new BasicRule(Heads.newNormalHead(bound), new ArrayList<>(aggregateToEncode.getDependencies()));
 	}
 
-	private BasicRule buildBoundRule(AggregateInfo aggregateToEncode) {
-		BasicAtom bound = new BasicAtom(Predicate.getInstance(getBoundPredicateName(aggregateToEncode.getId()), 2),
+	private Rule<Head> buildBoundRule(AggregateInfo aggregateToEncode) {
+		BasicAtom bound = Atoms.newBasicAtom(Predicates.getPredicate(getBoundPredicateName(aggregateToEncode.getId()), 2),
 				aggregateToEncode.getAggregateArguments(), aggregateToEncode.getLiteral().getAtom().getLowerBoundTerm());
-		return new BasicRule(new NormalHead(bound), new ArrayList<>(aggregateToEncode.getDependencies()));
+		return new BasicRule(Heads.newNormalHead(bound), new ArrayList<>(aggregateToEncode.getDependencies()));
 	}
 
 }

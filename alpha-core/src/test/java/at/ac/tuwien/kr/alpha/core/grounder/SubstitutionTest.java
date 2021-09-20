@@ -27,16 +27,15 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
@@ -62,9 +61,9 @@ import at.ac.tuwien.kr.alpha.test.util.SubstitutionTestUtil;
 public class SubstitutionTest {
 	private static final ProgramParser PARSER = new ProgramParserImpl();
 
-	private static final ConstantTerm<String> A = Terms.newSymbolicConstant("a");
-	private static final ConstantTerm<String> B = Terms.newSymbolicConstant("b");
-	private static final ConstantTerm<String> C = Terms.newSymbolicConstant("c");
+	private static final ConstantTerm<?> A = Terms.newSymbolicConstant("a");
+	private static final ConstantTerm<?> B = Terms.newSymbolicConstant("b");
+	private static final ConstantTerm<?> C = Terms.newSymbolicConstant("c");
 
 	private static final VariableTerm X = Terms.newVariable("X");
 	private static final VariableTerm Y = Terms.newVariable("Y");
@@ -94,7 +93,7 @@ public class SubstitutionTest {
 		FunctionTerm groundFunctionTerm = Terms.newFunctionTerm("f", B, C);
 		Instance qfBC = new Instance(groundFunctionTerm);
 		Term nongroundFunctionTerm = Terms.newFunctionTerm("f", B, X);
-		BasicAtom qfBX = Atoms.newBasicAtom(Predicates.getPredicate("q", 2), nongroundFunctionTerm);
+		BasicAtom qfBX = Atoms.newBasicAtom(Predicates.getPredicate("q", 1), nongroundFunctionTerm);
 
 		Substitution substitution1 = BasicSubstitution.specializeSubstitution(qfBX, qfBC, substitution);
 
@@ -128,7 +127,7 @@ public class SubstitutionTest {
 		BasicAtom atom = Atoms.newBasicAtom(p, Arrays.asList(X, Y));
 		Instance instance = new Instance(A, B);
 		Substitution substitution = BasicSubstitution.specializeSubstitution(atom, instance, BasicSubstitution.EMPTY_SUBSTITUTION);
-		Atom substituted = atom.substitute(substitution);
+		BasicAtom substituted = atom.substitute(substitution);
 		assertEquals(p, substituted.getPredicate());
 		assertEquals(A, substituted.getTerms().get(0));
 		assertEquals(B, substituted.getTerms().get(1));

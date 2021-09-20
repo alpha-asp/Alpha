@@ -1,14 +1,13 @@
-package at.ac.tuwien.kr.alpha.solver;
-
-import org.junit.jupiter.params.provider.Arguments;
+package at.ac.tuwien.kr.alpha.core.solver;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import org.junit.jupiter.params.provider.Arguments;
+
+import at.ac.tuwien.kr.alpha.api.config.Heuristic;
 
 public class RegressionTestConfigProvider {
 
@@ -19,10 +18,13 @@ public class RegressionTestConfigProvider {
 	private static final String DEFAULT_GROUNDER_TOLERANCE = "strict";
 	private static final boolean DEFAULT_DISABLE_INSTANCE_REMOVAL = false;
 	private static final boolean DEFAULT_ENABLE_DEBUG_CHECKS = false;
-	
+
 	/**
-	 * Creates a list of {@link RegressionTestConfig}s with all config combinations that are to be tested im methods tagged using "RegressionTest" annotation.
-	 * Exact number of combinations depends on the "CI" environment variable that can be used to signal that a test is being run in a CI environment.
+	 * Creates a list of {@link RegressionTestConfig}s with all config combinations that are to be tested im methods tagged using
+	 * "RegressionTest" annotation.
+	 * Exact number of combinations depends on the "CI" environment variable that can be used to signal that a test is being run in a CI
+	 * environment.
+	 * 
 	 * @return
 	 */
 	private static List<RegressionTestConfig> buildConfigs() {
@@ -59,7 +61,7 @@ public class RegressionTestConfigProvider {
 							for (boolean evaluateStratified : evaluateStratifiedValues) {
 								for (boolean enableDebugChecks : enableDebugChecksValues) {
 									configsToTest.add(new RegressionTestConfig(
-											solverName, grounder, atomStoreName, BranchingHeuristicFactory.Heuristic.valueOf(branchingHeuristicName),
+											solverName, grounder, atomStoreName, Heuristic.valueOf(branchingHeuristicName),
 											seed, enableDebugChecks, grounderTolerance, gtrValue, disableInstanceRemoval, evaluateStratified,
 											true, true));
 								}
@@ -74,34 +76,35 @@ public class RegressionTestConfigProvider {
 	}
 
 	/**
-	 * Provides {@link RegressionTestConfig}s specifically for tests concerned with AggregateRewriting. 
-	 * All parameters fixed to default values except stratified evaluation, sorting grid encoding for count rewriting 
+	 * Provides {@link RegressionTestConfig}s specifically for tests concerned with AggregateRewriting.
+	 * All parameters fixed to default values except stratified evaluation, sorting grid encoding for count rewriting
 	 * and negative sum element support.
+	 * 
 	 * @return
 	 */
 	private static List<RegressionTestConfig> buildConfigsForAggregateTests() {
 		List<RegressionTestConfig> configsToTest = new ArrayList<>();
-		
-		boolean[] evaluateStratifiedValues = new boolean[]{true, false };
-		boolean[] useSortingGridValues = new boolean[] {true, false};
-		boolean[] supportNegativeSumElementsValues = new boolean[] {true, false};
-		
+
+		boolean[] evaluateStratifiedValues = new boolean[] {true, false };
+		boolean[] useSortingGridValues = new boolean[] {true, false };
+		boolean[] supportNegativeSumElementsValues = new boolean[] {true, false };
+
 		for (boolean evalStratified : evaluateStratifiedValues) {
 			for (boolean useSortingGrid : useSortingGridValues) {
 				for (boolean supportNegativeElements : supportNegativeSumElementsValues) {
 					configsToTest.add(
 							new RegressionTestConfig(
-									DEFAULT_SOLVER_NAME, DEFAULT_GROUNDER_NAME, DEFAULT_ATOM_STORE, BranchingHeuristicFactory.Heuristic.valueOf(DEFAULT_BRANCHING_HEURISTIC), 
-									0, DEFAULT_ENABLE_DEBUG_CHECKS, DEFAULT_GROUNDER_TOLERANCE, DEFAULT_GROUNDER_TOLERANCE, DEFAULT_DISABLE_INSTANCE_REMOVAL, evalStratified, 
-									useSortingGrid, supportNegativeElements)
-							);
+									DEFAULT_SOLVER_NAME, DEFAULT_GROUNDER_NAME, DEFAULT_ATOM_STORE, Heuristic.valueOf(DEFAULT_BRANCHING_HEURISTIC),
+									0, DEFAULT_ENABLE_DEBUG_CHECKS, DEFAULT_GROUNDER_TOLERANCE, DEFAULT_GROUNDER_TOLERANCE, DEFAULT_DISABLE_INSTANCE_REMOVAL,
+									evalStratified,
+									useSortingGrid, supportNegativeElements));
 				}
 			}
 		}
-		
-		return configsToTest;		
+
+		return configsToTest;
 	}
-	
+
 	public static List<Arguments> provideConfigs() {
 		List<Arguments> retVal = new ArrayList<>();
 		for (RegressionTestConfig cfg : buildConfigs()) {

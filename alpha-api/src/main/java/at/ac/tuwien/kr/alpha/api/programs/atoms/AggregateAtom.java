@@ -10,7 +10,7 @@ import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 
 public interface AggregateAtom extends Atom{
 
-	enum AggregateFunction {
+	enum AggregateFunctionSymbol {
 		COUNT,
 		MAX,
 		MIN,
@@ -25,7 +25,7 @@ public interface AggregateAtom extends Atom{
 
 	Term getUpperBoundTerm();
 	
-	AggregateFunction getAggregateFunction();
+	AggregateFunctionSymbol getAggregateFunction();
 	
 	List<VariableTerm> getAggregateVariables();
 	

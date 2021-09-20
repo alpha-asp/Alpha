@@ -1,17 +1,20 @@
-package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders;
+package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders;
 
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 
-import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateElement;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateElement;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 /**
  * Aggregate encoder handling sum aggregates.
@@ -34,11 +37,11 @@ public final class SumEncoder extends StringtemplateBasedAggregateEncoder {
 	}
 
 	public static SumEncoder buildSumLessOrEqualEncoder(boolean supportNegativeIntegers) {
-		return new SumEncoder(ComparisonOperator.LE, supportNegativeIntegers ? SUM_LE_TEMPLATE : NON_NEG_ELEMENTS_SUM_LE_TEMPLATE);
+		return new SumEncoder(ComparisonOperators.LE, supportNegativeIntegers ? SUM_LE_TEMPLATE : NON_NEG_ELEMENTS_SUM_LE_TEMPLATE);
 	}
 
 	public static SumEncoder buildSumEqualsEncoder(boolean supportNegativeIntegers) {
-		return new SumEncoder(ComparisonOperator.EQ, supportNegativeIntegers ? SUM_EQ_TEMPLATE : NON_NEG_ELEMENTS_SUM_EQ_TEMPLATE);
+		return new SumEncoder(ComparisonOperators.EQ, supportNegativeIntegers ? SUM_EQ_TEMPLATE : NON_NEG_ELEMENTS_SUM_EQ_TEMPLATE);
 	}
 
 	/**
@@ -47,10 +50,10 @@ public final class SumEncoder extends StringtemplateBasedAggregateEncoder {
 	 * add to the result sum as its third argument.
 	 */
 	@Override
-	protected Atom buildElementRuleHead(String aggregateId, AggregateElement element, Term aggregateArguments) {
-		Predicate headPredicate = Predicate.getInstance(this.getElementTuplePredicateSymbol(aggregateId), 3);
-		FunctionTerm elementTuple = FunctionTerm.getInstance(AbstractAggregateEncoder.ELEMENT_TUPLE_FUNCTION_SYMBOL, element.getElementTerms());
-		return new BasicAtom(headPredicate, aggregateArguments, elementTuple, element.getElementTerms().get(0));
+	protected BasicAtom buildElementRuleHead(String aggregateId, AggregateElement element, Term aggregateArguments) {
+		Predicate headPredicate = Predicates.getPredicate(this.getElementTuplePredicateSymbol(aggregateId), 3);
+		FunctionTerm elementTuple = Terms.newFunctionTerm(AbstractAggregateEncoder.ELEMENT_TUPLE_FUNCTION_SYMBOL, element.getElementTerms());
+		return Atoms.newBasicAtom(headPredicate, aggregateArguments, elementTuple, element.getElementTerms().get(0));
 	}
 
 }

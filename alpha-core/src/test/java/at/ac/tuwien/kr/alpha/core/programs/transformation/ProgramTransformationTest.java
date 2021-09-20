@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.grounder.transformation;
+package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -18,9 +18,6 @@ import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.ChoiceHeadToNormal;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.IntervalTermToIntervalAtom;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
 
 public class ProgramTransformationTest {
 

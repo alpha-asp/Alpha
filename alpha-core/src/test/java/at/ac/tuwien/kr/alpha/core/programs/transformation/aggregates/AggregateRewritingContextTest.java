@@ -1,22 +1,25 @@
-package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
+package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import at.ac.tuwien.kr.alpha.api.Alpha;
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.junit.jupiter.api.Test;
+
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 
 public class AggregateRewritingContextTest {
 
@@ -55,9 +58,9 @@ public class AggregateRewritingContextTest {
 	//@formatter:on
 
 	private static final AggregateRewritingContext rewritingContextForAspString(String asp) {
-		InputProgram program = new Alpha().readProgramString(asp);
+		ASPCore2Program program = new ProgramParserImpl().parse(asp);
 		AggregateRewritingContext ctx = new AggregateRewritingContext();
-		for (BasicRule rule : program.getRules()) {
+		for (Rule<Head> rule : program.getRules()) {
 			ctx.registerRule(rule);
 		}
 		return ctx;
@@ -68,7 +71,7 @@ public class AggregateRewritingContextTest {
 		AggregateRewritingContext ctx = rewritingContextForAspString(CTX_TEST_MIN_EQ_ASP);
 		Map<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateInfo>> functionsToRewrite = ctx.getAggregateFunctionsToRewrite();
 		assertEquals(1, functionsToRewrite.size());
-		ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> minEq = new ImmutablePair<>(AggregateFunctionSymbol.MIN, ComparisonOperator.EQ);
+		ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> minEq = new ImmutablePair<>(AggregateFunctionSymbol.MIN, ComparisonOperators.EQ);
 		assertTrue(functionsToRewrite.containsKey(minEq));
 		Set<AggregateInfo> minEqAggregateInfos = functionsToRewrite.get(minEq);
 		assertEquals(1, minEqAggregateInfos.size());
@@ -81,7 +84,7 @@ public class AggregateRewritingContextTest {
 		AggregateRewritingContext ctx = rewritingContextForAspString(CTX_TEST_CNT_EQ_ASP);
 		Map<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateInfo>> functionsToRewrite = ctx.getAggregateFunctionsToRewrite();
 		assertEquals(1, functionsToRewrite.size());
-		ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> cntEq = new ImmutablePair<>(AggregateFunctionSymbol.COUNT, ComparisonOperator.EQ);
+		ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> cntEq = new ImmutablePair<>(AggregateFunctionSymbol.COUNT, ComparisonOperators.EQ);
 		assertTrue(functionsToRewrite.containsKey(cntEq));
 		Set<AggregateInfo> cntEqAggregateInfos = functionsToRewrite.get(cntEq);
 		assertEquals(1, cntEqAggregateInfos.size());
@@ -94,8 +97,8 @@ public class AggregateRewritingContextTest {
 		AggregateRewritingContext ctx = rewritingContextForAspString(CTX_TEST_GRAPH_ASP);
 		Map<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateInfo>> functionsToRewrite = ctx.getAggregateFunctionsToRewrite();
 		assertEquals(2, functionsToRewrite.size());
-		ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> cntEq = new ImmutablePair<>(AggregateFunctionSymbol.COUNT, ComparisonOperator.EQ);
-		ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> maxEq = new ImmutablePair<>(AggregateFunctionSymbol.MAX, ComparisonOperator.EQ);
+		ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> cntEq = new ImmutablePair<>(AggregateFunctionSymbol.COUNT, ComparisonOperators.EQ);
+		ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> maxEq = new ImmutablePair<>(AggregateFunctionSymbol.MAX, ComparisonOperators.EQ);
 		assertTrue(functionsToRewrite.containsKey(cntEq));
 		assertTrue(functionsToRewrite.containsKey(maxEq));
 		Set<AggregateInfo> cntEqIds = functionsToRewrite.get(cntEq);
@@ -110,10 +113,10 @@ public class AggregateRewritingContextTest {
 			if (globalVars.size() != 2) {
 				return false;
 			}
-			if (!globalVars.contains(VariableTerm.getInstance("G"))) {
+			if (!globalVars.contains(Terms.newVariable("G"))) {
 				return false;
 			}
-			if (!globalVars.contains(VariableTerm.getInstance("V"))) {
+			if (!globalVars.contains(Terms.newVariable("V"))) {
 				return false;
 			}
 			return true;
@@ -126,10 +129,10 @@ public class AggregateRewritingContextTest {
 			if (globalVars.size() != 2) {
 				return false;
 			}
-			if (!globalVars.contains(VariableTerm.getInstance("G"))) {
+			if (!globalVars.contains(Terms.newVariable("G"))) {
 				return false;
 			}
-			if (!globalVars.contains(VariableTerm.getInstance("DMAX"))) {
+			if (!globalVars.contains(Terms.newVariable("DMAX"))) {
 				return false;
 			}
 			return true;

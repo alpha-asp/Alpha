@@ -107,7 +107,7 @@ public class StratifiedEvaluationRegressionTest {
 		// Parse and pre-evaulate program
 		ProgramParser parser = new ProgramParserImpl();
 		ASPCore2Program prog = parser.parse(aspString);
-		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(new NormalizeProgramTransformation(false).apply(prog));
+		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG).apply(prog));
 		CompiledProgram evaluated = new StratifiedEvaluation().apply(analyzed);
 		// Verify stratified evaluation result
 		programVerifier.accept(evaluated);

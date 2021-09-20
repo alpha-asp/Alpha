@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.grounder.transformation;
+package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,7 +25,6 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
-import at.ac.tuwien.kr.alpha.core.transformation.ArithmeticTermsRewriting;
 
 /**
  * Copyright (c) 2021, the Alpha Team.

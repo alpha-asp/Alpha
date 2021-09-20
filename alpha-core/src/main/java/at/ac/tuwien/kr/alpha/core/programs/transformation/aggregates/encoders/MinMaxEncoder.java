@@ -1,29 +1,35 @@
-package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders;
-
-import org.apache.commons.collections4.SetUtils;
-import org.stringtemplate.v4.ST;
+package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateElement;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
+import org.apache.commons.collections4.SetUtils;
+import org.stringtemplate.v4.ST;
+
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateElement;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.literals.Literals;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.util.Util;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
+import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 public class MinMaxEncoder extends AbstractAggregateEncoder {
 
@@ -53,17 +59,17 @@ public class MinMaxEncoder extends AbstractAggregateEncoder {
 			);
 	//@formatter:on
 
-	private final ProgramParser parser = new ProgramParser();
+	private final ProgramParser parser = new ProgramParserImpl();
 
 	public MinMaxEncoder(AggregateFunctionSymbol func) {
-		super(func, SetUtils.hashSet(ComparisonOperator.values()));
+		super(func, SetUtils.hashSet(ComparisonOperators.operators()));
 		if (!(func == AggregateFunctionSymbol.MAX || func == AggregateFunctionSymbol.MIN)) {
 			throw new IllegalArgumentException("Encoder " + this.getClass().getSimpleName() + " can only encode min/max aggregates!");
 		}
 	}
 
 	@Override
-	protected InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode) {
+	protected ASPCore2Program encodeAggregateResult(AggregateInfo aggregateToEncode) {
 		ST encodingTemplate = null;
 		if (this.getAggregateFunctionToEncode() == AggregateFunctionSymbol.MAX) {
 			encodingTemplate = new ST(MAX_LITERAL_ENCODING);
@@ -79,10 +85,10 @@ public class MinMaxEncoder extends AbstractAggregateEncoder {
 		ComparisonOperator cmpOp = atom.getLowerBoundOperator();
 		encodingTemplate.add("id", id);
 		encodingTemplate.add("aggregate_result", resultName);
-		if (cmpOp == ComparisonOperator.EQ) {
+		if (cmpOp.equals(ComparisonOperators.EQ)) {
 			// Aggregate to encode binds a variable, use appropriate result rule.
 			ST resultRuleTemplate = new ST(BINDING_LITERAL_RESULT_RULE);
-			resultRuleTemplate.add("agg_func", atom.getAggregatefunction().toString().toLowerCase());
+			resultRuleTemplate.add("agg_func", atom.getAggregateFunction().toString().toLowerCase());
 			resultRuleTemplate.add("id", id);
 			resultRuleTemplate.add("aggregate_result", resultName);
 			return parser.parse(encodingTemplate.render() + resultRuleTemplate.render());
@@ -101,13 +107,13 @@ public class MinMaxEncoder extends AbstractAggregateEncoder {
 			 * $id$_$agg_func$_element_tuple($args$, AGG_VAL),
 			 * $dependencies;separator=\", \"$."
 			 */
-			NormalHead resultRuleHead = new NormalHead(
-					new BasicAtom(Predicate.getInstance(resultName, 2), aggregateToEncode.getAggregateArguments(), atom.getLowerBoundTerm()));
+			NormalHead resultRuleHead = Heads.newNormalHead(
+					Atoms.newBasicAtom(Predicates.getPredicate(resultName, 2), aggregateToEncode.getAggregateArguments(), atom.getLowerBoundTerm()));
 			List<Literal> resultRuleBody = new ArrayList<>();
-			VariableTerm aggregateValue = VariableTerm.getInstance("_AGG_VAL");
-			ComparisonLiteral aggregateValueComparison = new ComparisonLiteral(new ComparisonAtom(atom.getLowerBoundTerm(), aggregateValue, cmpOp), true);
-			Literal aggregateResult = new BasicAtom(Predicate.getInstance(
-					id + "_" + atom.getAggregatefunction().toString().toLowerCase() + "_element_tuple", 2),
+			VariableTerm aggregateValue = Terms.newVariable("_AGG_VAL");
+			ComparisonLiteral aggregateValueComparison = Literals.fromAtom(Atoms.newComparisonAtom(atom.getLowerBoundTerm(), aggregateValue, cmpOp), true);
+			Literal aggregateResult = Atoms.newBasicAtom(Predicates.getPredicate(
+					id + "_" + atom.getAggregateFunction().toString().toLowerCase() + "_element_tuple", 2),
 					aggregateToEncode.getAggregateArguments(), aggregateValue).toLiteral();
 			resultRuleBody.add(aggregateResult);
 			resultRuleBody.add(aggregateValueComparison);
@@ -121,10 +127,10 @@ public class MinMaxEncoder extends AbstractAggregateEncoder {
 	}
 
 	@Override
-	protected Atom buildElementRuleHead(String aggregateId, AggregateElement element, Term aggregateArguments) {
-		Predicate headPredicate = Predicate.getInstance(this.getElementTuplePredicateSymbol(aggregateId), 2);
+	protected BasicAtom buildElementRuleHead(String aggregateId, AggregateElement element, Term aggregateArguments) {
+		Predicate headPredicate = Predicates.getPredicate(this.getElementTuplePredicateSymbol(aggregateId), 2);
 		Term elementTerm = element.getElementTerms().get(0);
-		return new BasicAtom(headPredicate, aggregateArguments, elementTerm);
+		return Atoms.newBasicAtom(headPredicate, aggregateArguments, elementTerm);
 	}
 
 }

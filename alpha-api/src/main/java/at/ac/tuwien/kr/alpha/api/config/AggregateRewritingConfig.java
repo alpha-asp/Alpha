@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
+package at.ac.tuwien.kr.alpha.api.config;
 
 public class AggregateRewritingConfig {
 	

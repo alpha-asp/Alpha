@@ -1,9 +1,6 @@
-package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
+package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.stringtemplate.v4.ST;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,19 +11,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.stringtemplate.v4.ST;
+
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
 /**
  * Holds all information about aggregate literals that need to be rewritten within a program.
@@ -44,7 +45,7 @@ public final class AggregateRewritingContext {
 	private int idCounter;
 	private Map<AggregateLiteral, AggregateInfo> aggregateInfos = new HashMap<>(); // Maps aggregate literals to their respective AggregateInfo.
 	private Map<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateInfo>> aggregateFunctionsToRewrite = new LinkedHashMap<>();
-	private List<BasicRule> rulesWithAggregates = new ArrayList<>();
+	private List<Rule<Head>> rulesWithAggregates = new ArrayList<>();
 
 	public AggregateRewritingContext() {
 		idCounter = 0;
@@ -58,7 +59,7 @@ public final class AggregateRewritingContext {
 	 * @param rule
 	 * @return true if the given rule contains one or more aggregate literals, false otherwise
 	 */
-	public boolean registerRule(BasicRule rule) {
+	public boolean registerRule(Rule<Head> rule) {
 		AggregateRewritingRuleAnalysis ruleAnalysis = AggregateRewritingRuleAnalysis.analyzeRuleDependencies(rule);
 		if (ruleAnalysis.aggregatesInRule.isEmpty()) {
 			// Rule has no aggregates.
@@ -86,21 +87,21 @@ public final class AggregateRewritingContext {
 
 	private void registerAggregateLiteral(AggregateLiteral lit, Set<VariableTerm> globalVariables) {
 		AggregateAtom atom = lit.getAtom();
-		String id = atom.getAggregatefunction().toString().toLowerCase() + "_" + (++idCounter);
+		String id = atom.getAggregateFunction().toString().toLowerCase() + "_" + (++idCounter);
 		AggregateInfo info = new AggregateInfo(id, lit, globalVariables);
 		if (aggregateInfos.containsKey(lit)) {
 			throw oops("AggregateInfo for AggregateLiteral already existing.");
 		}
 		aggregateInfos.put(lit, info);
-		aggregateFunctionsToRewrite.putIfAbsent(new ImmutablePair<>(atom.getAggregatefunction(), atom.getLowerBoundOperator()), new LinkedHashSet<>());
-		aggregateFunctionsToRewrite.get(new ImmutablePair<>(atom.getAggregatefunction(), atom.getLowerBoundOperator())).add(info);
+		aggregateFunctionsToRewrite.putIfAbsent(new ImmutablePair<>(atom.getAggregateFunction(), atom.getLowerBoundOperator()), new LinkedHashSet<>());
+		aggregateFunctionsToRewrite.get(new ImmutablePair<>(atom.getAggregateFunction(), atom.getLowerBoundOperator())).add(info);
 	}
 
 	AggregateInfo getAggregateInfo(AggregateLiteral aggregateLiteral) {
 		return aggregateInfos.get(aggregateLiteral);
 	}
 
-	List<BasicRule> getRulesWithAggregates() {
+	List<Rule<Head>> getRulesWithAggregates() {
 		return rulesWithAggregates;
 	}
 
@@ -133,9 +134,9 @@ public final class AggregateRewritingContext {
 		private Term buildArguments() {
 			Term argumentTerm;
 			if (globalVariables.isEmpty()) {
-				argumentTerm = ConstantTerm.getSymbolicInstance(new ST(AGGREGATE_ARGS_NOARGS_CONST).add("id", id).render());
+				argumentTerm = Terms.newSymbolicConstant(new ST(AGGREGATE_ARGS_NOARGS_CONST).add("id", id).render());
 			} else {
-				argumentTerm = FunctionTerm.getInstance(new ST(AGGREGATE_ARGS_FUNCTION_SYMBOL).add("id", id).render(),
+				argumentTerm = Terms.newFunctionTerm(new ST(AGGREGATE_ARGS_FUNCTION_SYMBOL).add("id", id).render(),
 						new ArrayList<>(globalVariables));
 			}
 			return argumentTerm;
@@ -155,7 +156,7 @@ public final class AggregateRewritingContext {
 			String outputPredicateName = new ST(AGGREGATE_RESULT_TEMPLATE).add("id", id).render();
 			Term argumentTerm = aggregateArguments;
 			Term resultTerm = literal.getAtom().getLowerBoundTerm();
-			return new BasicAtom(Predicate.getInstance(outputPredicateName, 2, true), argumentTerm, resultTerm);
+			return Atoms.newBasicAtom(Predicates.getPredicate(outputPredicateName, 2, true), argumentTerm, resultTerm);
 		}
 
 		private void addDependency(Literal dependency) {

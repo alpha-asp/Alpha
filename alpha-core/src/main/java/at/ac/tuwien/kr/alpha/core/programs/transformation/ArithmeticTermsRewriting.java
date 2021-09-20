@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.transformation;
+package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,6 @@ import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 
 /**
@@ -117,7 +116,7 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 		// Switch on term type.
 		if (term instanceof ArithmeticTerm) {
 			VariableTerm replacementVariable = Terms.newVariable(ARITHMETIC_VARIABLES_PREFIX + numArithmeticVariables++);
-			bodyLiterals.add(Atoms.newComparsionAtom(replacementVariable, term, ComparisonOperators.EQ).toLiteral());
+			bodyLiterals.add(Atoms.newComparisonAtom(replacementVariable, term, ComparisonOperators.EQ).toLiteral());
 			return replacementVariable;
 		} else if (term instanceof VariableTerm || term instanceof ConstantTerm) {
 			return term;

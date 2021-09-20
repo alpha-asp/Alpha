@@ -1,11 +1,12 @@
-package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders;
+package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders;
 
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 
-import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 public final class CountEncoder extends StringtemplateBasedAggregateEncoder {
 
@@ -21,11 +22,11 @@ public final class CountEncoder extends StringtemplateBasedAggregateEncoder {
 	}
 
 	public static CountEncoder buildCountLessOrEqualEncoder(boolean useSortingGrid) {
-		return new CountEncoder(ComparisonOperator.LE, useSortingGrid ? CNT_LE_SORTING_GRID_TEMPLATE : CNT_LE_COUNTING_GRID_TEMPLATE);
+		return new CountEncoder(ComparisonOperators.LE, useSortingGrid ? CNT_LE_SORTING_GRID_TEMPLATE : CNT_LE_COUNTING_GRID_TEMPLATE);
 	}
 
 	public static CountEncoder buildCountEqualsEncoder() {
-		return new CountEncoder(ComparisonOperator.EQ, CNT_EQ_TEMPLATE);
+		return new CountEncoder(ComparisonOperators.EQ, CNT_EQ_TEMPLATE);
 	}
 
 }

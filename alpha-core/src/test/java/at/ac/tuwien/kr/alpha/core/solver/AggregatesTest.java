@@ -28,10 +28,8 @@ package at.ac.tuwien.kr.alpha.core.solver;
 import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnswerSet;
 import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnswerSets;
 import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnswerSetsWithBase;
-
-import at.ac.tuwien.kr.alpha.core.programs.transformation.CardinalityNormalization;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.SumNormalization;
-import at.ac.tuwien.kr.alpha.test.util.TestUtils;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.ignoreTestForNaiveSolver;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.ignoreTestForSimplifiedSumAggregates;
 
 /**
  * Tests if correct answer sets for programs containing aggregates are computed.

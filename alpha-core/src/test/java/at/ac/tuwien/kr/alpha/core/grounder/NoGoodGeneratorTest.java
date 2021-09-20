@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
@@ -55,7 +56,8 @@ import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 public class NoGoodGeneratorTest {
 
 	private static final ProgramParser PARSER = new ProgramParserImpl();
-	private static final NormalizeProgramTransformation NORMALIZE_TRANSFORM = new NormalizeProgramTransformation(false);
+	private static final NormalizeProgramTransformation NORMALIZE_TRANSFORM = new NormalizeProgramTransformation(
+			SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
 
 	private static final ConstantTerm<String> A = Terms.newSymbolicConstant("a");
 	private static final ConstantTerm<String> B = Terms.newSymbolicConstant("b");
@@ -69,8 +71,8 @@ public class NoGoodGeneratorTest {
 	 */
 	@Test
 	public void collectNeg_ContainsOnlyPositiveLiterals() {
-		ASPCore2Program input = PARSER.parse("p(a,b). " 
-				+ "q(a,b) :- not nq(a,b). " 
+		ASPCore2Program input = PARSER.parse("p(a,b). "
+				+ "q(a,b) :- not nq(a,b). "
 				+ "nq(a,b) :- not q(a,b).");
 		NormalProgram normal = NORMALIZE_TRANSFORM.apply(input);
 		CompiledProgram program = InternalProgram.fromNormalProgram(normal);

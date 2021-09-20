@@ -1,10 +1,8 @@
-package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
+package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,23 +10,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateElement;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm;
-import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm.ArithmeticOperator;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.test.util.RuleParser;
+import org.junit.jupiter.api.Test;
+
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateElement;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
+import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.terms.ArithmeticOperator;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.literals.Literals;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.core.test.util.RuleParser;
 
 public class AggregateRewritingRuleAnalysisTest {
 
@@ -81,7 +77,7 @@ public class AggregateRewritingRuleAnalysisTest {
 		Set<Literal> dependencies = analysis.dependenciesPerAggregate.get(aggregate);
 		assertEquals(1, dependencies.size());
 
-		Literal pXY = new BasicLiteral(new BasicAtom(Predicate.getInstance("p", 2), VariableTerm.getInstance("X"), VariableTerm.getInstance("Y")), true);
+		Literal pXY = Literals.fromAtom(Atoms.newBasicAtom(Predicates.getPredicate("p", 2), Terms.newVariable("X"), Terms.newVariable("Y")), true);
 		assertTrue(dependencies.contains(pXY));
 	}
 
@@ -98,21 +94,21 @@ public class AggregateRewritingRuleAnalysisTest {
 		Set<Literal> dependencies = analysis.dependenciesPerAggregate.get(aggregate);
 		assertEquals(3, dependencies.size());
 
-		Literal threePlusY = new ComparisonLiteral(
-				new ComparisonAtom(VariableTerm.getInstance("X"),
-						ArithmeticTerm.getInstance(ConstantTerm.getInstance(3), ArithmeticOperator.PLUS, VariableTerm.getInstance("Y")),
-						ComparisonOperator.EQ),
+		Literal threePlusY = Literals.fromAtom(
+				Atoms.newComparisonAtom(Terms.newVariable("X"),
+						Terms.newArithmeticTerm(Terms.newConstant(3), ArithmeticOperator.PLUS, Terms.newVariable("Y")),
+						ComparisonOperators.EQ),
 				true);
 		assertTrue(dependencies.contains(threePlusY));
 
-		Literal zPlusFour = new ComparisonLiteral(
-				new ComparisonAtom(VariableTerm.getInstance("Y"),
-						ArithmeticTerm.getInstance(VariableTerm.getInstance("Z"), ArithmeticOperator.PLUS, ConstantTerm.getInstance(4)),
-						ComparisonOperator.EQ),
+		Literal zPlusFour = Literals.fromAtom(
+				Atoms.newComparisonAtom(Terms.newVariable("Y"),
+						Terms.newArithmeticTerm(Terms.newVariable("Z"), ArithmeticOperator.PLUS, Terms.newConstant(4)),
+						ComparisonOperators.EQ),
 				true);
 		assertTrue(dependencies.contains(zPlusFour));
 
-		Literal rSZ = new BasicLiteral(new BasicAtom(Predicate.getInstance("r", 2), VariableTerm.getInstance("S"), VariableTerm.getInstance("Z")), true);
+		Literal rSZ = Literals.fromAtom(Atoms.newBasicAtom(Predicates.getPredicate("r", 2), Terms.newVariable("S"), Terms.newVariable("Z")), true);
 		assertTrue(dependencies.contains(rSZ));
 	}
 
@@ -127,17 +123,17 @@ public class AggregateRewritingRuleAnalysisTest {
 		assertFalse(analysis.dependenciesPerAggregate.get(aggregate).isEmpty());
 
 		Set<VariableTerm> globalVars = analysis.globalVariablesPerAggregate.get(aggregate);
-		assertTrue(globalVars.contains(VariableTerm.getInstance("G")));
-		assertTrue(globalVars.contains(VariableTerm.getInstance("V")));
+		assertTrue(globalVars.contains(Terms.newVariable("G")));
+		assertTrue(globalVars.contains(Terms.newVariable("V")));
 
 		Set<Literal> dependencies = analysis.dependenciesPerAggregate.get(aggregate);
 		assertEquals(2, dependencies.size());
 
-		Literal graph = new BasicLiteral(new BasicAtom(Predicate.getInstance("graph", 1), VariableTerm.getInstance("G")), true);
+		Literal graph = Literals.fromAtom(Atoms.newBasicAtom(Predicates.getPredicate("graph", 1), Terms.newVariable("G")), true);
 		assertTrue(dependencies.contains(graph));
 
-		Literal graphVertex = new BasicLiteral(
-				new BasicAtom(Predicate.getInstance("graph_vertex", 2), VariableTerm.getInstance("G"), VariableTerm.getInstance("V")), true);
+		Literal graphVertex = Literals.fromAtom(
+				Atoms.newBasicAtom(Predicates.getPredicate("graph_vertex", 2), Terms.newVariable("G"), Terms.newVariable("V")), true);
 		assertTrue(dependencies.contains(graphVertex));
 	}
 
@@ -148,42 +144,42 @@ public class AggregateRewritingRuleAnalysisTest {
 		assertEquals(2, analysis.dependenciesPerAggregate.size());
 
 		// Verify correct analysis of max aggregate
-		List<Term> vertexDegreeTerms = Collections.singletonList(VariableTerm.getInstance("DV"));
-		Literal vertexDegreeLiteral = new BasicLiteral(new BasicAtom(Predicate.getInstance("graph_vertex_degree", 3), VariableTerm.getInstance("G"),
-				VariableTerm.getInstance("V"), VariableTerm.getInstance("DV")), true);
+		List<Term> vertexDegreeTerms = Collections.singletonList(Terms.newVariable("DV"));
+		Literal vertexDegreeLiteral = Literals.fromAtom(Atoms.newBasicAtom(Predicates.getPredicate("graph_vertex_degree", 3), Terms.newVariable("G"),
+				Terms.newVariable("V"), Terms.newVariable("DV")), true);
 		List<Literal> vertexDegreeLiterals = Collections.singletonList(vertexDegreeLiteral);
-		AggregateElement vertexDegree = new AggregateElement(vertexDegreeTerms, vertexDegreeLiterals);
-		AggregateLiteral maxAggregate = new AggregateLiteral(
-				new AggregateAtom(ComparisonOperator.EQ, VariableTerm.getInstance("DMAX"), AggregateFunctionSymbol.MAX,
+		AggregateElement vertexDegree = Atoms.newAggregateElement(vertexDegreeTerms, vertexDegreeLiterals);
+		AggregateLiteral maxAggregate = Literals.fromAtom(
+				Atoms.newAggregateAtom(ComparisonOperators.EQ, Terms.newVariable("DMAX"), AggregateFunctionSymbol.MAX,
 						Collections.singletonList(vertexDegree)),
 				true);
 		assertTrue(analysis.globalVariablesPerAggregate.containsKey(maxAggregate));
 
 		Set<VariableTerm> maxAggrGlobalVars = analysis.globalVariablesPerAggregate.get(maxAggregate);
 		assertEquals(1, maxAggrGlobalVars.size());
-		assertTrue(maxAggrGlobalVars.contains(VariableTerm.getInstance("G")));
+		assertTrue(maxAggrGlobalVars.contains(Terms.newVariable("G")));
 
 		assertTrue(analysis.dependenciesPerAggregate.containsKey(maxAggregate));
 		Set<Literal> maxAggrDependencies = analysis.dependenciesPerAggregate.get(maxAggregate);
 		assertEquals(1, maxAggrDependencies.size());
-		Literal graph = new BasicLiteral(new BasicAtom(Predicate.getInstance("graph", 1), VariableTerm.getInstance("G")), true);
+		Literal graph = Literals.fromAtom(Atoms.newBasicAtom(Predicates.getPredicate("graph", 1), Terms.newVariable("G")), true);
 		assertTrue(maxAggrDependencies.contains(graph));
 
 		// Verify correct analysis of count aggregate
-		List<Term> maxVertexDegreeTerms = Collections.singletonList(VariableTerm.getInstance("V"));
-		Literal maxVertexDegreeLiteral = new BasicLiteral(new BasicAtom(Predicate.getInstance("graph_vertex_degree", 3), VariableTerm.getInstance("G"),
-				VariableTerm.getInstance("V"), VariableTerm.getInstance("DMAX")), true);
+		List<Term> maxVertexDegreeTerms = Collections.singletonList(Terms.newVariable("V"));
+		Literal maxVertexDegreeLiteral = Literals.fromAtom(Atoms.newBasicAtom(Predicates.getPredicate("graph_vertex_degree", 3), Terms.newVariable("G"),
+				Terms.newVariable("V"), Terms.newVariable("DMAX")), true);
 		List<Literal> maxVertexDegreeLiterals = Collections.singletonList(maxVertexDegreeLiteral);
-		AggregateElement maxVertexDegree = new AggregateElement(maxVertexDegreeTerms, maxVertexDegreeLiterals);
-		AggregateLiteral countAggregate = new AggregateLiteral(
-				new AggregateAtom(ComparisonOperator.EQ, VariableTerm.getInstance("N"), AggregateFunctionSymbol.COUNT,
+		AggregateElement maxVertexDegree = Atoms.newAggregateElement(maxVertexDegreeTerms, maxVertexDegreeLiterals);
+		AggregateLiteral countAggregate = Literals.fromAtom(
+				Atoms.newAggregateAtom(ComparisonOperators.EQ, Terms.newVariable("N"), AggregateFunctionSymbol.COUNT,
 						Collections.singletonList(maxVertexDegree)),
 				true);
 		assertTrue(analysis.globalVariablesPerAggregate.containsKey(countAggregate));
 		Set<VariableTerm> cntAggrGlobalVars = analysis.globalVariablesPerAggregate.get(countAggregate);
 		assertEquals(2, cntAggrGlobalVars.size());
-		assertTrue(cntAggrGlobalVars.contains(VariableTerm.getInstance("G")));
-		assertTrue(cntAggrGlobalVars.contains(VariableTerm.getInstance("DMAX")));
+		assertTrue(cntAggrGlobalVars.contains(Terms.newVariable("G")));
+		assertTrue(cntAggrGlobalVars.contains(Terms.newVariable("DMAX")));
 
 		assertTrue(analysis.dependenciesPerAggregate.containsKey(countAggregate));
 		Set<Literal> cntAggrDependencies = analysis.dependenciesPerAggregate.get(countAggregate);
@@ -200,7 +196,7 @@ public class AggregateRewritingRuleAnalysisTest {
 
 		// Check that the #max aggregate does not include "not p(X)" as its dependency.
 		for (Map.Entry<AggregateLiteral, Set<Literal>> aggregateDependencies : analysis.dependenciesPerAggregate.entrySet()) {
-			if (aggregateDependencies.getKey().getAtom().getAggregatefunction() == AggregateFunctionSymbol.MAX) {
+			if (aggregateDependencies.getKey().getAtom().getAggregateFunction() == AggregateFunctionSymbol.MAX) {
 				for (Literal dependency : aggregateDependencies.getValue()) {
 					assertFalse(dependency.isNegated());
 				}

@@ -32,7 +32,7 @@ public class LiteralInstantiatorTest {
 
 	@Test
 	public void instantiateSatisfiedFixedInterpretationLiteral() {
-		ComparisonAtom equalsThree = Atoms.newComparsionAtom(Terms.newConstant(3), Terms.newVariable("THREE"), ComparisonOperators.EQ);
+		ComparisonAtom equalsThree = Atoms.newComparisonAtom(Terms.newConstant(3), Terms.newVariable("THREE"), ComparisonOperators.EQ);
 		Literal lit = Literals.fromAtom(equalsThree, true);
 		Substitution substitution = new BasicSubstitution();
 		LiteralInstantiator instantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(null));
@@ -48,7 +48,7 @@ public class LiteralInstantiatorTest {
 
 	@Test
 	public void instantiateUnsatisfiedFixedInterpretationLiteral() {
-		ComparisonAtom fiveEqualsThree = Atoms.newComparsionAtom(Terms.newVariable("FIVE"), Terms.newVariable("THREE"), ComparisonOperators.EQ);
+		ComparisonAtom fiveEqualsThree = Atoms.newComparisonAtom(Terms.newVariable("FIVE"), Terms.newVariable("THREE"), ComparisonOperators.EQ);
 		Literal lit = Literals.fromAtom(fiveEqualsThree, true);
 		Substitution substitution = new BasicSubstitution();
 		substitution.put(Terms.newVariable("FIVE"), Terms.newConstant(5));

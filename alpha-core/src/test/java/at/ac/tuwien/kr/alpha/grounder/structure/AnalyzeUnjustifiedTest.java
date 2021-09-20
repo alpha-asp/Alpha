@@ -37,6 +37,7 @@ import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -61,7 +62,7 @@ import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
 public class AnalyzeUnjustifiedTest {
 
 	private final ProgramParser parser = new ProgramParserImpl();
-	private final NormalizeProgramTransformation normalize = new NormalizeProgramTransformation(false);
+	private final NormalizeProgramTransformation normalize = new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
 	private final Function<String, CompiledProgram> parseAndPreprocess = (str) -> {
 		return InternalProgram.fromNormalProgram(normalize.apply(parser.parse(str)));
 	};

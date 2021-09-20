@@ -1,13 +1,4 @@
-package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
-
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import org.apache.commons.collections4.SetUtils;
+package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,6 +8,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections4.SetUtils;
+
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+
 /**
  * Analyses a rule and records occurring aggregates and for each aggregate its global variables and its dependencies on
  * other literals.
@@ -25,21 +27,22 @@ import java.util.Set;
  */ // Should be private, but needs to be visible to tests.
 class AggregateRewritingRuleAnalysis {
 
-	private final BasicRule rule;
+	private final Rule<Head> rule;
 	final Map<AggregateLiteral, Set<VariableTerm>> globalVariablesPerAggregate = new LinkedHashMap<>();
 	final Map<AggregateLiteral, Set<Literal>> dependenciesPerAggregate = new LinkedHashMap<>();
 	final List<AggregateLiteral> aggregatesInRule = new ArrayList<>();
 
-	private AggregateRewritingRuleAnalysis(BasicRule rule) {
+	private AggregateRewritingRuleAnalysis(Rule<Head> rule) {
 		this.rule = rule;
 	}
 
 	/**
 	 * Analyze the given rule and record its global variables and dependencies.
+	 * 
 	 * @param rule
 	 * @return
 	 */
-	static AggregateRewritingRuleAnalysis analyzeRuleDependencies(BasicRule rule) {
+	static AggregateRewritingRuleAnalysis analyzeRuleDependencies(Rule<Head> rule) {
 		AggregateRewritingRuleAnalysis ruleAnalysis = new AggregateRewritingRuleAnalysis(rule);
 		ruleAnalysis.findGlobalVariablesPerAggregate();
 		ruleAnalysis.analyzeRuleDependencies();
@@ -64,7 +67,6 @@ class AggregateRewritingRuleAnalysis {
 		}
 	}
 
-
 	/**
 	 * Recursively looks for literals in <code>searchScope</code> that bind the variables in the set
 	 * <code>varsToBind</code>, i.e. any literal lit that has any variable var in question in its
@@ -77,15 +79,15 @@ class AggregateRewritingRuleAnalysis {
 	// Note: This algorithm has potentially exponential time complexity. Tuning potential definitely exists, but
 	// performance optimization seems non-trivial.
 	private static void findBindingLiterals(Set<VariableTerm> varsToBind, Set<VariableTerm> varsBoundSoFar, Set<Literal> foundSoFar,
-						Set<Literal> searchScope,
-						Map<AggregateLiteral, Set<VariableTerm>> aggregatesWithGlobalVars) {
+			Set<Literal> searchScope,
+			Map<AggregateLiteral, Set<VariableTerm>> aggregatesWithGlobalVars) {
 		int newlyBoundVars = 0;
 		Set<VariableTerm> furtherVarsToBind = new HashSet<>();
 		for (VariableTerm varToBind : varsToBind) {
 			for (Literal lit : searchScope) {
 				Set<VariableTerm> bindingVars = lit.getBindingVariables();
 				Set<VariableTerm> nonBindingVars = (lit instanceof AggregateLiteral) ? aggregatesWithGlobalVars.get((AggregateLiteral) lit)
-					: lit.getNonBindingVariables();
+						: lit.getNonBindingVariables();
 				if (bindingVars.contains(varToBind)) {
 					varsBoundSoFar.add(varToBind);
 					foundSoFar.add(lit);
@@ -115,7 +117,7 @@ class AggregateRewritingRuleAnalysis {
 		// inside aggregate elements.
 		Set<VariableTerm> globalVariables = new HashSet<>();
 		if (!rule.isConstraint()) {
-			NormalHead head = (NormalHead)rule.getHead();	// Head must be normal at this point.
+			NormalHead head = (NormalHead) rule.getHead(); // Head must be normal at this point.
 			globalVariables.addAll(head.getAtom().getOccurringVariables());
 		}
 		for (Literal literal : rule.getBody()) {
