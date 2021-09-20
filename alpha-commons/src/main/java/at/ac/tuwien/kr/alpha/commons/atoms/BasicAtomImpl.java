@@ -57,6 +57,11 @@ class BasicAtomImpl extends AbstractAtom implements BasicAtom {
 	 * @param terms
 	 */
 	BasicAtomImpl(Predicate predicate, List<Term> terms) {
+		if (terms.size() != predicate.getArity()) {
+			throw new IllegalArgumentException(
+					"Cannot create Atom with terms: " + terms + " - Predicate " + predicate.getName() + " has incompatible arity " + predicate.getArity());
+		}
+
 		this.predicate = predicate;
 		this.terms = terms;
 
@@ -167,4 +172,5 @@ class BasicAtomImpl extends AbstractAtom implements BasicAtom {
 	public Atom withTerms(List<Term> terms) {
 		return new BasicAtomImpl(predicate, terms);
 	}
+
 }

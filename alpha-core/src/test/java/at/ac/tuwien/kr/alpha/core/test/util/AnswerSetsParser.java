@@ -1,4 +1,10 @@
+<<<<<<< HEAD:alpha-core/src/main/java/at/ac/tuwien/kr/alpha/core/util/AnswerSetsParser.java
 package at.ac.tuwien.kr.alpha.core.util;
+||||||| b081a01c:src/test/java/at/ac/tuwien/kr/alpha/AnswerSetsParser.java
+package at.ac.tuwien.kr.alpha;
+=======
+package at.ac.tuwien.kr.alpha.test.util;
+>>>>>>> master:alpha-core/src/test/java/at/ac/tuwien/kr/alpha/core/test/util/AnswerSetsParser.java
 
 import java.util.Collections;
 import java.util.Set;

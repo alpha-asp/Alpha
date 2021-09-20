@@ -51,6 +51,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingConfig;
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+
 /**
  * Parses given argument lists (as passed when Alpha is called from command line) into {@link SystemConfig}s and
  * {@link InputConfig}s.
@@ -119,8 +123,11 @@ public class CommandLineParser {
 			.desc("disable the search for justifications on must-be-true assigned atoms in the solver (default: "
 					+ SystemConfig.DEFAULT_DISABLE_JUSTIFICATION_SEARCH + ")")
 			.build();
-	private static final Option OPT_NORMALIZATION_GRID = Option.builder("ng").longOpt("normalizationCountingGrid")
-			.desc("use counting grid normalization instead of sorting circuit for #count (default: " + SystemConfig.DEFAULT_USE_NORMALIZATION_GRID + ")")
+	private static final Option OPT_AGGREGATES_NO_SORTING_GRID = Option.builder("dsg").longOpt("disableSortingGrid")
+			.desc("use counting grid based rewriting instead of sorting circuit for #count aggregates (default: " + !AggregateRewritingConfig.DEFAULT_USE_SORTING_GRID + ")")
+			.build();
+	private static final Option OPT_AGGREGATES_NO_NEGATIVE_INTEGERS = Option.builder("dni").longOpt("disableNegativeIntegers")
+			.desc("use simplified encodings without netagive integer support for #sum aggregates (default: " + !AggregateRewritingConfig.DEFAULT_SUPPORT_NEGATIVE_INTEGERS + ")")
 			.build();
 	private static final Option OPT_NO_EVAL_STRATIFIED = Option.builder("dse").longOpt("disableStratifiedEvaluation")
 			.desc("Disable stratified evaluation")
@@ -176,7 +183,8 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_QUIET);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_STATS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_JUSTIFICATION);
-		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NORMALIZATION_GRID);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_AGGREGATES_NO_SORTING_GRID);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_AGGREGATES_NO_NEGATIVE_INTEGERS);
 
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_EVAL_STRATIFIED);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_NOGOOD_DELETION);
@@ -233,7 +241,8 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_QUIET.getOpt(), this::handleQuiet);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_STATS.getOpt(), this::handleStats);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), this::handleNoJustification);
-		this.globalOptionHandlers.put(CommandLineParser.OPT_NORMALIZATION_GRID.getOpt(), this::handleNormalizationGrid);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_AGGREGATES_NO_SORTING_GRID.getOpt(), this::handleDisableSortingGrid);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_AGGREGATES_NO_NEGATIVE_INTEGERS.getOpt(), this::handleDisableNegativeSumElements);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_EVAL_STRATIFIED.getOpt(), this::handleDisableStratifedEval);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS.getOpt(), this::handleGrounderToleranceConstraints);
@@ -427,8 +436,12 @@ public class CommandLineParser {
 		cfg.setDisableJustificationSearch(true);
 	}
 
-	private void handleNormalizationGrid(Option opt, SystemConfig cfg) {
-		cfg.setUseNormalizationGrid(true);
+	private void handleDisableSortingGrid(Option opt, SystemConfig cfg) {
+		cfg.getAggregateRewritingConfig().setUseSortingGridEncoding(false);
+	}
+	
+	private void handleDisableNegativeSumElements(Option opt, SystemConfig cfg) {
+		cfg.getAggregateRewritingConfig().setSupportNegativeValuesInSums(false);
 	}
 
 	private void handleDisableStratifedEval(Option opt, SystemConfig cfg) {

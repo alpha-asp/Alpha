@@ -493,7 +493,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	//@formatter:off
-
 	/**
 	 * Computes ground substitutions for a literal based on a {@link RuleGroundingOrderImpl} and a {@link BasicSubstitution}.
 	 *

@@ -53,7 +53,7 @@ import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 /**
  * Removes variable equalities from rules by replacing one variable with the other.
  *
- * Copyright (c) 2017-2020, the Alpha Team.
+ * Copyright (c) 2017-2021, the Alpha Team.
  */
 public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram, NormalProgram> {
 
@@ -111,6 +111,9 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 		}
 
 		List<Literal> rewrittenBody = new ArrayList<>(rule.getBody());
+		if (!rule.isConstraint() && rule.getHead() instanceof DisjunctiveHead) {
+			throw new UnsupportedOperationException("VariableEqualityRemoval cannot be applied to rule with DisjunctiveHead, yet.");
+		}
 		NormalHead rewrittenHead = rule.isConstraint() ? null : Heads.newNormalHead(rule.getHeadAtom());
 
 		// Use substitution for actual replacement.

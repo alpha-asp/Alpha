@@ -176,4 +176,8 @@ public class TestUtils {
 		Assumptions.assumeTrue(cfg.getBranchingHeuristic() == Heuristic.VSIDS);
 	}
 	
-}	
+	public static void ignoreTestForSimplifiedSumAggregates(RegressionTestConfig cfg) {
+		Assumptions.assumeTrue(cfg.isSupportNegativeSumElements());
+	}
+
+}

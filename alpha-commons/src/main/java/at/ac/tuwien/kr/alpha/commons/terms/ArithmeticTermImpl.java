@@ -218,4 +218,5 @@ class ArithmeticTermImpl extends AbstractTerm implements ArithmeticTerm {
 			return 31 * left.hashCode();
 		}
 	}
+
 }

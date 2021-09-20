@@ -52,20 +52,21 @@ class AggregateAtomImpl extends AbstractAtom implements AggregateAtom {
 	private final Term lowerBoundTerm;
 	private final ComparisonOperator upperBoundOperator;
 	private final Term upperBoundTerm;
-	private final AggregateFunction aggregatefunction;
+	private final AggregateFunctionSymbol aggregatefunction;
 	private final List<AggregateElement> aggregateElements;
 
 	AggregateAtomImpl(ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, ComparisonOperator upperBoundOperator, Term upperBoundTerm,
-			AggregateFunction aggregatefunction, List<AggregateElement> aggregateElements) {
+			AggregateFunctionSymbol aggregatefunction, List<AggregateElement> aggregateElements) {
 		this.lowerBoundOperator = lowerBoundOperator;
 		this.lowerBoundTerm = lowerBoundTerm;
 		this.upperBoundOperator = upperBoundOperator;
 		this.upperBoundTerm = upperBoundTerm;
 		this.aggregatefunction = aggregatefunction;
 		this.aggregateElements = aggregateElements;
-		if (upperBoundOperator != null || lowerBoundOperator != ComparisonOperators.LE || lowerBoundTerm == null) {
-			throw new UnsupportedOperationException("Aggregate construct not yet supported: " + this);
-		}
+	}
+	
+	public AggregateAtomImpl(ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, AggregateFunctionSymbol aggregatefunction, List<AggregateElement> aggregateElements) {
+		this(lowerBoundOperator, lowerBoundTerm, null, null, aggregatefunction, aggregateElements);
 	}
 
 	@Override
@@ -76,7 +77,7 @@ class AggregateAtomImpl extends AbstractAtom implements AggregateAtom {
 			}
 		}
 		if (lowerBoundTerm != null && !lowerBoundTerm.isGround()
-				|| upperBoundTerm != null && !upperBoundTerm.isGround()) {
+			|| upperBoundTerm != null && !upperBoundTerm.isGround()) {
 			return false;
 		}
 		return true;
@@ -93,7 +94,7 @@ class AggregateAtomImpl extends AbstractAtom implements AggregateAtom {
 	}
 
 	@Override
-	public Atom withTerms(List<Term> terms) {
+	public AggregateAtom withTerms(List<Term> terms) {
 		throw new UnsupportedOperationException("Editing term list is not supported for aggregate atoms!");
 	}
 
@@ -189,7 +190,7 @@ class AggregateAtomImpl extends AbstractAtom implements AggregateAtom {
 	}
 
 	@Override
-	public AggregateFunction getAggregateFunction() {
+	public AggregateFunctionSymbol getAggregateFunction() {
 		return this.aggregatefunction;
 	}
 

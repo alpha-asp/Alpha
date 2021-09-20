@@ -13,33 +13,31 @@ import at.ac.tuwien.kr.alpha.core.transformation.ArithmeticTermsRewriting;
  */
 public class NormalizeProgramTransformation extends ProgramTransformation<ASPCore2Program, NormalProgram> {
 
-	private boolean useNormalizationGrid;
+	private final AggregateRewritingConfig aggregateRewritingCfg;
 
-	public NormalizeProgramTransformation(boolean useNormalizationGrid) {
-		this.useNormalizationGrid = useNormalizationGrid;
+	public NormalizeProgramTransformation(AggregateRewritingConfig aggregateCfg) {
+		this.aggregateRewritingCfg = aggregateCfg;
 	}
 
 	@Override
 	public NormalProgram apply(ASPCore2Program inputProgram) {
 		ASPCore2Program tmpPrg;
+		// Remove variable equalities.
+		tmpPrg = new VariableEqualityRemoval().apply(inputProgram);
 		// Transform choice rules.
-		tmpPrg = new ChoiceHeadToNormal().apply(inputProgram);
-		// Transform cardinality aggregates.
-		tmpPrg = new CardinalityNormalization(!this.useNormalizationGrid).apply(tmpPrg);
-		// Transform sum aggregates.
-		tmpPrg = new SumNormalization().apply(tmpPrg);
+		tmpPrg = new ChoiceHeadToNormal().apply(tmpPrg);
+		// Transform aggregates.
+		tmpPrg = new AggregateRewriting(aggregateRewritingCfg.isUseSortingGridEncoding(), aggregateRewritingCfg.isSupportNegativeValuesInSums()).apply(tmpPrg);
 		// Transform enumeration atoms.
 		tmpPrg = new EnumerationRewriting().apply(tmpPrg);
 		EnumerationAtom.resetEnumerations();
 
 		// Construct the normal program.
 		NormalProgram retVal = NormalProgramImpl.fromInputProgram(tmpPrg);
-		// Transform intervals - CAUTION - this MUST come before VariableEqualityRemoval!
+		// Transform intervals
 		retVal = new IntervalTermToIntervalAtom().apply(retVal);
 		// Rewrite ArithmeticTerms.
 		retVal = new ArithmeticTermsRewriting().apply(retVal);
-		// Remove variable equalities.
-		retVal = new VariableEqualityRemoval().apply(retVal);
 		return retVal;
 	}
 

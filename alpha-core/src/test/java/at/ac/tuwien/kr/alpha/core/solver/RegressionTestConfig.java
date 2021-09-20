@@ -26,12 +26,14 @@ public class RegressionTestConfig {
 	private final boolean evaluateStratifiedPart;
 
 	private final boolean encodeAggregatesUsingSortingGrid;
+	
+	private final boolean supportNegativeSumElements;
 
 	public RegressionTestConfig(
 			String solverName, String grounderName, String noGoodStoreName,
 			Heuristic branchingHeuristic, long seed,
 			boolean debugChecks, String grounderToleranceConstraints, String grounderToleranceRules,
-			boolean disableInstanceRemoval, boolean evaluateStratifiedPart, boolean useSortingGrid) {
+			boolean disableInstanceRemoval, boolean evaluateStratifiedPart, boolean useSortingGrid, boolean supportNegativeSumElements) {
 		this.solverName = solverName;
 		this.grounderName = grounderName;
 		this.noGoodStoreName = noGoodStoreName;
@@ -43,6 +45,7 @@ public class RegressionTestConfig {
 		this.disableInstanceRemoval = disableInstanceRemoval;
 		this.evaluateStratifiedPart = evaluateStratifiedPart;
 		this.encodeAggregatesUsingSortingGrid = useSortingGrid;
+		this.supportNegativeSumElements = supportNegativeSumElements;
 	}
 
 	public SystemConfig toSystemConfig() {
@@ -55,9 +58,10 @@ public class RegressionTestConfig {
 		retVal.setDebugInternalChecks(this.debugChecks);
 		retVal.setEvaluateStratifiedPart(this.evaluateStratifiedPart);
 		retVal.setGrounderAccumulatorEnabled(this.disableInstanceRemoval);
-		retVal.setUseNormalizationGrid(!this.encodeAggregatesUsingSortingGrid);
 		retVal.setGrounderToleranceRules(this.grounderToleranceRules);
 		retVal.setGrounderToleranceConstraints(this.grounderToleranceConstraints);
+		retVal.getAggregateRewritingConfig().setUseSortingGridEncoding(this.encodeAggregatesUsingSortingGrid);
+		retVal.getAggregateRewritingConfig().setSupportNegativeValuesInSums(this.supportNegativeSumElements);
 		return retVal;
 	}
 
@@ -105,13 +109,17 @@ public class RegressionTestConfig {
 		return this.encodeAggregatesUsingSortingGrid;
 	}
 
+	public boolean isSupportNegativeSumElements() {
+		return this.supportNegativeSumElements;
+	}
+	
 	@Override
 	public String toString() {
 		return String.format(
-				"RegressionTestConfig [solverName=%s, grounderName=%s, noGoodStoreName=%s, branchingHeuristic=%s, seed=%s, debugChecks=%s, grounderToleranceConstraints=%s, grounderToleranceRules=%s, disableInstanceRemoval=%s, evaluateStratifiedPart=%s, useSortingGrid=%s]",
+				"RegressionTestConfig [solverName=%s, grounderName=%s, noGoodStoreName=%s, branchingHeuristic=%s, seed=%s, debugChecks=%s, grounderToleranceConstraints=%s, grounderToleranceRules=%s, disableInstanceRemoval=%s, evaluateStratifiedPart=%s, useSortingGrid=%s, supportNegativeSumElements=%s]",
 				this.solverName, this.grounderName, this.noGoodStoreName, this.branchingHeuristic, this.seed, this.debugChecks,
 				this.grounderToleranceConstraints, this.grounderToleranceRules, this.disableInstanceRemoval, this.evaluateStratifiedPart,
-				this.encodeAggregatesUsingSortingGrid);
+				this.encodeAggregatesUsingSortingGrid, this.supportNegativeSumElements);
 	}
 
 }
