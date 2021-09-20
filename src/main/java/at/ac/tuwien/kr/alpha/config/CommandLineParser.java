@@ -133,7 +133,8 @@ public class CommandLineParser {
 			+ SystemConfig.DEFAULT_ENABLE_RESTARTS + ")")
 		.build();
 	private static final Option OPT_INITIAL_PHASE = Option.builder("ph").longOpt("initialPhase").hasArg(true).argName("initializer")
-		.desc("set the initial phase [ " + PhaseInitializerFactory.InitialPhase.listAllowedValues() + " ] (default: " + SystemConfig.DEFAULT_PHASE_INITIALIZER + ")")
+		.desc("set the initial phase [ " + PhaseInitializerFactory.InitialPhase.listAllowedValues() + " ] (default: " + SystemConfig.DEFAULT_PHASE_INITIALIZER + "). " +
+			"Note: only works in conjunction with the " + Heuristic.VSIDS_PHASE_SAVING + " branching heuristic.")
 		.build();
 	//@formatter:on
 
