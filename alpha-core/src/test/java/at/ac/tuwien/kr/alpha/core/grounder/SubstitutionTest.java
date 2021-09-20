@@ -55,8 +55,8 @@ import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
+import at.ac.tuwien.kr.alpha.core.test.util.SubstitutionTestUtil;
 import at.ac.tuwien.kr.alpha.core.util.Substitutions;
-import at.ac.tuwien.kr.alpha.test.util.SubstitutionTestUtil;
 
 public class SubstitutionTest {
 	private static final ProgramParser PARSER = new ProgramParserImpl();

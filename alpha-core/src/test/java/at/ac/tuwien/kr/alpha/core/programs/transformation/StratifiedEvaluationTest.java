@@ -25,7 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.grounder.transformation;
+package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -62,10 +62,8 @@ import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.Programs;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
-import at.ac.tuwien.kr.alpha.test.util.TestUtils;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 public class StratifiedEvaluationTest {
 
@@ -206,12 +204,12 @@ public class StratifiedEvaluationTest {
 		ASPCore2Program prog = Programs.fromInputStream(
 				StratifiedEvaluationTest.class.getResourceAsStream("/partial-eval/recursive_w_negated_condition.asp"),
 				new HashMap<>());
-		
+
 		// Run stratified evaluation and solve
 		CompiledProgram inputStratEval = new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normalizer.apply(prog)));
 		Set<AnswerSet> asStrat = solveCompiledProg.apply(inputStratEval);
 		TestUtils.assertAnswerSetsEqual(expectedAnswerSet, asStrat);
-		
+
 		// Solve without stratified evaluation
 		CompiledProgram inputNoStratEval = InternalProgram.fromNormalProgram(normalizer.apply(prog));
 		Set<AnswerSet> as = solveCompiledProg.apply(inputNoStratEval);

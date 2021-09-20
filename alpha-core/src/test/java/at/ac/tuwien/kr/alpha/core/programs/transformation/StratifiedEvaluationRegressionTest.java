@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.grounder.transformation;
+package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -31,10 +31,8 @@ import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
-import at.ac.tuwien.kr.alpha.test.util.TestUtils;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 public class StratifiedEvaluationRegressionTest {
 
@@ -102,12 +100,14 @@ public class StratifiedEvaluationRegressionTest {
 		return paramList;
 	}
 
-@ParameterizedTest	        @MethodSource("at.ac.tuwien.kr.alpha.grounder.transformation.StratifiedEvaluationRegressionTest#params")
+	@ParameterizedTest
+	@MethodSource("at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluationRegressionTest#params")
 	public void runTest(String aspString, Consumer<CompiledProgram> programVerifier, Consumer<Set<AnswerSet>> resultVerifier) {
 		// Parse and pre-evaulate program
 		ProgramParser parser = new ProgramParserImpl();
 		ASPCore2Program prog = parser.parse(aspString);
-		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG).apply(prog));
+		AnalyzedProgram analyzed = AnalyzedProgram
+				.analyzeNormalProgram(new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG).apply(prog));
 		CompiledProgram evaluated = new StratifiedEvaluation().apply(analyzed);
 		// Verify stratified evaluation result
 		programVerifier.accept(evaluated);

@@ -27,7 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
+import static at.ac.tuwien.kr.alpha.core.common.NoGoodTest.fromOldLiterals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -40,11 +40,11 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 public class LearnedNoGoodDeletionTest {
 
@@ -53,7 +53,7 @@ public class LearnedNoGoodDeletionTest {
 
 	public LearnedNoGoodDeletionTest() {
 		AtomStore atomStore = new AtomStoreImpl();
-		AtomStoreTest.fillAtomStore(atomStore, 200);
+		TestUtils.fillAtomStore(atomStore, 200);
 		WritableAssignment assignment = new TrailAssignment(atomStore);
 		assignment.growForMaxAtomId();
 		store = new NoGoodStoreAlphaRoaming(assignment);

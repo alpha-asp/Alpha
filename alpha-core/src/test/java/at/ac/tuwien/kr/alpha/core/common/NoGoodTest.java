@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.common;
+package at.ac.tuwien.kr.alpha.core.common;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -12,7 +12,6 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.core.atoms.Literals;
-import at.ac.tuwien.kr.alpha.core.common.NoGood;
 
 public class NoGoodTest {
 	/**

@@ -25,7 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static at.ac.tuwien.kr.alpha.test.util.TestUtils.runWithTimeout;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.runWithTimeout;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -47,7 +47,7 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.test.util.TestUtils;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 /**
  * Tests {@link AbstractSolver} using some hanoi tower test cases (see https://en.wikipedia.org/wiki/Tower_of_Hanoi).

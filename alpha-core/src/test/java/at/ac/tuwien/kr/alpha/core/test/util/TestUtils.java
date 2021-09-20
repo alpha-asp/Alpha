@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.test.util;
+package at.ac.tuwien.kr.alpha.core.test.util;
 
 import static java.util.Collections.emptySet;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
@@ -6,11 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.function.Executable;
@@ -31,6 +34,7 @@ import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
@@ -40,10 +44,41 @@ import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransf
 import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.core.solver.RegressionTestConfig;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
-import at.ac.tuwien.kr.alpha.core.test.util.AnswerSetsParser;
 
 public class TestUtils {
 
+	public static void fillAtomStore(AtomStore atomStore, int numberOfAtomsToFill) {
+		Predicate predA = Predicates.getPredicate("a", 1);
+		for (int i = 0; i < numberOfAtomsToFill; i++) {
+			atomStore.putIfAbsent(Atoms.newBasicAtom(predA, Terms.newConstant(i)));
+		}
+	}
+	
+	public static Atom atom(String predicateName, String... termStrings) {
+		Term[] terms = new Term[termStrings.length];
+		for (int i = 0; i < termStrings.length; i++) {
+			String termString = termStrings[i];
+			if (StringUtils.isAllUpperCase(termString.substring(0, 1))) {
+				terms[i] = Terms.newVariable(termString);
+			} else {
+				terms[i] = Terms.newConstant(termString);
+			}
+		}
+		return Atoms.newBasicAtom(Predicates.getPredicate(predicateName, terms.length), terms);
+	}
+
+	public static Atom atom(String predicateName, int... termInts) {
+		Term[] terms = new Term[termInts.length];
+		for (int i = 0; i < termInts.length; i++) {
+			terms[i] = Terms.newConstant(termInts[i]);
+		}
+		return Atoms.newBasicAtom(Predicates.getPredicate(predicateName, terms.length), terms);
+	}
+	
+	public static void printNoGoods(AtomStore atomStore, Collection<NoGood> noGoods) {
+		System.out.println(noGoods.stream().map(atomStore::noGoodToString).collect(Collectors.toSet()));
+	}
+	
 	public static void assertAnswerSetsEqual(Set<AnswerSet> expected, Set<AnswerSet> actual) {
 		if (expected == null) {
 			if (actual != null) {

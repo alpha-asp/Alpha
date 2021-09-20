@@ -25,7 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.antlr;
+package at.ac.tuwien.kr.alpha.core.parser;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -60,7 +60,6 @@ import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
 /**
  * Copyright (c) 2016, the Alpha Team.

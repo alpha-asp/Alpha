@@ -40,7 +40,7 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.test.util.TestUtils;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 /**
  * Tests rule transformations described in the following research paper, and their effects on performance:

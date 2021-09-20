@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.test.util.TestUtils;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 /**
  * Tests {@link AbstractSolver} using Omiga benchmark problems.

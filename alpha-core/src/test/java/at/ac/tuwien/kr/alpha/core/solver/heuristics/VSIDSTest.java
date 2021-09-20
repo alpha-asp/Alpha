@@ -34,7 +34,6 @@ import java.util.Collection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.core.atoms.Literals;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
@@ -43,6 +42,7 @@ import at.ac.tuwien.kr.alpha.core.solver.NoGoodStoreAlphaRoaming;
 import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
 import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.core.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 /**
  * Tests {@link VSIDS}.
@@ -72,7 +72,7 @@ public class VSIDSTest {
 	@BeforeEach
 	public void setUp() {
 		atomStore = new AtomStoreImpl();
-		AtomStoreTest.fillAtomStore(atomStore, 4);
+		TestUtils.fillAtomStore(atomStore, 4);
 		assignment = new TrailAssignment(atomStore);
 		assignment.growForMaxAtomId();
 		noGoodStore = new NoGoodStoreAlphaRoaming(assignment);

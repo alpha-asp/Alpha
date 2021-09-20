@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.test.util;
+package at.ac.tuwien.kr.alpha.core.test.util;
 
 import java.util.ArrayList;
 import java.util.HashSet;

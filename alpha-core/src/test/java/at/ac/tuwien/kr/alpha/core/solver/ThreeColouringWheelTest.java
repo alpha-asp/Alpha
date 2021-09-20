@@ -25,8 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static at.ac.tuwien.kr.alpha.test.util.TestUtils.buildSolverForRegressionTest;
-import static at.ac.tuwien.kr.alpha.test.util.TestUtils.runWithTimeout;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.runWithTimeout;
 
 import java.util.ArrayList;
 import java.util.List;

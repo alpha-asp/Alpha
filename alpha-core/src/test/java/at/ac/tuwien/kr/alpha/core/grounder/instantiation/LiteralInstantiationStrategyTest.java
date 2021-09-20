@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.grounder.instantiation;
+package at.ac.tuwien.kr.alpha.core.grounder.instantiation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -24,10 +24,6 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.core.grounder.WorkingMemory;
-import at.ac.tuwien.kr.alpha.core.grounder.instantiation.AssignmentStatus;
-import at.ac.tuwien.kr.alpha.core.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy;
-import at.ac.tuwien.kr.alpha.core.grounder.instantiation.LiteralInstantiationStrategy;
-import at.ac.tuwien.kr.alpha.core.grounder.instantiation.WorkingMemoryBasedInstantiationStrategy;
 import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
 import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
@@ -84,7 +80,6 @@ public class LiteralInstantiationStrategyTest {
 				Collections.emptyMap(), false);
 		strategy.setStaleWorkingMemoryEntries(staleSet);
 		strategy.setCurrentAssignment(null);
-		
 
 		AssignmentStatus assignmentStatus = strategy.getTruthForGroundLiteral(Literals.fromAtom(pOfA, true));
 		assertEquals(AssignmentStatus.TRUE, assignmentStatus);
@@ -215,7 +210,7 @@ public class LiteralInstantiationStrategyTest {
 				Collections.emptyMap(), false);
 		strategy.setStaleWorkingMemoryEntries(staleSet);
 		strategy.setCurrentAssignment(assignment);
-		
+
 		AssignmentStatus assignmentStatus = strategy.getTruthForGroundLiteral(Literals.fromAtom(pOfA, true));
 		assertEquals(AssignmentStatus.TRUE, assignmentStatus);
 
@@ -373,4 +368,3 @@ public class LiteralInstantiationStrategyTest {
 	}
 
 }
-	

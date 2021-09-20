@@ -21,7 +21,7 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
-import at.ac.tuwien.kr.alpha.test.util.DependencyGraphUtils;
+import at.ac.tuwien.kr.alpha.core.test.util.DependencyGraphUtils;
 
 public class DependencyGraphImplTest {
 

@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.grounder.instantiation;
+package at.ac.tuwien.kr.alpha.core.grounder.instantiation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -23,10 +23,6 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationLiteral;
 import at.ac.tuwien.kr.alpha.core.grounder.WorkingMemory;
-import at.ac.tuwien.kr.alpha.core.grounder.instantiation.AssignmentStatus;
-import at.ac.tuwien.kr.alpha.core.grounder.instantiation.LiteralInstantiationResult;
-import at.ac.tuwien.kr.alpha.core.grounder.instantiation.LiteralInstantiator;
-import at.ac.tuwien.kr.alpha.core.grounder.instantiation.WorkingMemoryBasedInstantiationStrategy;
 
 public class LiteralInstantiatorTest {
 

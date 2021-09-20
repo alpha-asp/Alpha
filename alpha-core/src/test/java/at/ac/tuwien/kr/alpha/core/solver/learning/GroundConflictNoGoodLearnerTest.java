@@ -1,6 +1,6 @@
-package at.ac.tuwien.kr.alpha.solver.learning;
+package at.ac.tuwien.kr.alpha.core.solver.learning;
 
-import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
+import static at.ac.tuwien.kr.alpha.core.common.NoGoodTest.fromOldLiterals;
 import static at.ac.tuwien.kr.alpha.core.solver.AntecedentTest.antecedentsEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
@@ -22,7 +21,7 @@ import at.ac.tuwien.kr.alpha.core.solver.NoGoodStoreAlphaRoaming;
 import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
 import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
-import at.ac.tuwien.kr.alpha.core.solver.learning.GroundConflictNoGoodLearner;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 /**
  * Copyright (c) 2016-2019, the Alpha Team.
@@ -35,7 +34,7 @@ public class GroundConflictNoGoodLearnerTest {
 
 	public GroundConflictNoGoodLearnerTest() {
 		atomStore = new AtomStoreImpl();
-		AtomStoreTest.fillAtomStore(atomStore, 20);
+		TestUtils.fillAtomStore(atomStore, 20);
 		this.assignment = new TrailAssignment(atomStore);
 		this.assignment.growForMaxAtomId();
 		this.store = new NoGoodStoreAlphaRoaming(assignment);

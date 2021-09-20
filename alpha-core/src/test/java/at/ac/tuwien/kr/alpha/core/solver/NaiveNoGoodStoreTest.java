@@ -1,8 +1,8 @@
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
 import static at.ac.tuwien.kr.alpha.core.common.NoGood.fact;
 import static at.ac.tuwien.kr.alpha.core.common.NoGood.headFirst;
+import static at.ac.tuwien.kr.alpha.core.common.NoGoodTest.fromOldLiterals;
 import static at.ac.tuwien.kr.alpha.core.solver.AntecedentTest.antecedentsEquals;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.MBT;
@@ -17,11 +17,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 /**
  * Copyright (c) 2017, the Alpha Team.
@@ -40,7 +40,7 @@ public class NaiveNoGoodStoreTest {
 	@BeforeEach	
 	public void setUp() {
 		store.clear();
-		AtomStoreTest.fillAtomStore(atomStore, 200);
+		TestUtils.fillAtomStore(atomStore, 200);
 		assignment.growForMaxAtomId();
 	}
 
