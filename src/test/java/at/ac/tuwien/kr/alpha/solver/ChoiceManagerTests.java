@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018 Siemens AG
+ * Copyright (c) 2017 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -25,37 +25,43 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Collection;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.junit.Before;
-import org.junit.Test;
 
-import java.io.IOException;
-import java.util.Collection;
-
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static org.junit.Assert.assertTrue;
-
-public class ChoiceManagerTests extends AbstractSolverTests {
+public class ChoiceManagerTests {
 	private Grounder grounder;
 	private ChoiceManager choiceManager;
 	private AtomStore atomStore;
 
-	@Before
-	public void setUp() throws IOException {
+	@BeforeEach
+	public void setUp() {
+		Alpha system = new Alpha();
 		String testProgram = "h :- b1, b2, not b3, not b4.";
-		Program parsedProgram = new ProgramParser().parse(testProgram);
-		this.atomStore = new AtomStoreImpl();
-		this.grounder = new NaiveGrounder(parsedProgram, atomStore, true);
+		InputProgram parsedProgram = new ProgramParser().parse(testProgram);
+		NormalProgram normalProgram = system.normalizeProgram(parsedProgram);
+		InternalProgram internalProgram = InternalProgram.fromNormalProgram(normalProgram);
+		atomStore = new AtomStoreImpl();
+		grounder = new NaiveGrounder(internalProgram, atomStore, true);
 		WritableAssignment assignment = new TrailAssignment(atomStore);
 		NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment);
-		this.choiceManager = new ChoiceManager(assignment, store);
+		choiceManager = new ChoiceManager(assignment, store);
 	}
 
 	@Test
@@ -67,7 +73,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 				int atom = atomOf(literal);
 				String atomToString = atomStore.atomToString(atom);
 				if (atomToString.startsWith(RuleAtom.PREDICATE.getName())) {
-					assertTrue("Atom not choice: " + atomToString, choiceManager.isAtomChoice(atom));
+					assertTrue(choiceManager.isAtomChoice(atom), "Atom not choice: " + atomToString);
 				}
 			}
 		}

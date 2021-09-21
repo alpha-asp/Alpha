@@ -25,42 +25,42 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Rule;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
-import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 
 public class AtomCounterTests {
 
 	private AtomStore atomStore;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		this.atomStore = new AtomStoreImpl();
 	}
 
 	@Test
-	public void testGetNumberOfAtoms() throws NoSuchMethodException {
+	public void testGetNumberOfAtoms() {
 		final AtomCounter atomCounter = atomStore.getAtomCounter();
 
 		expectGetNumberOfAtoms(atomCounter, BasicAtom.class, 0);
@@ -81,7 +81,7 @@ public class AtomCounterTests {
 	}
 
 	@Test
-	public void testGetStatsByType() throws NoSuchMethodException {
+	public void testGetStatsByType() {
 		final AtomCounter atomCounter = atomStore.getAtomCounter();
 
 		createBasicAtom1();
@@ -110,7 +110,7 @@ public class AtomCounterTests {
 		final ConstantTerm<Integer> c3 = ConstantTerm.getInstance(3);
 		List<Term> basicTerms = Arrays.asList(c1, c2, c3);
 		AggregateAtom.AggregateElement aggregateElement = new AggregateAtom.AggregateElement(basicTerms, Collections.singletonList(new BasicAtom(Predicate.getInstance("p", 3), c1, c2, c3).toLiteral()));
-		atomStore.putIfAbsent(new AggregateAtom(ComparisonOperator.LE, c1, null, null, AggregateAtom.AGGREGATEFUNCTION.COUNT, Collections.singletonList(aggregateElement)));
+		atomStore.putIfAbsent(new AggregateAtom(ComparisonOperator.LE, c1, null, null, AggregateAtom.AggregateFunctionSymbol.COUNT, Collections.singletonList(aggregateElement)));
 	}
 
 	private void createChoiceAtom() {
@@ -119,16 +119,16 @@ public class AtomCounterTests {
 
 	private void createRuleAtom() {
 		Atom atomAA = new BasicAtom(Predicate.getInstance("aa", 0));
-		Rule ruleAA = new Rule(new DisjunctiveHead(Collections.singletonList(atomAA)), Collections.singletonList(new BasicAtom(Predicate.getInstance("bb", 0)).toLiteral(false)));
-		atomStore.putIfAbsent(new RuleAtom(NonGroundRule.constructNonGroundRule(ruleAA), new Substitution()));
+		InternalRule ruleAA = new InternalRule(new NormalHead(atomAA), Collections.singletonList(new BasicAtom(Predicate.getInstance("bb", 0)).toLiteral(false)));
+		atomStore.putIfAbsent(new RuleAtom(ruleAA, new Substitution()));
 	}
 
 	private void expectGetNumberOfAtoms(AtomCounter atomCounter, Class<? extends Atom> classOfAtoms, int expectedNumber) {
-		assertEquals("Unexpected number of " + classOfAtoms.getSimpleName() + "s", expectedNumber, atomCounter.getNumberOfAtoms(classOfAtoms));
+		assertEquals(expectedNumber, atomCounter.getNumberOfAtoms(classOfAtoms), "Unexpected number of " + classOfAtoms.getSimpleName() + "s");
 	}
 
 	private void expectGetStatsByType(AtomCounter atomCounter, Class<? extends Atom> classOfAtoms, int expectedNumber) {
-		assertTrue("Expected number of " + classOfAtoms.getSimpleName() + "s not contained in stats string", atomCounter.getStatsByType().contains(classOfAtoms.getSimpleName() + ": " + expectedNumber));
+		assertTrue(atomCounter.getStatsByType().contains(classOfAtoms.getSimpleName() + ": " + expectedNumber), "Expected number of " + classOfAtoms.getSimpleName() + "s not contained in stats string");
 	}
 
 }

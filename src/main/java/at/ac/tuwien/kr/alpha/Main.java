@@ -29,7 +29,16 @@ package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.AnswerSetFormatter;
+import at.ac.tuwien.kr.alpha.common.SimpleAnswerSetFormatter;
+import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph;
+import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
+import at.ac.tuwien.kr.alpha.common.graphio.ComponentGraphWriter;
+import at.ac.tuwien.kr.alpha.common.graphio.DependencyGraphWriter;
+import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.config.AlphaConfig;
 import at.ac.tuwien.kr.alpha.config.CommandLineParser;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
@@ -40,8 +49,11 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -59,19 +71,19 @@ public class Main {
 
 	public static void main(String[] args) {
 		CommandLineParser commandLineParser = new CommandLineParser(Main.ALPHA_CALL_SYNTAX, (msg) -> Main.exitWithMessage(msg, 0));
-		AlphaConfig ctx = null;
+		AlphaConfig cfg = null;
 		try {
-			ctx = commandLineParser.parseCommandLine(args);
+			cfg = commandLineParser.parseCommandLine(args);
 		} catch (ParseException ex) {
 			System.err.println("Invalid usage: " + ex.getMessage());
 			Main.exitWithMessage(commandLineParser.getUsageMessage(), 1);
 		}
 
-		Alpha alpha = new Alpha(ctx.getAlphaConfig());
+		Alpha alpha = new Alpha(cfg.getSystemConfig());
 
-		Program program = null;
+		InputProgram program = null;
 		try {
-			program = alpha.readProgram(ctx.getInputConfig());
+			program = alpha.readProgram(cfg.getInputConfig());
 		} catch (RecognitionException e) {
 			// In case a recognition exception occurred, parseVisit will
 			// already have printed an error message, so we just exit
@@ -83,10 +95,83 @@ public class Main {
 			Main.bailOut("Failed to parse program.", e);
 		}
 
-		Main.computeAndConsumeAnswerSets(alpha, ctx.getInputConfig(), program);
+		NormalProgram normalized = alpha.normalizeProgram(program);
+		InternalProgram preprocessed;
+		InputConfig inputCfg = cfg.getInputConfig();
+		if (!(inputCfg.isWriteDependencyGraph() || inputCfg.isWriteComponentGraph())) {
+			LOGGER.debug("Not writing dependency or component graphs, starting preprocessing...");
+			preprocessed = alpha.performProgramPreprocessing(InternalProgram.fromNormalProgram(normalized));
+		} else {
+			LOGGER.debug("Performing program analysis in preparation for writing dependency and/or component graph file...");
+			AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalized);
+			if (cfg.getInputConfig().isWriteDependencyGraph()) {
+				Main.writeDependencyGraph(analyzed.getDependencyGraph(), cfg.getInputConfig().getDepgraphPath());
+			}
+			if (cfg.getInputConfig().isWriteComponentGraph()) {
+				Main.writeComponentGraph(analyzed.getComponentGraph(), cfg.getInputConfig().getCompgraphPath());
+			}
+			preprocessed = alpha.performProgramPreprocessing(analyzed);
+		}
+		if (cfg.getInputConfig().isWritePreprocessed()) {
+			Main.writeInternalProgram(preprocessed, cfg.getInputConfig().getPreprocessedPath());
+		}
+		Main.computeAndConsumeAnswerSets(alpha, cfg.getInputConfig(), preprocessed);
 	}
 
-	private static void computeAndConsumeAnswerSets(Alpha alpha, InputConfig inputCfg, Program program) {
+	/**
+	 * Writes the given {@link DependencyGraph} to the destination passed as the second parameter
+	 * 
+	 * @param dg   the dependency graph to write
+	 * @param path the path to write the graph to
+	 */
+	private static void writeDependencyGraph(DependencyGraph dg, String path) {
+		DependencyGraphWriter depGraphWriter = new DependencyGraphWriter();
+		try (FileOutputStream os = new FileOutputStream(new File(path))) {
+			depGraphWriter.writeAsDot(dg, os);
+		} catch (IOException ex) {
+			Main.bailOut("Error writing dependency graph: " + ex.getMessage());
+		}
+	}
+
+	/**
+	 * Writes the given {@link ComponentGraph} to the destination passed as the second parameter
+	 * 
+	 * @param cg   the component graph to write
+	 * @param path the path to write the graph to
+	 */
+	private static void writeComponentGraph(ComponentGraph cg, String path) {
+		ComponentGraphWriter compGraphWriter = new ComponentGraphWriter();
+		try (FileOutputStream os = new FileOutputStream(new File(path))) {
+			compGraphWriter.writeAsDot(cg, os);
+		} catch (IOException ex) {
+			Main.bailOut("Error writing component graph: " + ex.getMessage());
+		}
+
+	}
+
+	/**
+	 * Writes the given {@link InternalProgram} to the destination passed as the second parameter
+	 * 
+	 * @param prg   the program to write
+	 * @param path the path to write the program to
+	 */
+	private static void writeInternalProgram(InternalProgram prg, String path) {
+		LOGGER.debug("Writing preprocessed program to {}", path);
+		PrintStream ps;
+		try {
+			if (path.equals(InputConfig.PREPROC_STDOUT_PATH)) {
+				ps = System.out;
+			} else {
+				ps = new PrintStream(new File(path));
+			}
+			ps.println(prg.toString());
+		} catch (IOException ex) {
+			LOGGER.error("Failed writing preprocessed program file", ex);
+			Main.bailOut("Failed writing preprocessed program file " + ex.getMessage());
+		}
+	}
+
+	private static void computeAndConsumeAnswerSets(Alpha alpha, InputConfig inputCfg, InternalProgram program) {
 		Solver solver = alpha.prepareSolverFor(program, inputCfg.getFilter());
 		Stream<AnswerSet> stream = solver.stream();
 		if (alpha.getConfig().isSortAnswerSets()) {
@@ -101,8 +186,9 @@ public class Main {
 		if (!alpha.getConfig().isQuiet()) {
 			AtomicInteger counter = new AtomicInteger(0);
 			final BiConsumer<Integer, AnswerSet> answerSetHandler;
+			final AnswerSetFormatter<String> fmt = new SimpleAnswerSetFormatter(alpha.getConfig().getAtomSeparator());
 			BiConsumer<Integer, AnswerSet> stdoutPrinter = (n, as) -> {
-				System.out.println("Answer set " + Integer.toString(n) + ":" + System.lineSeparator() + as.toString());
+				System.out.println("Answer set " + Integer.toString(n) + ":" + System.lineSeparator() + fmt.format(as));
 			};
 			if (inputCfg.isWriteAnswerSetsAsXlsx()) {
 				BiConsumer<Integer, AnswerSet> xlsxWriter = new AnswerSetToXlsxWriter(inputCfg.getAnswerSetFileOutputPath());

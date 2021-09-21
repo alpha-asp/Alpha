@@ -1,24 +1,30 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import org.junit.Test;
-
-import java.util.*;
-
 import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import org.junit.jupiter.api.Test;
+
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
 public class BasicAnswerSetTest {
+	
 	@Test
-	public void areAnswerSetsEqual() throws Exception {
+	public void areAnswerSetsEqual() {
 		Predicate a = Predicate.getInstance("a", 0);
 		Predicate foo = Predicate.getInstance("foo", 1);
 		SortedSet<Predicate> fooAndA = new TreeSet<>(asList(foo, a));
@@ -27,8 +33,8 @@ public class BasicAnswerSetTest {
 		Predicate p = Predicate.getInstance("p", 1);
 		SortedSet<Predicate> qAndP = new TreeSet<>(asList(q, p));
 
-		ConstantTerm bar = getInstance("bar");
-		ConstantTerm baz = getInstance("baz");
+		ConstantTerm<?> bar = getInstance("bar");
+		ConstantTerm<?> baz = getInstance("baz");
 
 		Map<Predicate, SortedSet<Atom>> inst1 = new HashMap<>();
 		inst1.put(a, new TreeSet<>(singleton(new BasicAtom(a))));

@@ -25,22 +25,21 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import org.junit.jupiter.api.Disabled;
+
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 
 /**
  * Tests rule transformations described in the following research paper, and their effects on performance:
@@ -49,119 +48,137 @@ import static org.junit.Assert.assertFalse;
  * (Eds.): Proceedings of the Seventeenth European Conference on Artificial Intelligence (ECAI'06): IOS Press, pp. 769–770.
  *
  */
-public class HeadBodyTransformationTests extends AbstractSolverTests {
+public class HeadBodyTransformationTests {
 
-	@Before
-	public void printSolverName() {
-		System.out.println(solverName);
+	private static final int DEBUG_TIMEOUT_FACTOR = 5;
+	
+
+	@RegressionTest
+	public void testProgramB_N1(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramB(1), cfg));
 	}
 
-	@Test(timeout = 10000)
-	public void testProgramB_N1() throws IOException {
-		test(constructProgramB(1));
+	@RegressionTest
+	public void testProgramB_Transformed_N1(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramB_TransformationB(1), cfg));
 	}
 
-	@Test(timeout = 10000)
-	public void testProgramB_Transformed_N1() throws IOException {
-		test(constructProgramB_TransformationB(1));
+	@RegressionTest
+	public void testProgramA_N1(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramA(1), cfg));
 	}
 
-	@Test(timeout = 10000)
-	public void testProgramA_N1() throws IOException {
-		test(constructProgramA(1));
+	@RegressionTest
+	public void testProgramA_Transformed_N1(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramA_TransformationA(1), cfg));
 	}
 
-	@Test(timeout = 10000)
-	public void testProgramA_Transformed_N1() throws IOException {
-		test(constructProgramA_TransformationA(1));
+	@RegressionTest
+	public void testProgramB_N2(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramB(2), cfg));
 	}
 
-	@Test(timeout = 10000)
-	public void testProgramB_N2() throws IOException {
-		test(constructProgramB(2));
+	@RegressionTest
+	public void testProgramB_Transformed_N2(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramB_TransformationB(2), cfg));
 	}
 
-	@Test(timeout = 10000)
-	public void testProgramB_Transformed_N2() throws IOException {
-		test(constructProgramB_TransformationB(2));
+	@RegressionTest
+	public void testProgramA_N2(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramA(2), cfg));
 	}
 
-	@Test(timeout = 10000)
-	public void testProgramA_N2() throws IOException {
-		test(constructProgramA(2));
+	@RegressionTest
+	public void testProgramA_Transformed_N2(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramA_TransformationA(2), cfg));
 	}
 
-	@Test(timeout = 10000)
-	public void testProgramA_Transformed_N2() throws IOException {
-		test(constructProgramA_TransformationA(2));
+	@RegressionTest
+	public void testProgramB_N4(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramB(4), cfg));
 	}
 
-	@Test(timeout = 10000)
-	public void testProgramB_N4() throws IOException {
-		test(constructProgramB(4));
+	@RegressionTest
+	public void testProgramB_Transformed_N4(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramB_TransformationB(4), cfg));
 	}
 
-	@Test(timeout = 10000)
-	public void testProgramB_Transformed_N4() throws IOException {
-		test(constructProgramB_TransformationB(4));
+	@RegressionTest
+	public void testProgramA_N4(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramA(4), cfg));
 	}
 
-	@Test(timeout = 10000)
-	public void testProgramA_N4() throws IOException {
-		test(constructProgramA(4));
+	@RegressionTest
+	public void testProgramA_Transformed_N4(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramA_TransformationA(4), cfg));
 	}
 
-	@Test(timeout = 10000)
-	public void testProgramA_Transformed_N4() throws IOException {
-		test(constructProgramA_TransformationA(4));
+	@RegressionTest
+	public void testProgramB_N8(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramB(8), cfg));
 	}
 
-	@Test(timeout = 10000)
-	public void testProgramB_N8() throws IOException {
-		test(constructProgramB(8));
+	@RegressionTest
+	public void testProgramB_Transformed_N8(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramB_TransformationB(8), cfg));
 	}
 
-	@Test(timeout = 10000)
-	public void testProgramB_Transformed_N8() throws IOException {
-		test(constructProgramB_TransformationB(8));
+	@RegressionTest
+	public void testProgramA_N8(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramA(8), cfg));
 	}
 
-	@Test(timeout = 10000)
-	public void testProgramA_N8() throws IOException {
-		test(constructProgramA(8));
+	@RegressionTest
+	public void testProgramA_Transformed_N8(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramA_TransformationA(8), cfg));
 	}
 
-	@Test(timeout = 10000)
-	public void testProgramA_Transformed_N8() throws IOException {
-		test(constructProgramA_TransformationA(8));
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testProgramB_N16(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramB(16), cfg));
 	}
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testProgramB_N16() throws IOException {
-		test(constructProgramB(16));
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testProgramB_Transformed_N16(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramB_TransformationB(16), cfg));
 	}
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testProgramB_Transformed_N16() throws IOException {
-		test(constructProgramB_TransformationB(16));
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testProgramA_N16(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramA(16), cfg));
 	}
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testProgramA_N16() throws IOException {
-		test(constructProgramA(16));
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testProgramA_Transformed_N16(RegressionTestConfig cfg) {
+		long timeout = 10000L;
+		TestUtils.runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(constructProgramA_TransformationA(16), cfg));
 	}
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testProgramA_Transformed_N16() throws IOException {
-		test(constructProgramA_TransformationA(16));
-	}
-
-	private void test(Program program) {
-		Solver solver = getInstance(program);
+	private void test(InputProgram program, RegressionTestConfig cfg) {
+		Solver solver = TestUtils.buildSolverForRegressionTest(program, cfg);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		assertFalse(answerSet.isPresent());
 	}
@@ -171,7 +188,7 @@ public class HeadBodyTransformationTests extends AbstractSolverTests {
 	 * 
 	 * @param n
 	 */
-	private Program constructProgramB(int n) {
+	private InputProgram constructProgramB(int n) {
 		int numberOfRules = 3 * n + 1;
 		List<String> strRules = new ArrayList<>(numberOfRules);
 		strRules.add("x :- not x.");
@@ -185,7 +202,7 @@ public class HeadBodyTransformationTests extends AbstractSolverTests {
 	 * 
 	 * @param n
 	 */
-	private Program constructProgramB_TransformationB(int n) {
+	private InputProgram constructProgramB_TransformationB(int n) {
 		int numberOfRules = 6 * n + 2;
 		List<String> strRules = new ArrayList<>(numberOfRules);
 		strRules.add("b_notX :- not x.");
@@ -200,7 +217,7 @@ public class HeadBodyTransformationTests extends AbstractSolverTests {
 	 * 
 	 * @param n
 	 */
-	private Program constructProgramA(int n) {
+	private InputProgram constructProgramA(int n) {
 		int numberOfRules = 4 * n + 1;
 		List<String> strRules = new ArrayList<>(numberOfRules);
 		strRules.add(createXCRule(n));
@@ -214,7 +231,7 @@ public class HeadBodyTransformationTests extends AbstractSolverTests {
 	 * 
 	 * @param n
 	 */
-	private Program constructProgramA_TransformationA(int n) {
+	private InputProgram constructProgramA_TransformationA(int n) {
 		int numberOfRules = 7 * n + 2;
 		List<String> strRules = new ArrayList<>(numberOfRules);
 		strRules.addAll(createXCRules_TransformationA(n));
@@ -223,10 +240,10 @@ public class HeadBodyTransformationTests extends AbstractSolverTests {
 		return checkNumberOfRulesAndParse(strRules, numberOfRules);
 	}
 
-	private Program checkNumberOfRulesAndParse(List<String> strRules, int numberOfRules) {
+	private InputProgram checkNumberOfRulesAndParse(List<String> strRules, int numberOfRules) {
 		assertEquals(numberOfRules, strRules.size());
 		String strProgram = strRules.stream().collect(Collectors.joining(System.lineSeparator()));
-		Program parsedProgram = new ProgramParser().parse(strProgram);
+		InputProgram parsedProgram = new ProgramParser().parse(strProgram);
 		assertEquals(numberOfRules, parsedProgram.getRules().size());
 		return parsedProgram;
 	}

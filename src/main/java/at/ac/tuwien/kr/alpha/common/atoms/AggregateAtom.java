@@ -27,38 +27,39 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
+import static at.ac.tuwien.kr.alpha.Util.join;
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-
-import static at.ac.tuwien.kr.alpha.Util.join;
-import static at.ac.tuwien.kr.alpha.Util.oops;
-
-public class AggregateAtom implements Atom {
+public class AggregateAtom extends Atom {
 
 	private final ComparisonOperator lowerBoundOperator;
 	private final Term lowerBoundTerm;
 	private final ComparisonOperator upperBoundOperator;
 	private final Term upperBoundTerm;
-	private final AGGREGATEFUNCTION aggregatefunction;
+	private final AggregateFunctionSymbol aggregatefunction;
 	private final List<AggregateElement> aggregateElements;
 
-	public AggregateAtom(ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, ComparisonOperator upperBoundOperator, Term upperBoundTerm, AGGREGATEFUNCTION aggregatefunction, List<AggregateElement> aggregateElements) {
+	public AggregateAtom(ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, ComparisonOperator upperBoundOperator, Term upperBoundTerm, AggregateFunctionSymbol aggregatefunction, List<AggregateElement> aggregateElements) {
 		this.lowerBoundOperator = lowerBoundOperator;
 		this.lowerBoundTerm = lowerBoundTerm;
 		this.upperBoundOperator = upperBoundOperator;
 		this.upperBoundTerm = upperBoundTerm;
 		this.aggregatefunction = aggregatefunction;
 		this.aggregateElements = aggregateElements;
-		if (upperBoundOperator != null || lowerBoundOperator != ComparisonOperator.LE || lowerBoundTerm == null) {
-			throw new UnsupportedOperationException("Aggregate construct not yet supported: " + this);
-		}
+	}
+	
+	public AggregateAtom(ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, AggregateFunctionSymbol aggregatefunction, List<AggregateElement> aggregateElements) {
+		this(lowerBoundOperator, lowerBoundTerm, null, null, aggregatefunction, aggregateElements);
 	}
 
 	@Override
@@ -87,6 +88,11 @@ public class AggregateAtom implements Atom {
 	}
 
 	@Override
+	public AggregateAtom withTerms(List<Term> terms) {
+		throw new UnsupportedOperationException("Editing term list is not supported for aggregate atoms!");
+	}
+	
+	@Override
 	public Predicate getPredicate() {
 		throw oops("Aggregate atom cannot report predicate.");
 	}
@@ -105,7 +111,7 @@ public class AggregateAtom implements Atom {
 
 	@Override
 	public AggregateAtom substitute(Substitution substitution) {
-		return null;
+		throw new UnsupportedOperationException("Cannot apply substitution to AggregateAtom!");
 	}
 
 	@Override
@@ -171,7 +177,7 @@ public class AggregateAtom implements Atom {
 		return upperBoundTerm;
 	}
 
-	public AGGREGATEFUNCTION getAggregatefunction() {
+	public AggregateFunctionSymbol getAggregatefunction() {
 		return aggregatefunction;
 	}
 
@@ -179,7 +185,7 @@ public class AggregateAtom implements Atom {
 		return Collections.unmodifiableList(aggregateElements);
 	}
 
-	public enum AGGREGATEFUNCTION {
+	public enum AggregateFunctionSymbol {
 		COUNT,
 		MAX,
 		MIN,
@@ -260,4 +266,5 @@ public class AggregateAtom implements Atom {
 			return join("", elementTerms, " : ") + join("", elementLiterals, "");
 		}
 	}
+	
 }

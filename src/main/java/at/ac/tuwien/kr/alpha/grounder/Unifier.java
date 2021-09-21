@@ -1,19 +1,21 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import static at.ac.tuwien.kr.alpha.Util.oops;
-
 /**
  * A variable substitution allowing variables to occur on the right-hand side. Chains of variable substitutions are
- * resolved automatically, i.e., adding the substitutions (X -> A) and (A -> d) results in (X -> d), (A -> d).
- * Copyright (c) 2018, the Alpha Team.
+ * resolved automatically, i.e., adding the substitutions {@literal (X -> A)} and {@literal (A -> d)} results in {@literal (X -> d)}, {@literal (A -> d)}.
+ * Copyright (c) 2018-2020, the Alpha Team.
  */
 public class Unifier extends Substitution {
 
@@ -47,7 +49,22 @@ public class Unifier extends Substitution {
 		return this;
 	}
 
+	/**
+	 * Returns a list of all variables occurring in that unifier, i.e., variables that are mapped and those that occur (nested) in the right-hand side of the unifier.
+	 * @return the list of variables occurring somewhere in the unifier.
+	 */
+	@Override
+	public Set<VariableTerm> getMappedVariables() {
+		Set<VariableTerm> ret = new HashSet<>();
+		for (Map.Entry<VariableTerm, Term> substitution : substitution.entrySet()) {
+			ret.add(substitution.getKey());
+			ret.addAll(substitution.getValue().getOccurringVariables());
+		}
+		return ret;
+	}
 
+
+	@Override
 	public <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term term) {
 		// If term is not ground, store it for right-hand side reverse-lookup.
 		if (!term.isGround()) {
@@ -80,8 +97,8 @@ public class Unifier extends Substitution {
 	/**
 	 * Merge substitution right into left as used in the AnalyzeUnjustified.
 	 * Left mappings are seen as equalities, i.e.,
-	 * if left has A -> B and right has A -> t then the result will have A -> t and B -> t.
-	 * If both substitutions are inconsistent, i.e., A -> t1 in left and A -> t2 in right, then null is returned.
+	 * if left has {@literal A -> B} and right has {@literal A -> t} then the result will have {@literal A -> t} and {@literal B -> t}.
+	 * If both substitutions are inconsistent, i.e., {@literal A -> t1} in left and {@literal A -> t2} in right, then null is returned.
 	 * @param left
 	 * @param right
 	 * @return

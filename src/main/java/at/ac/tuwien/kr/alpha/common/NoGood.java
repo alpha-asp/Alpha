@@ -291,4 +291,5 @@ public class NoGood implements NoGoodInterface, Comparable<NoGood> {
 
 		return sb.toString();
 	}
+
 }

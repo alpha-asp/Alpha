@@ -25,22 +25,23 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.runWithTimeout;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.junit.jupiter.api.Disabled;
+
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Tests {@link AbstractSolver} using some three-coloring test cases, as described in:
@@ -49,66 +50,80 @@ import java.util.Optional;
  * In Theory and Practice of Logic Programming, pp. 1-45.
  * DOI: 10.1017/S1471068416000569
  */
-public class ThreeColouringWheelTest extends AbstractSolverTests {
-	@Test(timeout = 1000)
-	public void testN4() throws IOException {
-		testThreeColouring(4);
+public class ThreeColouringWheelTest {
+	
+	private static final long DEBUG_TIMEOUT_FACTOR = 5;
+	
+	@RegressionTest
+	public void testN4(RegressionTestConfig cfg) {
+		long timeout = 1000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(4, cfg));
 	}
 
-	@Test(timeout = 1000)
-	public void testN5() throws IOException {
-		testThreeColouring(5);
+	@RegressionTest
+	public void testN5(RegressionTestConfig cfg) {
+		long timeout = 1000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(5, cfg));
 	}
 
-	@Test(timeout = 6000)
-	@Ignore("disabled to save resources during CI")
-	public void testN6() throws IOException {
-		testThreeColouring(6);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testN6(RegressionTestConfig cfg) {
+		long timeout = 6000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(6, cfg));
 	}
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN3() throws IOException {
-		testThreeColouring(3);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testN3(RegressionTestConfig cfg) {
+		long timeout = 60000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(3, cfg));
 	}
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN7() throws IOException {
-		testThreeColouring(7);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testN7(RegressionTestConfig cfg) {
+		long timeout = 60000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(7, cfg));
 	}
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN11() throws IOException {
-		testThreeColouring(11);
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testN11(RegressionTestConfig cfg) {
+		long timeout = 60000L;
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(11, cfg));
 	}
 
-	private void testThreeColouring(int n) throws IOException {
-		Program program = new ProgramParser().parse(
+	private void testThreeColouring(int n, RegressionTestConfig cfg) {
+		InputProgram tmpPrg = new ProgramParser().parse(
 				"col(V,C) :- v(V), c(C), not ncol(V,C)." +
 				"ncol(V,C) :- col(V,D), c(C), C != D." +
 				":- e(V,U), col(V,C), col(U,C).");
-		program.getFacts().addAll(createColors("red", "blue", "green"));
-		program.getFacts().addAll(createVertices(n));
-		program.getFacts().addAll(createEdges(n));
+		InputProgram.Builder prgBuilder = InputProgram.builder(tmpPrg);
+		prgBuilder.addFacts(createColors("red", "blue", "green"));
+		prgBuilder.addFacts(createVertices(n));
+		prgBuilder.addFacts(createEdges(n));
+		InputProgram program = prgBuilder.build();
 
 		maybeShuffle(program);
 
-		Solver solver = getInstance(program);
+		Solver solver = buildSolverForRegressionTest(program, cfg);
 
+		@SuppressWarnings("unused")
 		Optional<AnswerSet> answerSet = solver.stream().findAny();
 		//System.out.println(answerSet);
 
 		// TODO: check correctness of answer set
 	}
 
-	private void maybeShuffle(Program program) {
+	@SuppressWarnings("unused")
+	private void maybeShuffle(InputProgram program) {
+		// FIXME since InputProgram is immutable this needs to be reworked a bit if used
 		// No shuffling here.
 	}
 
-	private Collection<Atom> createColors(String... colours) {
-		Collection<Atom> facts = new ArrayList<>(colours.length);
+	private List<Atom> createColors(String... colours) {
+		List<Atom> facts = new ArrayList<>(colours.length);
 		Predicate predicate = Predicate.getInstance("c", 1);
 		for (String colour : colours) {
 			List<Term> terms = new ArrayList<>(1);
@@ -118,16 +133,16 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 		return facts;
 	}
 
-	private Collection<Atom> createVertices(int n) {
-		Collection<Atom> facts = new ArrayList<>(n);
+	private List<Atom> createVertices(int n) {
+		List<Atom> facts = new ArrayList<>(n);
 		for (int i = 1; i <= n; i++) {
 			facts.add(fact("v", i));
 		}
 		return facts;
 	}
 
-	private Collection<Atom> createEdges(int n) {
-		Collection<Atom> facts = new ArrayList<>(n);
+	private List<Atom> createEdges(int n) {
+		List<Atom> facts = new ArrayList<>(n);
 		for (int i = 2; i <= n; i++) {
 			facts.add(fact("e", 1, i));
 		}

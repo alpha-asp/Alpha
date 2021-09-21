@@ -99,7 +99,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	private int assignmentsForChoicePosition;
 	private int mbtCount;
 	private boolean checksEnabled;
-	int replayCounter;
+	long replayCounter;
 
 	public TrailAssignment(AtomStore atomStore, PhaseInitializerFactory.PhaseInitializer phaseInitializer, boolean checksEnabled) {
 		this.phaseInitializer = phaseInitializer;
@@ -327,13 +327,14 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	@Override
 	public ConflictCause assign(int atom, ThriceTruth value, Antecedent impliedBy, int decisionLevel) {
-		if (decisionLevel < getDecisionLevel()) {
+		ConflictCause conflictCause = assign(atom, value, impliedBy);
+		if (conflictCause == null && decisionLevel < getDecisionLevel()) {
 			outOfOrderLiterals.add(new OutOfOrderLiteral(atom, value, decisionLevel, impliedBy));
 			if (highestDecisionLevelContainingOutOfOrderLiterals < getDecisionLevel()) {
 				highestDecisionLevelContainingOutOfOrderLiterals = getDecisionLevel();
 			}
 		}
-		return assign(atom, value, impliedBy);
+		return conflictCause;
 	}
 
 	private boolean assignmentsConsistent(ThriceTruth oldTruth, ThriceTruth value) {
@@ -641,11 +642,13 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			}
 		}
 
+		@Override
 		public boolean hasNext() {
 			advanceCursorToNextPositiveAssignment();
 			return newAssignmentsIterator < trailSize;
 		}
 
+		@Override
 		public int next() {
 			return atomOf(trail[newAssignmentsIterator++]);
 

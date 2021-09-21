@@ -27,10 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,6 +36,11 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
 /**
  * Provides the grounder with information on the order to ground the literals in the body of a rule.
@@ -60,7 +61,7 @@ import java.util.Set;
  * literal (whose interpretation is not fixed) is a starting literal, at least for the current grounding procedure.
  */
 public class RuleGroundingOrders {
-	private final NonGroundRule nonGroundRule;
+	private final InternalRule internalRule;
 	HashMap<Literal, RuleGroundingOrder> groundingOrders;
 	private HashMap<Literal, Float> literalSelectivity;
 	private List<Literal> startingLiterals;
@@ -68,8 +69,8 @@ public class RuleGroundingOrders {
 	private final boolean fixedGroundingInstantiation;
 	private RuleGroundingOrder fixedGroundingOrder;
 
-	RuleGroundingOrders(NonGroundRule nonGroundRule) {
-		this.nonGroundRule = nonGroundRule;
+	public RuleGroundingOrders(InternalRule internalRule) {
+		this.internalRule = internalRule;
 		this.literalSelectivity = new HashMap<>();
 		resetLiteralSelectivity();
 		this.groundingOrders = new HashMap<>();
@@ -78,7 +79,7 @@ public class RuleGroundingOrders {
 
 	private void resetLiteralSelectivity() {
 		// Set selectivity of all literals to 1.0f.
-		for (Literal literal : nonGroundRule.getBodyLiterals()) {
+		for (Literal literal : internalRule.getBody()) {
 			literalSelectivity.put(literal, 1.0f);
 		}
 	}
@@ -92,13 +93,13 @@ public class RuleGroundingOrders {
 		LinkedHashSet<Literal> ordinaryStartingLiterals = new LinkedHashSet<>();
 		
 		// If the rule is ground, every body literal is a starting literal and the ground instantiation is fixed.
-		if (nonGroundRule.getRule().isGround()) {
-			startingLiterals = new LinkedList<>(nonGroundRule.getBodyLiterals());
+		if (internalRule.isGround()) {
+			startingLiterals = new LinkedList<>(internalRule.getBody());
 			return true;
 		}
 		
 		// Check each literal in the rule body whether it is eligible.
-		for (Literal literal : nonGroundRule.getBodyLiterals()) {
+		for (Literal literal : internalRule.getBody()) {
 			// Only literals that need no variables already bound can start grounding.
 			if (literal.getNonBindingVariables().size() != 0) {
 				continue;
@@ -122,11 +123,11 @@ public class RuleGroundingOrders {
 			startingLiterals = new LinkedList<>(fixedStartingLiterals);
 			return true;
 		} else {
-			throw new RuntimeException("Unsafe rule encountered: " + nonGroundRule.getRule());
+			throw new RuntimeException("Unsafe rule encountered: " + internalRule);
 		}
 	}
 
-	Collection<Literal> getStartingLiterals() {
+	public List<Literal> getStartingLiterals() {
 		return Collections.unmodifiableList(startingLiterals);
 	}
 
@@ -134,12 +135,12 @@ public class RuleGroundingOrders {
 		// TODO: add old selectivity (with a decay factor) and new selectivity.
 	}
 
-	RuleGroundingOrder orderStartingFrom(Literal startingLiteral) {
+	public RuleGroundingOrder orderStartingFrom(Literal startingLiteral) {
 		return groundingOrders.get(startingLiteral);
 	}
 
 
-	RuleGroundingOrder getFixedGroundingOrder() {
+	public RuleGroundingOrder getFixedGroundingOrder() {
 		return fixedGroundingOrder;
 	}
 
@@ -147,11 +148,11 @@ public class RuleGroundingOrders {
 	 * States whether the rule is without positive ordinary atoms, as for example in: p(Y) :- X = 1..3, not q(X), Y = X + 2, &ext[X,Y]().
 	 * @return true if the rule has a (limited number of) fixed grounding instantiation(s).
 	 */
-	boolean fixedInstantiation() {
+	public boolean fixedInstantiation() {
 		return fixedGroundingInstantiation;
 	}
 
-	void computeGroundingOrders() {
+	public void computeGroundingOrders() {
 		if (fixedGroundingInstantiation) {
 			// Fixed grounding is only evaluated once and not depending on a starting variable, just use the first.
 			computeGroundingOrder(startingLiterals.get(0));
@@ -164,7 +165,7 @@ public class RuleGroundingOrders {
 	}
 
 	private void computeGroundingOrder(Literal startingLiteral) {
-		List<Literal> bodyLiterals = nonGroundRule.getBodyLiterals();
+		Set<Literal> bodyLiterals = internalRule.getBody();
 		HashSet<VariableTerm> boundVariables = new HashSet<>();
 		boundVariables.addAll(startingLiteral.getBindingVariables());
 		LinkedHashSet<Literal> remainingLiterals = new LinkedHashSet<>(bodyLiterals);
@@ -182,7 +183,7 @@ public class RuleGroundingOrders {
 		while (!remainingLiterals.isEmpty()) {
 			Literal nextGroundingLiteral = selectNextGroundingLiteral(remainingLiterals, boundVariables);
 			if (nextGroundingLiteral == null) {
-				throw new RuntimeException("Could not find a grounding order for rule " + nonGroundRule + " with starting literal: " + startingLiteral + ". Rule is not safe.");
+				throw new RuntimeException("Could not find a grounding order for rule " + internalRule + " with starting literal: " + startingLiteral + ". Rule is not safe.");
 			}
 			remainingLiterals.remove(nextGroundingLiteral);
 			boolean boundNewVars = boundVariables.addAll(nextGroundingLiteral.getBindingVariables());
@@ -193,9 +194,9 @@ public class RuleGroundingOrders {
 			position++;
 		}
 		if (fixedGroundingInstantiation) {
-			fixedGroundingOrder = new RuleGroundingOrder(null, literalsOrder, positionLastVarBound, nonGroundRule.getRule().isGround());
+			fixedGroundingOrder = new RuleGroundingOrder(null, literalsOrder, positionLastVarBound, internalRule.isGround());
 		}
-		groundingOrders.put(startingLiteral, new RuleGroundingOrder(startingLiteral, literalsOrder, positionLastVarBound, nonGroundRule.getRule().isGround()));
+		groundingOrders.put(startingLiteral, new RuleGroundingOrder(startingLiteral, literalsOrder, positionLastVarBound, internalRule.isGround()));
 	}
 
 	private Literal selectNextGroundingLiteral(LinkedHashSet<Literal> remainingLiterals, Set<VariableTerm> boundVariables) {

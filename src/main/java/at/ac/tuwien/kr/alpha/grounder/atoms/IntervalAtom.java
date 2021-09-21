@@ -27,6 +27,13 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
+import static at.ac.tuwien.kr.alpha.Util.join;
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
+import java.util.Arrays;
+import java.util.List;
+
+import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.VariableNormalizableAtom;
@@ -34,24 +41,19 @@ import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.Arrays;
-import java.util.List;
-
-import static at.ac.tuwien.kr.alpha.Util.join;
-import static at.ac.tuwien.kr.alpha.Util.oops;
-
 /**
  * Helper for treating IntervalTerms in rules.
  *
- * Each IntervalTerm is replaced by a variable and this special IntervalAtom
- * is added to the rule body for generating all bindings of the variable.
+ * Each IntervalTerm is replaced by a variable and this special IntervalAtom is added to the rule body for generating
+ * all bindings of the variable.
  *
  * The first term of this atom is an IntervalTerm while the second term is any Term (if it is a VariableTerm, this will
- * bind to all elements of the interval, otherwise it is a simple check whether the Term is a ConstantTerm<Integer>
- * with the Integer being inside the interval.
+ * bind to all elements of the interval, otherwise it is a simple check whether the Term is a ConstantTerm<Integer> with
+ * the Integer being inside the interval.
+ * 
  * Copyright (c) 2017, the Alpha Team.
  */
-public class IntervalAtom implements Atom, VariableNormalizableAtom {
+public class IntervalAtom extends Atom implements VariableNormalizableAtom {
 	private static final Predicate PREDICATE = Predicate.getInstance("_interval", 2, true);
 
 	private final List<Term> terms;
@@ -72,9 +74,14 @@ public class IntervalAtom implements Atom, VariableNormalizableAtom {
 
 	@Override
 	public boolean isGround() {
-		return false;
+		for (Term t : this.terms) {
+			if (!t.isGround()) {
+				return false;
+			}
+		}
+		return true;
 	}
-	
+
 	@Override
 	public IntervalLiteral toLiteral(boolean positive) {
 		if (!positive) {
@@ -114,13 +121,23 @@ public class IntervalAtom implements Atom, VariableNormalizableAtom {
 
 	@Override
 	public IntervalAtom substitute(Substitution substitution) {
-		return new IntervalAtom((IntervalTerm)terms.get(0).substitute(substitution), terms.get(1).substitute(substitution));
+		return new IntervalAtom((IntervalTerm) terms.get(0).substitute(substitution), terms.get(1).substitute(substitution));
 	}
-	
+
 	@Override
 	public IntervalAtom normalizeVariables(String prefix, int counterStartingValue) {
 		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
 		return new IntervalAtom((IntervalTerm) renamedTerms.get(0), renamedTerms.get(1));
-	}	
+	}
 
+	@Override
+	public Atom withTerms(List<Term> newTerms) {
+		if (newTerms.size() != 2) {
+			throw new IllegalArgumentException("Cannot set term list " + Util.join("[", newTerms, "]") + " for interval atom!");
+		}
+		if (!(newTerms.get(0) instanceof IntervalTerm)) {
+			throw new IllegalArgumentException("IntervalAtom requires first term to be an interval term!");
+		}
+		return new IntervalAtom((IntervalTerm) newTerms.get(0), newTerms.get(1));
+	}
 }

@@ -27,34 +27,46 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
+import at.ac.tuwien.kr.alpha.common.rule.head.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Removes variable equalities from rules by replacing one variable with the other.
- * Copyright (c) 2017-2018, the Alpha Team.
+ *
+ * Copyright (c) 2017-2021, the Alpha Team.
  */
-public class VariableEqualityRemoval implements ProgramTransformation {
+public class VariableEqualityRemoval extends ProgramTransformation<InputProgram, InputProgram> {
+
 	@Override
-	public void transform(Program inputProgram) {
-		for (Rule rule : inputProgram.getRules()) {
-			findAndReplaceVariableEquality(rule);
+	public InputProgram apply(InputProgram inputProgram) {
+		List<BasicRule> rewrittenRules = new ArrayList<>();
+		for (BasicRule rule : inputProgram.getRules()) {
+			rewrittenRules.add(findAndReplaceVariableEquality(rule));
 		}
+		return new InputProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
 	}
 
-	private void findAndReplaceVariableEquality(Rule rule) {
+	private BasicRule findAndReplaceVariableEquality(BasicRule rule) {
 		// Collect all equal variables.
-		HashMap<VariableTerm, HashSet<VariableTerm>> variableToEqualVariables = new HashMap<>();
-		//HashSet<Variable> equalVariables = new LinkedHashSet<>();
+		HashMap<VariableTerm, HashSet<VariableTerm>> variableToEqualVariables = new LinkedHashMap<>();
 		HashSet<Literal> equalitiesToRemove = new HashSet<>();
 		for (Literal bodyElement : rule.getBody()) {
 			if (!(bodyElement instanceof ComparisonLiteral)) {
@@ -93,8 +105,14 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 		}
 		if (variableToEqualVariables.isEmpty()) {
 			// Skip rule if there is no equality between variables.
-			return;
+			return rule;
 		}
+
+		List<Literal> rewrittenBody = new ArrayList<>(rule.getBody());
+		if (!rule.isConstraint() && rule.getHead() instanceof DisjunctiveHead) {
+			throw new UnsupportedOperationException("VariableEqualityRemoval cannot be applied to rule with DisjunctiveHead, yet.");
+		}
+		NormalHead rewrittenHead = rule.isConstraint() ? null : new NormalHead(((NormalHead)rule.getHead()).getAtom());
 
 		// Use substitution for actual replacement.
 		Unifier replacementSubstitution = new Unifier();
@@ -108,7 +126,7 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 			replacementSubstitution.put(variableToReplace, replacementVariable);
 		}
 		// Replace/Substitute in each literal every term where one of the common variables occurs.
-		Iterator<Literal> bodyIterator = rule.getBody().iterator();
+		Iterator<Literal> bodyIterator = rewrittenBody.iterator();
 		while (bodyIterator.hasNext()) {
 			Literal literal = bodyIterator.next();
 			if (equalitiesToRemove.contains(literal)) {
@@ -120,16 +138,13 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 			}
 		}
 		// Replace variables in head.
-		if (rule.getHead() != null) {
-			if (!rule.getHead().isNormal()) {
-				throw new UnsupportedOperationException("Cannot treat non-normal rule heads yet.");
-			}
-			DisjunctiveHead head = (DisjunctiveHead) rule.getHead();
-			Atom headAtom = head.disjunctiveAtoms.get(0);
+		if (rewrittenHead != null) {
+			Atom headAtom = rewrittenHead.getAtom();
 			for (int i = 0; i < headAtom.getTerms().size(); i++) {
 				Term replaced = headAtom.getTerms().get(i).substitute(replacementSubstitution);
 				headAtom.getTerms().set(i, replaced);
 			}
 		}
+		return new BasicRule(rewrittenHead, rewrittenBody);
 	}
 }

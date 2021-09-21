@@ -1,5 +1,10 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
+import java.util.HashMap;
+import java.util.List;
+
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -7,16 +12,14 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.HashMap;
-import java.util.List;
-
-import static at.ac.tuwien.kr.alpha.Util.oops;
-
 /**
- * Represents a ground-instance enumeration atom of form: enum(enumId, groundTerm, sequenceNo).
- * The semantics of this is: if enum(A,T1, N1) and enum(A,T2,N2) are both true and T1 != T2, then N1 != N2.
- * Furthermore, If enum(A,T1,N1) is true with N1 > 0 then enum(A,T2,N1 - 1) is true for some T1 != T2
- * and both, T1 and T2, are ground instances the grounder encountered during the search so far.
+ * Represents a ground-instance enumeration atom of form:
+ * enum(enumId, groundTerm, sequenceNo).
+ * 
+ * The semantics of this is:
+ * if enum(A,T1, N1) and enum(A,T2,N2) are both true and T1 != T2, then N1 != N2.
+ * Furthermore, If enum(A,T1,N1) is true with N1 > 0 then enum(A,T2,N1 - 1) is true for some T1 != T2 and
+ * both, T1 and T2, are ground instances the grounder encountered during the search so far.
  *
  * Copyright (c) 2017, the Alpha Team.
  */
@@ -52,14 +55,24 @@ public class EnumerationAtom extends BasicAtom {
 
 	}
 
-	public void addEnumerationToSubstitution(Substitution substitution) {
-		Term idTerm = getTerms().get(0).substitute(substitution);
-		Term enumerationTerm  = getTerms().get(1).substitute(substitution);
+	/**
+	 * Based on a given substitution, substitutes the first two terms of this {@link EnumerationAtom} with the values from the substitution,
+	 * and returns a new substitution with all mappings from the input substitution plus a binding for the third term of the enum atom to the
+	 * integer index that is mapped to the first two terms in the internal <code>ENUMERATIONS</code> map.
+	 * 
+	 * @param substitution an input substitution which must provide ground terms for the first two terms of the enumeration atom.
+	 * @return a new substitution where the third term of the enumeration atom is bound to an integer.
+	 */
+	public Substitution addEnumerationIndexToSubstitution(Substitution substitution) {
+		Term idTerm = this.getTerms().get(0).substitute(substitution);
+		Term enumerationTerm = this.getTerms().get(1).substitute(substitution);
 		if (!enumerationTerm.isGround()) {
 			throw new RuntimeException("Enumeration term is not ground after substitution. Should not happen.");
 		}
 		Integer enumerationIndex = getEnumerationIndex(idTerm, enumerationTerm);
-		substitution.put((VariableTerm) getTerms().get(2), ConstantTerm.getInstance(enumerationIndex));
+		Substitution retVal = new Substitution(substitution);
+		retVal.put((VariableTerm) getTerms().get(2), ConstantTerm.getInstance(enumerationIndex));
+		return retVal;
 	}
 
 	@Override
