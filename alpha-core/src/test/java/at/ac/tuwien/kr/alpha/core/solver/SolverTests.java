@@ -27,11 +27,11 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnswerSet;
-import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnswerSets;
-import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnswerSetsWithBase;
-import static at.ac.tuwien.kr.alpha.test.util.TestUtils.buildSolverForRegressionTest;
-import static at.ac.tuwien.kr.alpha.test.util.TestUtils.collectRegressionTestAnswerSets;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.assertRegressionTestAnswerSet;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.assertRegressionTestAnswerSets;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.assertRegressionTestAnswerSetsWithBase;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.collectRegressionTestAnswerSets;
 import static java.util.Collections.singleton;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -57,8 +57,7 @@ import at.ac.tuwien.kr.alpha.core.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.core.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
-import at.ac.tuwien.kr.alpha.core.util.AnswerSetsParser;
-
+import at.ac.tuwien.kr.alpha.core.test.util.AnswerSetsParser;
 public class SolverTests {
 	
 	private static class Thingy implements Comparable<Thingy> {

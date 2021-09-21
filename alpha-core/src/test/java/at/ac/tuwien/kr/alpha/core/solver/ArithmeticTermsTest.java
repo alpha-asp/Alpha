@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnswerSet;
-import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnswerSetsWithBase;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.assertRegressionTestAnswerSet;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.assertRegressionTestAnswerSetsWithBase;
 
 /**
  * Tests ASP programs containing arithmetic terms at arbitrary positions.

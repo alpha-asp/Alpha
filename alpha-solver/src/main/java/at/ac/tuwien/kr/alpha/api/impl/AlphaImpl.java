@@ -136,7 +136,7 @@ public class AlphaImpl implements Alpha {
 
 	@Override
 	public NormalProgram normalizeProgram(InputProgram program) {
-		return new NormalizeProgramTransformation(config.isUseNormalizationGrid()).apply(program);
+		return new NormalizeProgramTransformation(config.getAggregateRewritingConfig()).apply(program);
 	}
 
 	// TODO make sure to adapt this without exposing internal implementation types

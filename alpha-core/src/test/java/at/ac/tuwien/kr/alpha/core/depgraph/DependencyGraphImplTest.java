@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
@@ -17,16 +18,16 @@ import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph.Node;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
+import at.ac.tuwien.kr.alpha.core.parser.evolog.EvologProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
-import at.ac.tuwien.kr.alpha.test.util.DependencyGraphUtils;
+import at.ac.tuwien.kr.alpha.core.test.util.DependencyGraphUtils;
 
 public class DependencyGraphImplTest {
 
-	private ProgramParser parser = new ASPCore2ProgramParser();
-	private NormalizeProgramTransformation normalizeTransform = new NormalizeProgramTransformation(false);
-	
+	private ProgramParser parser = new EvologProgramParser();
+	private NormalizeProgramTransformation normalizeTransform = new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
+
 	// Currently not used anywhere, but keep as it might come in handy
 	@SuppressWarnings("unused")
 	private static String generateRandomProgram(int numRules, int numPredicates, int maxRuleBodyLiterals) {
@@ -88,7 +89,7 @@ public class DependencyGraphImplTest {
 		bld.append("b :- a.").append("\n");
 		bld.append("c :- b.").append("\n");
 		bld.append("d :- c.").append("\n");
-		
+
 		InputProgram prog = parser.parse(bld.toString());
 		NormalProgram normalProg = normalizeTransform.apply(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
@@ -176,7 +177,6 @@ public class DependencyGraphImplTest {
 		assertTrue(DependencyGraphUtils.areStronglyConnected(componentA, dg));
 		assertFalse(DependencyGraphUtils.isStronglyConnectedComponent(componentA, dg));
 
-
 		List<Node> componentB = new ArrayList<>();
 		componentB.add(b);
 		assertTrue(DependencyGraphUtils.areStronglyConnected(componentB, dg));
@@ -192,16 +192,16 @@ public class DependencyGraphImplTest {
 	@Test
 	public void stronglyConnectedComponentsMultipleComponentsTest() {
 		String inputProgram = "f0.\n" +
-			"f1.\n" +
-			"f2.\n" +
-			"f3.\n" +
-			"a :- f0, f1, not b.\n" +
-			"b :- f0, f1, not a.\n" +
-			"c :- f2, f3, not d.\n" +
-			"d :- f2, f3, not c.\n" +
-			"x :- a, c, y.\n" +
-			"y :- b, d, x.\n" +
-			"z :- x, y, z.";
+				"f1.\n" +
+				"f2.\n" +
+				"f3.\n" +
+				"a :- f0, f1, not b.\n" +
+				"b :- f0, f1, not a.\n" +
+				"c :- f2, f3, not d.\n" +
+				"d :- f2, f3, not c.\n" +
+				"x :- a, c, y.\n" +
+				"y :- b, d, x.\n" +
+				"z :- x, y, z.";
 
 		InputProgram prog = parser.parse(inputProgram);
 		NormalProgram normalProg = normalizeTransform.apply(prog);

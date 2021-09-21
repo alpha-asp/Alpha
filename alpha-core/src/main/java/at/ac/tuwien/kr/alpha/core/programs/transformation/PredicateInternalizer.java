@@ -22,35 +22,48 @@ import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
  *
  * Rewrites all predicates of a given Program such that they are internal and hence hidden from answer sets.
  *
- * Copyright (c) 2018-2021, the Alpha Team.
+ * Copyright (c) 2018-2020, the Alpha Team.
  */
 public class PredicateInternalizer {
 
-	static InputProgram makePredicatesInternal(InputProgram program) {
+	public static InputProgram makePrefixedPredicatesInternal(InputProgram program, String prefix) {
 		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder();
 		for (Atom atom : program.getFacts()) {
-			prgBuilder.addFact(PredicateInternalizer.makePredicateInternal(atom));
+			if (atom.getPredicate().getName().startsWith(prefix)) {
+				prgBuilder.addFact(PredicateInternalizer.makePredicateInternal((BasicAtom) atom));
+			} else {
+				prgBuilder.addFact(atom);
+			}
 		}
 		for (Rule<Head> rule : program.getRules()) {
-			prgBuilder.addRule(PredicateInternalizer.makePredicateInternal(rule));
+			prgBuilder.addRule(PredicateInternalizer.makePrefixedPredicatesInternal(rule, prefix));
 		}
 		prgBuilder.addInlineDirectives(program.getInlineDirectives());
 		return prgBuilder.build();
 	}
 
-	private static Rule<Head> makePredicateInternal(Rule<Head> rule) {
+	public static Rule<Head> makePrefixedPredicatesInternal(Rule<Head> rule, String prefix) {
 		Head newHead = null;
 		if (rule.getHead() != null) {
 			if (!(rule.getHead() instanceof NormalHead)) {
 				throw new UnsupportedOperationException("Cannot make predicates in rules internal whose head is not normal.");
 			}
-			newHead = Heads.newNormalHead(makePredicateInternal(((NormalHead) rule.getHead()).getAtom()));
+			NormalHead head = (NormalHead) rule.getHead();
+			if (head.getAtom().getPredicate().getName().startsWith(prefix)) {
+				newHead = Heads.newNormalHead(makePredicateInternal(head.getAtom()));
+			} else {
+				newHead = head;
+			}
 		}
 		List<Literal> newBody = new ArrayList<>();
 		for (Literal bodyElement : rule.getBody()) {
 			// Only rewrite BasicAtoms.
 			if (bodyElement instanceof BasicLiteral) {
-				newBody.add(makePredicateInternal(bodyElement.getAtom()).toLiteral());
+				if (bodyElement.getAtom().getPredicate().getName().startsWith(prefix)) {
+					newBody.add(makePredicateInternal((BasicAtom) bodyElement.getAtom()).toLiteral(!bodyElement.isNegated()));
+				} else {
+					newBody.add(bodyElement);
+				}
 			} else {
 				// Keep other body element as is.
 				newBody.add(bodyElement);
@@ -59,7 +72,7 @@ public class PredicateInternalizer {
 		return new BasicRule(newHead, newBody);
 	}
 
-	private static BasicAtom makePredicateInternal(Atom atom) {
+	private static BasicAtom makePredicateInternal(BasicAtom atom) {
 		Predicate newInternalPredicate = Predicates.getPredicate(atom.getPredicate().getName(), atom.getPredicate().getArity(), true);
 		return Atoms.newBasicAtom(newInternalPredicate, atom.getTerms());
 	}

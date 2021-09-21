@@ -1,45 +1,45 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
+import at.ac.tuwien.kr.alpha.api.config.AggregateRewritingConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
-import at.ac.tuwien.kr.alpha.core.transformation.ArithmeticTermsRewriting;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewriting;
 
 /**
- * Encapsulates all transformations necessary to transform a given program into a @{link NormalProgram} that is understood by Alpha internally
+ * Encapsulates all transformations necessary to transform a given program into a @{link NormalProgram} that is understood by Alpha
+ * internally
  * 
  * Copyright (c) 2019-2021, the Alpha Team.
  */
 public class NormalizeProgramTransformation extends ProgramTransformation<InputProgram, NormalProgram> {
 
-	private boolean useNormalizationGrid;
+	private final AggregateRewritingConfig aggregateRewritingCfg;
 
-	public NormalizeProgramTransformation(boolean useNormalizationGrid) {
-		this.useNormalizationGrid = useNormalizationGrid;
+	public NormalizeProgramTransformation(AggregateRewritingConfig aggregateCfg) {
+		this.aggregateRewritingCfg = aggregateCfg;
 	}
 
 	@Override
 	public NormalProgram apply(InputProgram inputProgram) {
 		InputProgram tmpPrg;
+		// Remove variable equalities.
+		tmpPrg = new VariableEqualityRemoval().apply(inputProgram);
 		// Transform choice rules.
-		tmpPrg = new ChoiceHeadToNormal().apply(inputProgram);
-		// Transform cardinality aggregates.
-		tmpPrg = new CardinalityNormalization(!this.useNormalizationGrid).apply(tmpPrg);
-		// Transform sum aggregates.
-		tmpPrg = new SumNormalization().apply(tmpPrg);
+		tmpPrg = new ChoiceHeadToNormal().apply(tmpPrg);
+		// Transform aggregates.
+		tmpPrg = new AggregateRewriting(aggregateRewritingCfg.isUseSortingGridEncoding(), aggregateRewritingCfg.isSupportNegativeValuesInSums()).apply(tmpPrg);
 		// Transform enumeration atoms.
 		tmpPrg = new EnumerationRewriting().apply(tmpPrg);
 		EnumerationAtom.resetEnumerations();
 
 		// Construct the normal program.
 		NormalProgram retVal = NormalProgramImpl.fromInputProgram(tmpPrg);
-		// Transform intervals - CAUTION - this MUST come before VariableEqualityRemoval!
+		// Transform intervals
 		retVal = new IntervalTermToIntervalAtom().apply(retVal);
 		// Rewrite ArithmeticTerms.
 		retVal = new ArithmeticTermsRewriting().apply(retVal);
-		// Remove variable equalities.
-		retVal = new VariableEqualityRemoval().apply(retVal);
 		return retVal;
 	}
 

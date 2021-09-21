@@ -43,11 +43,11 @@ import java.util.HashSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.IntIterator;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 /**
  * Copyright (c) 2018-2020, the Alpha Team.
@@ -57,7 +57,7 @@ public class TrailAssignmentTest {
 
 	public TrailAssignmentTest() {
 		AtomStore atomStore = new AtomStoreImpl();
-		AtomStoreTest.fillAtomStore(atomStore, 20);
+		TestUtils.fillAtomStore(atomStore, 20);
 		assignment = new TrailAssignment(atomStore);
 	}
 

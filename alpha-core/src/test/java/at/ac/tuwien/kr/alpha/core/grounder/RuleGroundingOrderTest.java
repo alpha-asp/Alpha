@@ -36,6 +36,7 @@ import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
@@ -51,13 +52,13 @@ import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 public class RuleGroundingOrderTest {
 
 	private static final ProgramParser PARSER = new ASPCore2ProgramParser();
-	private static final NormalizeProgramTransformation NORMALIZE_TRANSFORM = new NormalizeProgramTransformation(false);
+	private static final NormalizeProgramTransformation NORMALIZE_TRANSFORM = new NormalizeProgramTransformation(
+			SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
 	private static final Function<String, CompiledProgram> PARSE_AND_PREPROCESS = (str) -> {
 		return InternalProgram.fromNormalProgram(NORMALIZE_TRANSFORM.apply(PARSER.parse(str)));
 	};
-	
-	private static final ASPCore2ProgramPartParser PROGRAM_PART_PARSER = new ASPCore2ProgramPartParser();
 
+	private static final ASPCore2ProgramPartParser PROGRAM_PART_PARSER = new ASPCore2ProgramPartParser();
 
 	@Test
 	public void groundingOrder() {
@@ -89,7 +90,7 @@ public class RuleGroundingOrderTest {
 			computeGroundingOrdersForRule(prog, 0);
 		});
 	}
-	
+
 	@Test
 	public void testPositionFromWhichAllVarsAreBound_ground() {
 		String aspStr = "a :- b, not c.";
@@ -97,7 +98,7 @@ public class RuleGroundingOrderTest {
 		RuleGroundingInfo rgo0 = computeGroundingOrdersForRule(internalPrg, 0);
 		assertEquals(0, rgo0.getFixedGroundingOrder().getPositionFromWhichAllVarsAreBound());
 	}
-	
+
 	@Test
 	public void testPositionFromWhichAllVarsAreBound_simpleNonGround() {
 		String aspStr = "a(X) :- b(X), not c(X).";
@@ -128,10 +129,17 @@ public class RuleGroundingOrderTest {
 		assertEquals(3, rgo0.getStartingLiterals().size());
 		for (Literal startingLiteral : rgo0.getStartingLiterals()) {
 			switch (startingLiteral.getPredicate().getName()) {
-				case "b": assertEquals("b(X) : | c(X), d(X), not e(X)", rgo0.orderStartingFrom(startingLiteral).toString()); break;
-				case "c": assertEquals("c(X) : | b(X), d(X), not e(X)", rgo0.orderStartingFrom(startingLiteral).toString()); break;
-				case "d": assertEquals("d(X) : | b(X), c(X), not e(X)", rgo0.orderStartingFrom(startingLiteral).toString()); break;
-				default: fail("Unexpected starting literal: " + startingLiteral);
+				case "b":
+					assertEquals("b(X) : | c(X), d(X), not e(X)", rgo0.orderStartingFrom(startingLiteral).toString());
+					break;
+				case "c":
+					assertEquals("c(X) : | b(X), d(X), not e(X)", rgo0.orderStartingFrom(startingLiteral).toString());
+					break;
+				case "d":
+					assertEquals("d(X) : | b(X), c(X), not e(X)", rgo0.orderStartingFrom(startingLiteral).toString());
+					break;
+				default:
+					fail("Unexpected starting literal: " + startingLiteral);
 			}
 		}
 	}

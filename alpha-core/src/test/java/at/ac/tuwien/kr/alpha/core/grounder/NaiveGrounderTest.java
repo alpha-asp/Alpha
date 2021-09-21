@@ -25,7 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import static at.ac.tuwien.kr.alpha.TestUtil.atom;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.atom;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -41,6 +41,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
@@ -78,7 +79,7 @@ import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
 public class NaiveGrounderTest {
 	private static final ProgramParser PROGRAM_PARSER = new ASPCore2ProgramParser();
 	private static final ASPCore2ProgramPartParser PROGRAM_PART_PARSER = new ASPCore2ProgramPartParser();
-	private static final NormalizeProgramTransformation NORMALIZE_TRANSFORM = new NormalizeProgramTransformation(false);
+	private static final NormalizeProgramTransformation NORMALIZE_TRANSFORM = new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
 
 	final Literal litP1X = PROGRAM_PART_PARSER.parseLiteral("p1(X)");
 	final Literal litP2X = PROGRAM_PART_PARSER.parseLiteral("p2(X)");

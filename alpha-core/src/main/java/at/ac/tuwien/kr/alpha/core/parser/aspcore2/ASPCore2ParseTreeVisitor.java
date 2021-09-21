@@ -343,7 +343,7 @@ public class ASPCore2ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			ut = (Term) visit(ctx.ut);
 			uop = visitBinop(ctx.uop);
 		}
-		AggregateAtom.AggregateFunction aggregateFunction = visitAggregate_function(ctx.aggregate_function());
+		AggregateAtom.AggregateFunctionSymbol aggregateFunction = visitAggregate_function(ctx.aggregate_function());
 		List<AggregateAtom.AggregateElement> aggregateElements = visitAggregate_elements(ctx.aggregate_elements());
 		return Atoms.newAggregateAtom(lop, lt, uop, ut, aggregateFunction, aggregateElements).toLiteral(isPositive);
 	}
@@ -417,16 +417,16 @@ public class ASPCore2ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public AggregateAtom.AggregateFunction visitAggregate_function(ASPCore2Parser.Aggregate_functionContext ctx) {
+	public AggregateAtom.AggregateFunctionSymbol visitAggregate_function(ASPCore2Parser.Aggregate_functionContext ctx) {
 		// aggregate_function : AGGREGATE_COUNT | AGGREGATE_MAX | AGGREGATE_MIN | AGGREGATE_SUM;
 		if (ctx.AGGREGATE_COUNT() != null) {
-			return AggregateAtom.AggregateFunction.COUNT;
+			return AggregateAtom.AggregateFunctionSymbol.COUNT;
 		} else if (ctx.AGGREGATE_MAX() != null) {
-			return AggregateAtom.AggregateFunction.MAX;
+			return AggregateAtom.AggregateFunctionSymbol.MAX;
 		} else if (ctx.AGGREGATE_MIN() != null) {
-			return AggregateAtom.AggregateFunction.MIN;
+			return AggregateAtom.AggregateFunctionSymbol.MIN;
 		} else if (ctx.AGGREGATE_SUM() != null) {
-			return AggregateAtom.AggregateFunction.SUM;
+			return AggregateAtom.AggregateFunctionSymbol.SUM;
 		} else {
 			throw notSupported(ctx);
 		}
@@ -455,7 +455,7 @@ public class ASPCore2ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public ComparisonAtom visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
 		// builtin_atom : term binop term;
-		return Atoms.newComparsionAtom(
+		return Atoms.newComparisonAtom(
 				(Term) visit(ctx.term(0)),
 				(Term) visit(ctx.term(1)),
 				visitBinop(ctx.binop()));

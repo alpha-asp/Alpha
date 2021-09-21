@@ -29,18 +29,18 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
-import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.core.atoms.Literals;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.solver.NoGoodStoreAlphaRoaming;
 import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 public class HeuristicTestUtils {
 
 	static void addNoGoods(AtomStore atomStore, WritableAssignment assignment, NoGoodStoreAlphaRoaming noGoodStore, VSIDS vsids, NoGood... noGoods) {
 		int numberOfAtoms = Arrays.stream(noGoods).flatMapToInt(NoGood::stream).map(Literals::atomOf).max().getAsInt();
-		AtomStoreTest.fillAtomStore(atomStore, numberOfAtoms);
+		TestUtils.fillAtomStore(atomStore, numberOfAtoms);
 		assignment.growForMaxAtomId();
 		noGoodStore.growForMaxAtomId(numberOfAtoms);
 		vsids.growForMaxAtomId(numberOfAtoms);

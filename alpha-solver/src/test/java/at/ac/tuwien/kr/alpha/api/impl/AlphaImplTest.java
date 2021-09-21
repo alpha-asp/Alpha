@@ -79,7 +79,6 @@ import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.util.AnswerSetsParser;
 
 public class AlphaImplTest {
 	

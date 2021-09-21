@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
@@ -16,15 +17,15 @@ import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph.SCComponent;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph.Node;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
+import at.ac.tuwien.kr.alpha.core.parser.evolog.EvologProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 
 public class StratificationAlgorithmTest {
 
-	private ProgramParser parser = new ASPCore2ProgramParser();
-	private NormalizeProgramTransformation normalizeTransform = new NormalizeProgramTransformation(false);	
-	
+	private ProgramParser parser = new EvologProgramParser();
+	private NormalizeProgramTransformation normalizeTransform = new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
+
 	private boolean predicateIsBeforePredicateInOrder(Predicate predBefore, Predicate predAfter, List<SCComponent> order) {
 		boolean foundPredBefore = false;
 		for (SCComponent component : order) {
@@ -201,7 +202,6 @@ public class StratificationAlgorithmTest {
 		Predicate e = Predicates.getPredicate("e", 0);
 		Predicate f = Predicates.getPredicate("f", 0);
 		Predicate h = Predicates.getPredicate("h", 0);
-
 
 		assertEquals(7, strata.size());
 		assertTrue(predicateIsBeforePredicateInOrder(a, b, strata));
