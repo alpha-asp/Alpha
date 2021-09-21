@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.config;
 
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingConfig;
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.PhaseInitializerFactory;
@@ -47,10 +48,6 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingConfig;
-import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 
 /**
  * Parses given argument lists (as passed when Alpha is called from command line) into {@link SystemConfig}s and

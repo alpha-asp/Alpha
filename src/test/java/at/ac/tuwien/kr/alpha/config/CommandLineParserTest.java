@@ -31,13 +31,13 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.PhaseInitializerFactory;
 import org.apache.commons.cli.ParseException;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.function.Consumer;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.Arrays;
-import java.util.function.Consumer;
 
 
 public class CommandLineParserTest {
@@ -185,28 +185,28 @@ public class CommandLineParserTest {
 	public void initialPhase_alltrue() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
 		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-ph", "allTrue"});
-		assertEquals(PhaseInitializerFactory.InitialPhase.ALLTRUE, alphaConfig.getAlphaConfig().getPhaseInitializer());
+		assertEquals(PhaseInitializerFactory.InitialPhase.ALLTRUE, alphaConfig.getSystemConfig().getPhaseInitializer());
 	}
 
 	@Test
 	public void initialPhase_allfalse() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
 		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-ph", "AllFalse"});
-		assertEquals(PhaseInitializerFactory.InitialPhase.ALLFALSE, alphaConfig.getAlphaConfig().getPhaseInitializer());
+		assertEquals(PhaseInitializerFactory.InitialPhase.ALLFALSE, alphaConfig.getSystemConfig().getPhaseInitializer());
 	}
 
 	@Test
 	public void initialPhase_random() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
 		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-ph", "Random"});
-		assertEquals(PhaseInitializerFactory.InitialPhase.RANDOM, alphaConfig.getAlphaConfig().getPhaseInitializer());
+		assertEquals(PhaseInitializerFactory.InitialPhase.RANDOM, alphaConfig.getSystemConfig().getPhaseInitializer());
 	}
 
 	@Test
 	public void initialPhase_rulesTrueAtomsFalse() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
 		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-ph", "RulesTrueAtomsFalse"});
-		assertEquals(PhaseInitializerFactory.InitialPhase.RULESTRUEATOMSFALSE, alphaConfig.getAlphaConfig().getPhaseInitializer());
+		assertEquals(PhaseInitializerFactory.InitialPhase.RULESTRUEATOMSFALSE, alphaConfig.getSystemConfig().getPhaseInitializer());
 	}
 
 }
