@@ -41,6 +41,7 @@ import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
+import at.ac.tuwien.kr.alpha.core.parser.AbstractProgramParser;
 
 /**
  * A parser that, in contrast to {@link AbstractProgramParser}, does not parse full programs but only program parts like

@@ -2,7 +2,7 @@ package at.ac.tuwien.kr.alpha.core.parser.evolog;
 
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.AbstractProgramParser;
+import at.ac.tuwien.kr.alpha.core.parser.AbstractProgramParser;
 
 public class EvologProgramParser extends AbstractProgramParser {
 

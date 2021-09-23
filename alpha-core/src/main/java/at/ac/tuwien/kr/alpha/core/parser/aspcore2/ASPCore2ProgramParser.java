@@ -5,6 +5,7 @@ import java.util.Map;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.core.parser.AbstractProgramParser;
 
 public class ASPCore2ProgramParser extends AbstractProgramParser {
 

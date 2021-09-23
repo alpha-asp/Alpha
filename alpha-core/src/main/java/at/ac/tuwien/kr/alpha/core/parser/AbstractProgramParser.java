@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.parser.aspcore2;
+package at.ac.tuwien.kr.alpha.core.parser;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,7 +23,7 @@ import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
-import at.ac.tuwien.kr.alpha.core.parser.CustomErrorListener;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ParseTreeVisitor;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 
 public abstract class AbstractProgramParser implements ProgramParser {

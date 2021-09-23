@@ -407,7 +407,7 @@ public class ASPCore2ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public Term visitVariable_term(ASPCore2Parser.Variable_termContext ctx) {
+	public VariableTerm visitVariable_term(ASPCore2Parser.Variable_termContext ctx) {
 		// variable_term : VARIABLE | ANONYMOUS_VARIABLE;
 		if (ctx.VARIABLE() != null) {
 			return Terms.newVariable(ctx.VARIABLE().getText());

@@ -23,7 +23,7 @@ statement : head DOT                     # statement_fact
 
 head : disjunction | choice | action;
 
-action: AT ID SQUARE_OPEN terms SQUARE_CLOSE;
+action: classical_literal COLON AT ID SQUARE_OPEN terms SQUARE_CLOSE EQUAL variable_term;
 
 body : ( naf_literal | aggregate ) (COMMA body)?;
 

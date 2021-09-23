@@ -8,8 +8,8 @@ import org.antlr.v4.runtime.CharStreams;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.parser.AbstractProgramParser;
 import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.AbstractProgramParser;
 
 public class Programs {
 
