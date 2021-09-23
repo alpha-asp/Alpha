@@ -10,6 +10,7 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.BasicLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.ActionHead;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
@@ -50,7 +51,14 @@ public class PredicateInternalizer {
 			}
 			NormalHead head = (NormalHead) rule.getHead();
 			if (head.getAtom().getPredicate().getName().startsWith(prefix)) {
-				newHead = Heads.newNormalHead(makePredicateInternal(head.getAtom()));
+				// TODO do this nicely (using visitor?)
+				if (head instanceof ActionHead) {
+					ActionHead actionHead = (ActionHead) head;
+					newHead = Heads.newActionHead(makePredicateInternal(actionHead.getAtom()), actionHead.getAction(), actionHead.getActionInputTerms(),
+							actionHead.getActionOutputTerm());
+				} else {
+					newHead = Heads.newNormalHead(makePredicateInternal(head.getAtom()));
+				}
 			} else {
 				newHead = head;
 			}

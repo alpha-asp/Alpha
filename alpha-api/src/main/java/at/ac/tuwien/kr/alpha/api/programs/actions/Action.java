@@ -10,6 +10,7 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
  * 
  * Copyright (c) 2021, the Alpha Team.
  */
+@FunctionalInterface
 public interface Action {
 
 	/**

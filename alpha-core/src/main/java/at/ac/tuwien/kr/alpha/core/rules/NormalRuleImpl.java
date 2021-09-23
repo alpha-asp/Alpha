@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.core.rules;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
@@ -21,6 +22,10 @@ import at.ac.tuwien.kr.alpha.commons.util.Util;
 public class NormalRuleImpl extends AbstractRule<NormalHead> implements NormalRule {
 
 	public NormalRuleImpl(NormalHead head, List<Literal> body) {
+		super(head, body);
+	}
+	
+	public NormalRuleImpl(NormalHead head, Set<Literal> body) {
 		super(head, body);
 	}
 

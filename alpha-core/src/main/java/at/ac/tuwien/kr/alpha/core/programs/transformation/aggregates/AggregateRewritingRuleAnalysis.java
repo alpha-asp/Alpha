@@ -15,7 +15,6 @@ import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 
@@ -116,10 +115,6 @@ class AggregateRewritingRuleAnalysis {
 		// First, compute all global variables, that is all variables occurring in a rule except those occurring
 		// inside aggregate elements.
 		Set<VariableTerm> globalVariables = new HashSet<>();
-		if (!rule.isConstraint()) {
-			NormalHead head = (NormalHead) rule.getHead(); // Head must be normal at this point.
-			globalVariables.addAll(head.getAtom().getOccurringVariables());
-		}
 		for (Literal literal : rule.getBody()) {
 			if (literal instanceof AggregateLiteral) {
 				aggregatesInRule.add((AggregateLiteral) literal);

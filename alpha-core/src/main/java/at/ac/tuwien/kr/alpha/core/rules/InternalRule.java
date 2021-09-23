@@ -28,7 +28,9 @@
 package at.ac.tuwien.kr.alpha.core.rules;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -59,7 +61,7 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 
 	private final RuleGroundingInfoImpl groundingOrders;
 
-	public InternalRule(NormalHead head, List<Literal> body) {
+	public InternalRule(NormalHead head, Set<Literal> body) {
 		super(head, body);
 		if (body.isEmpty()) {
 			throw new IllegalArgumentException(
@@ -93,7 +95,7 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 	}
 
 	public static CompiledRule fromNormalRule(Rule<NormalHead> rule) {
-		return new InternalRule(rule.isConstraint() ? null : Heads.newNormalHead(rule.getHead().getAtom()), new ArrayList<>(rule.getBody()));
+		return new InternalRule(rule.isConstraint() ? null : rule.getHead(), rule.getBody());
 	}
 
 	/**
@@ -105,6 +107,7 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 	 */
 	@Override
 	public InternalRule renameVariables(String newVariablePostfix) {
+		// TODO handle action heads!
 		List<VariableTerm> occurringVariables = new ArrayList<>();
 		BasicAtom headAtom = this.getHeadAtom();
 		occurringVariables.addAll(headAtom.getOccurringVariables());
@@ -117,7 +120,7 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 			variableReplacement.put(occurringVariable, Terms.newVariable(newVariableName));
 		}
 		BasicAtom renamedHeadAtom = headAtom.substitute(variableReplacement);
-		ArrayList<Literal> renamedBody = new ArrayList<>(this.getBody().size());
+		Set<Literal> renamedBody = new LinkedHashSet<>(this.getBody().size());
 		for (Literal literal : this.getBody()) {
 			renamedBody.add(literal.substitute(variableReplacement));
 		}
