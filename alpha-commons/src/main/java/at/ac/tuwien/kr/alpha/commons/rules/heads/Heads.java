@@ -32,8 +32,8 @@ public final class Heads {
 	public static ChoiceElement newChoiceElement(BasicAtom choiceAtom, List<Literal> conditionLiterals) {
 		return new ChoiceElementImpl(choiceAtom, conditionLiterals);
 	}
-	
+
 	public static ActionHead newActionHead(BasicAtom atom, Action action, List<Term> actionInputTerms, VariableTerm actionResult) {
-		return null;
+		return new ActionHeadImpl(atom, action, actionInputTerms, actionResult);
 	}
 }

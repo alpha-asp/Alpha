@@ -15,7 +15,6 @@ import org.antlr.v4.runtime.DefaultErrorStrategy;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
-import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
@@ -126,7 +125,7 @@ public abstract class AbstractProgramParser implements ProgramParser {
 		}
 
 		// Construct internal program representation.
-		ASPCore2ParseTreeVisitor visitor = new ASPCore2ParseTreeVisitor(knownExternals);
+		ASPCore2ParseTreeVisitor visitor = createParseTreeVisitor(knownExternals);
 		return visitor.translate(programContext);
 	}
 
@@ -158,10 +157,6 @@ public abstract class AbstractProgramParser implements ProgramParser {
 		return bld.build();
 	}
 	
-	protected abstract ParseTreeVisitor<Object> createParseTreeVisitor();
-
-	public Map<String, PredicateInterpretation> getPreloadedExternals() {
-		return this.preloadedExternals;
-	}
+	protected abstract ASPCore2ParseTreeVisitor createParseTreeVisitor(Map<String, PredicateInterpretation> externals);
 
 }

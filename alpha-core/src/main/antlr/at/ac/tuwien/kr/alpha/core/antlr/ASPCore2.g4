@@ -23,7 +23,7 @@ statement : head DOT                     # statement_fact
 
 head : disjunction | choice | action;
 
-action: classical_literal COLON AT ID SQUARE_OPEN terms SQUARE_CLOSE EQUAL variable_term;
+action: classical_literal COLON AT ID SQUARE_OPEN terms SQUARE_CLOSE EQUAL variable_term; // NOT Core2 syntax
 
 body : ( naf_literal | aggregate ) (COMMA body)?;
 

@@ -1,14 +1,15 @@
 package at.ac.tuwien.kr.alpha.core.parser.evolog;
 
-import org.antlr.v4.runtime.tree.ParseTreeVisitor;
+import java.util.Map;
 
+import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.core.parser.AbstractProgramParser;
 
 public class EvologProgramParser extends AbstractProgramParser {
 
 	@Override
-	protected ParseTreeVisitor<Object> createParseTreeVisitor() {
-		return new EvologParseTreeVisitor(this.getPreloadedExternals());
+	protected EvologParseTreeVisitor createParseTreeVisitor(Map<String, PredicateInterpretation> externals) {
+		return new EvologParseTreeVisitor(externals);
 	}
 
 }

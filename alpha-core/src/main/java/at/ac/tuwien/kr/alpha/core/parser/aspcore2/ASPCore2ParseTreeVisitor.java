@@ -232,15 +232,19 @@ public class ASPCore2ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public Head visitHead(ASPCore2Parser.HeadContext ctx) {
-		// head : disjunction | choice;
+		// head : disjunction | choice | action;
 		if (ctx.choice() != null) {
 			return visitChoice(ctx.choice());
+		} else if (ctx.action() != null) {
+			return visitAction(ctx.action());
+		} else if (ctx.disjunction() != null) {
+			return visitDisjunction(ctx.disjunction());
 		}
-		return visitDisjunction(ctx.disjunction());
+		throw notSupported(ctx);
 	}
 
 	@Override
-	public Object visitAction(ASPCore2Parser.ActionContext ctx) {
+	public Head visitAction(ASPCore2Parser.ActionContext ctx) {
 		// Actions are an Evolog-specific feature and therefore not supported by the ASPCore2 parser.
 		throw notSupported(ctx);
 	}

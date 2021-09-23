@@ -306,7 +306,13 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	}
 
 	private void fireRule(CompiledRule rule, Substitution substitution) {
-		BasicAtom newAtom = this.instantiate(rule.getHead(), substitution);
+		// BasicAtom newAtom = this.instantiate(rule.getHead(), substitution);
+		BasicAtom newAtom;
+		if (rule.getHead() instanceof ActionHead) {
+			newAtom = instantiateActionHead((ActionHead) rule.getHead(), substitution);
+		} else {
+			newAtom = instantiateNormalHead(rule.getHead(), substitution);
+		}
 		if (!newAtom.isGround()) {
 			throw new IllegalStateException("Trying to fire rule " + rule.toString() + " with incompatible substitution " + substitution.toString());
 		}
@@ -319,21 +325,24 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		return ruleHead.instantiate(this, substitution);
 	}
 
-	public BasicAtom instantiate(NormalHead head, Substitution substitution) {
+	// FIXME should be dispatched via visitor pattern
+	public BasicAtom instantiateNormalHead(NormalHead head, Substitution substitution) {
 		return head.getAtom().substitute(substitution);
 	}
 
-	public BasicAtom instantiate(ActionHead head, Substitution substitution) {
+	// FIXME should be dispatched via visitor pattern
+	public BasicAtom instantiateActionHead(ActionHead head, Substitution substitution) {
 		// TODO ensure unique action only gets executed once!
 		List<Term> actionInput = head.getActionInputTerms();
 		List<Term> substitutedInput = new ArrayList<>();
 		// Substitute all variables in action input so that all input terms are ground.
-		for(Term inputTerm : actionInput) {
+		for (Term inputTerm : actionInput) {
 			// TODO handle variables nested in function terms as well!
-			if(inputTerm instanceof VariableTerm) {
+			if (inputTerm instanceof VariableTerm) {
 				VariableTerm inputVar = (VariableTerm) inputTerm;
-				if(!substitution.isVariableSet(inputVar)) {
-					throw new IllegalStateException("No substitute for action input variable " + inputVar.toString() + " in substitution: " + substitution.toString());
+				if (!substitution.isVariableSet(inputVar)) {
+					throw new IllegalStateException(
+							"No substitute for action input variable " + inputVar.toString() + " in substitution: " + substitution.toString());
 				}
 				substitutedInput.add(inputVar.substitute(substitution));
 			} else {
@@ -344,7 +353,8 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		// TODO exception handling (translate EVERY throwable to an error term)
 		Action action = head.getAction();
 		FunctionTerm actionResult = action.execute(substitutedInput);
-		// We have an action result. Add it to the substitution as the substitute for the variable bound to the action so we're able to obtain the ground BasicAtom derived by the rule
+		// We have an action result. Add it to the substitution as the substitute for the variable bound to the action so we're able to obtain the
+		// ground BasicAtom derived by the rule
 		substitution.put(head.getActionOutputTerm(), actionResult);
 		return head.getAtom().substitute(substitution);
 	}

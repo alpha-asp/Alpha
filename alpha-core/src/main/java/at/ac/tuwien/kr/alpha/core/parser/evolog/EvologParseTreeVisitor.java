@@ -27,7 +27,7 @@ public class EvologParseTreeVisitor extends ASPCore2ParseTreeVisitor {
 	public EvologParseTreeVisitor(Map<String, PredicateInterpretation> externals) {
 		this(externals, true);
 	}
-
+	
 	@Override
 	public Head visitAction(ASPCore2Parser.ActionContext ctx) {
 		BasicAtom atom = visitClassical_literal(ctx.classical_literal());
