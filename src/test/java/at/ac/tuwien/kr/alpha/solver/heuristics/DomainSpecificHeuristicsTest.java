@@ -510,6 +510,18 @@ public class DomainSpecificHeuristicsTest {
 		// 2 domain-specific choices are expected because the heuristics for F a and F c are disabled because their heads are assigned before the heuristic could step in
 	}
 
+	@Test
+	public void testDiscardingOfFiringHeuristicWithoutApplicableRule() {
+		InputProgram program = parser.parse(
+				"{a}." + LS +
+				"{b} :- a." + LS +
+				"#heuristic T b. [3]" + LS + // highest priority, but no applicable rule: this heuristic is discarded
+				"#heuristic T a. [2]" + LS + // now there would be an applicable rule for b
+				"#heuristic F b. [1]"        // but the heuristic with weight 3 is not re-activated
+		);
+		solveAndAssertAnswerSets(program, 1, 2, "{ a }");
+	}
+
 	private void solveAndAssertAnswerSets(InputProgram program, String... expectedAnswerSets) {
 		solveAndAssertAnswerSets(program, Integer.MAX_VALUE, expectedAnswerSets);
 	}
