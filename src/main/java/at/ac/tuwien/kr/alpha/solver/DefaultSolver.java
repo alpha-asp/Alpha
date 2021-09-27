@@ -96,7 +96,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private static class SearchState {
 		boolean hasBeenInitialized;
 		boolean isSearchSpaceCompletelyExplored;
-		boolean didChange;
 		boolean afterAllAtomsAssigned;		// True if search reached fixpoint and all remaining unassigned atoms have been set to false.
 	}
 	private final SearchState searchState = new SearchState();
@@ -142,7 +141,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			ConflictCause conflictCause = propagate();
 			if (conflictCause != null) {
 				learnFromConflict(conflictCause);
-			} else if (searchState.didChange) {
+			} else if (assignment.didChange()) {
 				// Update grounder with new assignments and (potentially) obtain new NoGoods.
 				grounder.updateAssignment(assignment.getNewPositiveAssignmentsIterator());
 				getNoGoodsFromGrounderAndIngest();
@@ -160,7 +159,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private void setupLoop() {
-		searchState.didChange = false;
 		searchState.afterAllAtomsAssigned = false;
 		if (!searchState.hasBeenInitialized) {
 			// Initially, get NoGoods from grounder.
@@ -196,7 +194,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	private void getNoGoodsFromGrounderAndIngest() {
 		Map<Integer, NoGood> obtained = grounder.getNoGoods(assignment);
-		searchState.didChange = !obtained.isEmpty();
 		if (!ingest(obtained)) {
 			searchState.isSearchSpaceCompletelyExplored = true;
 		}
@@ -208,24 +205,23 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		NoGood violatedNoGood = new NoGood(conflictAntecedent.getReasonLiterals().clone());
 		// TODO: The violatedNoGood should not be necessary here, but this requires major type changes in heuristics.
 		branchingHeuristic.violatedNoGood(violatedNoGood);
-		if (!searchState.afterAllAtomsAssigned) {
-			if (!learnBackjumpAddFromConflict(conflictCause)) {
-				searchState.isSearchSpaceCompletelyExplored = true;
-			}
-		} else {
+		if (searchState.afterAllAtomsAssigned) {
 			LOGGER.debug("Assignment is violated after all unassigned atoms have been assigned false.");
 			conflictsAfterClosing++;
 			if (!treatConflictAfterClosing(conflictAntecedent)) {
 				searchState.isSearchSpaceCompletelyExplored = true;
 			}
 			searchState.afterAllAtomsAssigned = false;
+		} else {
+			if (!learnBackjumpAddFromConflict(conflictCause)) {
+				searchState.isSearchSpaceCompletelyExplored = true;
+			}
 		}
 	}
 
 	private ConflictCause propagate() {
 		LOGGER.trace("Doing propagation step.");
 		ConflictCause conflictCause = store.propagate();
-		searchState.didChange |= store.didPropagate();
 		LOGGER.trace("Assignment after propagation is: {}", assignment);
 		if (!disableNoGoodDeletion && conflictCause == null) {
 			// Run learned-NoGood deletion-strategy.
@@ -551,7 +547,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 
 		choiceManager.choose(new Choice(literal, false));
-		searchState.didChange = true;
 		return true;
 	}
 	

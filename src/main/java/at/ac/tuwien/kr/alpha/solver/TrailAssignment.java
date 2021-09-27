@@ -93,6 +93,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	private int newAssignmentsIterator;
 	private int assignmentsForChoicePosition;
 	private int mbtCount;
+	private boolean didChange;
 	private boolean checksEnabled;
 	long replayCounter;
 
@@ -212,7 +213,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		// Remove all atoms recorded in the highest decision level.
 		int start = trailIndicesOfDecisionLevels.get(getDecisionLevel());
 		for (int i = start; i < trailSize; i++) {
-			int backtrackAtom = atomOf(trail[i]); //atomOf(backtrackIterator.next());
+			int backtrackAtom = atomOf(trail[i]);
 			// Skip already backtracked atoms.
 			if (getTruth(backtrackAtom) == null) {
 				continue;
@@ -232,6 +233,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			}
 			strongDecisionLevels[backtrackAtom] = -1;
 			informCallback(backtrackAtom);
+			didChange = true;
 		}
 		// Remove atoms from trail.
 		trailSize = start;
@@ -361,6 +363,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 				strongDecisionLevels[atom] = getDecisionLevel();
 			}
 			informCallback(atom);
+			didChange = true;
 			return null;
 		}
 
@@ -394,6 +397,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			// Adjust MBT counter.
 			mbtCount--;
 			informCallback(atom);
+			didChange = true;
 			return null;
 		}
 		throw oops("Assignment conditions are not covered.");
@@ -523,6 +527,13 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			}
 		}
 		return didAssign;
+	}
+
+	@Override
+	public boolean didChange() {
+		boolean oldDidChange = didChange;
+		didChange = false;
+		return oldDidChange;
 	}
 
 	@Override

@@ -100,4 +100,10 @@ public interface WritableAssignment extends Assignment {
 	 * @return true if any atom was assigned.
 	 */
 	boolean closeUnassignedAtoms();
+
+	/**
+	 * Returns whether the assignment did change since this method was last called.
+	 * @return true if the assignment changed since this method was last called.
+	 */
+	boolean didChange();
 }
