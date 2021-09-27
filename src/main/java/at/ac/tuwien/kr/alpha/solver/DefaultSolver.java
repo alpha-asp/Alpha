@@ -72,9 +72,10 @@ import static at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic.DEFAULT
 import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
 
 /**
- * The new default solver employed in Alpha.
+ * The default solver employed in Alpha.
+ * The core algorithm is a DPLL-style loop employing conflict-driven learning and lazy-grounding of nogoods.
  *
- * Copyright (c) 2016-2020, the Alpha Team.
+ * Copyright (c) 2016-2021, the Alpha Team.
  */
 public class DefaultSolver extends AbstractSolver implements SolverMaintainingStatistics {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolver.class);
@@ -82,9 +83,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final NoGoodStore store;
 	private final ChoiceManager choiceManager;
 	private final WritableAssignment assignment;
-
 	private final GroundConflictNoGoodLearner learner;
-
 	private final BranchingHeuristic branchingHeuristic;
 
 	private int mbtAtFixpoint;
@@ -92,7 +91,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final boolean disableJustifications;
 	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
 	private final boolean disableNoGoodDeletion;
-
 	private static class SearchState {
 		boolean hasBeenInitialized;
 		boolean isSearchSpaceCompletelyExplored;
@@ -134,15 +132,16 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		while (true) {
 			performanceLog.writeIfTimeForLogging(LOGGER);
 			if (searchState.isSearchSpaceCompletelyExplored) {
-				// Search space has been fully explored, there are no more answer-sets.
+				LOGGER.debug("Search space has been fully explored, there are no more answer-sets.");
 				logStats();
 				return false;
 			}
 			ConflictCause conflictCause = propagate();
 			if (conflictCause != null) {
+				LOGGER.debug("Conflict encountered, analyzing conflict.");
 				learnFromConflict(conflictCause);
 			} else if (assignment.didChange()) {
-				// Update grounder with new assignments and (potentially) obtain new NoGoods.
+				LOGGER.debug("Updating grounder with new assignments and (potentially) obtaining new NoGoods.");
 				grounder.updateAssignment(assignment.getNewPositiveAssignmentsIterator());
 				getNoGoodsFromGrounderAndIngest();
 			} else if (choose()) {
@@ -159,7 +158,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private void setupLoop() {
-		searchState.afterAllAtomsAssigned = false;
 		if (!searchState.hasBeenInitialized) {
 			// Initially, get NoGoods from grounder.
 			performanceLog.initialize();
@@ -168,6 +166,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			return;
 		}
 		// We already found one Answer-Set and are requested to find another one.
+		searchState.afterAllAtomsAssigned = false;
 		if (assignment.getDecisionLevel() == 0) {
 			// Solver is at decision level 0 again after finding some answer-set
 			searchState.isSearchSpaceCompletelyExplored = true;
