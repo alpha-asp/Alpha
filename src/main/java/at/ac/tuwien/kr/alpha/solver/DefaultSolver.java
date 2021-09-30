@@ -130,7 +130,11 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	@Override
 	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
-		setupLoop();
+		if (!searchState.hasBeenInitialized) {
+			initializeSearch();
+		} else {
+			prepareForSubsequentAnswerSet();
+		}
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
 			performanceLog.writeIfTimeForLogging(LOGGER);
@@ -160,14 +164,14 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 	}
 
-	private void setupLoop() {
-		if (!searchState.hasBeenInitialized) {
-			// Initially, get NoGoods from grounder.
-			performanceLog.initialize();
-			getNoGoodsFromGrounderAndIngest();
-			searchState.hasBeenInitialized = true;
-			return;
-		}
+	private void initializeSearch() {
+		// Initially, get NoGoods from grounder.
+		performanceLog.initialize();
+		getNoGoodsFromGrounderAndIngest();
+		searchState.hasBeenInitialized = true;
+	}
+
+	private void prepareForSubsequentAnswerSet() {
 		// We already found one Answer-Set and are requested to find another one.
 		searchState.afterAllAtomsAssigned = false;
 		if (assignment.getDecisionLevel() == 0) {
@@ -454,6 +458,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 			final int lastChoice = choice.getAtom();
 			final boolean choiceValue = choice.getTruth().toBoolean();
+			if (LOGGER.isTraceEnabled()) {
+				LOGGER.trace("Backtracked choice atom is {}={}@{}.", lastChoice, choice.getTruth(), choice.getDecisionLevel());
+			}
 
 			// Chronological backtracking: choose inverse now.
 			// Choose FALSE if the previous choice was for TRUE and the atom was not already MBT at that time.
