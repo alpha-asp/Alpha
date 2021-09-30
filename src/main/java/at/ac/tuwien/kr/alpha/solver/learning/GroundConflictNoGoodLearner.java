@@ -148,7 +148,7 @@ public class GroundConflictNoGoodLearner {
 	public ConflictAnalysisResult analyzeConflictFromAddingNoGood(Antecedent violatedNoGood) {
 		LOGGER.trace("Analyzing conflict caused by adding the (violated) nogood: {}", violatedNoGood);
 		// Simply compute appropriate backjumping level.
-		int removingConflict = backjumpLevelRemovingConflict(violatedNoGood);
+		int removingConflict = computeConflictFreeBackjumpingLevel(new NoGood(violatedNoGood.getReasonLiterals().clone()));
 		if (removingConflict < 0) {
 			return ConflictAnalysisResult.UNSAT;
 		}

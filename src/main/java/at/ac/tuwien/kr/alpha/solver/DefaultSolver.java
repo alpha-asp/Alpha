@@ -27,29 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToNegatedLiteral;
-import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
-import static at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
-import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Set;
-import java.util.function.Consumer;
-
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -71,6 +48,28 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.ChainedBranchingHeuristics;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToNegatedLiteral;
+import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
+import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
 
 /**
  * The new default solver employed in Alpha.
@@ -179,14 +178,14 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				// TODO: The violatedNoGood should not be necessary here, but this requires major type changes in heuristics.
 				branchingHeuristic.violatedNoGood(violatedNoGood);
 				if (!afterAllAtomsAssigned) {
-					if (!learnBackjumpAddFromConflict(conflictCause)) {
+					if (!backtrack()) {
 						logStats();
 						return false;
 					}
 				} else {
 					LOGGER.debug("Assignment is violated after all unassigned atoms have been assigned false.");
 					conflictsAfterClosing++;
-					if (!treatConflictAfterClosing(conflictAntecedent)) {
+					if (!backtrack()) {
 						return false;
 					}
 					afterAllAtomsAssigned = false;
@@ -420,6 +419,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	 * @return {@code true} iff it is possible to backtrack even further, {@code false} otherwise
 	 */
 	private boolean backtrack() {
+		LOGGER.debug("Backtracking.");
 		while (assignment.getDecisionLevel() != 0) {
 			final Assignment.Entry choice = choiceManager.backtrackSlow();
 			store.propagate();
@@ -431,6 +431,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 			final int lastChoice = choice.getAtom();
 			final boolean choiceValue = choice.getTruth().toBoolean();
+			if (LOGGER.isTraceEnabled()) {
+				LOGGER.trace("Backtracked choice atom is {}={}@{}.", lastChoice, choice.getTruth(), choice.getDecisionLevel());
+			}
 
 			// Chronological backtracking: choose inverse now.
 			// Choose FALSE if the previous choice was for TRUE and the atom was not already MBT at that time.

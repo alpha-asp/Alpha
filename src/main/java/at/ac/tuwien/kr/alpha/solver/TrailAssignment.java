@@ -341,7 +341,11 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		if (LOGGER.isTraceEnabled()) {
 			LOGGER.trace("Recording assignment {}={}@{} impliedBy: {}", atom, value, getDecisionLevel(), impliedBy);
 			if (impliedBy != null) {
-				for (Integer literal : impliedBy.getReasonLiterals()) {
+				Antecedent fullAntecedent = impliedBy;
+				if (impliedBy instanceof ShallowAntecedent) {
+					fullAntecedent = ((ShallowAntecedent) impliedBy).instantiateAntecedent(atomToLiteral(atom, value.toBoolean()));
+				}
+				for (Integer literal : fullAntecedent.getReasonLiterals()) {
 					LOGGER.trace("impliedBy literal assignment: {}={}.", atomOf(literal), get(atomOf(literal)));
 				}
 			}
