@@ -94,7 +94,10 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private static class SearchState {
 		boolean hasBeenInitialized;
 		boolean isSearchSpaceCompletelyExplored;
-		boolean afterAllAtomsAssigned;		// True if search reached fixpoint and all remaining unassigned atoms have been set to false.
+		/**
+		 * True if search reached fixpoint and all remaining unassigned atoms have been set to false.
+		 */
+		boolean afterAllAtomsAssigned;
 	}
 	private final SearchState searchState = new SearchState();
 
