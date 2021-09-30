@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.config.InputConfig;
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
@@ -42,8 +41,6 @@ public interface Alpha {
 	Stream<AnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter);
 	
 	NormalProgram normalizeProgram(InputProgram program);
-	
-	SystemConfig getConfig();
 	
 	Solver prepareSolverFor(InputProgram program, java.util.function.Predicate<Predicate> filter);
 

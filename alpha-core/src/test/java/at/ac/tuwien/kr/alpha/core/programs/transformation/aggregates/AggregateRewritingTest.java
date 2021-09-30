@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
@@ -32,14 +33,17 @@ import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
 public class AggregateRewritingTest {
 
 	private static final ProgramParser PARSER = new EvologProgramParser();
+	private static final GrounderFactory GROUNDER_FACTORY = new GrounderFactory(new GrounderHeuristicsConfiguration(), false);
+	private static final SolverFactory SOLVER_FACTORY = new SolverFactory();
+
 	private static final Function<String, List<AnswerSet>> NORMALIZE_AND_SOLVE = (str) -> {
 		SystemConfig cfg = new SystemConfig();
 		InputProgram prog = PARSER.parse(str);
 		NormalProgram normalized = new NormalizeProgramTransformation(cfg.getAggregateRewritingConfig()).apply(prog);
 		CompiledProgram compiled = InternalProgram.fromNormalProgram(normalized);
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", compiled, atomStore, cfg.isDebugInternalChecks());
-		Solver solver = SolverFactory.getInstance(cfg, atomStore, grounder);
+		Grounder grounder = GROUNDER_FACTORY.createGrounder(compiled, atomStore);
+		Solver solver = SOLVER_FACTORY.createSolver(grounder, atomStore);
 		return solver.collectList();
 	};
 

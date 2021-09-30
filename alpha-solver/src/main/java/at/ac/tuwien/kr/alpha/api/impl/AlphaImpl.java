@@ -52,6 +52,8 @@ import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.config.InputConfig;
+import at.ac.tuwien.kr.alpha.api.config.ParserFactory;
+import at.ac.tuwien.kr.alpha.api.config.ProgramTransformationFactory;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
@@ -64,12 +66,10 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.core.parser.evolog.EvologProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
 
@@ -77,14 +77,23 @@ public class AlphaImpl implements Alpha {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlphaImpl.class);
 
-	private SystemConfig config = new SystemConfig(); // The config is initialized with default values.
-	private ProgramParser parser = new EvologProgramParser();
+	private final ParserFactory parserFactory;
+	private final ProgramTransformationFactory transformationFactory;
 
-	public AlphaImpl(SystemConfig cfg) {
-		this.config = cfg;
-	}
+	private final GrounderFactory grounderFactory;
+	private final SolverFactory solverFactory;
 
-	public AlphaImpl() {
+	private final boolean enableStratifiedEvaluation;
+	private final boolean sortAnswerSets;
+
+	AlphaImpl(ParserFactory parserFactory, ProgramTransformationFactory transformationFactory, GrounderFactory grounderFactory, SolverFactory solverFactory,
+			boolean enableStratifiedEvaluation, boolean sortAnswerSets) {
+		this.parserFactory = parserFactory;
+		this.transformationFactory = transformationFactory;
+		this.grounderFactory = grounderFactory;
+		this.solverFactory = solverFactory;
+		this.enableStratifiedEvaluation = enableStratifiedEvaluation;
+		this.sortAnswerSets = sortAnswerSets;
 	}
 
 	@Override
@@ -108,17 +117,26 @@ public class AlphaImpl implements Alpha {
 	}
 
 	@Override
-	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
+	@SuppressWarnings("resource")
+	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) {
+		ProgramParser parser = parserFactory.createParser();
 		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder();
 		InputProgram tmpProg;
 		for (Path path : paths) {
 			InputStream stream;
-			if (!literate) {
-				stream = Files.newInputStream(path);
-			} else {
-				stream = Channels.newInputStream(Util.streamToChannel(Util.literate(Files.lines(path))));
+			try {
+				if (!literate) {
+					stream = Files.newInputStream(path);
+				} else {
+					stream = Channels.newInputStream(Util.streamToChannel(Util.literate(Files.lines(path))));
+
+				}
+				tmpProg = parser.parse(stream, externals);
+				stream.close();
+			} catch (IOException ex) {
+				LOGGER.error("Failed parsing program due to IOException", ex);
+				throw new RuntimeException("Failed to parse program!");
 			}
-			tmpProg = parser.parse(stream, externals);
 			prgBuilder.accumulate(tmpProg);
 		}
 		return prgBuilder.build();
@@ -126,7 +144,7 @@ public class AlphaImpl implements Alpha {
 
 	@Override
 	public InputProgram readProgramString(String aspString, Map<String, PredicateInterpretation> externals) {
-		return parser.parse(aspString, externals);
+		return parserFactory.createParser().parse(aspString, externals);
 	}
 
 	@Override
@@ -136,7 +154,7 @@ public class AlphaImpl implements Alpha {
 
 	@Override
 	public NormalProgram normalizeProgram(InputProgram program) {
-		return new NormalizeProgramTransformation(config.getAggregateRewritingConfig()).apply(program);
+		return transformationFactory.createProgramNormalizationTransformation().apply(program);
 	}
 
 	// TODO make sure to adapt this without exposing internal implementation types
@@ -144,8 +162,10 @@ public class AlphaImpl implements Alpha {
 	InternalProgram performProgramPreprocessing(NormalProgram program) {
 		LOGGER.debug("Preprocessing InternalProgram!");
 		InternalProgram retVal = InternalProgram.fromNormalProgram(program);
-		if (config.isEvaluateStratifiedPart()) {
+		if (enableStratifiedEvaluation) {
 			AnalyzedProgram analyzed = new AnalyzedProgram(retVal.getRules(), retVal.getFacts());
+			// TODO as Evolog moves further along, we want to integrate stratified evaluation with grounder and solver.
+			// Therefore, leave it as is and don't make part of factory API for now.
 			retVal = new StratifiedEvaluation().apply(analyzed);
 		}
 		return retVal;
@@ -194,7 +214,7 @@ public class AlphaImpl implements Alpha {
 	 */
 	private Stream<AnswerSet> solve(CompiledProgram program, java.util.function.Predicate<Predicate> filter) {
 		Stream<AnswerSet> retVal = prepareSolverFor(program, filter).stream();
-		return config.isSortAnswerSets() ? retVal.sorted() : retVal;
+		return sortAnswerSets ? retVal.sorted() : retVal;
 	}
 
 	/**
@@ -207,26 +227,20 @@ public class AlphaImpl implements Alpha {
 	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program.
 	 */
 	private Solver prepareSolverFor(CompiledProgram program, java.util.function.Predicate<Predicate> filter) {
-		String grounderName = config.getGrounderName();
-		boolean doDebugChecks = config.isDebugInternalChecks();
-
-		GrounderHeuristicsConfiguration grounderHeuristicConfiguration = GrounderHeuristicsConfiguration
-				.getInstance(config.getGrounderToleranceConstraints(), config.getGrounderToleranceRules());
-		grounderHeuristicConfiguration.setAccumulatorEnabled(config.isGrounderAccumulatorEnabled());
-
+//		String grounderName = config.getGrounderName();
+//		boolean doDebugChecks = config.isDebugInternalChecks();
+//
+//		GrounderHeuristicsConfiguration grounderHeuristicConfiguration = GrounderHeuristicsConfiguration
+//				.getInstance(config.getGrounderToleranceConstraints(), config.getGrounderToleranceRules());
+//		grounderHeuristicConfiguration.setAccumulatorEnabled(config.isGrounderAccumulatorEnabled());
+//
+//		AtomStore atomStore = new AtomStoreImpl();
+//		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, grounderHeuristicConfiguration, doDebugChecks);
+//
+//		return SolverFactory.getInstance(config, atomStore, grounder);
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, grounderHeuristicConfiguration, doDebugChecks);
-
-		return SolverFactory.getInstance(config, atomStore, grounder);
-	}
-
-	@Override
-	public SystemConfig getConfig() {
-		return config;
-	}
-
-	public void setConfig(SystemConfig config) {
-		this.config = config;
+		Grounder grounder = grounderFactory.createGrounder(program, atomStore, filter);
+		return solverFactory.createSolver(grounder, atomStore);
 	}
 
 	@Override
@@ -237,8 +251,8 @@ public class AlphaImpl implements Alpha {
 	@Override
 	public DebugSolvingContext prepareDebugSolve(NormalProgram program) {
 		return prepareDebugSolve(program, InputConfig.DEFAULT_FILTER);
-	}	
-	
+	}
+
 	@Override
 	public DebugSolvingContext prepareDebugSolve(final InputProgram program, java.util.function.Predicate<Predicate> filter) {
 		return prepareDebugSolve(normalizeProgram(program), filter);
@@ -250,7 +264,7 @@ public class AlphaImpl implements Alpha {
 		final ComponentGraph compGraph;
 		final AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(program);
 		final NormalProgram preprocessed;
-		if (this.config.isEvaluateStratifiedPart()) {
+		if (enableStratifiedEvaluation) {
 			preprocessed = new StratifiedEvaluation().apply(analyzed).toNormalProgram();
 		} else {
 			preprocessed = program;
@@ -259,27 +273,27 @@ public class AlphaImpl implements Alpha {
 		compGraph = analyzed.getComponentGraph();
 		final Solver solver = prepareSolverFor(analyzed, filter);
 		return new DebugSolvingContext() {
-			
+
 			@Override
 			public Solver getSolver() {
 				return solver;
 			}
-			
+
 			@Override
 			public NormalProgram getPreprocessedProgram() {
 				return preprocessed;
 			}
-			
+
 			@Override
 			public NormalProgram getNormalizedProgram() {
 				return program;
 			}
-			
+
 			@Override
 			public DependencyGraph getDependencyGraph() {
 				return depGraph;
 			}
-			
+
 			@Override
 			public ComponentGraph getComponentGraph() {
 				return compGraph;

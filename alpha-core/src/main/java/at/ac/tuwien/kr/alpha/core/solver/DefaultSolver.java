@@ -79,6 +79,7 @@ import at.ac.tuwien.kr.alpha.core.util.Substitutions;
  *
  * Copyright (c) 2016-2020, the Alpha Team.
  */
+// TODO we need some kind of SolverConfig
 public class DefaultSolver extends AbstractSolver implements StatisticsReportingSolver {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolver.class);
 
@@ -99,7 +100,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 	private final PerformanceLog performanceLog;
 	
-	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, SystemConfig config, HeuristicsConfiguration heuristicsConfiguration) {
+	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, HeuristicsConfiguration heuristicsConfiguration) {
 		super(atomStore, grounder);
 
 		this.assignment = assignment;

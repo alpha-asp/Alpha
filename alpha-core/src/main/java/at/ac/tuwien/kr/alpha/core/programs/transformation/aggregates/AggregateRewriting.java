@@ -9,6 +9,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
@@ -17,7 +18,6 @@ import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.literals.Literals;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.AbstractAggregateEncoder;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.CountEncoder;

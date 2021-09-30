@@ -79,7 +79,7 @@ public class NoGoodGeneratorTest {
 
 		CompiledRule rule = program.getRules().get(1);
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
+		Grounder grounder = new NaiveGrounder(program, atomStore, true);
 		NoGoodGenerator noGoodGenerator = ((NaiveGrounder) grounder).noGoodGenerator;
 		Substitution substitution = new BasicSubstitution();
 		substitution.put(X, A);

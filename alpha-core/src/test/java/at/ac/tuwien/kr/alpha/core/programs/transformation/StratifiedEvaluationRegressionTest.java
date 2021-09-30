@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
@@ -113,8 +114,8 @@ public class StratifiedEvaluationRegressionTest {
 		programVerifier.accept(evaluated);
 		// Solve remaining program
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", evaluated, atomStore, false);
-		Solver solver = SolverFactory.getInstance(new SystemConfig(), atomStore, grounder);
+		Grounder grounder = new GrounderFactory(new GrounderHeuristicsConfiguration(), false).createGrounder(evaluated, atomStore);
+		Solver solver = new SolverFactory().createSolver(grounder, atomStore);
 		Set<AnswerSet> answerSets = solver.collectSet();
 		resultVerifier.accept(answerSets);
 	}
@@ -160,7 +161,7 @@ public class StratifiedEvaluationRegressionTest {
 	}
 
 	private static void verifyAnswerSetsPartStratified(Set<AnswerSet> answerSets) {
-		TestUtils.assertAnswerSetsEqual(new String[] {"p(a), q(a), p(b), m(c), n(d), r(a), s(a,c,d), t(a,b), either(a)",
+		TestUtils.assertAnswerSetsEqual(new String[] { "p(a), q(a), p(b), m(c), n(d), r(a), s(a,c,d), t(a,b), either(a)",
 				"p(a), q(a), p(b), m(c), n(d), r(a), s(a,c,d), t(a,b), or(a)" }, answerSets);
 	}
 

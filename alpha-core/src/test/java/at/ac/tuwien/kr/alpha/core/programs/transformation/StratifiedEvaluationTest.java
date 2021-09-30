@@ -42,6 +42,7 @@ import org.junit.jupiter.api.Test;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
@@ -74,10 +75,13 @@ public class StratifiedEvaluationTest {
 		return evaluator.apply(AnalyzedProgram.analyzeNormalProgram(normalizer.apply(parser.parse(str))));
 	};
 
+	private final GrounderFactory grounderFactory = new GrounderFactory(new GrounderHeuristicsConfiguration(), false);
+	private final SolverFactory solverFactory = new SolverFactory();
+
 	private final Function<CompiledProgram, Set<AnswerSet>> solveCompiledProg = (prog) -> {
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", prog, atomStore, false);
-		Solver solver = SolverFactory.getInstance(new SystemConfig(), atomStore, grounder);
+		Grounder grounder = grounderFactory.createGrounder(prog, atomStore);
+		Solver solver = solverFactory.createSolver(grounder, atomStore);
 		return solver.collectSet();
 	};
 

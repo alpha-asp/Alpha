@@ -1,6 +1,5 @@
-package at.ac.tuwien.kr.alpha.core.programs.transformation;
+package at.ac.tuwien.kr.alpha.api.programs;
 
-import at.ac.tuwien.kr.alpha.api.programs.Program;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 
 /**

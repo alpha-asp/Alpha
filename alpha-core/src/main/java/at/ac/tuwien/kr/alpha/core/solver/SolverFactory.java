@@ -37,14 +37,21 @@ import at.ac.tuwien.kr.alpha.core.solver.heuristics.HeuristicsConfigurationBuild
 import java.util.Random;
 
 public final class SolverFactory {
+
+	private final String solverName;
+	private final String nogoodStoreName;
+	private final long randSeed;
+	private final boolean enableDebugChecks;
+	private final HeuristicsConfiguration heuristicsConfiguration;	
+
+	public Solver createSolver(Grounder grounder, AtomStore atomStore) {
+		return null; // TODO
+	}
+
 	
-	public static Solver getInstance(SystemConfig config, AtomStore atomStore, Grounder grounder) {
-		final String solverName = config.getSolverName();
-		final String nogoodStoreName = config.getNogoodStoreName();
-		final Random random = new Random(config.getSeed());
-		final boolean debugInternalChecks = config.isDebugInternalChecks();
-		final HeuristicsConfiguration heuristicsConfiguration = buildHeuristicsConfiguration(config);
-		final WritableAssignment assignment = new TrailAssignment(atomStore, debugInternalChecks);
+	private static Solver getInstance(String solverName, String nogoodStoreName, long randSeed, boolean enableDebugChecks, HeuristicsConfiguration heuristicsConfiguration, AtomStore atomStore, Grounder grounder) {
+		final Random random = new Random(randSeed);
+		final WritableAssignment assignment = new TrailAssignment(atomStore, enableDebugChecks);
 
 		NoGoodStore store;
 
@@ -53,14 +60,14 @@ public final class SolverFactory {
 				store = new NaiveNoGoodStore(assignment);
 				break;
 			case "alpharoaming":
-				store = new NoGoodStoreAlphaRoaming(assignment, debugInternalChecks);
+				store = new NoGoodStoreAlphaRoaming(assignment, enableDebugChecks);
 				break;
 			default:
 				throw new IllegalArgumentException("Unknown store requested.");
 		}
 
 		switch (solverName.toLowerCase()) {
-			case "naive" :
+			case "naive":
 				return new NaiveSolver(atomStore, grounder);
 			case "default":
 				return new DefaultSolver(atomStore, grounder, store, assignment, random, config, heuristicsConfiguration);

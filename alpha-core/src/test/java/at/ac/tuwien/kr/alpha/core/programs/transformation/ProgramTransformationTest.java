@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.programs.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;

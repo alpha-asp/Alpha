@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.api.programs.actions.Action;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
