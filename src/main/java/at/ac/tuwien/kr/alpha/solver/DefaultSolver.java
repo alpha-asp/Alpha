@@ -28,7 +28,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
@@ -67,7 +66,8 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomToNegatedLiteral;
 import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
 import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
 
@@ -303,14 +303,10 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 		choiceManager.backjump(analysisResult.backjumpLevel);
 
-		choiceManager.backtrackFast();
-		if (store.propagate() != null) {
-			throw oops("Violated NoGood after backtracking.");
-		}
+		choiceManager.backtrack();
 		if (!store.didPropagate()) {
 			throw oops("Nothing to propagate after backtracking from conflict-causing choice");
 		}
-
 		return true;
 	}
 
@@ -442,51 +438,34 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	/**
-	 * Iterative implementation of recursive backtracking.
+	 * Realizes chronological backtracking.
 	 *
 	 * @return {@code true} iff it is possible to backtrack even further, {@code false} otherwise
 	 */
 	private boolean backtrack() {
 		while (assignment.getDecisionLevel() != 0) {
-			final Assignment.Entry choice = choiceManager.backtrackSlow();
-			store.propagate();
-
-			if (choice == null) {
-				LOGGER.debug("Backtracking further, because last choice was already backtracked.");
-				continue;
-			}
-
-			final int lastChoice = choice.getAtom();
-			final boolean choiceValue = choice.getTruth().toBoolean();
+			// Backtrack highest decision level.
+			final int previousDecisionLevel = assignment.getDecisionLevel();
+			final Choice backtrackedChoice = choiceManager.backtrack();
 			if (LOGGER.isTraceEnabled()) {
-				LOGGER.trace("Backtracked choice atom is {}={}@{}.", lastChoice, choice.getTruth(), choice.getDecisionLevel());
+				LOGGER.trace("Backtracked choice atom is {}={}@{}.", backtrackedChoice.getAtom(),
+					backtrackedChoice.getTruthValue() ? TRUE : FALSE, previousDecisionLevel);
 			}
 
-			// Chronological backtracking: choose inverse now.
-			// Choose FALSE if the previous choice was for TRUE and the atom was not already MBT at that time.
-			ThriceTruth lastChoiceTruth = assignment.getTruth(lastChoice);
-			if (choiceValue && MBT.equals(lastChoiceTruth)) {
-				LOGGER.debug("Backtracking further, because last choice was MBT before choosing TRUE.");
+			// Construct inverse choice, if choice can be inverted.
+			final Choice invertedChoice = Choice.getInverted(backtrackedChoice);
+			if (invertedChoice == null) {
+				LOGGER.debug("Backtracking further, because last choice was already backtracked/inverted.");
 				continue;
 			}
-
-			// If choice was assigned at lower decision level (due to added NoGoods), no inverted choice should be done.
-			if (choice.getImpliedBy() != null) {
-				LOGGER.debug("Last choice is now implied by {}", choice.getImpliedBy());
-				//if (choice.getDecisionLevel() == assignment.getDecisionLevel() + 1) {
-				//	throw oops("Choice was assigned but not at a lower decision level");
-				//}
-				LOGGER.debug("Backtracking further, because last choice was assigned at a lower decision level.");
-				continue;
-			}
-
-			// Choose inverse if it is not yet already assigned TRUE or FALSE.
-			if (lastChoiceTruth == null || (lastChoiceTruth.isMBT() && !choiceValue)) {
-				LOGGER.debug("Choosing inverse.");
-				choiceManager.choose(new Choice(lastChoice, !choiceValue, true));
+			// Choose inverse as long as the choice atom is not assigned.
+			ThriceTruth currentTruthValue = assignment.getTruth(backtrackedChoice.getAtom());
+			if (currentTruthValue == null) {
+				LOGGER.debug("Choosing inverse, choice is: {}.", invertedChoice);
+				choiceManager.choose(invertedChoice);
 				break;
 			}
-			// Continue backtracking.
+			LOGGER.debug("Backtracking further, not inverting choice, because its value is implied now.");
 		}
 		return assignment.getDecisionLevel() != 0;
 	}
