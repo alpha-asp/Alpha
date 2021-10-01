@@ -89,9 +89,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	private ArrayList<Integer> trailIndicesOfDecisionLevels = new ArrayList<>();
 
 	private int nextPositionInTrail;
-	private int newAssignmentsPositionInTrail;
 	private int newAssignmentsIterator;
-	private int assignmentsForChoicePosition;
 	private int mbtCount;
 	private boolean didChange;
 	private boolean checksEnabled;
@@ -107,8 +105,6 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		this.trailIndicesOfDecisionLevels.add(0);
 		nextPositionInTrail = 0;
 		newAssignmentsIterator = 0;
-		newAssignmentsPositionInTrail = 0;
-		assignmentsForChoicePosition = 0;
 	}
 
 	public TrailAssignment(AtomStore atomStore) {
@@ -130,8 +126,6 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		trailIndicesOfDecisionLevels.add(0);
 		nextPositionInTrail = 0;
 		newAssignmentsIterator = 0;
-		newAssignmentsPositionInTrail = 0;
-		assignmentsForChoicePosition = 0;
 	}
 
 	@Override
@@ -270,9 +264,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	private void resetTrailPointersAndReplayOutOfOrderLiterals() {
 		nextPositionInTrail = Math.min(nextPositionInTrail, trailSize);
-		newAssignmentsPositionInTrail = Math.min(newAssignmentsPositionInTrail, trailSize);
 		newAssignmentsIterator = Math.min(newAssignmentsIterator, trailSize);
-		assignmentsForChoicePosition = Math.min(assignmentsForChoicePosition, trailSize);
 		replayOutOfOrderLiterals();
 		if (checksEnabled) {
 			runInternalChecks();
