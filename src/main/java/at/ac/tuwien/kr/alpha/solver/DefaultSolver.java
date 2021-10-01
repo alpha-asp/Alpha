@@ -274,15 +274,14 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	/**
-	 * Analyzes the conflict and either learns a new NoGood (causing backjumping and addition to the NoGood store),
-	 * or backtracks the choice causing the conflict.
+	 * Analyzes the conflict and learns a new NoGood (causing backjumping and addition to the NoGood store).
+	 *
 	 * @return false iff the analysis result shows that the set of NoGoods is unsatisfiable.
 	 */
 	private boolean learnBackjumpAddFromConflict(ConflictCause conflictCause) {
 		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(conflictCause.getAntecedent());
 
 		LOGGER.debug("Analysis result: {}", analysisResult);
-
 		if (analysisResult == UNSAT) {
 			// Halt if unsatisfiable.
 			return false;
@@ -290,24 +289,14 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 		branchingHeuristic.analyzedConflict(analysisResult);
 
-		if (analysisResult.learnedNoGood != null) {
-			choiceManager.backjump(analysisResult.backjumpLevel);
-
-			final NoGood learnedNoGood = analysisResult.learnedNoGood;
-			int noGoodId = grounder.register(learnedNoGood);
-			if (!addAndBackjumpIfNecessary(noGoodId, learnedNoGood, analysisResult.lbd)) {
-				return false;
-			}
-			return true;
+		if (analysisResult.learnedNoGood == null) {
+			throw oops("Did not learn new NoGood from conflict.");
 		}
 
 		choiceManager.backjump(analysisResult.backjumpLevel);
-
-		choiceManager.backtrack();
-		if (!store.didPropagate()) {
-			throw oops("Nothing to propagate after backtracking from conflict-causing choice");
-		}
-		return true;
+		final NoGood learnedNoGood = analysisResult.learnedNoGood;
+		int noGoodId = grounder.register(learnedNoGood);
+		return addAndBackjumpIfNecessary(noGoodId, learnedNoGood, analysisResult.lbd);
 	}
 
 	private boolean justifyMbtAndBacktrack() {
