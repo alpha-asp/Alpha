@@ -19,7 +19,6 @@ import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
-import at.ac.tuwien.kr.alpha.core.parser.evolog.EvologProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.EnumerationRewriting;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
@@ -37,13 +36,14 @@ import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
  */
 public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggregateEncoder {
 
-	private final ProgramParser parser = new EvologProgramParser();
+	private final ProgramParser parser;
 	private final ST encodingTemplate;
 	private final boolean needsBoundRule;
 
-	protected StringtemplateBasedAggregateEncoder(AggregateFunctionSymbol aggregateFunctionToEncode, ComparisonOperator acceptedOperator, ST encodingTemplate) {
+	protected StringtemplateBasedAggregateEncoder(ProgramParser parser, AggregateFunctionSymbol aggregateFunctionToEncode, ComparisonOperator acceptedOperator, ST encodingTemplate) {
 		super(aggregateFunctionToEncode, Collections.singleton(acceptedOperator));
 		this.encodingTemplate = encodingTemplate;
+		this.parser = parser;
 		if (acceptedOperator.equals(ComparisonOperators.EQ)) {
 			this.needsBoundRule = false;
 		} else if (acceptedOperator.equals(ComparisonOperators.LE)) {

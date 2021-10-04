@@ -52,7 +52,6 @@ import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.StatisticsReportingSolver;
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
@@ -100,17 +99,17 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 	private final PerformanceLog performanceLog;
 	
-	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, HeuristicsConfiguration heuristicsConfiguration) {
+	public DefaultSolver(SolverConfig cfg, AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment) {
 		super(atomStore, grounder);
 
 		this.assignment = assignment;
 		this.store = store;
 		this.choiceManager = new ChoiceManager(assignment, store);
-		this.choiceManager.setChecksEnabled(config.isDebugInternalChecks());
+		this.choiceManager.setChecksEnabled(cfg.isEnableDebugChecks());
 		this.learner = new GroundConflictNoGoodLearner(assignment, atomStore);
-		this.branchingHeuristic = chainFallbackHeuristic(grounder, assignment, random, heuristicsConfiguration);
-		this.disableJustifications = config.isDisableJustificationSearch();
-		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();
+		this.branchingHeuristic = chainFallbackHeuristic(grounder, assignment, new Random(cfg.getRandomSeed()), cfg.getHeuristicsConfiguration());
+		this.disableJustifications = cfg.isDisableJustifications();
+		this.disableNoGoodDeletion = cfg.isDisableNogoodDeletion();
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
 	}
 

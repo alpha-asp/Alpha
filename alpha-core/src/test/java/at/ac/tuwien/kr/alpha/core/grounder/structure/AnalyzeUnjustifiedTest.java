@@ -37,7 +37,6 @@ import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -52,9 +51,9 @@ import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 /**
  * Copyright (c) 2018-2020, the Alpha Team.
@@ -62,9 +61,8 @@ import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
 public class AnalyzeUnjustifiedTest {
 
 	private final ProgramParser parser = new ASPCore2ProgramParser();
-	private final NormalizeProgramTransformation normalize = new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
 	private final Function<String, CompiledProgram> parseAndPreprocess = (str) -> {
-		return InternalProgram.fromNormalProgram(normalize.apply(parser.parse(str)));
+		return InternalProgram.fromNormalProgram(TestUtils.parseAndNormalizeWithDefaultConfig(str));
 	};
 
 	@Test

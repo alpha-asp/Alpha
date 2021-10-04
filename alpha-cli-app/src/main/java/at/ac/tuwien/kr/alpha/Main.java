@@ -50,7 +50,7 @@ import at.ac.tuwien.kr.alpha.api.StatisticsReportingSolver;
 import at.ac.tuwien.kr.alpha.api.config.AlphaConfig;
 import at.ac.tuwien.kr.alpha.api.config.InputConfig;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.impl.AlphaImpl;
+import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
@@ -60,6 +60,7 @@ import at.ac.tuwien.kr.alpha.app.ComponentGraphWriter;
 import at.ac.tuwien.kr.alpha.app.DependencyGraphWriter;
 import at.ac.tuwien.kr.alpha.app.config.CommandLineParser;
 import at.ac.tuwien.kr.alpha.commons.util.SimpleAnswerSetFormatter;
+import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 
 /**
  * Main entry point for Alpha.
@@ -80,7 +81,7 @@ public class Main {
 			Main.exitWithMessage(commandLineParser.getUsageMessage(), 1);
 		}
 
-		Alpha alpha = new AlphaImpl(cfg.getSystemConfig());
+		Alpha alpha = AlphaFactory.newAlpha(cfg.getSystemConfig());
 
 		InputProgram program = null;
 		try {

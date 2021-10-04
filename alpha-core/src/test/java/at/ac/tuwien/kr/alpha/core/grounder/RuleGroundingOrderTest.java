@@ -36,26 +36,20 @@ import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramPartParser;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 /**
  * Copyright (c) 2017-2019, the Alpha Team.
  */
 public class RuleGroundingOrderTest {
 
-	private static final ProgramParser PARSER = new ASPCore2ProgramParser();
-	private static final NormalizeProgramTransformation NORMALIZE_TRANSFORM = new NormalizeProgramTransformation(
-			SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
 	private static final Function<String, CompiledProgram> PARSE_AND_PREPROCESS = (str) -> {
-		return InternalProgram.fromNormalProgram(NORMALIZE_TRANSFORM.apply(PARSER.parse(str)));
+		return InternalProgram.fromNormalProgram(TestUtils.parseAndNormalizeWithDefaultConfig(str));
 	};
 
 	private static final ASPCore2ProgramPartParser PROGRAM_PART_PARSER = new ASPCore2ProgramPartParser();

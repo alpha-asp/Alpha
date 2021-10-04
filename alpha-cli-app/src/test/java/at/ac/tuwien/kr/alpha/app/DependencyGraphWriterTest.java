@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
-import at.ac.tuwien.kr.alpha.api.impl.AlphaImpl;
+import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 
 public class DependencyGraphWriterTest {
@@ -50,7 +50,7 @@ public class DependencyGraphWriterTest {
 				"n6 -> n4 [xlabel=\"+\" labeldistance=0.1]" + LS +
 				"n6 -> n5 [xlabel=\"+\" labeldistance=0.1]" + LS +
 				"}" + LS;
-		Alpha alpha = new AlphaImpl();
+		Alpha alpha = AlphaFactory.newAlpha();
 		DebugSolvingContext dbgResult = alpha.prepareDebugSolve(alpha.readProgramString(asp));
 		DependencyGraph depgraph = dbgResult.getDependencyGraph();
 		DependencyGraphWriter writer = new DependencyGraphWriter();

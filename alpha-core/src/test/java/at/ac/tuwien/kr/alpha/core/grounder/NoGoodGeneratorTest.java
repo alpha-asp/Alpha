@@ -31,11 +31,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
-import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
@@ -43,21 +40,16 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.Literals;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 /**
  * Tests {@link NoGoodGenerator}
  */
 public class NoGoodGeneratorTest {
-
-	private static final ProgramParser PARSER = new ASPCore2ProgramParser();
-	private static final NormalizeProgramTransformation NORMALIZE_TRANSFORM = new NormalizeProgramTransformation(
-			SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
 
 	private static final ConstantTerm<String> A = Terms.newSymbolicConstant("a");
 	private static final ConstantTerm<String> B = Terms.newSymbolicConstant("b");
@@ -71,10 +63,10 @@ public class NoGoodGeneratorTest {
 	 */
 	@Test
 	public void collectNeg_ContainsOnlyPositiveLiterals() {
-		InputProgram input = PARSER.parse("p(a,b). "
+		String input = "p(a,b). "
 				+ "q(a,b) :- not nq(a,b). "
-				+ "nq(a,b) :- not q(a,b).");
-		NormalProgram normal = NORMALIZE_TRANSFORM.apply(input);
+				+ "nq(a,b) :- not q(a,b).";
+		NormalProgram normal = TestUtils.parseAndNormalizeWithDefaultConfig(input);
 		CompiledProgram program = InternalProgram.fromNormalProgram(normal);
 
 		CompiledRule rule = program.getRules().get(1);

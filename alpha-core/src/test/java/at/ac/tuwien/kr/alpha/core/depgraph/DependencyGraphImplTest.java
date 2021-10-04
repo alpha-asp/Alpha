@@ -10,23 +10,16 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph.Node;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.core.parser.evolog.EvologProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.test.util.DependencyGraphUtils;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 public class DependencyGraphImplTest {
-
-	private ProgramParser parser = new EvologProgramParser();
-	private NormalizeProgramTransformation normalizeTransform = new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
 
 	// Currently not used anywhere, but keep as it might come in handy
 	@SuppressWarnings("unused")
@@ -66,8 +59,7 @@ public class DependencyGraphImplTest {
 
 	@Test
 	public void reachabilityCheckSimpleTest() {
-		InputProgram prog = parser.parse("b :- a.");
-		NormalProgram normalProg = normalizeTransform.apply(prog);
+		NormalProgram normalProg = TestUtils.parseAndNormalizeWithDefaultConfig("b :- a.");
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
 
@@ -90,8 +82,7 @@ public class DependencyGraphImplTest {
 		bld.append("c :- b.").append("\n");
 		bld.append("d :- c.").append("\n");
 
-		InputProgram prog = parser.parse(bld.toString());
-		NormalProgram normalProg = normalizeTransform.apply(prog);
+		NormalProgram normalProg = TestUtils.parseAndNormalizeWithDefaultConfig(bld.toString());
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
 		Node a = dg.getNodeForPredicate(Predicates.getPredicate("a", 0));
@@ -125,8 +116,7 @@ public class DependencyGraphImplTest {
 		bld.append("a :- d.").append("\n");
 		bld.append("x :- d, f1.");
 
-		InputProgram prog = parser.parse(bld.toString());
-		NormalProgram normalProg = normalizeTransform.apply(prog);
+		NormalProgram normalProg = TestUtils.parseAndNormalizeWithDefaultConfig(bld.toString());
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
 		Node a = dg.getNodeForPredicate(Predicates.getPredicate("a", 0));
@@ -165,8 +155,7 @@ public class DependencyGraphImplTest {
 		bld.append("b :- a.").append("\n");
 		bld.append("a :- b.").append("\n");
 
-		InputProgram prog = parser.parse(bld.toString());
-		NormalProgram normalProg = normalizeTransform.apply(prog);
+		NormalProgram normalProg = TestUtils.parseAndNormalizeWithDefaultConfig(bld.toString());
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
 		Node a = dg.getNodeForPredicate(Predicates.getPredicate("a", 0));
@@ -203,8 +192,7 @@ public class DependencyGraphImplTest {
 				"y :- b, d, x.\n" +
 				"z :- x, y, z.";
 
-		InputProgram prog = parser.parse(inputProgram);
-		NormalProgram normalProg = normalizeTransform.apply(prog);
+		NormalProgram normalProg = TestUtils.parseAndNormalizeWithDefaultConfig(inputProgram);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
 

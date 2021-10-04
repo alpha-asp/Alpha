@@ -7,24 +7,17 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph.SCComponent;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph.Node;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.core.parser.evolog.EvologProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 public class StratificationAlgorithmTest {
-
-	private ProgramParser parser = new EvologProgramParser();
-	private NormalizeProgramTransformation normalizeTransform = new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
 
 	private boolean predicateIsBeforePredicateInOrder(Predicate predBefore, Predicate predAfter, List<SCComponent> order) {
 		boolean foundPredBefore = false;
@@ -44,8 +37,7 @@ public class StratificationAlgorithmTest {
 
 	@Test
 	public void stratifyOneRuleTest() {
-		InputProgram prog = parser.parse("a :- b.");
-		NormalProgram normalProg = normalizeTransform.apply(prog);
+		NormalProgram normalProg = TestUtils.parseAndNormalizeWithDefaultConfig("a :- b.");
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
 		ComponentGraph cg = ComponentGraphImpl.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
@@ -63,8 +55,7 @@ public class StratificationAlgorithmTest {
 		StringBuilder bld = new StringBuilder();
 		bld.append("b :- a.").append("\n");
 		bld.append("c :- b.").append("\n");
-		InputProgram prog = parser.parse(bld.toString());
-		NormalProgram normalProg = normalizeTransform.apply(prog);
+		NormalProgram normalProg = TestUtils.parseAndNormalizeWithDefaultConfig(bld.toString());
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
 		ComponentGraph cg = ComponentGraphImpl.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
@@ -87,8 +78,7 @@ public class StratificationAlgorithmTest {
 		bld.append("c :- b.").append("\n");
 		bld.append("d :- not c.").append("\n");
 		bld.append("e :- d.").append("\n");
-		InputProgram prog = parser.parse(bld.toString());
-		NormalProgram normalProg = normalizeTransform.apply(prog);
+		NormalProgram normalProg = TestUtils.parseAndNormalizeWithDefaultConfig(bld.toString());
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
 		ComponentGraph cg = ComponentGraphImpl.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
@@ -112,8 +102,7 @@ public class StratificationAlgorithmTest {
 		StringBuilder bld = new StringBuilder();
 		bld.append("ancestor_of(X, Y) :- parent_of(X, Y).");
 		bld.append("ancestor_of(X, Z) :- parent_of(X, Y), ancestor_of(Y, Z).");
-		InputProgram prog = parser.parse(bld.toString());
-		NormalProgram normalProg = normalizeTransform.apply(prog);
+		NormalProgram normalProg = TestUtils.parseAndNormalizeWithDefaultConfig(bld.toString());
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
 		ComponentGraph cg = ComponentGraphImpl.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
@@ -144,8 +133,7 @@ public class StratificationAlgorithmTest {
 		bld.append("n :- m, not i, not j.");
 		bld.append("p :- not m, not n.");
 
-		InputProgram prog = parser.parse(bld.toString());
-		NormalProgram normalProg = normalizeTransform.apply(prog);
+		NormalProgram normalProg = TestUtils.parseAndNormalizeWithDefaultConfig(bld.toString());
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
 		ComponentGraph cg = ComponentGraphImpl.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
@@ -188,8 +176,7 @@ public class StratificationAlgorithmTest {
 		bld.append("n :- m, not i, not j.");
 		bld.append("p :- not m, not n.");
 
-		InputProgram prog = parser.parse(bld.toString());
-		NormalProgram normalProg = normalizeTransform.apply(prog);
+		NormalProgram normalProg = TestUtils.parseAndNormalizeWithDefaultConfig(bld.toString());
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
 		ComponentGraph cg = ComponentGraphImpl.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));
@@ -220,8 +207,7 @@ public class StratificationAlgorithmTest {
 		bld.append("c :- b.");
 		bld.append("c :- a.");
 
-		InputProgram prog = parser.parse(bld.toString());
-		NormalProgram normalProg = normalizeTransform.apply(prog);
+		NormalProgram normalProg = TestUtils.parseAndNormalizeWithDefaultConfig(bld.toString());
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
 		ComponentGraph cg = ComponentGraphImpl.buildComponentGraph(dg, StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg));

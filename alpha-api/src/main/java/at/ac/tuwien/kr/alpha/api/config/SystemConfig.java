@@ -37,18 +37,17 @@ public class SystemConfig {
 	// TODO add validation on configs!
 	// TODO naive solver cannot print stats!
 	// TODO introduce debug levels (lvl 1 = print graphs and preprocessed, lvl 2 = same with debugInternalChecks)
-	
+
 	// Note: Defining constants for default values here rather than just
 	// initializing from those values in order to have the values accessible in
 	// contexts where no AlphaConfig instance exists (e.g. argument parsing from
 	// command line)
-	public static final String DEFAULT_GROUNDER_NAME = "naive";
+	public static final boolean DEFAULT_ACCEPT_EVOLOG = true;
 	public static final String DEFAULT_SOLVER_NAME = "default";
 	public static final String DEFAULT_NOGOOD_STORE_NAME = "alphaRoaming";
 	public static final Heuristic DEFAULT_BRANCHING_HEURISTIC = Heuristic.VSIDS;
 	public static final BinaryNoGoodPropagationEstimationStrategy DEFAULT_MOMS_STRATEGY = BinaryNoGoodPropagationEstimationStrategy.CountBinaryWatches;
 	public static final long DEFAULT_SEED = System.nanoTime();
-	public static final boolean DEFAULT_DETERMINISTIC = false;
 	public static final boolean DEFAULT_PRINT_STATS = false;
 	public static final boolean DEFAULT_QUIET = false;
 	public static final boolean DEFAULT_DISABLE_JUSTIFICATION_SEARCH = false;
@@ -63,10 +62,9 @@ public class SystemConfig {
 	public static final String DEFAULT_ATOM_SEPARATOR = ", ";
 	public static final AggregateRewritingConfig DEFAULT_AGGREGATE_REWRITING_CONFIG = new AggregateRewritingConfig();
 
-	private String grounderName = DEFAULT_GROUNDER_NAME;
+	private boolean acceptEvologPrograms = DEFAULT_ACCEPT_EVOLOG;
 	private String solverName = DEFAULT_SOLVER_NAME;
 	private String nogoodStoreName = DEFAULT_NOGOOD_STORE_NAME;
-	private boolean deterministic = DEFAULT_DETERMINISTIC;
 	private long seed = DEFAULT_SEED;
 	private boolean debugInternalChecks = DEFAULT_DEBUG_INTERNAL_CHECKS;
 	private Heuristic branchingHeuristic = DEFAULT_BRANCHING_HEURISTIC;
@@ -84,14 +82,6 @@ public class SystemConfig {
 	private String atomSeparator = DEFAULT_ATOM_SEPARATOR;
 	private AggregateRewritingConfig aggregateRewritingConfig = DEFAULT_AGGREGATE_REWRITING_CONFIG;
 
-	public String getGrounderName() {
-		return this.grounderName;
-	}
-
-	public void setGrounderName(String grounderName) {
-		this.grounderName = grounderName;
-	}
-
 	public String getSolverName() {
 		return this.solverName;
 	}
@@ -106,14 +96,6 @@ public class SystemConfig {
 
 	public void setNogoodStoreName(String nogoodStoreName) {
 		this.nogoodStoreName = nogoodStoreName;
-	}
-
-	public boolean isDeterministic() {
-		return this.deterministic;
-	}
-
-	public void setDeterministic(boolean deterministic) {
-		this.deterministic = deterministic;
 	}
 
 	public long getSeed() {
@@ -151,7 +133,7 @@ public class SystemConfig {
 	public void setMomsStrategy(BinaryNoGoodPropagationEstimationStrategy momsStrategy) {
 		this.momsStrategy = momsStrategy;
 	}
-	
+
 	public void setMomsStrategyName(String momsStrategyName) {
 		this.momsStrategy = BinaryNoGoodPropagationEstimationStrategy.valueOf(momsStrategyName);
 	}
@@ -255,5 +237,13 @@ public class SystemConfig {
 	public void setAggregateRewritingConfig(AggregateRewritingConfig aggregateRewritingConfig) {
 		this.aggregateRewritingConfig = aggregateRewritingConfig;
 	}
-	
+
+	public boolean isAcceptEvologPrograms() {
+		return this.acceptEvologPrograms;
+	}
+
+	public void setAcceptEvologPrograms(boolean acceptEvologPrograms) {
+		this.acceptEvologPrograms = acceptEvologPrograms;
+	}
+
 }

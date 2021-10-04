@@ -19,9 +19,7 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
@@ -29,10 +27,11 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
+import at.ac.tuwien.kr.alpha.core.solver.SolverConfig;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
+import at.ac.tuwien.kr.alpha.core.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 public class StratifiedEvaluationRegressionTest {
@@ -105,17 +104,26 @@ public class StratifiedEvaluationRegressionTest {
 	@MethodSource("at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluationRegressionTest#params")
 	public void runTest(String aspString, Consumer<CompiledProgram> programVerifier, Consumer<Set<AnswerSet>> resultVerifier) {
 		// Parse and pre-evaulate program
-		ProgramParser parser = new ASPCore2ProgramParser();
-		InputProgram prog = parser.parse(aspString);
 		AnalyzedProgram analyzed = AnalyzedProgram
-				.analyzeNormalProgram(new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG).apply(prog));
+				.analyzeNormalProgram(TestUtils.parseAndNormalizeWithDefaultConfig(aspString));
 		CompiledProgram evaluated = new StratifiedEvaluation().apply(analyzed);
 		// Verify stratified evaluation result
 		programVerifier.accept(evaluated);
 		// Solve remaining program
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = new GrounderFactory(new GrounderHeuristicsConfiguration(), false).createGrounder(evaluated, atomStore);
-		Solver solver = new SolverFactory().createSolver(grounder, atomStore);
+		SolverConfig solverCfg = new SolverConfig();
+		solverCfg.setEnableDebugChecks(false);
+		solverCfg.setRandomSeed(System.nanoTime());
+		solverCfg.setDisableJustifications(false);
+		solverCfg.setDisableNogoodDeletion(false);
+		solverCfg.setHeuristicsConfiguration(
+				HeuristicsConfiguration.builder()
+						.setHeuristic(SystemConfig.DEFAULT_BRANCHING_HEURISTIC)
+						.setMomsStrategy(SystemConfig.DEFAULT_MOMS_STRATEGY)
+						.setReplayChoices(SystemConfig.DEFAULT_REPLAY_CHOICES)
+						.build());
+		Solver solver = new SolverFactory("default", "alpharoaming", solverCfg).createSolver(grounder, atomStore);
 		Set<AnswerSet> answerSets = solver.collectSet();
 		resultVerifier.accept(answerSets);
 	}

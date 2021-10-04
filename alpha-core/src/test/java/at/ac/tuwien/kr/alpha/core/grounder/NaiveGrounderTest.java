@@ -41,11 +41,8 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
-import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
@@ -56,17 +53,16 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.grounder.instantiation.BindingResult;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramPartParser;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 /**
  * Tests {@link NaiveGrounder}
@@ -78,10 +74,7 @@ import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
  */
 public class NaiveGrounderTest {
 
-	private static final ProgramParser PROGRAM_PARSER = new ASPCore2ProgramParser();
 	private static final ASPCore2ProgramPartParser PROGRAM_PART_PARSER = new ASPCore2ProgramPartParser();
-	private static final NormalizeProgramTransformation NORMALIZE_TRANSFORM = new NormalizeProgramTransformation(
-			SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
 
 	final Literal litP1X = PROGRAM_PART_PARSER.parseLiteral("p1(X)");
 	final Literal litP2X = PROGRAM_PART_PARSER.parseLiteral("p2(X)");
@@ -109,10 +102,10 @@ public class NaiveGrounderTest {
 	 */
 	@Test
 	public void groundRuleAlreadyGround() {
-		InputProgram program = PROGRAM_PARSER.parse("a :- not b. "
+		String asp = "a :- not b. "
 				+ "b :- not a. "
-				+ "c :- b.");
-		NormalProgram normal = NORMALIZE_TRANSFORM.apply(program);
+				+ "c :- b.";
+		NormalProgram normal = TestUtils.parseAndNormalizeWithDefaultConfig(asp);
 		CompiledProgram prog = new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normal));
 
 		AtomStore atomStore = new AtomStoreImpl();
@@ -130,11 +123,11 @@ public class NaiveGrounderTest {
 	 */
 	@Test
 	public void groundRuleWithLongerBodyAlreadyGround() {
-		InputProgram program = PROGRAM_PARSER.parse("a :- not b. "
+		String asp = "a :- not b. "
 				+ "b :- not a. "
 				+ "c :- b. "
-				+ "d :- b, c. ");
-		NormalProgram normal = NORMALIZE_TRANSFORM.apply(program);
+				+ "d :- b, c. ";
+		NormalProgram normal = TestUtils.parseAndNormalizeWithDefaultConfig(asp);
 		InternalProgram prog = new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normal));
 
 		AtomStore atomStore = new AtomStoreImpl();
@@ -156,10 +149,10 @@ public class NaiveGrounderTest {
 	 */
 	@Test
 	public void groundConstraintAlreadyGround() {
-		InputProgram program = PROGRAM_PARSER.parse("a :- not b. "
+		String asp = "a :- not b. "
 				+ "b :- not a. "
-				+ ":- b.");
-		NormalProgram normal = NORMALIZE_TRANSFORM.apply(program);
+				+ ":- b.";
+		NormalProgram normal = TestUtils.parseAndNormalizeWithDefaultConfig(asp);
 		InternalProgram prog = new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normal));
 
 		AtomStore atomStore = new AtomStoreImpl();
@@ -223,8 +216,7 @@ public class NaiveGrounderTest {
 				+ "p2(X) :- something(X). "
 				+ "q2(X) :- something(X). ";
 		CompiledProgram program = InternalProgram.fromNormalProgram(
-				NORMALIZE_TRANSFORM.apply(
-						PROGRAM_PARSER.parse(aspStr)));
+				TestUtils.parseAndNormalizeWithDefaultConfig(aspStr));
 
 		AtomStore atomStore = new AtomStoreImpl();
 		NaiveGrounder grounder = createPermissiveGrounder(program);
@@ -245,34 +237,34 @@ public class NaiveGrounderTest {
 
 	@Test
 	public void testGroundingOfRuleSwitchedOffByFalsePositiveBody() {
-		InputProgram program = PROGRAM_PARSER.parse("a(1). "
+		String program = "a(1). "
 				+ "c(X) :- a(X), b(X). "
-				+ "b(X) :- something(X). ");
+				+ "b(X) :- something(X). ";
 		testIfGrounderGroundsRule(program, 0, litAX, 1, ThriceTruth.FALSE, false);
 	}
 
 	@Test
 	public void testGroundingOfRuleNotSwitchedOffByTruePositiveBody() {
-		InputProgram program = PROGRAM_PARSER.parse("a(1). "
+		String program = "a(1). "
 				+ "c(X) :- a(X), b(X). "
-				+ "b(X) :- something(X). ");
+				+ "b(X) :- something(X). ";
 		testIfGrounderGroundsRule(program, 0, litAX, 1, ThriceTruth.TRUE, true);
 	}
 
 	@Test
 	@Disabled("Currently, rule grounding is not switched off by a true negative body atom")
 	public void testGroundingOfRuleSwitchedOffByTrueNegativeBody() {
-		InputProgram program = PROGRAM_PARSER.parse("a(1). "
+		String program = "a(1). "
 				+ "c(X) :- a(X), not b(X). "
-				+ "b(X) :- something(X). ");
+				+ "b(X) :- something(X). ";
 		testIfGrounderGroundsRule(program, 0, litAX, 1, ThriceTruth.TRUE, false);
 	}
 
 	@Test
 	public void testGroundingOfRuleNotSwitchedOffByFalseNegativeBody() {
-		InputProgram program = PROGRAM_PARSER.parse("a(1). "
+		String program = "a(1). "
 				+ "c(X) :- a(X), not b(X). "
-				+ "b(X) :- something(X). ");
+				+ "b(X) :- something(X). ";
 
 		testIfGrounderGroundsRule(program, 0, litAX, 1, ThriceTruth.FALSE, true);
 	}
@@ -284,9 +276,9 @@ public class NaiveGrounderTest {
 	 * {@code bTruth}.
 	 * It is asserted that ground instantiations are produced if and only if {@code expectNoGoods} is true.
 	 */
-	private void testIfGrounderGroundsRule(InputProgram program, int ruleID, Literal startingLiteral, int startingInstance, ThriceTruth bTruth,
+	private void testIfGrounderGroundsRule(String program, int ruleID, Literal startingLiteral, int startingInstance, ThriceTruth bTruth,
 			boolean expectNoGoods) {
-		CompiledProgram internalPrg = InternalProgram.fromNormalProgram(NORMALIZE_TRANSFORM.apply(program));
+		CompiledProgram internalPrg = InternalProgram.fromNormalProgram(TestUtils.parseAndNormalizeWithDefaultConfig(program));
 		AtomStore atomStore = new AtomStoreImpl();
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
 		NaiveGrounder grounder = createPermissiveGrounder(internalPrg);
@@ -306,70 +298,70 @@ public class NaiveGrounderTest {
 
 	@Test
 	public void testPermissiveGrounderHeuristicTolerance_0_reject() {
-		InputProgram program = PROGRAM_PARSER.parse("a(1). "
+		String program = "a(1). "
 				+ "c(X) :- a(X), b(X). "
-				+ "b(X) :- something(X).");
+				+ "b(X) :- something(X).";
 		testPermissiveGrounderHeuristicTolerance(program, 0, litAX, 1, 0, false, Arrays.asList(1));
 	}
 
 	@Test
 	public void testPermissiveGrounderHeuristicTolerance_1_accept() {
-		InputProgram program = PROGRAM_PARSER.parse("a(1). "
+		String program = "a(1). "
 				+ "c(X) :- a(X), b(X). "
-				+ "b(X) :- something(X).");
+				+ "b(X) :- something(X).";
 		testPermissiveGrounderHeuristicTolerance(program, 0, litAX, 1, 1, true, Arrays.asList(1));
 	}
 
 	@Test
 	public void testPermissiveGrounderHeuristicTolerance_1_reject() {
-		InputProgram program = PROGRAM_PARSER.parse("a(1). "
+		String program = "a(1). "
 				+ "c(X) :- a(X), b(X), b(X+1). "
-				+ "b(X) :- something(X).");
+				+ "b(X) :- something(X).";
 		testPermissiveGrounderHeuristicTolerance(program, 0, litAX, 1, 1, false, Arrays.asList(2));
 	}
 
 	@Test
 	public void testPermissiveGrounderHeuristicTolerance_2_accept() {
-		InputProgram program = PROGRAM_PARSER.parse("a(1). "
+		String program = "a(1). "
 				+ "c(X) :- a(X), b(X), b(X+1). "
-				+ "b(X) :- something(X).");
+				+ "b(X) :- something(X).";
 		testPermissiveGrounderHeuristicTolerance(program, 0, litAX, 1, 2, true, Arrays.asList(2));
 	}
 
 	@Test
 	public void testPermissiveGrounderHeuristicTolerance_1_accept_two_substitutions() {
-		InputProgram program = PROGRAM_PARSER.parse("a(1). "
+		String program = "a(1). "
 				+ "c(X) :- a(X), b(X,Y). "
-				+ "b(X,Y) :- something(X,Y).");
+				+ "b(X,Y) :- something(X,Y).";
 		testPermissiveGrounderHeuristicTolerance(program, 0, litAX, 1, 1, new ThriceTruth[] { ThriceTruth.TRUE, ThriceTruth.TRUE }, 2, true,
 				Arrays.asList(0, 0));
 	}
 
 	@Test
 	public void testPermissiveGrounderHeuristicTolerance_1_accept_accept_two_substitutions_with_different_remaining_tolerances() {
-		InputProgram program = PROGRAM_PARSER.parse("a(1). "
+		String program = "a(1). "
 				+ "c(X) :- a(1), b(X,Y). "
-				+ "b(X,Y) :- something(X,Y).");
+				+ "b(X,Y) :- something(X,Y).";
 		testPermissiveGrounderHeuristicTolerance(program, 0, litA1, 1, 1, new ThriceTruth[] { null, null }, 2, true, Arrays.asList(1, 1));
 	}
 
 	@Test
 	public void testPermissiveGrounderHeuristicTolerance_2_reject() {
-		InputProgram program = PROGRAM_PARSER.parse("a(1). "
+		String program = "a(1). "
 				+ "c(X) :- a(X), b(X), b(X+1), b(X+2). "
-				+ "b(X) :- something(X).");
+				+ "b(X) :- something(X).";
 		testPermissiveGrounderHeuristicTolerance(program, 0, litAX, 1, 2, false, Arrays.asList(3));
 	}
 
 	@Test
 	public void testPermissiveGrounderHeuristicTolerance_2_accept_multiple_facts_of_same_variable() {
-		InputProgram program = PROGRAM_PARSER.parse("a(1). b(1). "
+		String program = "a(1). b(1). "
 				+ "c(X) :- a(X), b(X), b(X+1), b(X+2). "
-				+ "b(X) :- something(X).");
+				+ "b(X) :- something(X).";
 		testPermissiveGrounderHeuristicTolerance(program, 0, litAX, 1, 2, true, Arrays.asList(2));
 	}
 
-	private void testPermissiveGrounderHeuristicTolerance(InputProgram program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance,
+	private void testPermissiveGrounderHeuristicTolerance(String program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance,
 			boolean expectNoGoods, List<Integer> expectedNumbersOfUnassignedPositiveBodyAtoms) {
 		testPermissiveGrounderHeuristicTolerance(program, ruleID, startingLiteral, startingInstance, tolerance, new ThriceTruth[] {}, 1, expectNoGoods,
 				expectedNumbersOfUnassignedPositiveBodyAtoms);
@@ -393,9 +385,9 @@ public class NaiveGrounderTest {
 	 * If ground instantiations are produced, it is also asserted that the numbers of unassigned positive body atoms
 	 * determined by {@code getGroundInstantiations} match those given in {@code expectedNumbersOfUnassignedPositiveBodyAtoms}.
 	 */
-	private void testPermissiveGrounderHeuristicTolerance(InputProgram program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance,
+	private void testPermissiveGrounderHeuristicTolerance(String program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance,
 			ThriceTruth[] truthsOfB, int arityOfB, boolean expectNoGoods, List<Integer> expectedNumbersOfUnassignedPositiveBodyAtoms) {
-		CompiledProgram internalPrg = InternalProgram.fromNormalProgram(NORMALIZE_TRANSFORM.apply(program));
+		CompiledProgram internalPrg = InternalProgram.fromNormalProgram(TestUtils.parseAndNormalizeWithDefaultConfig(program));
 		AtomStore atomStore = new AtomStoreImpl();
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
 		GrounderHeuristicsConfiguration heuristicConfiguration = GrounderHeuristicsConfiguration.getInstance(tolerance, tolerance);

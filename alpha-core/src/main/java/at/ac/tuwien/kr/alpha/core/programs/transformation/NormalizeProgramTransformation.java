@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import at.ac.tuwien.kr.alpha.api.config.AggregateRewritingConfig;
+import java.util.function.Supplier;
+
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramTransformation;
@@ -16,10 +17,10 @@ import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRe
  */
 public class NormalizeProgramTransformation extends ProgramTransformation<InputProgram, NormalProgram> {
 
-	private final AggregateRewritingConfig aggregateRewritingCfg;
+	private final Supplier<AggregateRewriting> aggregateRewritingFactory;
 
-	public NormalizeProgramTransformation(AggregateRewritingConfig aggregateCfg) {
-		this.aggregateRewritingCfg = aggregateCfg;
+	public NormalizeProgramTransformation(Supplier<AggregateRewriting> aggregateRewritingFactory) {
+		this.aggregateRewritingFactory = aggregateRewritingFactory;
 	}
 
 	@Override
@@ -30,7 +31,7 @@ public class NormalizeProgramTransformation extends ProgramTransformation<InputP
 		// Transform choice rules.
 		tmpPrg = new ChoiceHeadToNormal().apply(tmpPrg);
 		// Transform aggregates.
-		tmpPrg = new AggregateRewriting(aggregateRewritingCfg.isUseSortingGridEncoding(), aggregateRewritingCfg.isSupportNegativeValuesInSums()).apply(tmpPrg);
+		tmpPrg = aggregateRewritingFactory.get().apply(tmpPrg);
 		// Transform enumeration atoms.
 		tmpPrg = new EnumerationRewriting().apply(tmpPrg);
 		EnumerationAtom.resetEnumerations();

@@ -49,13 +49,14 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	 *                                (including negative) integers. Note that these encodings are less performant than
 	 *                                their simpler counterparts that only support positive integers (eused when flag set to false)
 	 */
-	public AggregateRewriting(boolean useSortingCircuit, boolean supportNegativeIntegers) {
-		this.countLessOrEqualEncoder = CountEncoder.buildCountLessOrEqualEncoder(useSortingCircuit);
-		this.sumLessOrEqualEncoder = SumEncoder.buildSumLessOrEqualEncoder(supportNegativeIntegers);
-		this.sumEqualsEncoder = SumEncoder.buildSumEqualsEncoder(supportNegativeIntegers);
-		this.countEqualsEncoder = CountEncoder.buildCountEqualsEncoder();
-		this.minEncoder = new MinMaxEncoder(AggregateFunctionSymbol.MIN);
-		this.maxEncoder = new MinMaxEncoder(AggregateFunctionSymbol.MAX);
+	public AggregateRewriting(CountEncoder countEqualsEncoder, CountEncoder countLessOrEqualEncoder, SumEncoder sumEqualsEncoder,
+			SumEncoder sumLessOrEqualEncoder, MinMaxEncoder minEncoder, MinMaxEncoder maxEncoder) {
+		this.countLessOrEqualEncoder = countLessOrEqualEncoder;
+		this.sumLessOrEqualEncoder = sumLessOrEqualEncoder;
+		this.sumEqualsEncoder = sumEqualsEncoder;
+		this.countEqualsEncoder = countEqualsEncoder;
+		this.minEncoder = minEncoder;
+		this.maxEncoder = maxEncoder;
 	}
 
 	/**

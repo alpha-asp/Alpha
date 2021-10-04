@@ -36,6 +36,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,15 +51,12 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.config.InputConfig;
-import at.ac.tuwien.kr.alpha.api.config.ParserFactory;
-import at.ac.tuwien.kr.alpha.api.config.ProgramTransformationFactory;
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.programs.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
@@ -77,8 +75,8 @@ public class AlphaImpl implements Alpha {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlphaImpl.class);
 
-	private final ParserFactory parserFactory;
-	private final ProgramTransformationFactory transformationFactory;
+	private final Supplier<ProgramParser> parserFactory;
+	private final Supplier<ProgramTransformation<InputProgram, NormalProgram>> programNormalizationFactory;
 
 	private final GrounderFactory grounderFactory;
 	private final SolverFactory solverFactory;
@@ -86,10 +84,12 @@ public class AlphaImpl implements Alpha {
 	private final boolean enableStratifiedEvaluation;
 	private final boolean sortAnswerSets;
 
-	AlphaImpl(ParserFactory parserFactory, ProgramTransformationFactory transformationFactory, GrounderFactory grounderFactory, SolverFactory solverFactory,
+	AlphaImpl(Supplier<ProgramParser> parserFactory, Supplier<ProgramTransformation<InputProgram, NormalProgram>> programNormalizationFactory,
+			GrounderFactory grounderFactory,
+			SolverFactory solverFactory,
 			boolean enableStratifiedEvaluation, boolean sortAnswerSets) {
 		this.parserFactory = parserFactory;
-		this.transformationFactory = transformationFactory;
+		this.programNormalizationFactory = programNormalizationFactory;
 		this.grounderFactory = grounderFactory;
 		this.solverFactory = solverFactory;
 		this.enableStratifiedEvaluation = enableStratifiedEvaluation;
@@ -119,7 +119,7 @@ public class AlphaImpl implements Alpha {
 	@Override
 	@SuppressWarnings("resource")
 	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) {
-		ProgramParser parser = parserFactory.createParser();
+		ProgramParser parser = parserFactory.get();
 		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder();
 		InputProgram tmpProg;
 		for (Path path : paths) {
@@ -144,7 +144,7 @@ public class AlphaImpl implements Alpha {
 
 	@Override
 	public InputProgram readProgramString(String aspString, Map<String, PredicateInterpretation> externals) {
-		return parserFactory.createParser().parse(aspString, externals);
+		return parserFactory.get().parse(aspString, externals);
 	}
 
 	@Override
@@ -154,7 +154,7 @@ public class AlphaImpl implements Alpha {
 
 	@Override
 	public NormalProgram normalizeProgram(InputProgram program) {
-		return transformationFactory.createProgramNormalizationTransformation().apply(program);
+		return programNormalizationFactory.get().apply(program);
 	}
 
 	// TODO make sure to adapt this without exposing internal implementation types

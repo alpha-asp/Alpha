@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
-import at.ac.tuwien.kr.alpha.api.impl.AlphaImpl;
+import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 
 public class ComponentGraphWriterTest {
@@ -32,7 +32,8 @@ public class ComponentGraphWriterTest {
 				"label = <" + LS +
 				"	<table border = '1' cellborder = '0'>" + LS +
 				"		<tr><td>Component Id</td><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td></tr>" + LS +
-				"		<tr><td>Predicates</td><td>q/1<br/></td><td>r/1<br/></td><td>p/1<br/></td><td>[constr_1]/0<br/></td><td>t/1<br/>u/1<br/></td><td>s/1<br/></td></tr>" + LS
+				"		<tr><td>Predicates</td><td>q/1<br/></td><td>r/1<br/></td><td>p/1<br/></td><td>[constr_1]/0<br/></td><td>t/1<br/>u/1<br/></td><td>s/1<br/></td></tr>"
+				+ LS
 				+
 				"	</table>" + LS +
 				">" + LS +
@@ -53,7 +54,7 @@ public class ComponentGraphWriterTest {
 				"n1 -> n5 [xlabel=\"-\" labeldistance=0.1]" + LS +
 				"n2 -> n5 [xlabel=\"+\" labeldistance=0.1]" + LS +
 				"}" + LS;
-		Alpha alpha = new AlphaImpl();
+		Alpha alpha = AlphaFactory.newAlpha();
 		DebugSolvingContext dbgResult = alpha.prepareDebugSolve(alpha.readProgramString(asp));
 		ComponentGraph compgraph = dbgResult.getComponentGraph();
 		ComponentGraphWriter writer = new ComponentGraphWriter();
