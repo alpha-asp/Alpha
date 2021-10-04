@@ -5,6 +5,7 @@
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/alpha-asp/alpha?svg=true&branch=master)](https://ci.appveyor.com/project/lorenzleutgeb/alpha)
 [![codecov](https://codecov.io/gh/alpha-asp/Alpha/branch/master/graph/badge.svg)](https://codecov.io/gh/alpha-asp/Alpha)
 [![Code Quality Status](https://codebeat.co/badges/10b609be-9774-42a1-b7fe-2bb64382744d)](https://codebeat.co/projects/github-com-alpha-asp-alpha-master)
+[![Coverage Status](https://coveralls.io/repos/github/alpha-asp/Alpha/badge.svg?branch=master)](https://coveralls.io/github/alpha-asp/Alpha?branch=master)
 
 Alpha is an [Answer Set Programming (ASP)](https://en.wikipedia.org/wiki/Answer_set_programming) system: It reads a
 logic program (a set of logical rules) and computes the corresponding answer sets. ASP falls into the category of
