@@ -50,7 +50,6 @@ public class RegressionTestConfig {
 
 	public SystemConfig toSystemConfig() {
 		SystemConfig retVal = new SystemConfig();
-		retVal.setGrounderName(this.grounderName);
 		retVal.setSolverName(this.solverName);
 		retVal.setNogoodStoreName(this.noGoodStoreName);
 		retVal.setSeed(this.seed);

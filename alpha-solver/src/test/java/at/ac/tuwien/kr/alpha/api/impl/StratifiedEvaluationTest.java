@@ -25,79 +25,56 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.programs.transformation;
+package at.ac.tuwien.kr.alpha.api.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 
+import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
-import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.Programs;
-import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 public class StratifiedEvaluationTest {
 
-	private final ProgramParser parser = new ASPCore2ProgramParser();
-	private final NormalizeProgramTransformation normalizer = new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
-	private final StratifiedEvaluation evaluator = new StratifiedEvaluation();
-	private final Function<String, CompiledProgram> parseAndEvaluate = (str) -> {
-		return evaluator.apply(AnalyzedProgram.analyzeNormalProgram(normalizer.apply(parser.parse(str))));
-	};
+	private final Alpha alpha;
 
-	private final GrounderFactory grounderFactory = new GrounderFactory(new GrounderHeuristicsConfiguration(), false);
-	private final SolverFactory solverFactory = new SolverFactory();
-
-	private final Function<CompiledProgram, Set<AnswerSet>> solveCompiledProg = (prog) -> {
-		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = grounderFactory.createGrounder(prog, atomStore);
-		Solver solver = solverFactory.createSolver(grounder, atomStore);
-		return solver.collectSet();
-	};
+	StratifiedEvaluationTest() {
+		SystemConfig cfg = new SystemConfig();
+		cfg.setEvaluateStratifiedPart(true);
+		alpha = AlphaFactory.newAlpha(cfg);
+	}
 
 	@Test
 	public void testDuplicateFacts() {
 		String aspStr = "p(a). p(b). q(b). q(X) :- p(X).";
-		CompiledProgram evaluated = parseAndEvaluate.apply(aspStr);
-		Instance qOfB = new Instance(TestUtils.basicAtomWithSymbolicTerms("q", "b").getTerms());
-		Set<Instance> facts = evaluated.getFactsByPredicate().get(Predicates.getPredicate("q", 1));
-		int numQOfB = 0;
-		for (Instance at : facts) {
-			if (at.equals(qOfB)) {
-				numQOfB++;
-			}
-		}
-		assertEquals(1, numQOfB);
+		DebugSolvingContext ctx = alpha.prepareDebugSolve(alpha.readProgramString(aspStr));
+		Atom qOfB = TestUtils.basicAtomWithSymbolicTerms("q", "b");
+		assertTrue(ctx.getPreprocessedProgram().getFacts().contains(qOfB));
 	}
 
 	@Test
@@ -171,8 +148,7 @@ public class StratifiedEvaluationTest {
 		String asp = "claimedTruth(bla). truth(X) :- claimedTruth(X), &sayTrue[X]. lie(X) :- claimedTruth(X), not &sayTrue[X].";
 		Map<String, PredicateInterpretation> externals = new HashMap<>();
 		externals.put("sayTrue", Externals.processPredicateMethod(this.getClass().getMethod("sayTrue", Object.class)));
-		ProgramParser parserWithExternals = new ASPCore2ProgramParser();
-		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalizer.apply(parserWithExternals.parse(asp, externals)));
+		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(TestUtils.parseAndNormalizeWithDefaultConfig(asp, externals));
 		CompiledProgram evaluated = new StratifiedEvaluation().apply(analyzed);
 		Set<AnswerSet> answerSets = solveCompiledProg.apply(evaluated);
 		TestUtils.assertAnswerSetsEqual("claimedTruth(bla), truth(bla)", answerSets);
@@ -184,7 +160,7 @@ public class StratifiedEvaluationTest {
 	 */
 	@Test
 	public void testPartnerUnitsProblemTopologicalOrder() throws IOException {
-		InputProgram prg = parser.parse(StratifiedEvaluationTest.class.getResourceAsStream("/partial-eval/pup_topological_order.asp"));
+		InputStream progStream = StratifiedEvaluationTest.class.getResourceAsStream("/partial-eval/pup_topological_order.asp"));
 		CompiledProgram evaluated = new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normalizer.apply(prg)));
 		assertTrue(evaluated.getRules().isEmpty(), "Not all rules eliminated by stratified evaluation");
 		assertEquals(57, evaluated.getFacts().size());

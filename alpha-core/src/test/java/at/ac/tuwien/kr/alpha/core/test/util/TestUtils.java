@@ -3,12 +3,15 @@ package at.ac.tuwien.kr.alpha.core.test.util;
 import static java.util.Collections.emptySet;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
+import java.io.InputStream;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.function.Supplier;
@@ -21,6 +24,7 @@ import org.junit.jupiter.api.function.Executable;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.config.Heuristic;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
@@ -29,7 +33,6 @@ import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
-import at.ac.tuwien.kr.alpha.api.programs.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
@@ -43,13 +46,16 @@ import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
+import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewriting;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.AggregateEncoderFactory;
 import at.ac.tuwien.kr.alpha.core.solver.RegressionTestConfig;
+import at.ac.tuwien.kr.alpha.core.solver.SolverConfig;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
+import at.ac.tuwien.kr.alpha.core.solver.heuristics.HeuristicsConfiguration;
 
 public class TestUtils {
 
@@ -158,7 +164,7 @@ public class TestUtils {
 		}
 		return Atoms.newBasicAtom(pred, trms);
 	}
-
+	
 	private static Solver buildSolverFromSystemConfig(InputProgram prog, SystemConfig cfg) {
 		NormalProgram normalProg = new NormalizeProgramTransformation(cfg.getAggregateRewritingConfig()).apply(prog);
 		InternalProgram preprocessed = cfg.isEvaluateStratifiedPart() ? new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normalProg))
@@ -222,20 +228,25 @@ public class TestUtils {
 		Assumptions.assumeTrue(cfg.isSupportNegativeSumElements());
 	}
 
+	public static NormalProgram parseAndNormalizeWithDefaultConfig(String asp) {
+		return parseAndNormalizeWithDefaultConfig(asp, Collections.emptyMap());
+	}
+	
 	/**
 	 * Convenience method for use in tests that parses and normalizes an ASP program represented as a string.
 	 * 
 	 * @param asp the program to parse
 	 * @return a normalized program representation of the given asp string
 	 */
-	public static NormalProgram parseAndNormalizeWithDefaultConfig(String asp) {
+	public static NormalProgram parseAndNormalizeWithDefaultConfig(String asp, Map<String, PredicateInterpretation> externals) {
 		ProgramParser parser = new ASPCore2ProgramParser();
-		InputProgram input = parser.parse(asp);
+		InputProgram input = parser.parse(asp, externals);
 
 		// AggregateEncoderFactory depends on parser factory since stringtemplate-based aggregate encoders need to use the same parser that's used
 		// for input programs.
 		AggregateEncoderFactory aggregateEncoderFactory = new AggregateEncoderFactory(() -> parser,
-				true, true);
+				SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG.isUseSortingGridEncoding(),
+				SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG.isSupportNegativeValuesInSums());
 
 		// Factory for aggregate rewriting (depends on encoders provided by above factory).
 		Supplier<AggregateRewriting> aggregateRewritingFactory = () -> new AggregateRewriting(aggregateEncoderFactory.newCountEqualsEncoder(),
@@ -244,6 +255,34 @@ public class TestUtils {
 		NormalizeProgramTransformation normalize = new NormalizeProgramTransformation(
 				aggregateRewritingFactory);
 		return normalize.apply(input);
+	}
+
+	public static Solver buildSolverWithDefaultConfig(CompiledProgram program) {
+		GrounderHeuristicsConfiguration grounderHeuristicsCfg = GrounderHeuristicsConfiguration.getInstance(SystemConfig.DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS,
+				SystemConfig.DEFAULT_GROUNDER_TOLERANCE_RULES);
+		grounderHeuristicsCfg.setAccumulatorEnabled(SystemConfig.DEFAULT_GROUNDER_ACCUMULATOR_ENABLED);
+		GrounderFactory grounderFactory = new GrounderFactory(
+				grounderHeuristicsCfg,
+				SystemConfig.DEFAULT_DEBUG_INTERNAL_CHECKS);
+
+		SolverConfig solverCfg = new SolverConfig();
+		solverCfg.setDisableJustifications(SystemConfig.DEFAULT_DISABLE_JUSTIFICATION_SEARCH);
+		solverCfg.setDisableNogoodDeletion(SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION);
+		solverCfg.setEnableDebugChecks(SystemConfig.DEFAULT_DEBUG_INTERNAL_CHECKS);
+		solverCfg.setRandomSeed(SystemConfig.DEFAULT_SEED);
+		solverCfg.setHeuristicsConfiguration(
+				HeuristicsConfiguration.builder()
+						.setHeuristic(SystemConfig.DEFAULT_BRANCHING_HEURISTIC)
+						.setMomsStrategy(SystemConfig.DEFAULT_MOMS_STRATEGY)
+						.setReplayChoices(SystemConfig.DEFAULT_REPLAY_CHOICES)
+						.build());
+		SolverFactory solverFactory = new SolverFactory(SystemConfig.DEFAULT_SOLVER_NAME, SystemConfig.DEFAULT_NOGOOD_STORE_NAME, solverCfg);
+
+		AtomStore atomStore = new AtomStoreImpl();
+		Grounder grounder = grounderFactory.createGrounder(program, atomStore);
+		Solver solver = solverFactory.createSolver(grounder, atomStore);
+		
+		return solver;
 	}
 
 }
