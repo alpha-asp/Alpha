@@ -45,6 +45,7 @@ import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
@@ -73,15 +74,23 @@ public class StratifiedEvaluationTest {
 	public void testDuplicateFacts() {
 		String aspStr = "p(a). p(b). q(b). q(X) :- p(X).";
 		DebugSolvingContext ctx = alpha.prepareDebugSolve(alpha.readProgramString(aspStr));
-		Atom qOfB = TestUtils.basicAtomWithSymbolicTerms("q", "b");
-		assertTrue(ctx.getPreprocessedProgram().getFacts().contains(qOfB));
+		Atom qOfB = Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newSymbolicConstant("b"));
+		NormalProgram evaluated = ctx.getPreprocessedProgram();
+		int numAtoms = 0;
+		for(Atom atom : evaluated.getFacts()) {
+			if(atom.equals(qOfB)) {
+				numAtoms++;
+			}
+		}
+		assertEquals(numAtoms, 1);
 	}
 
 	@Test
 	public void testEqualityWithConstantTerms() {
 		String aspStr = "equal :- 1 = 1.";
-		CompiledProgram evaluated = parseAndEvaluate.apply(aspStr);
-		Atom equal = TestUtils.basicAtomWithSymbolicTerms("equal");
+		DebugSolvingContext ctx = alpha.prepareDebugSolve(alpha.readProgramString(aspStr));
+		NormalProgram evaluated = ctx.getPreprocessedProgram();
+		Atom equal = Atoms.newBasicAtom(Predicates.getPredicate("equal", 0));
 		assertTrue(evaluated.getFacts().contains(equal));
 	}
 
