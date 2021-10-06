@@ -83,6 +83,7 @@ run into trouble feel free to file an issue.
 Peer-reviewed publications part of journals, conferences and workshops:
 
 #### 2020
+
  * [Conflict Generalisation in ASP: Learning Correct and Effective Non-Ground Constraints](https://doi.org/10.1017/S1471068420000368)
  * [Advancing Lazy-Grounding ASP Solving Techniques - Restarts, Phase Saving, Heuristics, and More](https://doi.org/10.1017/S1471068420000332)
 
