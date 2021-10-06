@@ -26,23 +26,17 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
-import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProvider;
-import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
-import org.apache.commons.collections4.MultiValuedMap;
-import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 
 import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
-import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
 
 /**
  * This implementation is inspired by the VSIDS implementation in <a href="https://github.com/potassco/clasp">clasp</a>.
@@ -58,39 +52,15 @@ import static at.ac.tuwien.kr.alpha.common.Literals.*;
  * Chaff: engineering an efficient SAT solver.
  * In: Proceedings of the 38th Design Automation Conference. IEEE, pp. 530–535.
  */
-public class VSIDS implements ActivityBasedBranchingHeuristic {
+public class VSIDS extends AbstractVSIDS {
 	protected static final Logger LOGGER = LoggerFactory.getLogger(VSIDS.class);
 
-	public static final int DEFAULT_DECAY_PERIOD = 1;
-
-	/**
-	 * The default factor by which VSID's activity increment will be multiplied when the decay period has expired.
-	 * The value is taken from clasp's tweety configuration which clasp uses by default.
-	 */
-	public static final double DEFAULT_DECAY_FACTOR = 1 / 0.92;
-
-	protected final Assignment assignment;
-	protected final ChoiceManager choiceManager;
-
-	protected final HeapOfActiveAtoms heapOfActiveAtoms;
 	protected int[] signBalances = new int[0];
-
-	private final Collection<NoGood> bufferedNoGoods = new ArrayList<>();
-
 	private int nChoicesTrue;
 	private int nChoicesFalse;
-	private int nChoicesRand;
-
-	/**
-	 * Maps rule heads to atoms representing corresponding bodies.
-	 */
-	protected final MultiValuedMap<Integer, Integer> headToBodies = new HashSetValuedHashMap<>();
 
 	protected VSIDS(Assignment assignment, ChoiceManager choiceManager, HeapOfActiveAtoms heapOfActiveAtoms, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
-		this.assignment = assignment;
-		this.choiceManager = choiceManager;
-		this.heapOfActiveAtoms = heapOfActiveAtoms;
-		this.heapOfActiveAtoms.setMOMsStrategy(momsStrategy);
+		super(assignment, choiceManager, heapOfActiveAtoms, momsStrategy);
 	}
 
 	public VSIDS(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
@@ -102,57 +72,17 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 	}
 
 	@Override
-	public void violatedNoGood(NoGood violatedNoGood) {
+	protected void incrementActivityResolutionAtom(int resolutionAtom) {
+		heapOfActiveAtoms.incrementActivity(resolutionAtom);
 	}
 
 	@Override
-	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
-		ingestBufferedNoGoods();	//analysisResult may contain new atoms whose activity must be initialized
-		for (int resolutionAtom : analysisResult.resolutionAtoms) {
-			heapOfActiveAtoms.incrementActivity(resolutionAtom);
-		}
-		if (analysisResult.learnedNoGood != null) {
-			for (int literal : analysisResult.learnedNoGood) {
-				incrementSignCounter(literal);
-				heapOfActiveAtoms.incrementActivity(atomOf(literal));
-			}
-		}
-		heapOfActiveAtoms.decayIfTimeHasCome();
+	protected void incrementActivityLearnedNoGood(int literal) {
+		incrementSignCounter(literal);
+		heapOfActiveAtoms.incrementActivity(atomOf(literal));
 	}
 
 	@Override
-	public void newNoGood(NoGood newNoGood) {
-		this.bufferedNoGoods.add(newNoGood);
-	}
-
-	@Override
-	public void newNoGoods(Collection<NoGood> newNoGoods) {
-		this.bufferedNoGoods.addAll(newNoGoods);
-	}
-
-	private void ingestBufferedNoGoods() {
-		heapOfActiveAtoms.newNoGoods(bufferedNoGoods);
-		bufferedNoGoods.clear();
-	}
-
-	/**
-	 * {@link VSIDS} manages a stack of nogoods in the fashion of {@link BerkMin}
-	 * and starts by looking at the most active atom <code>a</code> in the nogood currently at the top of the stack.
-	 * If <code>a</code> is an active choice point (i.e. representing the body of an applicable rule), it is immediately chosen;
-	 * else the most active choice point dependent on <code>a</code> is.
-	 * If there is no such atom, we continue further down the stack.
-	 * When choosing between dependent atoms, a {@link BodyActivityProvider} is employed to define the activity of a choice point.
-	 */
-	@Override
-	public int chooseLiteral() {
-		int atom = chooseAtom();
-		if (atom == DEFAULT_CHOICE_ATOM) {
-			return DEFAULT_CHOICE_LITERAL;
-		}
-		boolean sign = chooseSign(atom);
-		return atomToLiteral(atom, sign);
-	}
-
 	protected int chooseAtom() {
 		ingestBufferedNoGoods();
 		Integer mostActiveAtom;
@@ -178,6 +108,7 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 	 *          the chosen atom
 	 * @return the truth value to assign to the given atom
 	 */
+	@Override
 	protected boolean chooseSign(int atom) {
 		atom = getAtomForChooseSign(atom);
 
@@ -186,8 +117,8 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 		}
 
 		int signBalance = getSignBalance(atom);
-		if (LOGGER.isDebugEnabled() && (nChoicesFalse + nChoicesTrue + nChoicesRand) % 100 == 0) {
-			LOGGER.debug("chooseSign stats: f={}, t={}, r={}", nChoicesFalse, nChoicesTrue, nChoicesRand);
+		if (LOGGER.isDebugEnabled() && (nChoicesFalse + nChoicesTrue) % 100 == 0) {
+			LOGGER.debug("chooseSign stats: f={}, t={}", nChoicesFalse, nChoicesTrue);
 			LOGGER.debug("chooseSign stats: signBalance={}", signBalance);
 		}
 
@@ -209,7 +140,7 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 		return atom;
 	}
 
-	protected void incrementSignCounter(int literal) {
+	private void incrementSignCounter(int literal) {
 		int atom = atomOf(literal);
 		boolean sign = isPositive(literal);
 		growForMaxAtomId(atom);
@@ -221,13 +152,13 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 		if (signBalances.length > maxAtomId) {
 			return;
 		}
+		super.growForMaxAtomId(maxAtomId);
 		// Grow to default size, except if bigger array is required due to maxAtomId.
 		int newCapacity = arrayGrowthSize(signBalances.length);
 		if (newCapacity < maxAtomId + 1) {
 			newCapacity = maxAtomId + 1;
 		}
 		signBalances = Arrays.copyOf(signBalances, newCapacity);
-		heapOfActiveAtoms.growToCapacity(newCapacity);
 	}
 
 	@Override
