@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -39,8 +40,9 @@ public class BasicAnswerSet implements AnswerSet {
 		return predicates.isEmpty();
 	}
 
-	protected Map<Predicate, SortedSet<Atom>> getPredicateInstances() {
-		return predicateInstances;
+	@Override
+	public Map<Predicate, SortedSet<Atom>> getPredicateInstances() {
+		return Collections.unmodifiableMap(predicateInstances);
 	}
 
 	@Override

@@ -109,7 +109,7 @@ public class WeakConstraintsManager implements Checkable {
 
 	private void increaseWeight(WeakConstraintAtomCallback atomCallback) {
 		if (weightAtLevelsManager.getMaxLevel() < atomCallback.level) {
-			LOGGER.info("Adding higher level than possible with weightAtLevelsManager: level={} and maxLevel={}, callback is: {}.", atomCallback.level, weightAtLevelsManager.getMaxLevel(), atomCallback);
+			LOGGER.trace("Adding higher level than possible with weightAtLevelsManager: level={} and maxLevel={}, callback is: {}.", atomCallback.level, weightAtLevelsManager.getMaxLevel(), atomCallback);
 			aboveMaxLevelTrueAtoms.add(atomCallback);
 		} else {
 			weightAtLevelsManager.increaseCurrentWeight(atomCallback.level, atomCallback.weight);
@@ -118,7 +118,7 @@ public class WeakConstraintsManager implements Checkable {
 
 	private void decreaseWeight(WeakConstraintAtomCallback atomCallback) {
 		if (weightAtLevelsManager.getMaxLevel() < atomCallback.level) {
-			LOGGER.info("Removing higher level than possible with weightAtLevelsManager: level={} and maxLevel={}, callback is: {}.", atomCallback.level, weightAtLevelsManager.getMaxLevel(), atomCallback);
+			LOGGER.trace("Removing higher level than possible with weightAtLevelsManager: level={} and maxLevel={}, callback is: {}.", atomCallback.level, weightAtLevelsManager.getMaxLevel(), atomCallback);
 			aboveMaxLevelTrueAtoms.remove(atomCallback);
 		} else {
 			weightAtLevelsManager.decreaseCurrentWeight(atomCallback.level, atomCallback.weight);

@@ -1,16 +1,19 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import java.util.List;
-import java.util.SortedSet;
-
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.api.query.AnswerSetQuery;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
 
 public interface AnswerSet extends Comparable<AnswerSet> {
 	SortedSet<Predicate> getPredicates();
 
 	SortedSet<Atom> getPredicateInstances(Predicate predicate);
+
+	Map<Predicate, SortedSet<Atom>> getPredicateInstances();
 
 	boolean isEmpty();
 

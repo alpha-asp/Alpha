@@ -112,7 +112,6 @@ public class WeakConstraintsTests {
 			":~ weightatlevel(W,L).[W@L]" +
 			"has_wal :- weightatlevel(W,L)." +
 			":- not has_wal.";
-		System.out.println(program);
 		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
 		assertOptimumAnswerSetEquals(
 			"dom(1), dom(2), dom(3), c(1), b(1), a(1), weightatlevel(3,1), has_wal", "3@1", actualAnswerSets);

@@ -18,8 +18,8 @@ public class WeightedAnswerSet extends BasicAnswerSet {
 
 	private final TreeMap<Integer, Integer> weightPerLevel;
 
-	public WeightedAnswerSet(BasicAnswerSet basicAnswerSet, TreeMap<Integer, Integer> weightPerLevel) {
-		super(basicAnswerSet.getPredicates(), basicAnswerSet.getPredicateInstances());
+	public WeightedAnswerSet(AnswerSet answerSet, TreeMap<Integer, Integer> weightPerLevel) {
+		super(answerSet.getPredicates(), answerSet.getPredicateInstances());
 		this.weightPerLevel = weightPerLevel;
 	}
 

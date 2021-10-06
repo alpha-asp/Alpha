@@ -29,9 +29,7 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.WeightedAnswerSet;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
@@ -49,7 +47,6 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.ChainedBranchingHeuristics;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
-import at.ac.tuwien.kr.alpha.solver.optimization.WeakConstraintsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,8 +82,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	private final NoGoodStore store;
 	private final ChoiceManager choiceManager;
-	private final WeakConstraintsManager weakConstraintsManager;
-	private final WritableAssignment assignment;
+	protected final WritableAssignment assignment;
 	private final GroundConflictNoGoodLearner learner;
 	private final BranchingHeuristic branchingHeuristic;
 
@@ -95,7 +91,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final boolean disableJustifications;
 	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
 	private final boolean disableNoGoodDeletion;
-	private static class SearchState {
+	protected static class SearchState {
 		boolean hasBeenInitialized;
 		boolean isSearchSpaceCompletelyExplored;
 		/**
@@ -103,25 +99,20 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		 */
 		boolean afterAllAtomsAssigned;
 	}
-	private final SearchState searchState = new SearchState();
-	private final boolean enableBranchAndBoundOptimization;
+	protected final SearchState searchState = new SearchState();
 
-	private final PerformanceLog performanceLog;
+	protected final PerformanceLog performanceLog;
 	
 	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, SystemConfig config, HeuristicsConfiguration heuristicsConfiguration) {
 		super(atomStore, grounder);
-
 		this.assignment = assignment;
 		this.store = store;
 		this.choiceManager = new ChoiceManager(assignment, store);
 		this.choiceManager.setChecksEnabled(config.isDebugInternalChecks());
-		this.weakConstraintsManager = new WeakConstraintsManager(assignment);
-		this.weakConstraintsManager.setChecksEnabled(config.isDebugInternalChecks());
 		this.learner = new GroundConflictNoGoodLearner(assignment, atomStore);
 		this.branchingHeuristic = chainFallbackHeuristic(grounder, assignment, random, heuristicsConfiguration);
 		this.disableJustifications = config.isDisableJustificationSearch();
 		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();
-		this.enableBranchAndBoundOptimization = grounder.inputProgramContainsWeakConstraints();
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
 	}
 
@@ -155,15 +146,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			if (conflictCause != null) {
 				LOGGER.debug("Conflict encountered, analyzing conflict.");
 				learnFromConflict(conflictCause);
-			} else if (enableBranchAndBoundOptimization && !weakConstraintsManager.isCurrentBetterThanBest()) {
-					// The solver is searching for optimal answer sets and the current assignment is worse than a previously found answer set.
-					NoGood excludingNoGood = weakConstraintsManager.generateExcludingNoGood();
-					Map<Integer, NoGood> obtained = new LinkedHashMap<>();
-					obtained.put(grounder.register(excludingNoGood), excludingNoGood);
-					if (!ingest(obtained)) {
-						logStats();
-						return false;
-					}
 			} else if (assignment.didChange()) {
 				LOGGER.debug("Updating grounder with new assignments and (potentially) obtaining new NoGoods.");
 				grounder.updateAssignment(assignment.getNewPositiveAssignmentsIterator());
@@ -181,14 +163,14 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 	}
 
-	private void initializeSearch() {
+	protected void initializeSearch() {
 		// Initially, get NoGoods from grounder.
 		performanceLog.initialize();
 		getNoGoodsFromGrounderAndIngest();
 		searchState.hasBeenInitialized = true;
 	}
 
-	private void prepareForSubsequentAnswerSet() {
+	protected void prepareForSubsequentAnswerSet() {
 		// We already found one Answer-Set and are requested to find another one.
 		searchState.afterAllAtomsAssigned = false;
 		if (assignment.getDecisionLevel() == 0) {
@@ -215,14 +197,14 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 	}
 
-	private void getNoGoodsFromGrounderAndIngest() {
+	protected void getNoGoodsFromGrounderAndIngest() {
 		Map<Integer, NoGood> obtained = grounder.getNoGoods(assignment);
 		if (!ingest(obtained)) {
 			searchState.isSearchSpaceCompletelyExplored = true;
 		}
 	}
 
-	private void learnFromConflict(ConflictCause conflictCause) {
+	protected void learnFromConflict(ConflictCause conflictCause) {
 		LOGGER.debug("Violating assignment is: {}", assignment);
 		Antecedent conflictAntecedent = conflictCause.getAntecedent();
 		NoGood violatedNoGood = new NoGood(conflictAntecedent.getReasonLiterals().clone());
@@ -242,7 +224,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 	}
 
-	private ConflictCause propagate() {
+	protected ConflictCause propagate() {
 		LOGGER.trace("Doing propagation step.");
 		ConflictCause conflictCause = store.propagate();
 		LOGGER.trace("Assignment after propagation is: {}", assignment);
@@ -254,19 +236,13 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private void provideAnswerSet(Consumer<? super AnswerSet> action) {
-		// NOTE: If we would do optimization, we would now have a guaranteed upper bound.
 		AnswerSet as = translate(assignment.getTrueAssignments());
-		if (enableBranchAndBoundOptimization) {
-			// Enrich answer-set with weights information, record current-best upper bound.
-			weakConstraintsManager.markCurrentWeightAsBestKnown();
-			as = new WeightedAnswerSet((BasicAnswerSet)as, weakConstraintsManager.getCurrentWeightAtLevels());
-		}
 		LOGGER.debug("Answer-Set found: {}", as);
 		action.accept(as);
 		logStats();
 	}
 
-	private void backtrackFromMBTsRemaining() {
+	protected void backtrackFromMBTsRemaining() {
 		LOGGER.debug("Backtracking from wrong choices ({} MBTs).", assignment.getMBTCount());
 		searchState.afterAllAtomsAssigned = false;
 		if (!justifyMbtAndBacktrack()) {
@@ -443,7 +419,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		return true;
 	}
 
-	private boolean close() {
+	protected boolean close() {
 		searchState.afterAllAtomsAssigned = true;
 		return assignment.closeUnassignedAtoms();
 	}
@@ -481,17 +457,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		return assignment.getDecisionLevel() != 0;
 	}
 
-	private boolean ingest(Map<Integer, NoGood> obtained) {
-		assignment.growForMaxAtomId();
-		int maxAtomId = atomStore.getMaxAtomId();
-		store.growForMaxAtomId(maxAtomId);
-		choiceManager.growForMaxAtomId(maxAtomId);
-		branchingHeuristic.growForMaxAtomId(maxAtomId);
+	protected boolean ingest(Map<Integer, NoGood> obtained) {
+		growForMaxAtomId();
 		branchingHeuristic.newNoGoods(obtained.values());
-
-		if (enableBranchAndBoundOptimization) {
-			weakConstraintsManager.addWeakConstraintsInformation(grounder.getWeakConstraintInformation());
-		}
 
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
 		Map.Entry<Integer, NoGood> entry;
@@ -507,6 +475,14 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			}
 		}
 		return true;
+	}
+
+	protected void growForMaxAtomId() {
+		assignment.growForMaxAtomId();
+		int maxAtomId = atomStore.getMaxAtomId();
+		store.growForMaxAtomId(maxAtomId);
+		choiceManager.growForMaxAtomId(maxAtomId);
+		branchingHeuristic.growForMaxAtomId(maxAtomId);
 	}
 
 	/**
@@ -536,7 +512,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		return addAndBackjumpIfNecessary(noGoodEntry.getKey(), noGoodEntry.getValue(), LBD_NO_VALUE);
 	}
 
-	private boolean choose() {
+	protected boolean choose() {
 		choiceManager.addChoiceInformation(grounder.getChoiceAtoms(), grounder.getHeadsToBodies());
 		choiceManager.updateAssignments();
 
@@ -596,7 +572,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		return store.getNoGoodCounter();
 	}
 
-	private void logStats() {
+	protected void logStats() {
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug(getStatisticsString());
 			if (branchingHeuristic instanceof ChainedBranchingHeuristics) {
