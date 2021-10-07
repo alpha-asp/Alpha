@@ -42,6 +42,7 @@ import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
  * Tests {@link AbstractSolver} using Omiga benchmark problems.
  *
  */
+// TODO this is a functional test
 public class OmigaBenchmarksTest {
 
 	@SuppressWarnings("unused")

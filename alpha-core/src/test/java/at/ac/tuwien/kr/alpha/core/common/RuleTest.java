@@ -16,6 +16,7 @@ import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 /**
  * Copyright (c) 2018, the Alpha Team.
  */
+// TODO this is a functional test depedendent on parser that wants to be a unit test
 public class RuleTest {
 
 	private final ProgramParserImpl parser = new ProgramParserImpl();

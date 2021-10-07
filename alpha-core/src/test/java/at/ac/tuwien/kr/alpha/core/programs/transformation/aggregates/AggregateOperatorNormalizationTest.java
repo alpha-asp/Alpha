@@ -19,6 +19,7 @@ import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.test.util.RuleParser;
 
+// TODO this is a functional test that wants to be a unit test
 public class AggregateOperatorNormalizationTest {
 
 	//@formatter:off

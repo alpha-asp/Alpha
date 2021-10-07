@@ -53,6 +53,7 @@ import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 /**
  * Tests {@link NoGoodGenerator}
  */
+// TODO this is a functional test that wants to be a unit test
 public class NoGoodGeneratorTest {
 
 	private static final ProgramParser PARSER = new ProgramParserImpl();

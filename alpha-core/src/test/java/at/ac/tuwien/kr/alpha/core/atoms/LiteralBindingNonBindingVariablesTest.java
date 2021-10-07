@@ -53,6 +53,7 @@ import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
  * on classes implementing {@link Atom}.
  *
  */
+//TODO this is a functional test that wants to be a unit test (depends on parser, but should not!)
 public class LiteralBindingNonBindingVariablesTest {
 
 	private final Map<String, PredicateInterpretation> externals = new HashMap<>();

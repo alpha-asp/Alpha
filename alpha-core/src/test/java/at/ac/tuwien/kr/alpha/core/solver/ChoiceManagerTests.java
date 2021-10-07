@@ -46,6 +46,7 @@ import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 
+// TODO this is a functional test that wants to be a unit test
 public class ChoiceManagerTests {
 	private Grounder grounder;
 	private ChoiceManager choiceManager;

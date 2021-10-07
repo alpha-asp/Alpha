@@ -44,6 +44,7 @@ import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
  * Tests {@link AbstractSolver} using a racks configuration problem.
  *
  */
+// TODO this is a functional test
 @Disabled("disabled to save resources during CI")
 public class RacksTest {
 

@@ -19,6 +19,7 @@ import at.ac.tuwien.kr.alpha.core.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 
+// TODO this is a functional test (but seems ok)
 public class ProgramTransformationTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ProgramTransformationTest.class);

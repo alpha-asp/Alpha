@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.core.solver;
 
 import java.util.HashSet;
 
+// TODO what the heck is this?
 public class AntecedentTest {
 
 	/**

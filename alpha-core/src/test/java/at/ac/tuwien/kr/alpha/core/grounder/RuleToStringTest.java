@@ -44,6 +44,7 @@ import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 /**
  * Tests {@link BasicRule#toString()} and {@link InternalRule#toString()}.
  */
+// TODO this is a functional test that wants to be a unit test (and should be integrated with RuleTest?!)
 public class RuleToStringTest {
 	private final ProgramParser parser = new ProgramParserImpl();
 	

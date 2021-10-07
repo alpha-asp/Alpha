@@ -36,6 +36,7 @@ import java.util.Set;
  * Copyright (c) 2017 Siemens AG
  *
  */
+// TODO what the heck??
 public class TestableChoiceManager extends ChoiceManager {
 
 	public TestableChoiceManager(WritableAssignment assignment, NoGoodStore store) {

@@ -11,6 +11,7 @@ import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
 import at.ac.tuwien.kr.alpha.api.impl.AlphaImpl;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 
+// TODO this is a functional test
 public class ComponentGraphWriterTest {
 	private static final String LS = System.lineSeparator();
 

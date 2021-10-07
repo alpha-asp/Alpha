@@ -58,6 +58,7 @@ import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 import at.ac.tuwien.kr.alpha.core.test.util.SubstitutionTestUtil;
 import at.ac.tuwien.kr.alpha.core.util.Substitutions;
 
+// TODO this is a functional test that wants to be a unit test
 public class SubstitutionTest {
 	private static final ProgramParser PARSER = new ProgramParserImpl();
 

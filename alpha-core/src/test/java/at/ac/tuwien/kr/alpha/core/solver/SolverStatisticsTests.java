@@ -40,6 +40,7 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.DummyGrounder;
 
+//TODO this is a functional test that wants to be a unit test
 public class SolverStatisticsTests {
 
 	private AtomStore atomStore;

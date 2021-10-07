@@ -49,6 +49,7 @@ import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 /**
  * Copyright (c) 2017-2019, the Alpha Team.
  */
+// TODO this is a functional test that wants to be a unit test
 public class RuleGroundingOrderTest {
 
 	private static final ProgramParser PARSER = new ProgramParserImpl();

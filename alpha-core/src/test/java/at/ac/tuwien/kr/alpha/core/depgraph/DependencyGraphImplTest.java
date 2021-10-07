@@ -23,6 +23,7 @@ import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.test.util.DependencyGraphUtils;
 
+// TODO this is a functional test that wants to be a unit test
 public class DependencyGraphImplTest {
 
 	private ProgramParser parser = new ProgramParserImpl();

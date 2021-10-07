@@ -53,6 +53,7 @@ import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
  * Tests {@link AbstractSolver} using some hanoi tower test cases (see https://en.wikipedia.org/wiki/Tower_of_Hanoi).
  *
  */
+// TODO this is a functional test
 public class HanoiTowerTest {
 
 	@SuppressWarnings("unused")

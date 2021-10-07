@@ -70,6 +70,7 @@ import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 /**
  * Represents a small ASP program with choices {@code { aa :- not bb.  bb :- not aa. }}.
  */
+// TODO this is a mock and should be named as such
 public class ChoiceGrounder implements Grounder {
 	public static final Set<AnswerSet> EXPECTED = new HashSet<>(asList(
 		new AnswerSetBuilder()

@@ -26,6 +26,7 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.externals.AspStandardLibrary;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
 
+// TODO functional test
 public class FixedInterpretationLiteralsTest {
 
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate

@@ -71,6 +71,7 @@ import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
  *
  * Copyright (c) 2016, the Alpha Team.
  */
+// TODO this is a mock and should be named as such
 public class DummyGrounder implements Grounder {
 	public static final Set<AnswerSet> EXPECTED = new HashSet<>(singletonList(new AnswerSetBuilder()
 		.predicate("a")

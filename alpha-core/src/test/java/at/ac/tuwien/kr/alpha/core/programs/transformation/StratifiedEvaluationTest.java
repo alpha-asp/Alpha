@@ -65,6 +65,7 @@ import at.ac.tuwien.kr.alpha.core.programs.Programs;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
+// TODO this is a functional test that wants to be a unit test
 public class StratifiedEvaluationTest {
 
 	private final ProgramParser parser = new ProgramParserImpl();

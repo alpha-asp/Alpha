@@ -59,6 +59,7 @@ import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.test.util.AnswerSetsParser;
 
+// TODO functional test
 public class SolverTests {
 	
 	private static class Thingy implements Comparable<Thingy> {

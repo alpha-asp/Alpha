@@ -21,6 +21,7 @@ import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 
+// TODO this is a functional test that wants to be a unit test
 public class StratificationAlgorithmTest {
 
 	private ProgramParser parser = new ProgramParserImpl();

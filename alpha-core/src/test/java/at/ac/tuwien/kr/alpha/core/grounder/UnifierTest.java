@@ -42,6 +42,7 @@ import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
+// TODO this depends on parser - is therefore a functional test that wants to be a unit test
 public class UnifierTest extends SubstitutionTest {
 
 	@Test

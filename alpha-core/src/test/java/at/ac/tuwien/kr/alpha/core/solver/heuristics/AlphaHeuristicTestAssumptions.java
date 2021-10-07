@@ -61,6 +61,7 @@ import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
  * Copyright (c) 2017-2018 Siemens AG
  *
  */
+//TODO this is a functional test that wants to be a unit test
 public class AlphaHeuristicTestAssumptions {
 
 	private final ProgramParser parser = new ProgramParserImpl();

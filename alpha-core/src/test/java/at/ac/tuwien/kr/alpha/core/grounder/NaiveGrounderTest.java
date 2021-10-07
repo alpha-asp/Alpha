@@ -76,6 +76,7 @@ import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
  * of preprocessing techniques might render this trick useless.
  * If unit tests in this class begin to fail due to such improvements to preprocessing, this issue must be addressed.
  */
+// TODO this is a functional test that wants to be a unit test
 public class NaiveGrounderTest {
 	private static final ProgramParser PROGRAM_PARSER = new ProgramParserImpl();
 	private static final ProgramPartParser PROGRAM_PART_PARSER = new ProgramPartParser();

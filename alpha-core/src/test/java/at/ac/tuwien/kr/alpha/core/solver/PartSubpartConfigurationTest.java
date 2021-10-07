@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Disabled;
  * Tests {@link AbstractSolver} using some configuration test cases in which subparts are assigned to parts.
  *
  */
+// TODO this is a functional test
 public class PartSubpartConfigurationTest {
 	
 	private static final int DEBUG_TIMEOUT_FACTOR = 5;

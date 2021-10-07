@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
+// TODO this is a functional test dependent on parser that wants to be a unit test
 public class ProgramTest {
 	
 	@Test

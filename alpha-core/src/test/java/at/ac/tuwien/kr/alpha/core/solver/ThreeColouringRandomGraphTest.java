@@ -45,6 +45,7 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
+// TODO functional test
 public class ThreeColouringRandomGraphTest {
 	
 	private static final long DEBUG_TIMEOUT_FACTOR = 5;

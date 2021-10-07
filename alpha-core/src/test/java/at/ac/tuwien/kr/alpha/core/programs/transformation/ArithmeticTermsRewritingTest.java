@@ -29,6 +29,7 @@ import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 /**
  * Copyright (c) 2021, the Alpha Team.
  */
+// TODO this is a functional test that wants to be a unit test
 public class ArithmeticTermsRewritingTest {
 
 	private final Map<String, PredicateInterpretation> externalsOfThisClass = Externals.scan(ArithmeticTermsRewritingTest.class);

@@ -21,6 +21,7 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 
+// TODO this is a functional test that wants to be a unit test
 public class AggregateRewritingContextTest {
 
 	//@formatter:off

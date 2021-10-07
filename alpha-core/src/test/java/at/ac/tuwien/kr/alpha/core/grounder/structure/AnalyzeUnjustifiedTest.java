@@ -59,6 +59,7 @@ import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
 /**
  * Copyright (c) 2018-2020, the Alpha Team.
  */
+// TODO this is a functional test that wants to be a unit test
 public class AnalyzeUnjustifiedTest {
 
 	private final ProgramParser parser = new ProgramParserImpl();
