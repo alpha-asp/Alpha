@@ -17,6 +17,9 @@ import java.util.Random;
 import java.util.function.Consumer;
 
 /**
+ * A solver providing optimization via weak constraints and a simpla branch-and-bound algorithm.
+ * The basis of this solver is the {@link DefaultSolver} and its algorithms.
+ *
  * Copyright (c) 2021, the Alpha Team.
  */
 public class OptimizingSolver extends DefaultSolver {
