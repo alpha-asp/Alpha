@@ -98,10 +98,9 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	private ArrayList<Integer> trailIndicesOfDecisionLevels = new ArrayList<>();
 
 	private int nextPositionInTrail;
-	private int newAssignmentsPositionInTrail;
 	private int newAssignmentsIterator;
-	private int assignmentsForChoicePosition;
 	private int mbtCount;
+	private boolean didChange;
 	private boolean checksEnabled;
 	long replayCounter;
 
@@ -115,8 +114,6 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		this.trailIndicesOfDecisionLevels.add(0);
 		nextPositionInTrail = 0;
 		newAssignmentsIterator = 0;
-		newAssignmentsPositionInTrail = 0;
-		assignmentsForChoicePosition = 0;
 	}
 
 	public TrailAssignment(AtomStore atomStore) {
@@ -138,8 +135,6 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		trailIndicesOfDecisionLevels.add(0);
 		nextPositionInTrail = 0;
 		newAssignmentsIterator = 0;
-		newAssignmentsPositionInTrail = 0;
-		assignmentsForChoicePosition = 0;
 	}
 
 	@Override
@@ -221,7 +216,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		// Remove all atoms recorded in the highest decision level.
 		int start = trailIndicesOfDecisionLevels.get(getDecisionLevel());
 		for (int i = start; i < trailSize; i++) {
-			int backtrackAtom = atomOf(trail[i]); //atomOf(backtrackIterator.next());
+			int backtrackAtom = atomOf(trail[i]);
 			// Skip already backtracked atoms.
 			if (getTruth(backtrackAtom) == null) {
 				continue;
@@ -241,6 +236,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			}
 			strongDecisionLevels[backtrackAtom] = -1;
 			informCallback(backtrackAtom);
+			didChange = true;
 		}
 		// Remove atoms from trail.
 		trailSize = start;
@@ -277,9 +273,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	private void resetTrailPointersAndReplayOutOfOrderLiterals() {
 		nextPositionInTrail = Math.min(nextPositionInTrail, trailSize);
-		newAssignmentsPositionInTrail = Math.min(newAssignmentsPositionInTrail, trailSize);
 		newAssignmentsIterator = Math.min(newAssignmentsIterator, trailSize);
-		assignmentsForChoicePosition = Math.min(assignmentsForChoicePosition, trailSize);
 		replayOutOfOrderLiterals();
 		if (checksEnabled) {
 			runInternalChecks();
@@ -350,7 +344,11 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		if (LOGGER.isTraceEnabled()) {
 			LOGGER.trace("Recording assignment {}={}@{} impliedBy: {}", atom, value, getDecisionLevel(), impliedBy);
 			if (impliedBy != null) {
-				for (Integer literal : impliedBy.getReasonLiterals()) {
+				Antecedent fullAntecedent = impliedBy;
+				if (impliedBy instanceof ShallowAntecedent) {
+					fullAntecedent = ((ShallowAntecedent) impliedBy).instantiateAntecedent(atomToLiteral(atom, value.toBoolean()));
+				}
+				for (Integer literal : fullAntecedent.getReasonLiterals()) {
 					LOGGER.trace("impliedBy literal assignment: {}={}.", atomOf(literal), get(atomOf(literal)));
 				}
 			}
@@ -370,6 +368,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 				strongDecisionLevels[atom] = getDecisionLevel();
 			}
 			informCallback(atom);
+			didChange = true;
 			return null;
 		}
 
@@ -403,6 +402,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			// Adjust MBT counter.
 			mbtCount--;
 			informCallback(atom);
+			didChange = true;
 			return null;
 		}
 		throw oops("Assignment conditions are not covered.");
@@ -532,6 +532,13 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			}
 		}
 		return didAssign;
+	}
+
+	@Override
+	public boolean didChange() {
+		boolean oldDidChange = didChange;
+		didChange = false;
+		return oldDidChange;
 	}
 
 	@Override

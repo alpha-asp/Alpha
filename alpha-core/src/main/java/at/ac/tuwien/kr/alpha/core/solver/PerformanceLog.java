@@ -32,16 +32,16 @@ import org.slf4j.Logger;
  */
 public class PerformanceLog {
 
-	private ChoiceManager choiceManager;
-	private TrailAssignment assignment;
-	private long msBetweenOutputs;
+	private final ChoiceManager choiceManager;
+	private final TrailAssignment assignment;
+	private final long msBetweenOutputs;
 	
 	private Long timeFirstEntry;
 	private Long timeLastPerformanceLog;
 	private int numberOfChoicesLastPerformanceLog;
 
 	/**
-	 * @param msBetweenOutputs
+	 * @param msBetweenOutputs minimum number of milliseconds that have to pass between writing of performance logs.
 	 */
 	public PerformanceLog(ChoiceManager choiceManager, TrailAssignment assignment, long msBetweenOutputs) {
 		super();
@@ -56,9 +56,10 @@ public class PerformanceLog {
 	}
 
 	/**
-	 * @param logger
+	 * Logs performance statistics to the given logger (at channel INFO).
+	 * @param logger the Logger whose info-channel will be written to.
 	 */
-	public void infoIfTimeForOutput(Logger logger) {
+	public void writeIfTimeForLogging(Logger logger) {
 		long currentTime = System.currentTimeMillis();
 		int currentNumberOfChoices = choiceManager.getChoices();
 		if (currentTime >= timeLastPerformanceLog + msBetweenOutputs) {

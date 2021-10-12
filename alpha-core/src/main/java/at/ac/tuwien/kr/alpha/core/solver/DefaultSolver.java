@@ -32,7 +32,6 @@ import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToLiteral;
 import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToNegatedLiteral;
 import static at.ac.tuwien.kr.alpha.core.solver.NoGoodStore.LBD_NO_VALUE;
-import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.core.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
 import static at.ac.tuwien.kr.alpha.core.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
 
@@ -60,7 +59,6 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
-import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
@@ -85,17 +83,23 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	private final NoGoodStore store;
 	private final ChoiceManager choiceManager;
 	private final WritableAssignment assignment;
-
 	private final GroundConflictNoGoodLearner learner;
-
 	private final BranchingHeuristic branchingHeuristic;
 
-	private boolean initialize = true;
 	private int mbtAtFixpoint;
 	private int conflictsAfterClosing;
 	private final boolean disableJustifications;
 	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
 	private final boolean disableNoGoodDeletion;
+	private static class SearchState {
+		boolean hasBeenInitialized;
+		boolean isSearchSpaceCompletelyExplored;
+		/**
+		 * True if search reached fixpoint and all remaining unassigned atoms have been set to false.
+		 */
+		boolean afterAllAtomsAssigned;
+	}
+	private final SearchState searchState = new SearchState();
 
 	private final PerformanceLog performanceLog;
 	
@@ -126,105 +130,125 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 	@Override
 	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
-		boolean didChange = false;
-
-		// Initially, get NoGoods from grounder.
-		if (initialize) {
-			performanceLog.initialize();
-			Map<Integer, NoGood> obtained = grounder.getNoGoods(assignment);
-			didChange = !obtained.isEmpty();
-			if (!ingest(obtained)) {
-				logStats();
-				return false;
-			}
-			initialize = false;
-		} else if (assignment.getDecisionLevel() == 0) {
-			logStats();
-			return false;
+		if (!searchState.hasBeenInitialized) {
+			initializeSearch();
 		} else {
-			// We already found one Answer-Set and are requested to find another one.
-			// Create enumeration NoGood to avoid finding the same Answer-Set twice.
-			final NoGood enumerationNoGood = choiceManager.computeEnumeration();
-			final int backjumpLevel = assignment.minimumConflictLevel(enumerationNoGood);
-			if (backjumpLevel == -1) {
-				throw oops("Enumeration nogood is not violated");
-			}
-			if (backjumpLevel == 0) {
-				// Search space exhausted (only happens if first choice is for TRUE at decision level 1 for an atom that was MBT at decision level 0 already).
-				return false;
-			}
-			// Backjump instead of backtrackSlow, enumerationNoGood will invert last choice.
-			choiceManager.backjump(backjumpLevel - 1);
-			LOGGER.debug("Adding enumeration nogood: {}", enumerationNoGood);
-			if (!addAndBackjumpIfNecessary(grounder.register(enumerationNoGood), enumerationNoGood, Integer.MAX_VALUE)) {
-				return false;
-			}
+			prepareForSubsequentAnswerSet();
 		}
-
-		boolean afterAllAtomsAssigned = false;
-
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
-			performanceLog.infoIfTimeForOutput(LOGGER);
-			ConflictCause conflictCause = store.propagate();
-			didChange |= store.didPropagate();
-			LOGGER.trace("Assignment after propagation is: {}", assignment);
-			if (!disableNoGoodDeletion && conflictCause == null) {
-				// Run learned NoGood deletion strategy.
-				store.cleanupLearnedNoGoods();
+			performanceLog.writeIfTimeForLogging(LOGGER);
+			if (searchState.isSearchSpaceCompletelyExplored) {
+				LOGGER.debug("Search space has been fully explored, there are no more answer-sets.");
+				logStats();
+				return false;
 			}
+			ConflictCause conflictCause = propagate();
 			if (conflictCause != null) {
-				// Learn from conflict.
-				LOGGER.debug("Violating assignment is: {}", assignment);
-				Antecedent conflictAntecedent = conflictCause.getAntecedent();
-				NoGood violatedNoGood = new NoGood(conflictAntecedent.getReasonLiterals().clone());
-				// TODO: The violatedNoGood should not be necessary here, but this requires major type changes in heuristics.
-				branchingHeuristic.violatedNoGood(violatedNoGood);
-				if (!afterAllAtomsAssigned) {
-					if (!learnBackjumpAddFromConflict(conflictCause)) {
-						logStats();
-						return false;
-					}
-				} else {
-					LOGGER.debug("Assignment is violated after all unassigned atoms have been assigned false.");
-					conflictsAfterClosing++;
-					if (!treatConflictAfterClosing(conflictAntecedent)) {
-						return false;
-					}
-					afterAllAtomsAssigned = false;
-				}
-			} else if (didChange) {
-				// Ask the grounder for new NoGoods, then propagate (again).
-				LOGGER.trace("Doing propagation step.");
-
+				LOGGER.debug("Conflict encountered, analyzing conflict.");
+				learnFromConflict(conflictCause);
+			} else if (assignment.didChange()) {
+				LOGGER.debug("Updating grounder with new assignments and (potentially) obtaining new NoGoods.");
 				grounder.updateAssignment(assignment.getNewPositiveAssignmentsIterator());
-
-				Map<Integer, NoGood> obtained = grounder.getNoGoods(assignment);
-				didChange = !obtained.isEmpty();
-				if (!ingest(obtained)) {
-					logStats();
-					return false;
-				}
+				getNoGoodsFromGrounderAndIngest();
 			} else if (choose()) {
 				LOGGER.debug("Did choice.");
-				didChange = true;
 			} else if (close()) {
 				LOGGER.debug("Closed unassigned known atoms (assigning FALSE).");
-				afterAllAtomsAssigned = true;
 			} else if (assignment.getMBTCount() == 0) {
-				// NOTE: If we would do optimization, we would now have a guaranteed upper bound.
-				AnswerSet as = translate(assignment.getTrueAssignments());
-				LOGGER.debug("Answer-Set found: {}", as);
-				action.accept(as);
-				logStats();
+				provideAnswerSet(action);
 				return true;
 			} else {
-				LOGGER.debug("Backtracking from wrong choices ({} MBTs).", assignment.getMBTCount());
-				if (!justifyMbtAndBacktrack()) {
-					return false;
-				}
-				afterAllAtomsAssigned = false;
+				backtrackFromMBTsRemaining();
 			}
+		}
+	}
+
+	private void initializeSearch() {
+		// Initially, get NoGoods from grounder.
+		performanceLog.initialize();
+		getNoGoodsFromGrounderAndIngest();
+		searchState.hasBeenInitialized = true;
+	}
+
+	private void prepareForSubsequentAnswerSet() {
+		// We already found one Answer-Set and are requested to find another one.
+		searchState.afterAllAtomsAssigned = false;
+		if (assignment.getDecisionLevel() == 0) {
+			// Solver is at decision level 0 again after finding some answer-set
+			searchState.isSearchSpaceCompletelyExplored = true;
+			return;
+		}
+		// Create enumeration NoGood to avoid finding the same Answer-Set twice.
+		final NoGood enumerationNoGood = choiceManager.computeEnumeration();
+		final int backjumpLevel = assignment.minimumConflictLevel(enumerationNoGood);
+		if (backjumpLevel == -1) {
+			throw oops("Enumeration nogood is not violated");
+		}
+		if (backjumpLevel == 0) {
+			// Search space exhausted (only happens if first choice is for TRUE at decision level 1 for an atom that was MBT at decision level 0 already).
+			searchState.isSearchSpaceCompletelyExplored = true;
+			return;
+		}
+		// Backjump instead of backtrackSlow, enumerationNoGood will invert last choice.
+		choiceManager.backjump(backjumpLevel - 1);
+		LOGGER.debug("Adding enumeration nogood: {}", enumerationNoGood);
+		if (!addAndBackjumpIfNecessary(grounder.register(enumerationNoGood), enumerationNoGood, Integer.MAX_VALUE)) {
+			searchState.isSearchSpaceCompletelyExplored = true;
+		}
+	}
+
+	private void getNoGoodsFromGrounderAndIngest() {
+		Map<Integer, NoGood> obtained = grounder.getNoGoods(assignment);
+		if (!ingest(obtained)) {
+			searchState.isSearchSpaceCompletelyExplored = true;
+		}
+	}
+
+	private void learnFromConflict(ConflictCause conflictCause) {
+		LOGGER.debug("Violating assignment is: {}", assignment);
+		Antecedent conflictAntecedent = conflictCause.getAntecedent();
+		NoGood violatedNoGood = new NoGood(conflictAntecedent.getReasonLiterals().clone());
+		// TODO: The violatedNoGood should not be necessary here, but this requires major type changes in heuristics.
+		branchingHeuristic.violatedNoGood(violatedNoGood);
+		if (searchState.afterAllAtomsAssigned) {
+			LOGGER.debug("Assignment is violated after all unassigned atoms have been assigned false.");
+			conflictsAfterClosing++;
+			if (!treatConflictAfterClosing(conflictAntecedent)) {
+				searchState.isSearchSpaceCompletelyExplored = true;
+			}
+			searchState.afterAllAtomsAssigned = false;
+		} else {
+			if (!learnBackjumpAddFromConflict(conflictCause)) {
+				searchState.isSearchSpaceCompletelyExplored = true;
+			}
+		}
+	}
+
+	private ConflictCause propagate() {
+		LOGGER.trace("Doing propagation step.");
+		ConflictCause conflictCause = store.propagate();
+		LOGGER.trace("Assignment after propagation is: {}", assignment);
+		if (!disableNoGoodDeletion && conflictCause == null) {
+			// Run learned-NoGood deletion-strategy.
+			store.cleanupLearnedNoGoods();
+		}
+		return conflictCause;
+	}
+
+	private void provideAnswerSet(Consumer<? super AnswerSet> action) {
+		// NOTE: If we would do optimization, we would now have a guaranteed upper bound.
+		AnswerSet as = translate(assignment.getTrueAssignments());
+		LOGGER.debug("Answer-Set found: {}", as);
+		action.accept(as);
+		logStats();
+	}
+
+	private void backtrackFromMBTsRemaining() {
+		LOGGER.debug("Backtracking from wrong choices ({} MBTs).", assignment.getMBTCount());
+		searchState.afterAllAtomsAssigned = false;
+		if (!justifyMbtAndBacktrack()) {
+			searchState.isSearchSpaceCompletelyExplored = true;
 		}
 	}
 
@@ -250,15 +274,14 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	}
 
 	/**
-	 * Analyzes the conflict and either learns a new NoGood (causing backjumping and addition to the NoGood store),
-	 * or backtracks the choice causing the conflict.
+	 * Analyzes the conflict and learns a new NoGood (causing backjumping and addition to the NoGood store).
+	 *
 	 * @return false iff the analysis result shows that the set of NoGoods is unsatisfiable.
 	 */
 	private boolean learnBackjumpAddFromConflict(ConflictCause conflictCause) {
 		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(conflictCause.getAntecedent());
 
 		LOGGER.debug("Analysis result: {}", analysisResult);
-
 		if (analysisResult == UNSAT) {
 			// Halt if unsatisfiable.
 			return false;
@@ -266,28 +289,14 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 		branchingHeuristic.analyzedConflict(analysisResult);
 
-		if (analysisResult.learnedNoGood != null) {
-			choiceManager.backjump(analysisResult.backjumpLevel);
-
-			final NoGood learnedNoGood = analysisResult.learnedNoGood;
-			int noGoodId = grounder.register(learnedNoGood);
-			if (!addAndBackjumpIfNecessary(noGoodId, learnedNoGood, analysisResult.lbd)) {
-				return false;
-			}
-			return true;
+		if (analysisResult.learnedNoGood == null) {
+			throw oops("Did not learn new NoGood from conflict.");
 		}
 
 		choiceManager.backjump(analysisResult.backjumpLevel);
-
-		choiceManager.backtrackFast();
-		if (store.propagate() != null) {
-			throw oops("Violated NoGood after backtracking.");
-		}
-		if (!store.didPropagate()) {
-			throw oops("Nothing to propagate after backtracking from conflict-causing choice");
-		}
-
-		return true;
+		final NoGood learnedNoGood = analysisResult.learnedNoGood;
+		int noGoodId = grounder.register(learnedNoGood);
+		return addAndBackjumpIfNecessary(noGoodId, learnedNoGood, analysisResult.lbd);
 	}
 
 	private boolean justifyMbtAndBacktrack() {
@@ -413,54 +422,40 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	}
 
 	private boolean close() {
+		searchState.afterAllAtomsAssigned = true;
 		return assignment.closeUnassignedAtoms();
 	}
 
 	/**
-	 * Iterative implementation of recursive backtracking.
+	 * Realizes chronological backtracking.
 	 *
 	 * @return {@code true} iff it is possible to backtrack even further, {@code false} otherwise
 	 */
 	private boolean backtrack() {
 		while (assignment.getDecisionLevel() != 0) {
-			final Assignment.Entry choice = choiceManager.backtrackSlow();
-			store.propagate();
-
-			if (choice == null) {
-				LOGGER.debug("Backtracking further, because last choice was already backtracked.");
-				continue;
+			// Backtrack highest decision level.
+			final int previousDecisionLevel = assignment.getDecisionLevel();
+			final Choice backtrackedChoice = choiceManager.backtrack();
+			if (LOGGER.isTraceEnabled()) {
+				LOGGER.trace("Backtracked choice atom is {}={}@{}.", backtrackedChoice.getAtom(),
+					backtrackedChoice.getTruthValue() ? ThriceTruth.TRUE : ThriceTruth.FALSE, previousDecisionLevel);
 			}
 
-			final int lastChoice = choice.getAtom();
-			final boolean choiceValue = choice.getTruth().toBoolean();
-
-			// Chronological backtracking: choose inverse now.
-			// Choose FALSE if the previous choice was for TRUE and the atom was not already MBT at that time.
-			ThriceTruth lastChoiceTruth = assignment.getTruth(lastChoice);
-			if (choiceValue && MBT.equals(lastChoiceTruth)) {
-				LOGGER.debug("Backtracking further, because last choice was MBT before choosing TRUE.");
+			// Construct inverse choice, if choice can be inverted.
+			final Choice invertedChoice = Choice.getInverted(backtrackedChoice);
+			if (invertedChoice == null) {
+				LOGGER.debug("Backtracking further, because last choice was already backtracked/inverted.");
 				continue;
 			}
-
-			// If choice was assigned at lower decision level (due to added NoGoods), no inverted choice should be done.
-			if (choice.getImpliedBy() != null) {
-				LOGGER.debug("Last choice is now implied by {}", choice.getImpliedBy());
-				//if (choice.getDecisionLevel() == assignment.getDecisionLevel() + 1) {
-				//	throw oops("Choice was assigned but not at a lower decision level");
-				//}
-				LOGGER.debug("Backtracking further, because last choice was assigned at a lower decision level.");
-				continue;
-			}
-
-			// Choose inverse if it is not yet already assigned TRUE or FALSE.
-			if (lastChoiceTruth == null || (lastChoiceTruth.isMBT() && !choiceValue)) {
-				LOGGER.debug("Choosing inverse.");
-				choiceManager.choose(new Choice(lastChoice, !choiceValue, true));
+			// Choose inverse as long as the choice atom is not assigned.
+			ThriceTruth currentTruthValue = assignment.getTruth(backtrackedChoice.getAtom());
+			if (currentTruthValue == null) {
+				LOGGER.debug("Choosing inverse, choice is: {}.", invertedChoice);
+				choiceManager.choose(invertedChoice);
 				break;
 			}
-			// Continue backtracking.
+			LOGGER.debug("Backtracking further, not inverting choice, because its value is implied now.");
 		}
-
 		return assignment.getDecisionLevel() != 0;
 	}
 
@@ -481,12 +476,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 			}
 
 			final ConflictCause conflictCause = store.add(entry.getKey(), entry.getValue(), Integer.MAX_VALUE);
-			if (conflictCause == null) {
-				// There is no conflict, all is fine. Just skip conflict treatment and carry on.
-				continue;
-			}
-
-			if (!fixContradiction(entry, conflictCause)) {
+			if (conflictCause != null && !fixContradiction(entry, conflictCause)) {
 				return false;
 			}
 		}
@@ -518,7 +508,6 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		// Note that the learned NoGood may cause further conflicts, since propagation on lower decision levels is lazy,
 		// hence backtracking once might not be enough to remove the real conflict cause.
 		return addAndBackjumpIfNecessary(noGoodEntry.getKey(), noGoodEntry.getValue(), LBD_NO_VALUE);
-
 	}
 
 	private boolean choose() {
@@ -526,9 +515,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		choiceManager.updateAssignments();
 
 		// Hint: for custom heuristics, evaluate them here and pick a value if the heuristics suggests one.
-
 		int literal;
-
 		if ((literal = branchingHeuristic.chooseLiteral()) == DEFAULT_CHOICE_LITERAL) {
 			LOGGER.debug("No choices!");
 			return false;
