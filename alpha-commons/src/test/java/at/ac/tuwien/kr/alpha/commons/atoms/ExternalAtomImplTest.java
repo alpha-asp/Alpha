@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,23 +16,21 @@ import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.externals.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
-import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.externals.Externals;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
 public class ExternalAtomImplTest {
 
-	private final ProgramParser parser;
 	private Map<String, PredicateInterpretation> externals;
 
-	public BasicAtomImplTest() throws NoSuchMethodException, SecurityException {
+	public ExternalAtomImplTest() throws NoSuchMethodException, SecurityException {
 		externals = new HashMap<>();
-		externals.put("isFoo", Externals.processPredicateMethod(BasicAtomImplTest.class.getMethod("isFoo", int.class)));
-		externals.put("extWithOutput", Externals.processPredicateMethod(BasicAtomImplTest.class.getMethod("extWithOutput", int.class)));
-		parser = new ProgramParserImpl();
+		externals.put("isFoo", Externals.processPredicateMethod(ExternalAtomImplTest.class.getMethod("isFoo", int.class)));
+		externals.put("extWithOutput", Externals.processPredicateMethod(ExternalAtomImplTest.class.getMethod("extWithOutput", int.class)));
 	}
 
 	@Predicate
@@ -47,28 +46,40 @@ public class ExternalAtomImplTest {
 		retVal.add(lst);
 		return retVal;
 	}
-	
-	
+
 	@Test
 	public void testIsExternalAtomGround() {
-		ASPCore2Program p1 = parser.parse("a :- &isFoo[1].", externals);
-		Atom ext1 = p1.getRules().get(0).getBody().stream().findFirst().get().getAtom();
-		assertExternalAtomGround(ext1, true);
-		ASPCore2Program p2 = parser.parse("a :- &isFoo[bar(1)].", externals);
-		Atom ext2 = p2.getRules().get(0).getBody().stream().findFirst().get().getAtom();
-		assertExternalAtomGround(ext2, true);
-		ASPCore2Program p3 = parser.parse("a :- &isFoo[BLA].", externals);
-		Atom ext3 = p3.getRules().get(0).getBody().stream().findFirst().get().getAtom();
-		assertExternalAtomGround(ext3, false);
+		List<Term> ext1Input = new ArrayList<>();
+		ext1Input.add(Terms.newConstant(1));
+		// ext1 := &isFoo[1]
+		ExternalAtom ext1 = Atoms.newExternalAtom(Predicates.getPredicate("isFoo", 1), externals.get("isFoo"), ext1Input, Collections.emptyList());
+		assertTrue(ext1.isGround());
+
+		// ext2 := &isFoo[bar(1)]
+		List<Term> ext2Input = new ArrayList<>();
+		ext2Input.add(Terms.newFunctionTerm("bar", Terms.newConstant(1)));
+		ExternalAtom ext2 = Atoms.newExternalAtom(Predicates.getPredicate("isFoo", 1), externals.get("isFoo"), ext2Input, Collections.emptyList());
+		assertTrue(ext2.isGround());
+
+		// ext3 := &isFoo[BLA]
+		List<Term> ext3Input = new ArrayList<>();
+		ext3Input.add(Terms.newVariable("BLA"));
+		ExternalAtom ext3 = Atoms.newExternalAtom(Predicates.getPredicate("isFoo", 1), externals.get("isFoo"), ext3Input, Collections.emptyList());
+		assertFalse(ext3.isGround());
 	}
 
 	@Test
 	@SuppressWarnings("unlikely-arg-type")
 	public void testAreExternalAtomsEqual() {
-		ASPCore2Program p1 = parser.parse("a :- &isFoo[1].", externals);
-		Atom ext1 = p1.getRules().get(0).getBody().stream().findFirst().get().getAtom();
-		ASPCore2Program p2 = parser.parse("a :- &isFoo[1].", externals);
-		Atom ext2 = p2.getRules().get(0).getBody().stream().findFirst().get().getAtom();
+		// ext1 := &isFoo[1]
+		List<Term> ext1Input = new ArrayList<>();
+		ext1Input.add(Terms.newConstant(1));
+		ExternalAtom ext1 = Atoms.newExternalAtom(Predicates.getPredicate("isFoo", 1), externals.get("isFoo"), ext1Input, Collections.emptyList());
+		// ext2 := &isFoo[1]
+		List<Term> ext2Input = new ArrayList<>();
+		ext2Input.add(Terms.newConstant(1));
+		ExternalAtom ext2 = Atoms.newExternalAtom(Predicates.getPredicate("isFoo", 1), externals.get("isFoo"), ext2Input, Collections.emptyList());
+
 		assertEquals(ext1, ext2);
 		assertEquals(ext2, ext1);
 
@@ -79,11 +90,15 @@ public class ExternalAtomImplTest {
 
 	@Test
 	public void testExternalHasOutput() {
-		ASPCore2Program p = parser.parse("a:- &extWithOutput[1](OUT).", externals);
-		Atom ext = p.getRules().get(0).getBody().stream().findFirst().get().getAtom();
-		assertExternalAtomGround(ext, false);
-		assertTrue(((ExternalAtom) ext).hasOutput());
+		// ext := &extWithOutput[1](OUT)
+		List<Term> input = new ArrayList<>();
+		List<Term> output = new ArrayList<>();
+		input.add(Terms.newConstant(1));
+		output.add(Terms.newVariable("OUT"));
+		ExternalAtom ext = Atoms.newExternalAtom(Predicates.getPredicate("extWithOutput", 2), externals.get("extWithOutput"), input, output);
+		
+		assertFalse(ext.isGround());
+		assertTrue(ext.hasOutput());
 	}
 
-	
 }

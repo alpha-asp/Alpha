@@ -25,26 +25,24 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.common.fixedinterpretations;
+package at.ac.tuwien.kr.alpha.commons.externals;
 
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 
-public class BinaryPredicateInterpretation<T, U> extends NonBindingPredicateInterpretation {
-	private final java.util.function.BiPredicate<T, U> predicate;
+public class IntPredicateInterpretation extends NonBindingPredicateInterpretation {
+	private final java.util.function.IntPredicate predicate;
 
-	public BinaryPredicateInterpretation(java.util.function.BiPredicate<T, U> predicate) {
-		super(2);
+	public IntPredicateInterpretation(java.util.function.IntPredicate predicate) {
 		this.predicate = predicate;
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
-	public boolean test(List<ConstantTerm<?>> terms) {
-		return predicate.test(
-			(T) terms.get(0).getObject(),
-			(U) terms.get(1).getObject()
-		);
+	protected boolean test(List<ConstantTerm<?>> terms) {
+		if (!(terms.get(0).getObject() instanceof Integer)) {
+			throw new IllegalArgumentException("Integer expected");
+		}
+		return predicate.test((Integer) terms.get(0).getObject());
 	}
 }

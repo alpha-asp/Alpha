@@ -25,28 +25,26 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.common.fixedinterpretations;
-
-import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.BindingPredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+package at.ac.tuwien.kr.alpha.commons.externals;
 
 import java.util.List;
-import java.util.Set;
-import java.util.function.Supplier;
 
-public class SuppliedPredicateInterpretation implements BindingPredicateInterpretation {
-	private final Supplier<Set<List<ConstantTerm<?>>>> supplier;
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 
-	public SuppliedPredicateInterpretation(Supplier<Set<List<ConstantTerm<?>>>> supplier) {
-		this.supplier = supplier;
+public class BinaryPredicateInterpretation<T, U> extends NonBindingPredicateInterpretation {
+	private final java.util.function.BiPredicate<T, U> predicate;
+
+	public BinaryPredicateInterpretation(java.util.function.BiPredicate<T, U> predicate) {
+		super(2);
+		this.predicate = predicate;
 	}
 
 	@Override
-	public Set<List<ConstantTerm<?>>> evaluate(List<Term> terms) {
-		if (!terms.isEmpty()) {
-			throw new IllegalArgumentException("Can only be used without any arguments.");
-		}
-		return supplier.get();
+	@SuppressWarnings("unchecked")
+	public boolean test(List<ConstantTerm<?>> terms) {
+		return predicate.test(
+			(T) terms.get(0).getObject(),
+			(U) terms.get(1).getObject()
+		);
 	}
 }

@@ -25,24 +25,58 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.common.fixedinterpretations;
+package at.ac.tuwien.kr.alpha.commons.externals;
 
-import java.util.List;
+import org.apache.commons.lang3.ClassUtils;
 
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 
-public class LongPredicateInterpretation extends NonBindingPredicateInterpretation {
-	private final java.util.function.LongPredicate predicate;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.List;
 
-	public LongPredicateInterpretation(java.util.function.LongPredicate predicate) {
-		this.predicate = predicate;
+public class MethodPredicateInterpretation extends NonBindingPredicateInterpretation {
+	private final Method method;
+
+	public MethodPredicateInterpretation(Method method) {
+		super(method.getParameterCount());
+
+		if (!method.getReturnType().equals(boolean.class)) {
+			throw new IllegalArgumentException("method must return boolean");
+		}
+
+		this.method = method;
 	}
 
 	@Override
 	protected boolean test(List<ConstantTerm<?>> terms) {
-		if (!(terms.get(0).getObject() instanceof Long)) {
-			throw new IllegalArgumentException("Long expected");
+		final Class<?>[] parameterTypes = method.getParameterTypes();
+		final Object[] arguments = new Object[terms.size()];
+
+		for (int i = 0; i < arguments.length; i++) {
+			arguments[i] = terms.get(i).getObject();
+
+			final Class<?> expected = parameterTypes[i];
+			final Class<?> actual = arguments[i].getClass();
+
+			if (expected.isAssignableFrom(actual)) {
+				continue;
+			}
+
+			if (expected.isPrimitive() && ClassUtils.primitiveToWrapper(expected).isAssignableFrom(actual)) {
+				continue;
+			}
+
+			throw new IllegalArgumentException(
+				"Parameter type mismatch at position " + i + ". Expected " + expected + " but got " +
+					actual + "."
+			);
 		}
-		return predicate.test((Long) terms.get(0).getObject());
+
+		try {
+			return (boolean) method.invoke(null, arguments);
+		} catch (IllegalAccessException | InvocationTargetException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

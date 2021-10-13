@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2017-2018, the Alpha Team.
  * All rights reserved.
- *
+ * 
  * Additional changes made by Siemens.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *
+ * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,22 +25,28 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.common.fixedinterpretations;
+package at.ac.tuwien.kr.alpha.commons.externals;
+
+import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.BindingPredicateInterpretation;
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
 
 import java.util.List;
+import java.util.Set;
+import java.util.function.Supplier;
 
-import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+public class SuppliedPredicateInterpretation implements BindingPredicateInterpretation {
+	private final Supplier<Set<List<ConstantTerm<?>>>> supplier;
 
-public class UnaryPredicateInterpretation<T> extends NonBindingPredicateInterpretation {
-	private final java.util.function.Predicate<T> predicate;
-
-	public UnaryPredicateInterpretation(java.util.function.Predicate<T> predicate) {
-		this.predicate = predicate;
+	public SuppliedPredicateInterpretation(Supplier<Set<List<ConstantTerm<?>>>> supplier) {
+		this.supplier = supplier;
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
-	protected boolean test(List<ConstantTerm<?>> terms) {
-		return predicate.test((T) terms.get(0).getObject());
+	public Set<List<ConstantTerm<?>>> evaluate(List<Term> terms) {
+		if (!terms.isEmpty()) {
+			throw new IllegalArgumentException("Can only be used without any arguments.");
+		}
+		return supplier.get();
 	}
 }
