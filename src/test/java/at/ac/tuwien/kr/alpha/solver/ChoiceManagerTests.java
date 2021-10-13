@@ -25,6 +25,14 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Collection;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
@@ -43,16 +51,13 @@ import org.junit.Test;
 
 import java.util.Collection;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static org.junit.Assert.assertTrue;
-
-public class ChoiceManagerTests extends AbstractSolverTests {
+public class ChoiceManagerTests {
 	private final HeuristicsConfiguration heuristicsConfiguration = new HeuristicsConfigurationBuilder().build();
 	private Grounder grounder;
 	private ChoiceManager choiceManager;
 	private AtomStore atomStore;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		Alpha system = new Alpha();
 		String testProgram = "h :- b1, b2, not b3, not b4.";
@@ -75,7 +80,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 				int atom = atomOf(literal);
 				String atomToString = atomStore.atomToString(atom);
 				if (atomToString.startsWith(RuleAtom.PREDICATE.getName())) {
-					assertTrue("Atom not choice: " + atomToString, choiceManager.isAtomChoice(atom));
+					assertTrue(choiceManager.isAtomChoice(atom), "Atom not choice: " + atomToString);
 				}
 			}
 		}

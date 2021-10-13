@@ -90,22 +90,22 @@ public class ParserTest {
 	public void parseFact() {
 		InputProgram parsedProgram = parser.parse("p(a,b).");
 
-		assertEquals("Program contains one fact.", 1, parsedProgram.getFacts().size());
-		assertEquals("Predicate name of fact is p.", "p", parsedProgram.getFacts().get(0).getPredicate().getName());
-		assertEquals("Fact has two terms.", 2, parsedProgram.getFacts().get(0).getPredicate().getArity());
-		assertEquals("First term is a.", "a", (parsedProgram.getFacts().get(0).getTerms().get(0)).toString());
-		assertEquals("Second term is b.", "b", (parsedProgram.getFacts().get(0).getTerms().get(1)).toString());
+		assertEquals(1, parsedProgram.getFacts().size(), "Program contains one fact.");
+		assertEquals("p", parsedProgram.getFacts().get(0).getPredicate().getName(), "Predicate name of fact is p.");
+		assertEquals(2, parsedProgram.getFacts().get(0).getPredicate().getArity(), "Fact has two terms.");
+		assertEquals("a", (parsedProgram.getFacts().get(0).getTerms().get(0)).toString(), "First term is a.");
+		assertEquals("b", (parsedProgram.getFacts().get(0).getTerms().get(1)).toString(), "Second term is b.");
 	}
 
 	@Test
 	public void parseFactWithFunctionTerms() {
 		InputProgram parsedProgram = parser.parse("p(f(a),g(h(Y))).");
 
-		assertEquals("Program contains one fact.", 1, parsedProgram.getFacts().size());
-		assertEquals("Predicate name of fact is p.", "p", parsedProgram.getFacts().get(0).getPredicate().getName());
-		assertEquals("Fact has two terms.", 2, parsedProgram.getFacts().get(0).getPredicate().getArity());
-		assertEquals("First term is function term f.", "f", ((FunctionTerm) parsedProgram.getFacts().get(0).getTerms().get(0)).getSymbol());
-		assertEquals("Second term is function term g.", "g", ((FunctionTerm) parsedProgram.getFacts().get(0).getTerms().get(1)).getSymbol());
+		assertEquals(1, parsedProgram.getFacts().size(), "Program contains one fact.");
+		assertEquals("p", parsedProgram.getFacts().get(0).getPredicate().getName(), "Predicate name of fact is p.");
+		assertEquals(2, parsedProgram.getFacts().get(0).getPredicate().getArity(), "Fact has two terms.");
+		assertEquals("f", ((FunctionTerm) parsedProgram.getFacts().get(0).getTerms().get(0)).getSymbol(), "First term is function term f.");
+		assertEquals("g", ((FunctionTerm) parsedProgram.getFacts().get(0).getTerms().get(1)).getSymbol(), "Second term is function term g.");
 	}
 
 	@Test
@@ -115,12 +115,14 @@ public class ParserTest {
 						"c(X) :- p(X,a,_), q(Xaa,xaa)." + System.lineSeparator() +
 						":- f(Y).");
 
-		assertEquals("Program contains three rules.", 3, parsedProgram.getRules().size());
+		assertEquals(3, parsedProgram.getRules().size(), "Program contains three rules.");
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void parseBadSyntax() {
-		parser.parse("Wrong Syntax.");
+		assertThrows(IllegalArgumentException.class, () -> {
+			parser.parse("Wrong Syntax.");
+		});
 	}
 
 	@Test
@@ -130,10 +132,12 @@ public class ParserTest {
 		assertEquals(3, parsedProgram.getRules().get(0).getBody().size());
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test
 	// Change expected after Alpha can deal with disjunction.
 	public void parseProgramWithDisjunctionInHead() {
-		parser.parse("r(X) | q(X) :- q(X)." + System.lineSeparator() + "q(a)." + System.lineSeparator());
+		assertThrows(UnsupportedOperationException.class, () -> {
+			parser.parse("r(X) | q(X) :- q(X)." + System.lineSeparator() + "q(a)." + System.lineSeparator());
+		});
 	}
 
 	@Test
@@ -188,32 +192,26 @@ public class ParserTest {
 		assertEquals(expected, actual);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testMalformedInputNotIgnored() {
 		String program = "foo(a) :- p(b).\n" +
 				"// rule :- q.\n" +
 				"r(1).\n" +
 				"r(2).\n";
-		parser.parse(program);
+		assertThrows(IllegalArgumentException.class, () -> {
+			parser.parse(program);
+		});
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testMissingDotNotIgnored() {
-		parser.parse("p(X,Y) :- q(X), r(Y) p(a). q(b).");
+		assertThrows(IllegalArgumentException.class, () -> {
+			parser.parse("p(X,Y) :- q(X), r(Y) p(a). q(b).");
+		});
 	}
 
 	@Test
 	public void parseEnumerationDirective() {
-		InputProgram parsedProgram = parser.parse("p(a,1)." +
-				"# enumeration_predicate_is mune." +
-				"r(X) :- p(X), mune(X)." +
-				"p(b,2).");
-		String directive = ((EnumerationDirective)parsedProgram.getInlineDirectives().getDirectiveValue(InlineDirectives.DIRECTIVE.enum_predicate_is)).getValue();
-		assertEquals("mune", directive);
-	}
-
-	@Test(expected = RuntimeException.class)
-	public void parseEnumerationDirectiveMultiplyDefined() {
 		InputProgram parsedProgram = parser.parse("p(a,1)." +
 			"# enumeration_predicate_is mune." +
 			"#enumeration_predicate_is mune." +
@@ -237,7 +235,7 @@ public class ParserTest {
 		AggregateAtom.AggregateElement aggregateElement = new AggregateAtom.AggregateElement(basicTerms,
 				Collections.singletonList(new BasicAtom(Predicate.getInstance("p", 3), x, y, z).toLiteral()));
 		AggregateAtom expectedAggregate = new AggregateAtom(ComparisonOperator.LE, VariableTerm.getInstance("K"), null, null,
-				AggregateAtom.AGGREGATEFUNCTION.COUNT, Collections.singletonList(aggregateElement));
+				AggregateAtom.AggregateFunctionSymbol.COUNT, Collections.singletonList(aggregateElement));
 		assertEquals(expectedAggregate, parsedAggregate.getAtom());
 	}
 
@@ -400,10 +398,10 @@ public class ParserTest {
 	public void stringWithEscapedQuotes() throws IOException {
 		CharStream stream = CharStreams.fromStream(ParserTest.class.getResourceAsStream("/escaped_quotes.asp"));
 		InputProgram prog = parser.parse(stream);
-		Assert.assertEquals(1, prog.getFacts().size());
+		assertEquals(1, prog.getFacts().size());
 		Atom stringAtom = prog.getFacts().get(0);
 		String stringWithQuotes = stringAtom.getTerms().get(0).toString();
-		Assert.assertEquals("\"a string with \"quotes\"\"", stringWithQuotes);
+		assertEquals("\"a string with \"quotes\"\"", stringWithQuotes);
 	}
 
 }

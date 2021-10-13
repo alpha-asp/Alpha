@@ -25,6 +25,22 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.atom;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -45,23 +61,6 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
-import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import static at.ac.tuwien.kr.alpha.TestUtil.atom;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Tests {@link NaiveGrounder}
@@ -85,12 +84,12 @@ public class NaiveGrounderTest {
 	final Literal litAX = PROGRAM_PART_PARSER.parseLiteral("a(X)");
 	final Literal litA1 = PROGRAM_PART_PARSER.parseLiteral("a(1)");
 
-	@Before
+	@BeforeEach
 	public void resetIdGenerator() {
 		ChoiceRecorder.ID_GENERATOR.resetGenerator();
 	}
 
-	@Before
+	@BeforeEach
 	public void resetRuleIdGenerator() {
 		InternalRule.resetIdGenerator();
 	}
@@ -257,7 +256,7 @@ public class NaiveGrounderTest {
 	}
 
 	@Test
-	@Ignore("Currently, rule grounding is not switched off by a true negative body atom")
+	@Disabled("Currently, rule grounding is not switched off by a true negative body atom")
 	public void testGroundingOfRuleSwitchedOffByTrueNegativeBody() {
 		InputProgram program = PROGRAM_PARSER.parse("a(1). "
 				+ "c(X) :- a(X), not b(X). "

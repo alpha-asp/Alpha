@@ -25,7 +25,18 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha;
+package at.ac.tuwien.kr.alpha.test.util;
+
+import java.util.Collections;
+import java.util.Set;
+
+import org.antlr.v4.runtime.BailErrorStrategy;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.atn.PredictionMode;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import at.ac.tuwien.kr.alpha.antlr.AlphaASPLexer;
 import at.ac.tuwien.kr.alpha.antlr.AlphaASPParser;
@@ -49,11 +60,6 @@ public class AnswerSetsParser {
 	public static Set<AnswerSet> parse(String s) {
 		try {
 			return parse(CharStreams.fromString(s));
-		} catch (IOException e) {
-			// In this case we assume that something went fundamentally
-			// wrong when using a String as input. The caller probably
-			// assumes that I/O on a String should always be fine.
-			throw new RuntimeException("Encountered I/O-related exception while parsing a String.", e);
 		} catch (RecognitionException | ParseCancellationException e) {
 			// If there were issues parsing the given string, we
 			// throw something that suggests that the input string
@@ -62,7 +68,7 @@ public class AnswerSetsParser {
 		}
 	}
 
-	public static Set<AnswerSet> parse(CharStream stream) throws IOException {
+	public static Set<AnswerSet> parse(CharStream stream) {
 		final AlphaASPParser parser = new AlphaASPParser(new CommonTokenStream(new AlphaASPLexer(stream)));
 
 		// Try SLL parsing mode (faster but may terminate incorrectly).

@@ -1,0 +1,1 @@
+interval_comparison :- value(V), 0..10 < V. 

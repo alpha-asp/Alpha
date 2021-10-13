@@ -27,10 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,7 +35,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static at.ac.tuwien.kr.alpha.Util.join;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 /**
  * Represents ordinary ASP atoms.
@@ -55,6 +54,11 @@ public class BasicAtom extends Atom implements VariableNormalizableAtom {
 	 * @param terms
 	 */
 	public BasicAtom(Predicate predicate, List<Term> terms) {
+		if (terms.size() != predicate.getArity()) {
+			throw new IllegalArgumentException(
+					"Cannot create Atom with terms: " + terms + " - Predicate " + predicate.getName() + " has incompatible arity " + predicate.getArity());
+		}
+
 		this.predicate = predicate;
 		this.terms = terms;
 
@@ -109,7 +113,7 @@ public class BasicAtom extends Atom implements VariableNormalizableAtom {
 	public BasicLiteral toLiteral(boolean positive) {
 		return new BasicLiteral(this, positive);
 	}
-	
+
 	@Override
 	public FunctionTerm toFunctionTerm() {
 		return FunctionTerm.getInstance(predicate.getName(), new ArrayList<>(terms));

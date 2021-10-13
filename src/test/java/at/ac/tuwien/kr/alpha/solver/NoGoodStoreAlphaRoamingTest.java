@@ -27,17 +27,28 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.*;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import static at.ac.tuwien.kr.alpha.common.NoGoodCreator.fact;
 import static at.ac.tuwien.kr.alpha.common.NoGoodCreator.headFirst;
 import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
 import static at.ac.tuwien.kr.alpha.solver.AntecedentTest.antecedentsEquals;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
-import static org.junit.Assert.*;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
+import at.ac.tuwien.kr.alpha.common.NoGood;
 
 public class NoGoodStoreAlphaRoamingTest {
 
@@ -53,7 +64,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		store = new NoGoodStoreAlphaRoaming(assignment);
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		store.clear();
 		store.growForMaxAtomId(fromOldLiterals(200));
@@ -585,8 +596,8 @@ public class NoGoodStoreAlphaRoamingTest {
 		assertEquals(TRUE, assignment.getTruth(1));
 	}
 
-	@Ignore // TrailAssignment no longer propagates at lower decision level.
 	@Test
+	@Disabled("TrailAssignment no longer propagates at lower decision level.")
 	public void propagationAtLowerDecisionLevel() {
 		NoGood noGood = headFirst(fromOldLiterals(-1, 2, -3));
 		assertNull(assignment.choose(3, FALSE));

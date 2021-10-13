@@ -27,7 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DefaultDomainSpecificHeuristicsStore;
@@ -41,7 +40,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -107,7 +105,7 @@ public class ChoiceManager implements Checkable {
 		int[] enumerationLiterals = new int[choiceStack.size()];
 		int enumerationPos = 0;
 		for (Choice e : choiceStack) {
-			enumerationLiterals[enumerationPos++] = atomToLiteral(e.getAtom(), e.getValue());
+			enumerationLiterals[enumerationPos++] = atomToLiteral(e.getAtom(), e.getTruthValue());
 		}
 		return new NoGood(enumerationLiterals);
 	}
@@ -150,7 +148,7 @@ public class ChoiceManager implements Checkable {
 			choiceManagerStatistics.incrementChoices();
 		}
 
-		if (assignment.choose(choice.getAtom(), choice.getValue()) != null) {
+		if (assignment.choose(choice.getAtom(), choice.getTruthValue()) != null) {
 			throw oops("Picked choice is incompatible with current assignment");
 		}
 		LOGGER.debug("Choice {} is {}@{}", choiceManagerStatistics.getChoices(), choice, assignment.getDecisionLevel());
@@ -182,49 +180,19 @@ public class ChoiceManager implements Checkable {
 	}
 
 	/**
-	 * Fast backtracking will backtrack but not give any information about which choice was backtracked. This is
-	 * handy in cases where higher level backtracking mechanisms already know what caused the backtracking and what
-	 * to do next.
-	 *
-	 * In order to analyze the choice that was backtracked, use the more expensive {@link #backtrackSlow()}.
+	 * Backtracks the last decision level. Backtracks its choice stack as well as the employed {@link NoGoodStore}
+	 * followed by a propagation in order to restore consequences from out-of-order literals.
+	 * @return the {@link Choice} that was backtracked.
 	 */
-	void backtrackFast() {
-		backtrack();
-
-		final Choice choice = choiceStack.pop();
-
-		LOGGER.debug("Backtracked (fast) to level {} from choice {}", assignment.getDecisionLevel(), choice);
-	}
-
-	/**
-	 * Slow backtracking will take more time, but allow to analyze the {@link Assignment.Entry} corresponding to the
-	 * choice that is being backtracked. Higher level backtracking mechanisms can use this information to change
-	 * their plans.
-	 *
-	 * @return the assignment entry of the choice being backtracked, or {@code null} if the choice cannot be
-	 *         backtracked any further (it already is a backtracking choice)
-	 */
-	Assignment.Entry backtrackSlow() {
-		final Choice choice = choiceStack.pop();
-		final Assignment.Entry lastChoiceEntry = assignment.get(choice.getAtom());
-
-		backtrack();
-		LOGGER.debug("Backtracked (slow) to level {} from choice {}", assignment.getDecisionLevel(), choice);
-
-		if (choice.isBacktracked()) {
-			return null;
-		}
-
-		return lastChoiceEntry;
-	}
-
-	/**
-	 * This method implements the backtracking "core" that will be executed for both slow and fast backtracking.
-	 * It backtracks the NoGoodStore and recomputes choice points.
-	 */
-	private void backtrack() {
+	public Choice backtrack() {
 		store.backtrack();
 		choiceManagerStatistics.incrementBacktracks();
+		Choice choice = choiceStack.pop();
+		if (store.propagate() != null) {
+			throw oops("Violated NoGood after backtracking.");
+		}
+		LOGGER.debug("Backtracked to level {} from choice {}", assignment.getDecisionLevel(), choice);
+		return choice;
 	}
 
 	void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms, Map<Integer, Set<Integer>> headsToBodies) {
