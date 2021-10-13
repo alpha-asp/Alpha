@@ -29,6 +29,7 @@ import at.ac.tuwien.kr.alpha.common.Directive;
 import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveAtom;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveBody;
@@ -130,10 +131,11 @@ public class HeuristicDirectiveConditionEnhancement extends ProgramTransformatio
 	private Collection<HeuristicDirectiveAtom> joinAtoms(Collection<HeuristicDirectiveAtom> existingHeuristicCondition, Collection<Literal> ruleBodyToAdd) {
 		final Set<HeuristicDirectiveAtom> newHeuristicCondition = new HashSet<>(existingHeuristicCondition);
 		for (Literal literal : ruleBodyToAdd) {
-			if (!(literal.getAtom() instanceof BasicAtom)) {
-				throw new UnsupportedOperationException("Body atom " + literal.getAtom() + " not yet supported by " + this.getClass().getSimpleName());
+			final Atom atom = literal.getAtom();
+			if (!(atom instanceof BasicAtom || atom instanceof ComparisonAtom)) {
+				throw new UnsupportedOperationException("Body atom " + atom + " not yet supported by " + this.getClass().getSimpleName());
 			}
-			newHeuristicCondition.add(HeuristicDirectiveAtom.body(literal.getAtom()));
+			newHeuristicCondition.add(HeuristicDirectiveAtom.body(atom));
 		}
 		return newHeuristicCondition;
 	}

@@ -71,7 +71,7 @@ public class HeuristicDirectiveAtom implements Comparable<HeuristicDirectiveAtom
 	}
 
 	public static HeuristicDirectiveAtom head(BasicAtom atom) {
-		return head(DEFAULT_HEAD_SIGN, atom);
+		return head(null, atom);
 	}
 
 	public static HeuristicDirectiveAtom body(Set<ThriceTruth> signs, Atom atom) {
@@ -84,7 +84,7 @@ public class HeuristicDirectiveAtom implements Comparable<HeuristicDirectiveAtom
 	}
 
 	public static HeuristicDirectiveAtom body(Atom atom) {
-		return body(DEFAULT_BODY_SIGNS, atom);
+		return body(null, atom);
 	}
 
 	public Set<ThriceTruth> getSigns() {

@@ -157,13 +157,19 @@ public class HeuristicDirectiveConditionEnhancementTest {
 		new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test
 	public void testRuleWithComparisonAtom() {
 		InputProgram program = parser.parse("a(1). b(1)."
 				+ "{ b(M) } :- a(M), b(X), M <= X."
 				+ "#heuristic b(N) : a(N). [N@2]");
+		final Atom negativeChoiceAtom = ChoiceHeadToNormal.constructNegativeChoiceAtom(programPartParser.parseBasicAtom("b(N)"));
+
 		program = new ChoiceHeadToNormal().apply(program);
-		new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
+		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
+		Collection<HeuristicDirective> expectedHeuristicDirectives = Arrays.asList(
+				parseHeuristicDirectiveAndAddNegativeLiteral("#heuristic b(N) : a(N), b(X), N <= X. [N@2]", negativeChoiceAtom)
+		);
+		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
 	}
 
 	@Test
