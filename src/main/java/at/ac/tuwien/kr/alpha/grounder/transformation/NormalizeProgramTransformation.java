@@ -53,6 +53,8 @@ public class NormalizeProgramTransformation extends ProgramTransformation<InputP
 		tmpPrg = new ChoiceHeadToNormal().apply(inputProgram);
 		// Eliminate any-sign conditions from heuristic directives.
 		tmpPrg = new SignSetTransformation().apply(tmpPrg);
+		// Copy bodies of head-deriving rules to conditions of heuristic directives.
+		tmpPrg = new HeuristicDirectiveConditionEnhancement(!this.ignoreDomspecHeuristics).apply(tmpPrg);
 		// Translate heuristic directives to rules.
 		tmpPrg = new HeuristicDirectiveToRule(!this.ignoreDomspecHeuristics).apply(tmpPrg);
 		// Transform cardinality aggregates.

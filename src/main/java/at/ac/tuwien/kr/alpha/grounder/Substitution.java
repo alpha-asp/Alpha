@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020, the Alpha Team.
+ * Copyright (c) 2016-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.common.Substitutable;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -35,6 +36,8 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -191,6 +194,14 @@ public class Substitution {
 
 	public Set<VariableTerm> getMappedVariables() {
 		return substitution.keySet();
+	}
+
+	public <S extends Substitutable<S>> List<S> substituteAll(Collection<S> substitutables) {
+		final List<S> substitutes = new ArrayList<>(substitutables.size());
+		for (S substitutable : substitutables) {
+			substitutes.add(substitutable.substitute(this));
+		}
+		return substitutes;
 	}
 
 	/**

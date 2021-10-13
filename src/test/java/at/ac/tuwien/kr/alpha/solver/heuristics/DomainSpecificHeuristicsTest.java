@@ -516,10 +516,10 @@ public class DomainSpecificHeuristicsTest {
 				"{a}." + LS +
 				"{b} :- a." + LS +
 				"#heuristic T b. [3]" + LS + // highest priority, but no applicable rule: this heuristic is discarded
-				"#heuristic T a. [2]" + LS + // now there would be an applicable rule for b
-				"#heuristic F b. [1]"        // but the heuristic with weight 3 is not re-activated
+				"#heuristic T a. [2]" + LS + // after this has fired, the first directive becomes applicable
+				"#heuristic F b. [1]"        // this directive is irrelevant because the heuristic with weight 3 has become applicable
 		);
-		solveAndAssertAnswerSets(program, 1, 2, "{ a }");
+		solveAndAssertAnswerSets(program, 1, 2, "{ a, b }");
 	}
 
 	private void solveAndAssertAnswerSets(InputProgram program, String... expectedAnswerSets) {

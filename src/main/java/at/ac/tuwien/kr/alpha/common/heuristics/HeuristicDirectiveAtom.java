@@ -26,8 +26,10 @@
 
 package at.ac.tuwien.kr.alpha.common.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.Substitutable;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.apache.commons.lang3.StringUtils;
 
@@ -41,7 +43,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
-public class HeuristicDirectiveAtom implements Comparable<HeuristicDirectiveAtom> {
+public class HeuristicDirectiveAtom implements Comparable<HeuristicDirectiveAtom>, Substitutable<HeuristicDirectiveAtom> {
 
 	public static final ThriceTruth DEFAULT_HEAD_SIGN = TRUE;
 	public static final Set<ThriceTruth> DEFAULT_BODY_SIGNS = new HashSet<>(Arrays.asList(TRUE, MBT));
@@ -68,6 +70,10 @@ public class HeuristicDirectiveAtom implements Comparable<HeuristicDirectiveAtom
 		return new HeuristicDirectiveAtom(Collections.singleton(sign), atom);
 	}
 
+	public static HeuristicDirectiveAtom head(BasicAtom atom) {
+		return head(DEFAULT_HEAD_SIGN, atom);
+	}
+
 	public static HeuristicDirectiveAtom body(Set<ThriceTruth> signs, Atom atom) {
 		if (signs == null || signs.isEmpty()) {
 			signs = DEFAULT_BODY_SIGNS;
@@ -77,12 +83,21 @@ public class HeuristicDirectiveAtom implements Comparable<HeuristicDirectiveAtom
 		return new HeuristicDirectiveAtom(signs, atom);
 	}
 
+	public static HeuristicDirectiveAtom body(Atom atom) {
+		return body(DEFAULT_BODY_SIGNS, atom);
+	}
+
 	public Set<ThriceTruth> getSigns() {
 		return signs;
 	}
 
 	public Atom getAtom() {
 		return atom;
+	}
+
+	@Override
+	public HeuristicDirectiveAtom substitute(Substitution substitution) {
+		return new HeuristicDirectiveAtom(signs, atom.substitute(substitution));
 	}
 
 	@Override

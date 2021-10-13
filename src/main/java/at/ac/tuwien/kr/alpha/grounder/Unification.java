@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2018, the Alpha Team.
+/*
+ * Copyright (c) 2017-2018, 2021, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -32,13 +32,6 @@ import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
-import java.util.Set;
-
-import static at.ac.tuwien.kr.alpha.Util.oops;
-
-/**
- * Copyright (c) 2017, the Alpha Team.
- */
 public class Unification {
 
 	public static Unifier unifyAtoms(Atom left, Atom right) {
@@ -56,16 +49,6 @@ public class Unification {
 	}
 
 	private static Unifier unifyAtoms(Atom left, Atom right, boolean keepLeftAsIs) {
-		Set<VariableTerm> leftOccurringVariables = left.getOccurringVariables();
-		Set<VariableTerm> rightOccurringVaribles = right.getOccurringVariables();
-		boolean leftSmaller = leftOccurringVariables.size() < rightOccurringVaribles.size();
-		Set<VariableTerm> smallerSet = leftSmaller ? leftOccurringVariables : rightOccurringVaribles;
-		Set<VariableTerm> largerSet = leftSmaller ? rightOccurringVaribles : leftOccurringVariables;
-		for (VariableTerm variableTerm : smallerSet) {
-			if (largerSet.contains(variableTerm)) {
-				throw oops("Left and right atom share variables.");
-			}
-		}
 		Unifier mgu = new Unifier();
 		if (!left.getPredicate().equals(right.getPredicate())) {
 			return null;
