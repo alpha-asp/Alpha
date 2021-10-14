@@ -9,8 +9,6 @@ dependencies {
 	api project(":alpha-commons")
 	implementation project(":alpha-core")
 	
-	testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.7.1'
-	
 }
 
 java {

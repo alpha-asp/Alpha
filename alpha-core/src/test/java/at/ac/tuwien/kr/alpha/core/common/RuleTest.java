@@ -1,9 +1,11 @@
 package at.ac.tuwien.kr.alpha.core.common;
 
-import static org.junit.Assert.assertEquals;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
@@ -39,15 +41,15 @@ public class RuleTest {
 		Rule<Head> r2 = p2.getRules().get(0);
 		ASPCore2Program p3 = parser.parse("p(X, Y) :- bla(X), blub(X), foo(X, X), not bar(X).");
 		Rule<Head> r3 = p3.getRules().get(0);
-		Assert.assertTrue(r1.equals(r2));
-		Assert.assertTrue(r2.equals(r1));
-		Assert.assertTrue(r1.hashCode() == r2.hashCode());
-		Assert.assertFalse(r1.equals(r3));
-		Assert.assertFalse(r3.equals(r1));
-		Assert.assertTrue(r1.hashCode() != r3.hashCode());
-		Assert.assertFalse(r2.equals(r3));
-		Assert.assertFalse(r3.equals(r2));
-		Assert.assertTrue(r2.hashCode() != r3.hashCode());
+		assertTrue(r1.equals(r2));
+		assertTrue(r2.equals(r1));
+		assertTrue(r1.hashCode() == r2.hashCode());
+		assertFalse(r1.equals(r3));
+		assertFalse(r3.equals(r1));
+		assertTrue(r1.hashCode() != r3.hashCode());
+		assertFalse(r2.equals(r3));
+		assertFalse(r3.equals(r2));
+		assertTrue(r2.hashCode() != r3.hashCode());
 	}
 
 }

@@ -19,18 +19,17 @@ dependencies {
     implementation group: 'org.reflections',    name: 'reflections',          version: '0.9.11'
     implementation group: 'org.slf4j',          name: 'slf4j-api',            version: '1.7.20'
 
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
-
     // JUnit 5
-    // testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2' 
-    // testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine' 
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api',    version: '5.7.1' 
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: '5.7.1'
+    testRuntimeOnly    group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.1'
 }
 
-/* JUnit 5
+// JUnit 5
 tasks.named('test') {
     useJUnitPlatform() 
 }
-*/
+
 
 test {
 	testLogging {
