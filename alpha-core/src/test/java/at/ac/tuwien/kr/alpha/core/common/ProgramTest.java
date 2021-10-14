@@ -27,24 +27,42 @@ package at.ac.tuwien.kr.alpha.core.common;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.literals.Literals;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
-// TODO this is a functional test dependent on parser that wants to be a unit test
 public class ProgramTest {
-	
+
 	@Test
 	public void testToString() {
-		ASPCore2Program parsedProgram = new ProgramParserImpl().parse(
-				"p(a)." + System.lineSeparator() +
-					"q(X) :- p(X)." + System.lineSeparator() +
-					"p(b).");
+		ASPCore2Program program;
+		// rule := q(X) :- p(X).
+		List<Literal> body = new ArrayList<>();
+		body.add(Literals.fromAtom(Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newVariable("X")), true));
+		Rule<Head> rule = new BasicRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newVariable("X"))), body);
+		List<Atom> facts = new ArrayList<>();
+		facts.add(Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newSymbolicConstant("a")));
+		facts.add(Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newSymbolicConstant("b")));
+		// program := p(a). p(b). q(X) :- p(X).
+		program = InputProgram.builder().addFacts(facts).addRule(rule).build();
 		assertEquals(
 				"p(a)." + System.lineSeparator() +
-					"p(b)." + System.lineSeparator() +
-					"q(X) :- p(X)." + System.lineSeparator(),
-				parsedProgram.toString());
+						"p(b)." + System.lineSeparator() +
+						"q(X) :- p(X)." + System.lineSeparator(),
+				program.toString());
 	}
 }
