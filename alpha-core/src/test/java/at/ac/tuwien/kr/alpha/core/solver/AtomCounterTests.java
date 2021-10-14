@@ -25,15 +25,15 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
@@ -57,7 +57,7 @@ public class AtomCounterTests {
 
 	private AtomStore atomStore;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		this.atomStore = new AtomStoreImpl();
 	}
@@ -130,12 +130,12 @@ public class AtomCounterTests {
 	}
 
 	private void expectGetNumberOfAtoms(AtomCounter atomCounter, String classOfAtoms, int expectedNumber) {
-		assertEquals("Unexpected number of " + classOfAtoms + "s", expectedNumber, atomCounter.getNumberOfAtoms(classOfAtoms));
+		assertEquals(expectedNumber, atomCounter.getNumberOfAtoms(classOfAtoms), "Unexpected number of " + classOfAtoms + "s");
 	}
 
 	private void expectGetStatsByType(AtomCounter atomCounter, String classOfAtoms, int expectedNumber) {
-		assertTrue("Expected number of " + classOfAtoms + "s not contained in stats string",
-				atomCounter.getStatsByType().contains(classOfAtoms + ": " + expectedNumber));
+		assertTrue(atomCounter.getStatsByType().contains(classOfAtoms + ": " + expectedNumber),
+				"Expected number of " + classOfAtoms + "s not contained in stats string");
 	}
 
 }

@@ -12,8 +12,6 @@ dependencies {
 	
 	implementation group: 'org.antlr', name: 'ST4', version: '4.0.8'
 	
-	testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.7.1'
-	
 }
 
 java {

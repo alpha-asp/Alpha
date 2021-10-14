@@ -26,8 +26,8 @@
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
 import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collection;
 import java.util.function.Function;
@@ -133,8 +133,8 @@ public class AlphaHeuristicTestAssumptions {
 
 		System.out.println(noGoods.stream().map(atomStore::noGoodToString).collect(Collectors.joining(", ")));
 
-		assertEquals("Unexpected number of bodyNotHead nogoods", 5, bodyNotHead);
-		assertEquals("Unexpected number of bodyElementsNotBody nogoods", 5, bodyElementsNotBody);
+		assertEquals(5, bodyNotHead, "Unexpected number of bodyNotHead nogoods");
+		assertEquals(5, bodyElementsNotBody, "Unexpected number of bodyElementsNotBody nogoods");
 		assertGreaterThan("Unexpected number of nogoods without head", 4, noHead);
 
 		// there may be other nogoods (e.g. for ChoiceOn, ChoiceOff) which we do not care for here
@@ -162,7 +162,7 @@ public class AlphaHeuristicTestAssumptions {
 				int atom = atomOf(literal);
 				String atomToString = atomStore.atomToString(atom);
 				if (atomToString.startsWith("_R_")) {
-					assertTrue("Atom not choice: " + atomToString, isRuleBody.test(atom));
+					assertTrue(isRuleBody.test(atom), "Atom not choice: " + atomToString);
 				}
 			}
 		}
@@ -173,6 +173,6 @@ public class AlphaHeuristicTestAssumptions {
 	}
 
 	private void assertGreaterThan(String message, long expected, long actual) {
-		assertTrue(message, actual > expected);
+		assertTrue(actual > expected, message);
 	}
 }
