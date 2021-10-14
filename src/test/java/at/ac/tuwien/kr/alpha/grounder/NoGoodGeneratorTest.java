@@ -25,12 +25,9 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
-
-import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -42,6 +39,11 @@ import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
+
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests {@link NoGoodGenerator}

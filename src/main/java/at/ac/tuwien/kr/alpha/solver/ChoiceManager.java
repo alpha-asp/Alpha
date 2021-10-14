@@ -27,11 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
-import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DefaultDomainSpecificHeuristicsStore;
-import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DomainSpecificHeuristicsStore;
-import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.EmptyDomainSpecificHeuristicsStore;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,11 +35,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
+
+import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
+import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DefaultDomainSpecificHeuristicsStore;
+import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DomainSpecificHeuristicsStore;
+import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.EmptyDomainSpecificHeuristicsStore;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;

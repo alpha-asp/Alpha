@@ -25,18 +25,27 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
-import at.ac.tuwien.kr.alpha.solver.*;
+import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.InfluenceManager.ActivityListener;
-import org.junit.Before;
-import org.junit.Test;
+import at.ac.tuwien.kr.alpha.solver.NaiveNoGoodStore;
+import at.ac.tuwien.kr.alpha.solver.NoGoodStore;
+import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test {@link DefaultDomainSpecificHeuristicsStore}
@@ -55,7 +64,7 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 		assignment = new TrailAssignment(atomStore);
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		this.store = new DefaultDomainSpecificHeuristicsStore();
 		this.choiceManager = new PseudoChoiceManager(assignment, new NaiveNoGoodStore(assignment), store);

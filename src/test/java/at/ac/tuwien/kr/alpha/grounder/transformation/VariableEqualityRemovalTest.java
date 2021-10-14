@@ -25,6 +25,12 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import org.junit.jupiter.api.Test;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import at.ac.tuwien.kr.alpha.common.WeightAtLevel;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
@@ -42,14 +48,9 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
-import org.junit.Test;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.asSet;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests {@link VariableEqualityRemoval}.
@@ -67,8 +68,8 @@ public class VariableEqualityRemovalTest {
 			+ "#heuristic b(X) : a(X), Y=X. [Y]"
 			+ "#heuristic b(X) : a(X), Y=X+1. [Y]");
 		inputProgram = new HeuristicDirectiveToRule(heuristicsConfiguration).apply(inputProgram);
+		inputProgram = new VariableEqualityRemoval().apply(inputProgram);
 		NormalProgram program = NormalProgram.fromInputProgram(inputProgram);
-		program = new VariableEqualityRemoval().apply(program);
 
 		final NormalRule expectedRule1 = changeToHeuristicRule(NormalRule.fromBasicRule(programPartParser.parseBasicRule("h(Y, 0, true, b(Y), condpos(tm(a(Y))), condneg()) :- a(Y).")));
 		final NormalRule expectedRule2 = changeToHeuristicRule(NormalRule.fromBasicRule(programPartParser.parseBasicRule("h(Y, 0, true, b(X), condpos(tm(a(X))), condneg()) :- a(X), Y=X+1.")));
@@ -88,9 +89,8 @@ public class VariableEqualityRemovalTest {
 	public void testFunctionTermGeneratedFromAffectedAtom() {
 		final InputProgram inputProgram = parser.parse("a(1)."
 				+ "h(Y) :- a(X), Y=X.");
-		NormalProgram program = NormalProgram.fromInputProgram(inputProgram);
 
-		final Set<Literal> body = program.getRules().get(0).getBody();
+		final Set<Literal> body = inputProgram.getRules().get(0).getBody();
 		Atom atomA = null;
 		for (Literal bodyLiteral : body) {
 			if (bodyLiteral instanceof BasicLiteral) {
@@ -101,7 +101,7 @@ public class VariableEqualityRemovalTest {
 		final FunctionTerm functionTerm = atomA.toFunctionTerm();
 		final String strFunctionTermBeforeTransformation = functionTerm.toString();
 
-		new VariableEqualityRemoval().apply(program);
+		new VariableEqualityRemoval().apply(inputProgram);
 		final String strFunctionTermAfterTransformation = functionTerm.toString();
 
 		// atom a(X) has changed to a(Y):

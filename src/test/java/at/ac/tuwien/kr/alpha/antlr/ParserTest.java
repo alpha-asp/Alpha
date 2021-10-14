@@ -27,6 +27,20 @@
  */
 package at.ac.tuwien.kr.alpha.antlr;
 
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.nio.channels.ReadableByteChannel;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.EnumerationDirective;
@@ -50,29 +64,16 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.HeuristicDirectiveToRule;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.asSet;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Copyright (c) 2016-2020, the Alpha Team.
@@ -81,7 +82,7 @@ public class ParserTest {
 	private final ProgramParser parser = new ProgramParser();
 	private final HeuristicsConfiguration heuristicsConfiguration = new HeuristicsConfigurationBuilder().setRespectDomspecHeuristics(true).build();
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		VariableTerm.ANONYMOUS_VARIABLE_COUNTER.resetGenerator();
 	}
@@ -214,7 +215,6 @@ public class ParserTest {
 	public void parseEnumerationDirective() {
 		InputProgram parsedProgram = parser.parse("p(a,1)." +
 			"# enumeration_predicate_is mune." +
-			"#enumeration_predicate_is mune." +
 			"r(X) :- p(X), mune(X)." +
 			"p(b,2).");
 		String directive = ((EnumerationDirective)parsedProgram.getInlineDirectives().getDirectiveValue(InlineDirectives.DIRECTIVE.enum_predicate_is)).getValue();
@@ -292,10 +292,11 @@ public class ParserTest {
 		assertEquals("1", weightAtLevel.getLevel().toString());
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void parseProgramWithHeuristicDirective_ConditionWithHeuristicSignWithBuiltinAtom() {
-		parser.parse("holds(F,T) :- fluent(F), time(T), TM T > 0, lasttime(LT), not not_holds(F,T). "
-				+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not F holds(F,T), holds(F,Tp1), Tp1=T+1, LTp1mT=LT+1-T. [LTp1mT@1]");
+		assertThrows(IllegalArgumentException.class, () ->
+				parser.parse("holds(F,T) :- fluent(F), time(T), TM T > 0, lasttime(LT), not not_holds(F,T). "
+						+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not F holds(F,T), holds(F,Tp1), Tp1=T+1, LTp1mT=LT+1-T. [LTp1mT@1]"));
 	}
 
 	@Test
@@ -335,16 +336,18 @@ public class ParserTest {
 		assertEquals(asSet(FALSE), directive.getHead().getSigns());
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void parseProgramWithHeuristicDirective_HeadMSign() {
-		parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
-				+ "#heuristic M c(X) : p(X,a,_), q(Xaa,xaa), not c(X).");
+		assertThrows(IllegalArgumentException.class, () ->
+				parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
+						+ "#heuristic M c(X) : p(X,a,_), q(Xaa,xaa), not c(X)."));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void parseProgramWithHeuristicDirective_HeadMultipleSigns() {
-		parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
-				+ "#heuristic TF c(X) : p(X,a,_), q(Xaa,xaa), not c(X).");
+		assertThrows(IllegalArgumentException.class, () ->
+				parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
+						+ "#heuristic TF c(X) : p(X,a,_), q(Xaa,xaa), not c(X)."));
 	}
 
 	@Test
@@ -365,25 +368,28 @@ public class ParserTest {
 		assertEquals(asSet(TRUE, MBT), directive.getBody().getBodyAtomsPositive().iterator().next().getSigns());
 	}
 
-	@Test(expected = RuntimeException.class)
-	@Ignore("Currently, Rule#isSafe does nothing")
+	@Test
+	@Disabled("Currently, Rule#isSafe does nothing")
 	public void parseProgramWithHeuristicDirective_GeneratorWithArithmetics_Unsafe1() {
-		parseProgramAndTransformHeuristicDirectives("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
-				+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T), holds(F,Tp1), Tp1=T+1, LTp1mT=LT+1-T. [T2@1]");
+		assertThrows(RuntimeException.class, () ->
+				parseProgramAndTransformHeuristicDirectives("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
+						+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T), holds(F,Tp1), Tp1=T+1, LTp1mT=LT+1-T. [T2@1]"));
 	}
 
-	@Test(expected = RuntimeException.class)
-	@Ignore("Currently, Rule#isSafe does nothing")
+	@Test
+	@Disabled("Currently, Rule#isSafe does nothing")
 	public void parseProgramWithHeuristicDirective_GeneratorWithArithmetics_Unsafe2() {
-		parseProgramAndTransformHeuristicDirectives("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
-				+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T), holds(F,T2), Tp1=T+1, LTp1mT=LT+1-T. [LTp1mT@1]");
+		assertThrows(RuntimeException.class, () ->
+				parseProgramAndTransformHeuristicDirectives("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
+						+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T), holds(F,T2), Tp1=T+1, LTp1mT=LT+1-T. [LTp1mT@1]"));
 	}
 
-	@Test(expected = RuntimeException.class)
-	@Ignore("Currently, Rule#isSafe does nothing")
+	@Test
+	@Disabled("Currently, Rule#isSafe does nothing")
 	public void parseProgramWithHeuristicDirective_GeneratorWithArithmetics_Unsafe3() {
-		parseProgramAndTransformHeuristicDirectives("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
-				+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T), holds(F,Tp1), Tp1=T2+1, LTp1mT=LT+1-T. [LTp1mT@1]");
+		assertThrows(RuntimeException.class, () ->
+				parseProgramAndTransformHeuristicDirectives("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
+						+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T), holds(F,Tp1), Tp1=T2+1, LTp1mT=LT+1-T. [LTp1mT@1]"));
 	}
 
 	private void parseProgramAndTransformHeuristicDirectives(String input) {

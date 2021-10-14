@@ -27,6 +27,23 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
@@ -48,24 +65,12 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.ChainedBranchingHeuristics;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Set;
-import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomToNegatedLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.signedAtomToLiteral;
 import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
@@ -85,7 +90,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final ChoiceManager choiceManager;
 	private final WritableAssignment assignment;
 	private final GroundConflictNoGoodLearner learner;
-	private final BranchingHeuristic branchingHeuristic;
+	final BranchingHeuristic branchingHeuristic;
 
 	private int mbtAtFixpoint;
 	private int conflictsAfterClosing;

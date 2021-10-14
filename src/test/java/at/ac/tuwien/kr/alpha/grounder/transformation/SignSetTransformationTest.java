@@ -25,6 +25,12 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import org.junit.jupiter.api.Test;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import at.ac.tuwien.kr.alpha.common.Directive;
 import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
@@ -32,16 +38,13 @@ import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
-import org.junit.Test;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.asSet;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 /**
  * Tests {@link SignSetTransformation}.

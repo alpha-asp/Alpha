@@ -25,6 +25,12 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+
 import at.ac.tuwien.kr.alpha.common.EnumerationDirective;
 import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
@@ -35,13 +41,9 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
-import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests {@link HeuristicDirectiveConditionEnhancement}.
@@ -148,13 +150,14 @@ public class HeuristicDirectiveConditionEnhancementTest {
 		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test
 	public void testRuleWithAggregateAtom() {
-		InputProgram program = parser.parse("a(1). b(1)."
+		final InputProgram inputProgram = parser.parse("a(1). b(1)."
 				+ "{ b(M) } :- a(M), b(X), X = #count { M : a(M) }."
 				+ "#heuristic b(N) : a(N). [N@2]");
-		program = new ChoiceHeadToNormal().apply(program);
-		new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
+		final InputProgram program = new ChoiceHeadToNormal().apply(inputProgram);
+		assertThrows(UnsupportedOperationException.class, () ->
+				new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program));
 	}
 
 	@Test

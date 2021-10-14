@@ -27,16 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.common.rule.head.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.Unifier;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,6 +36,16 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+
+import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
+import at.ac.tuwien.kr.alpha.common.rule.head.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.Unifier;
 
 /**
  * Removes variable equalities from rules by replacing one variable with the other.
@@ -111,7 +111,6 @@ public class VariableEqualityRemoval extends ProgramTransformation<InputProgram,
 		if (!rule.isConstraint() && rule.getHead() instanceof DisjunctiveHead) {
 			throw new UnsupportedOperationException("VariableEqualityRemoval cannot be applied to rule with DisjunctiveHead, yet.");
 		}
-		NormalHead rewrittenHead = rule.isConstraint() ? null : new NormalHead(((NormalHead)rule.getHead()).getAtom());
 
 		// Use substitution for actual replacement.
 		Unifier replacementSubstitution = new Unifier();
@@ -138,7 +137,7 @@ public class VariableEqualityRemoval extends ProgramTransformation<InputProgram,
 			}
 		}
 		// Replace variables in head.
-		NormalHead rewrittenHead = rule.isConstraint() ? null : new NormalHead(rule.getHeadAtom().substitute(replacementSubstitution));
+		NormalHead rewrittenHead = rule.isConstraint() ? null : new NormalHead(((NormalHead)rule.getHead()).getAtom().substitute(replacementSubstitution));
 		return new BasicRule(rewrittenHead, rewrittenBody);
 	}
 }

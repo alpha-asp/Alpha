@@ -25,6 +25,14 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -40,19 +48,13 @@ import at.ac.tuwien.kr.alpha.solver.DefaultSolver;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
-import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static at.ac.tuwien.kr.alpha.TestUtil.atom;
-import static at.ac.tuwien.kr.alpha.TestUtil.checkExpectedAtomsInAnswerSet;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.atom;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.checkExpectedAtomsInAnswerSet;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests the {@link DomainSpecific} heuristics.
@@ -334,17 +336,17 @@ public class DomainSpecificHeuristicsTest {
 		Solver solver = SolverFactory.getInstance(systemConfig, atomStore, GrounderFactory.getInstance("naive", internalProgram, atomStore, heuristicsConfiguration, true), heuristicsConfiguration);
 		solver.stream().limit(1).collect(Collectors.toList()).get(0);
 		DefaultSolver defaultSolver = (DefaultSolver) solver;
-		assertTrue("No backjumps done", defaultSolver.getNumberOfBackjumps() > 0);
+		assertTrue(defaultSolver.getNumberOfBackjumps() > 0, "No backjumps done");
 		Map<String, Integer> numberOfChoicesPerBranchingHeuristic = defaultSolver.getNumberOfChoicesPerBranchingHeuristic();
-		assertTrue("No numbers of choices per branching heuristic", !numberOfChoicesPerBranchingHeuristic.isEmpty());
+		assertTrue(!numberOfChoicesPerBranchingHeuristic.isEmpty(), "No numbers of choices per branching heuristic");
 		for (Map.Entry<String, Integer> entry : numberOfChoicesPerBranchingHeuristic.entrySet()) {
 			if (entry.getKey().equals("DomainSpecific")) {
-				assertTrue("No choices done by DomainSpecific", entry.getValue() > 0);
+				assertTrue(entry.getValue() > 0, "No choices done by DomainSpecific");
 			} else if (entry.getKey().equals("NaiveHeuristic")) {
 				// default heuristic has to decide two choice points that are not covered by the domain-specific one
-				assertEquals("Unexpected number of choices done by Naive", Integer.valueOf(2), entry.getValue());
+				assertEquals(Integer.valueOf(2), entry.getValue(), "Unexpected number of choices done by Naive");
 			} else {
-				assertEquals("Choices done by " + entry.getKey(), Integer.valueOf(0), entry.getValue());
+				assertEquals(Integer.valueOf(0), entry.getValue(), "Choices done by " + entry.getKey());
 			}
 		}
 
@@ -376,15 +378,15 @@ public class DomainSpecificHeuristicsTest {
 		final DefaultSolver defaultSolver = (DefaultSolver) solver;
 		assertEquals(0, defaultSolver.getNumberOfBackjumps());
 		final Map<String, Integer> numberOfChoicesPerBranchingHeuristic = defaultSolver.getNumberOfChoicesPerBranchingHeuristic();
-		assertFalse("No numbers of choices per branching heuristic", numberOfChoicesPerBranchingHeuristic.isEmpty());
+		assertFalse(numberOfChoicesPerBranchingHeuristic.isEmpty(), "No numbers of choices per branching heuristic");
 		for (Map.Entry<String, Integer> entry : numberOfChoicesPerBranchingHeuristic.entrySet()) {
 			if (entry.getKey().equals("DomainSpecific")) {
-				assertTrue("No choices done by DomainSpecific", entry.getValue() > 0);
+				assertTrue(entry.getValue() > 0, "No choices done by DomainSpecific");
 			} else if (entry.getKey().equals("NaiveHeuristic")) {
 				// default heuristic has to decide two choice points that are not covered by the domain-specific one
-				assertEquals("Unexpected number of choices done by Naive", Integer.valueOf(2), entry.getValue());
+				assertEquals(Integer.valueOf(2), entry.getValue(), "Unexpected number of choices done by Naive");
 			} else {
-				assertEquals("Choices done by " + entry.getKey(), Integer.valueOf(0), entry.getValue());
+				assertEquals(Integer.valueOf(0), entry.getValue(), "Choices done by " + entry.getKey());
 			}
 		}
 	}
@@ -481,7 +483,7 @@ public class DomainSpecificHeuristicsTest {
 		solveAndAssertAnswerSets(program, 1, "{ c }");
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test
 	public void testNegativeHeuristicWithTwoApplicableRules() {
 		InputProgram program = parser.parse(
 				"{a}." + LS +
@@ -491,7 +493,7 @@ public class DomainSpecificHeuristicsTest {
 				"#heuristic F h."
 		);
 		final Solver solver = getSolver(program);
-		final List<AnswerSet> answerSets = solver.stream().collect(Collectors.toList());
+		assertThrows(UnsupportedOperationException.class, () -> solver.stream().collect(Collectors.toList()));
 	}
 
 	@Test

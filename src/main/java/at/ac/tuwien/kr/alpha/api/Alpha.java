@@ -63,6 +63,8 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.NormalizeProgramTransformat
 import at.ac.tuwien.kr.alpha.grounder.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
 
 public class Alpha {
 

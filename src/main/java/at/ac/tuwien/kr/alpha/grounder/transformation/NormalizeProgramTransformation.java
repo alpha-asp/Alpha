@@ -30,6 +30,8 @@ package at.ac.tuwien.kr.alpha.grounder.transformation;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewriting;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingConfig;
 
 /**
  * Encapsulates all transformations necessary to transform a given program into a @{link NormalProgram} that is

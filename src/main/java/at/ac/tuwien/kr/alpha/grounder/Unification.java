@@ -33,10 +33,6 @@ import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
-import java.util.Set;
-
-import static at.ac.tuwien.kr.alpha.Util.oops;
-
 /**
  * Helper methods for unification and instantiation of two given atoms.
  *

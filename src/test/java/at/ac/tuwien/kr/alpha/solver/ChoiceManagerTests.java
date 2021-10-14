@@ -25,13 +25,10 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.Collection;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.Collection;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -46,10 +43,9 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
-import org.junit.Before;
-import org.junit.Test;
 
-import java.util.Collection;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ChoiceManagerTests {
 	private final HeuristicsConfiguration heuristicsConfiguration = new HeuristicsConfigurationBuilder().build();

@@ -70,10 +70,10 @@ class Choice {
 	}
 	
 	/**
-	 * @return {@link #getAtom()} if {@link #getValue()} is {@code true}, else {@link #getAtom()} {@code * -1}.
+	 * @return {@link #getAtom()} if {@link #getTruthValue()} is {@code true}, else {@link #getAtom()} {@code * -1}.
 	 */
 	public int toSignedInteger() {
-		return (value ? 1 : -1) * atom;
+		return (truthValue ? 1 : -1) * atom;
 	}
 
 	@Override

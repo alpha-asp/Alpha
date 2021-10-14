@@ -27,8 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import static at.ac.tuwien.kr.alpha.Util.join;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,8 +34,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
+
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 /**
  * Represents ordinary ASP atoms.

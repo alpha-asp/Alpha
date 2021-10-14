@@ -27,9 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.test.util;
 
-import java.util.Collections;
-import java.util.Set;
-
 import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -37,22 +34,14 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
+
+import java.util.Collections;
+import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.antlr.AlphaASPLexer;
 import at.ac.tuwien.kr.alpha.antlr.AlphaASPParser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParseTreeVisitor;
-import org.antlr.v4.runtime.BailErrorStrategy;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.atn.PredictionMode;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Set;
 
 public class AnswerSetsParser {
 	private static final ParseTreeVisitor VISITOR = new ParseTreeVisitor(Collections.emptyMap(), false);

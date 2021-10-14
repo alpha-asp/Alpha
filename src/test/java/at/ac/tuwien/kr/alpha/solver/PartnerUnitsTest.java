@@ -25,16 +25,9 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.antlr.v4.runtime.CharStreams;
 import org.apache.commons.lang3.tuple.Pair;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -45,40 +38,48 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.buildSolverForRegressionTest;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests {@link AbstractSolver} using some partner units test cases.
  *
  */
-public class PartnerUnitsTest extends AbstractSolverTests {
+public class PartnerUnitsTest {
 	private final ProgramParser parser = new ProgramParser();
 	
-	@Test
-	public void testPartnerUnits_generated_003() throws IOException {
-		testPartnerUnits_generated("simple003_bf_startZ1.asp");
+	@RegressionTest
+	public void testPartnerUnits_generated_003(RegressionTestConfig cfg) throws IOException {
+		testPartnerUnits_generated("simple003_bf_startZ1.asp", cfg);
 	}
 
-	@Test
-	@Ignore("ignore to save resources during CI")
-	public void testPartnerUnits_generated_010() throws IOException {
-		testPartnerUnits_generated("simple010_bf_startZ1.asp");
+	@RegressionTest
+	@Disabled("ignore to save resources during CI")
+	public void testPartnerUnits_generated_010(RegressionTestConfig cfg) throws IOException {
+		testPartnerUnits_generated("simple010_bf_startZ1.asp", cfg);
 	}
 
-	@Test
-	@Ignore("ignore to save resources during CI")
-	public void testPartnerUnits_generated_020() throws IOException {
-		testPartnerUnits_generated("simple020_bf_startZ1.asp");
+	@RegressionTest
+	@Disabled("ignore to save resources during CI")
+	public void testPartnerUnits_generated_020(RegressionTestConfig cfg) throws IOException {
+		testPartnerUnits_generated("simple020_bf_startZ1.asp", cfg);
 	}
 
-	@Test
-	@Ignore("ignore to save resources during CI")
-	public void testPartnerUnits_generated_030() throws IOException {
-		testPartnerUnits_generated("simple030_bf_startZ1.asp");
+	@RegressionTest
+	@Disabled("ignore to save resources during CI")
+	public void testPartnerUnits_generated_030(RegressionTestConfig cfg) throws IOException {
+		testPartnerUnits_generated("simple030_bf_startZ1.asp", cfg);
 	}
 	
-	private void testPartnerUnits_generated(String instanceId) throws IOException {
+	private void testPartnerUnits_generated(String instanceId, RegressionTestConfig cfg) throws IOException {
 		InputProgram parsedProgram = parser
 				.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "PartnerUnits", "pup.alpha_heu_20210205.asp")));
 		parsedProgram = InputProgram.builder(parsedProgram)
@@ -86,7 +87,7 @@ public class PartnerUnitsTest extends AbstractSolverTests {
 						.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "PartnerUnits", "instances", "generated", instanceId))))
 		.build();
 
-		Solver solver = getInstance(parsedProgram);
+		Solver solver = buildSolverForRegressionTest(parsedProgram, cfg);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		assertTrue(answerSet.isPresent());
 		checkAnswerSet(answerSet.get());
