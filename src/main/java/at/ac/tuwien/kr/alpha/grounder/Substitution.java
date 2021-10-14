@@ -27,6 +27,14 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeMap;
+
 import at.ac.tuwien.kr.alpha.common.Substitutable;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
@@ -35,14 +43,6 @@ import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeMap;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
@@ -202,6 +202,10 @@ public class Substitution {
 			substitutes.add(substitutable.substitute(this));
 		}
 		return substitutes;
+	}
+
+	public <S extends Substitutable<S>> S substituteIfNotNull(S substitutable) {
+		return substitutable == null ? null : substitutable.substitute(this);
 	}
 
 	/**

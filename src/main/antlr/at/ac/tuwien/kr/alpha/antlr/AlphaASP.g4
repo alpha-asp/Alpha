@@ -52,7 +52,7 @@ heuristic_head_sign : HEU_SIGN_T | HEU_SIGN_F;
 
 heuristic_body : COLON heuristic_body_literal (COMMA heuristic_body_literal)*;
 
-heuristic_body_literal : NAF? heuristic_body_atom;
+heuristic_body_literal : NAF? heuristic_body_atom | aggregate;
 
 heuristic_body_atom : (heuristic_body_sign? basic_atom) | builtin_atom | external_atom;
 

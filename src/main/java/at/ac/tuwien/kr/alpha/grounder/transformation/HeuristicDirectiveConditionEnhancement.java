@@ -25,8 +25,15 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import at.ac.tuwien.kr.alpha.common.Directive;
 import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
@@ -42,12 +49,6 @@ import at.ac.tuwien.kr.alpha.grounder.Unification;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
@@ -132,7 +133,7 @@ public class HeuristicDirectiveConditionEnhancement extends ProgramTransformatio
 		final Set<HeuristicDirectiveAtom> newHeuristicCondition = new HashSet<>(existingHeuristicCondition);
 		for (Literal literal : ruleBodyToAdd) {
 			final Atom atom = literal.getAtom();
-			if (!(atom instanceof BasicAtom || atom instanceof ComparisonAtom)) {
+			if (!(atom instanceof BasicAtom || atom instanceof ComparisonAtom || atom instanceof AggregateAtom)) {
 				throw new UnsupportedOperationException("Body atom " + atom + " not yet supported by " + this.getClass().getSimpleName());
 			}
 			newHeuristicCondition.add(HeuristicDirectiveAtom.body(atom));

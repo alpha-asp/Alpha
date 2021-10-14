@@ -43,7 +43,6 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests {@link HeuristicDirectiveConditionEnhancement}.
@@ -152,12 +151,17 @@ public class HeuristicDirectiveConditionEnhancementTest {
 
 	@Test
 	public void testRuleWithAggregateAtom() {
-		final InputProgram inputProgram = parser.parse("a(1). b(1)."
-				+ "{ b(M) } :- a(M), b(X), X = #count { M : a(M) }."
+		InputProgram program = parser.parse("a(1). b(1). p(1). q(1,1). q(1,2)."
+				+ "{ b(X) } :- a(X), b(X), X = #sum { Y : p(Y) }, 1 < #count { Z : q(X,Z) }."
 				+ "#heuristic b(N) : a(N). [N@2]");
-		final InputProgram program = new ChoiceHeadToNormal().apply(inputProgram);
-		assertThrows(UnsupportedOperationException.class, () ->
-				new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program));
+		final Atom negativeChoiceAtom = ChoiceHeadToNormal.constructNegativeChoiceAtom(programPartParser.parseBasicAtom("b(N)"));
+
+		program = new ChoiceHeadToNormal().apply(program);
+		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
+		Collection<HeuristicDirective> expectedHeuristicDirectives = Arrays.asList(
+				parseHeuristicDirectiveAndAddNegativeLiteral("#heuristic b(N) : a(N), b(N), N = #sum { Y : p(Y) }, 1 < #count { Z : q(N,Z) }. [N@2]", negativeChoiceAtom)
+		);
+		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
 	}
 
 	@Test
