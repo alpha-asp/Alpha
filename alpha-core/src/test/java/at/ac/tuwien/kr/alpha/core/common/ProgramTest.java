@@ -52,7 +52,7 @@ public class ProgramTest {
 		// rule := q(X) :- p(X).
 		List<Literal> body = new ArrayList<>();
 		body.add(Literals.fromAtom(Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newVariable("X")), true));
-		Rule<Head> rule = Rules.newNormalRule(
+		Rule<Head> rule = Rules.newRule(
 				Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newVariable("X")),
 				Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newVariable("X")).toLiteral());
 		List<Atom> facts = new ArrayList<>();
