@@ -7,17 +7,6 @@ val antlrVersion = "4.7"
 // Keep this in sync with antlr version to avoid multiple versions in classpath
 val stringtemplateVersion = "4.0.8"
 
-/* The following configuration directive is a work-around for a fault in the Gradle
- * ANTLR plugin. It would require both antlr4 and antlr4-runtime at compile time and
- * at run time, which unnecessarily bloats our JARs. Only antlr4-runtime is needed.
- * We therefore remove this extension of antlr dependencies being compile dependencies
- * and reintroduce them on our own.
- * See also https://github.com/gradle/gradle/issues/820
- */
-configurations[JavaPlugin.API_CONFIGURATION_NAME].let { apiConfiguration ->
-	apiConfiguration.setExtendsFrom(apiConfiguration.extendsFrom.filter { it.name != "antlr" })
-}
-
 dependencies {
 	api(project(":alpha-api")) // TODO does it make more sense to use implementation scope?
 	api(project(":alpha-commons")) // TODO does it make more sense to use implementation scope?
