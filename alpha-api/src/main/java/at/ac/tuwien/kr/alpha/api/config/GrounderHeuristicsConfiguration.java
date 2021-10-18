@@ -25,11 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.api.config;
 
-/* TODO this should be javadoc but has a problem with the ref to a component from core module:
-* Contains configuration parameters for heuristics used by {@link at.ac.tuwien.kr.alpha.grounder.Grounder}s.
-*/
-
 /**
+ * Contains configuration parameters for heuristics used by the grounder.
  *
  * Both parameters {@link #toleranceConstraints} and {@link #toleranceRules} are interpreted as follows:
  * A rule (or constraint) is grounded if the following conditions are satisfied:
@@ -50,7 +47,6 @@ package at.ac.tuwien.kr.alpha.api.config;
  *
  * The additional parameter {@link #accumulatorEnabled} is a switch for the accumulator grounding strategy
  * which disables the removal of instances from the grounder memory in certain cases.
- *
  */
 public class GrounderHeuristicsConfiguration {
 
