@@ -63,10 +63,6 @@ jacocoTestReport {
 	}
 }
 
-java {
-	withSourcesJar()
-}
-
 test {
 	useJUnitPlatform()
 }

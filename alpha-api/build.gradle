@@ -1,7 +1,3 @@
 plugins {
     id 'alpha.java-library-conventions'  
 }
-
-java {
-	withSourcesJar()
-}

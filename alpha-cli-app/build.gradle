@@ -44,10 +44,6 @@ task bundledJar(type: Jar) {
 	with jar
 }
 
-java {
-	withSourcesJar()
-}
-
 test {
 	useJUnitPlatform()
 }

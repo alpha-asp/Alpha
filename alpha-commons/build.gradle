@@ -11,10 +11,6 @@ dependencies {
 	implementation group: 'org.antlr', name: 'ST4', version: '4.0.8'
 }
 
-java {
-	withSourcesJar()
-}
-
 test {
 	useJUnitPlatform()
 }
