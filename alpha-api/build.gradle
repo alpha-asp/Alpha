@@ -1,20 +1,7 @@
 plugins {
     id 'alpha.java-library-conventions'  
-    id 'maven-publish' 
 }
 
 java {
 	withSourcesJar()
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId = 'at.ac.tuwien.kr.alpha'
-            artifactId = 'alpha-api'
-            version = '0.8-SNAPSHOT'
-
-            from components.java
-        }
-    }
 }

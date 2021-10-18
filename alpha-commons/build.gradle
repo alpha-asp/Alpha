@@ -1,17 +1,14 @@
 plugins {
     id 'alpha.java-library-conventions'
-    id 'maven-publish' 
 }
 
 // Keep this in sync with antlr version to avoid multiple versions in classpath
 def stringtemplateVersion = "4.0.8"
 
 dependencies {
-	
 	api project(":alpha-api")
 	
 	implementation group: 'org.antlr', name: 'ST4', version: '4.0.8'
-	
 }
 
 java {
@@ -21,16 +18,3 @@ java {
 test {
 	useJUnitPlatform()
 }
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId = 'at.ac.tuwien.kr.alpha'
-            artifactId = 'alpha-commons'
-            version = '0.8-SNAPSHOT'
-
-            from components.java
-        }
-    }
-}
-

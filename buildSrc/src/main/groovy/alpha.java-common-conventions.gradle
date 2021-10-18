@@ -1,12 +1,12 @@
 plugins {
-    id 'java' 
+    id 'java'
     id 'jacoco'
     id 'checkstyle'
+    id 'maven-publish'
 }
 
 repositories {
     mavenCentral()
-    jcenter() 
 }
 
 sourceCompatibility = 1.8
@@ -29,7 +29,6 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform() 
 }
-
 
 test {
 	testLogging {
@@ -54,5 +53,13 @@ compileTestJava {
 jacocoTestReport {
     reports {
         xml.enabled = true
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
     }
 }

@@ -1,6 +1,6 @@
 plugins {
     id 'alpha.java-application-conventions'
-    id 'maven-publish'
+    //id 'maven-publish'
 }
 
 dependencies {
@@ -10,7 +10,6 @@ dependencies {
     implementation group: 'commons-cli',        name: 'commons-cli',          version: '1.3.1'
     implementation group: 'org.apache.poi',     name: 'poi',                  version: '4.1.1'
     implementation group: 'org.apache.poi',     name: 'poi-ooxml',            version: '4.1.1'
-    
 }
 
 def mainClassName = 'at.ac.tuwien.kr.alpha.Main'
@@ -51,16 +50,4 @@ java {
 
 test {
 	useJUnitPlatform()
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId = 'at.ac.tuwien.kr.alpha'
-            artifactId = 'alpha-cli-app'
-            version = '0.8-SNAPSHOT'
-
-            from components.java
-        }
-    }
 }

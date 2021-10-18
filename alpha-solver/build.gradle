@@ -1,14 +1,11 @@
 plugins {
     id 'alpha.java-library-conventions'
-    id 'maven-publish' 
 }
 
 dependencies {
-	
 	api project(":alpha-api")
 	api project(":alpha-commons")
 	implementation project(":alpha-core")
-	
 }
 
 java {
@@ -18,16 +15,3 @@ java {
 test {
 	useJUnitPlatform()
 }
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId = 'at.ac.tuwien.kr.alpha'
-            artifactId = 'alpha-solver'
-            version = '0.8-SNAPSHOT'
-
-            from components.java
-        }
-    }
-}
-

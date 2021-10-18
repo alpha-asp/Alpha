@@ -1,9 +1,7 @@
 plugins {
     id 'antlr'
     id 'alpha.java-library-conventions'
-    id 'maven-publish' 
 }
-
 
 def antlrVersion = '4.7'
 // Keep this in sync with antlr version to avoid multiple versions in classpath
@@ -22,7 +20,6 @@ configurations {
 }
 
 dependencies {
-
 	api project(":alpha-api") // TODO does it make more sense to use implementation scope?
 	api project(":alpha-commons") // TODO does it make more sense to use implementation scope?
 
@@ -36,7 +33,6 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 	implementation group: 'org.apache.commons', name: 'commons-lang3',        version: '3.6'
 	implementation group: 'org.apache.commons', name: 'commons-text',         version: '1.8'
-    
 }
 
 tasks.withType(AntlrTask) {
@@ -73,16 +69,4 @@ java {
 
 test {
 	useJUnitPlatform()
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId = 'at.ac.tuwien.kr.alpha'
-            artifactId = 'alpha-core'
-            version = '0.8-SNAPSHOT'
-
-            from components.java
-        }
-    }
 }
