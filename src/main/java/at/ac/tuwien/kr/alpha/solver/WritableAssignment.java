@@ -53,12 +53,12 @@ public interface WritableAssignment extends Assignment {
 	void backjump(int decisionLevel);
 
 	/**
-	 * Assigns an atom some value on a lower decision level than the current one.
-	 * @param atom
-	 * @param value
-	 * @param impliedBy
-	 * @param decisionLevel
-	 * @return
+	 * Assigns an atom some value on the indicated decision level.
+	 * @param atom the atom to assign
+	 * @param value the truth value to assign the atom
+	 * @param impliedBy the antecedent that is implying the atom.
+	 * @param decisionLevel the decision level on which the assignment is to take effect.
+	 * @return null if the assignment is consistent or a ConflictCause otherwise.
 	 */
 	ConflictCause assign(int atom, ThriceTruth value, Antecedent impliedBy, int decisionLevel);
 
@@ -94,4 +94,16 @@ public interface WritableAssignment extends Assignment {
 		}
 		return minimumConflictLevel;
 	}
+
+	/**
+	 * Assigns all unassigned atoms to FALSE.
+	 * @return true if any atom was assigned.
+	 */
+	boolean closeUnassignedAtoms();
+
+	/**
+	 * Returns whether the assignment did change since this method was last called.
+	 * @return true if the assignment changed since this method was last called.
+	 */
+	boolean didChange();
 }
