@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -47,6 +48,9 @@ import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
@@ -101,17 +105,26 @@ public class NaiveGrounderTest {
 	 */
 	@Test
 	public void groundRuleAlreadyGround() {
-		ASPCore2Program program = PROGRAM_PARSER.parse("a :- not b. "
-				+ "b :- not a. "
-				+ "c :- b.");
-		NormalProgram normal = NORMALIZE_TRANSFORM.apply(program);
-		CompiledProgram prog = new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normal));
+		// r1 := a :- not b.
+		CompiledRule r1 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("a", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("b", 0)).toLiteral(false));
+		// r2 := b :- not a.
+		CompiledRule r2 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("b", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("a", 0)).toLiteral(false));
+		// r3 := c :- b.
+		CompiledRule r3 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("c", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("b", 0)).toLiteral());
+		List<CompiledRule> rules = new ArrayList<>();
+		rules.add(r1);
+		rules.add(r2);
+		rules.add(r3);
+		CompiledProgram prog = new InternalProgram(rules, Collections.emptyList());
 
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", prog, atomStore, true);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
-		int litCNeg = Literals.atomToLiteral(atomStore.get(PROGRAM_PART_PARSER.parseBasicAtom("c")), false);
-		int litB = Literals.atomToLiteral(atomStore.get(PROGRAM_PART_PARSER.parseBasicAtom("b")));
+		int litCNeg = Literals.atomToLiteral(atomStore.get(Atoms.newBasicAtom(Predicates.getPredicate("c", 0))), false);
+		int litB = Literals.atomToLiteral(atomStore.get(Atoms.newBasicAtom(Predicates.getPredicate("b", 0))));
 		assertExistsNoGoodContaining(noGoods.values(), litCNeg);
 		assertExistsNoGoodContaining(noGoods.values(), litB);
 	}
@@ -129,6 +142,8 @@ public class NaiveGrounderTest {
 		NormalProgram normal = NORMALIZE_TRANSFORM.apply(program);
 		InternalProgram prog = new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normal));
 
+		// r1 := 
+		
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", prog, atomStore, true);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
@@ -335,7 +350,7 @@ public class NaiveGrounderTest {
 		ASPCore2Program program = PROGRAM_PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X,Y). "
 				+ "b(X,Y) :- something(X,Y).");
-		testPermissiveGrounderHeuristicTolerance(program, 0, litAX, 1, 1, new ThriceTruth[] {ThriceTruth.TRUE, ThriceTruth.TRUE }, 2, true,
+		testPermissiveGrounderHeuristicTolerance(program, 0, litAX, 1, 1, new ThriceTruth[] { ThriceTruth.TRUE, ThriceTruth.TRUE }, 2, true,
 				Arrays.asList(0, 0));
 	}
 
@@ -344,7 +359,7 @@ public class NaiveGrounderTest {
 		ASPCore2Program program = PROGRAM_PARSER.parse("a(1). "
 				+ "c(X) :- a(1), b(X,Y). "
 				+ "b(X,Y) :- something(X,Y).");
-		testPermissiveGrounderHeuristicTolerance(program, 0, litA1, 1, 1, new ThriceTruth[] {null, null }, 2, true, Arrays.asList(1, 1));
+		testPermissiveGrounderHeuristicTolerance(program, 0, litA1, 1, 1, new ThriceTruth[] { null, null }, 2, true, Arrays.asList(1, 1));
 	}
 
 	@Test
