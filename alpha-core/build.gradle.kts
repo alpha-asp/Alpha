@@ -17,7 +17,7 @@ dependencies {
     // Re-introduce antlr4-runtime as compile dependency.
 	implementation("org.antlr:antlr4-runtime:${antlrVersion}")
 
-	implementation("org.antlr:ST4:4.0.8")
+	implementation("org.antlr:ST4:${stringtemplateVersion}")
 }
 
 //tasks.withType(AntlrTask) {
