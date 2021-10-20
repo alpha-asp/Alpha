@@ -13,15 +13,15 @@ dependencies {
 	implementation("org.apache.poi:poi-ooxml:${poiVersion}")
 }
 
-val mainClassName = "at.ac.tuwien.kr.alpha.Main"
+val main = "at.ac.tuwien.kr.alpha.Main"
 
 application {
-    mainClass.set(mainClassName)
+    mainClass.set(main)
 }
 
 tasks.create<Jar>("bundledJar") {
 	manifest {
-		attributes["Main-Class"] = mainClassName
+		attributes["Main-Class"] = main
 	}
 
 	with(tasks["jar"] as CopySpec)
