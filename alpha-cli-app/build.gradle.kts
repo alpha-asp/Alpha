@@ -28,7 +28,7 @@ tasks.create<Jar>("bundledJar") {
 
 	from(configurations.compileClasspath.get().map({ if (it.isDirectory()) it else zipTree(it) }))
 	// TODO: is there a neater way to do this?
-	from(configurations.runtimeClasspath.get().map({ it -> if (it.isDirectory()) it else zipTree(it) }))
+	from(configurations.runtimeClasspath.get().map({ if (it.isDirectory()) it else zipTree(it) }))
 
 	archiveFileName.set("${project.name}-bundled.jar")
 	
