@@ -71,8 +71,7 @@ import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
  *
  * Copyright (c) 2016, the Alpha Team.
  */
-// TODO this is a mock and should be named as such
-public class DummyGrounder implements Grounder {
+public class GrounderMockWithBasicProgram implements Grounder {
 	public static final Set<AnswerSet> EXPECTED = new HashSet<>(singletonList(new AnswerSetBuilder()
 		.predicate("a")
 		.predicate("b")
@@ -99,11 +98,11 @@ public class DummyGrounder implements Grounder {
 	private static Atom rule1 = new RuleAtom(InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(ruleABC)), new BasicSubstitution());
 	private Set<Integer> returnedNogoods = new HashSet<>();
 
-	public DummyGrounder(AtomStore atomStore) {
+	public GrounderMockWithBasicProgram(AtomStore atomStore) {
 		this(atomStore, p -> true);
 	}
 
-	public DummyGrounder(AtomStore atomStore, java.util.function.Predicate<Predicate> filter) {
+	public GrounderMockWithBasicProgram(AtomStore atomStore, java.util.function.Predicate<Predicate> filter) {
 		this.atomStore = atomStore;
 		this.filter = filter;
 		Arrays.asList(atomAA, atomBB, rule1, atomCC).forEach(atomStore::putIfAbsent);

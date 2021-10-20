@@ -38,7 +38,7 @@ import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.StatisticsReportingSolver;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.core.grounder.DummyGrounder;
+import at.ac.tuwien.kr.alpha.core.grounder.GrounderMockWithBasicProgram;
 
 //TODO this is a functional test that wants to be a unit test
 public class SolverStatisticsTests {
@@ -66,14 +66,14 @@ public class SolverStatisticsTests {
 
 	@RegressionTest
 	public void checkNoGoodCounterStatsByTypeUsingDummyGrounder(RegressionTestConfig cfg) {
-		Solver solver = buildSolverForRegressionTest(atomStore, new DummyGrounder(atomStore), cfg);
+		Solver solver = buildSolverForRegressionTest(atomStore, new GrounderMockWithBasicProgram(atomStore), cfg);
 		assumeTrue(solver instanceof StatisticsReportingSolver);
 		collectAnswerSetsAndCheckNoGoodCounterStatsByType(solver, 4, 0, 0, 0);
 	}
 
 	@RegressionTest
 	public void checkNoGoodCounterStatsByCardinalityUsingDummyGrounder(RegressionTestConfig cfg) {
-		Solver solver = buildSolverForRegressionTest(atomStore, new DummyGrounder(atomStore), cfg);
+		Solver solver = buildSolverForRegressionTest(atomStore, new GrounderMockWithBasicProgram(atomStore), cfg);
 		assumeTrue(solver instanceof StatisticsReportingSolver);
 		collectAnswerSetsAndCheckNoGoodCounterStatsByCardinality(solver, 2, 1, 1);
 	}

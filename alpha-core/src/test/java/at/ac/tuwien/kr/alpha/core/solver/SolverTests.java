@@ -53,8 +53,8 @@ import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.core.grounder.ChoiceGrounder;
-import at.ac.tuwien.kr.alpha.core.grounder.DummyGrounder;
+import at.ac.tuwien.kr.alpha.core.grounder.GrounderMockWithChoice;
+import at.ac.tuwien.kr.alpha.core.grounder.GrounderMockWithBasicProgram;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.test.util.AnswerSetsParser;
@@ -808,13 +808,13 @@ public class SolverTests {
 	@RegressionTest
 	public void dummyGrounder(RegressionTestConfig cfg) {
 		AtomStore atomStore = new AtomStoreImpl();
-		assertEquals(DummyGrounder.EXPECTED, buildSolverForRegressionTest(atomStore, new DummyGrounder(atomStore), cfg).collectSet());
+		assertEquals(GrounderMockWithBasicProgram.EXPECTED, buildSolverForRegressionTest(atomStore, new GrounderMockWithBasicProgram(atomStore), cfg).collectSet());
 	}
 
 	@RegressionTest
 	public void choiceGrounder(RegressionTestConfig cfg) {
 		AtomStore atomStore = new AtomStoreImpl();
-		assertEquals(ChoiceGrounder.EXPECTED, buildSolverForRegressionTest(atomStore, new ChoiceGrounder(atomStore), cfg).collectSet());
+		assertEquals(GrounderMockWithChoice.EXPECTED, buildSolverForRegressionTest(atomStore, new GrounderMockWithChoice(atomStore), cfg).collectSet());
 	}
 
 }

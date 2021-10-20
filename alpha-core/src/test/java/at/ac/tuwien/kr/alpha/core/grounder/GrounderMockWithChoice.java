@@ -70,8 +70,7 @@ import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 /**
  * Represents a small ASP program with choices {@code { aa :- not bb.  bb :- not aa. }}.
  */
-// TODO this is a mock and should be named as such
-public class ChoiceGrounder implements Grounder {
+public class GrounderMockWithChoice implements Grounder {
 	public static final Set<AnswerSet> EXPECTED = new HashSet<>(asList(
 		new AnswerSetBuilder()
 			.predicate("aa")
@@ -130,11 +129,11 @@ public class ChoiceGrounder implements Grounder {
 
 	private final java.util.function.Predicate<Predicate> filter;
 
-	public ChoiceGrounder(AtomStore atomStore) {
+	public GrounderMockWithChoice(AtomStore atomStore) {
 		this(atomStore, p -> true);
 	}
 
-	public ChoiceGrounder(AtomStore atomStore, java.util.function.Predicate<Predicate> filter) {
+	public GrounderMockWithChoice(AtomStore atomStore, java.util.function.Predicate<Predicate> filter) {
 		this.atomStore = atomStore;
 		this.filter = filter;
 		Arrays.asList(atomAA, atomBB, rule1, rule2, atomEnBR1, atomEnBR2, atomDisBR1, atomDisBR2).forEach(atomStore::putIfAbsent);

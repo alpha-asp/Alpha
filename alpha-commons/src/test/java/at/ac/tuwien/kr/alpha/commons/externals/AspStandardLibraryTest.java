@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.externals;
+package at.ac.tuwien.kr.alpha.commons.externals;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -10,7 +10,6 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.commons.externals.AspStandardLibrary;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
 public class AspStandardLibraryTest {
