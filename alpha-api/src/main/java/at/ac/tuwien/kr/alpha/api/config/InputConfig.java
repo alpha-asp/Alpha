@@ -28,9 +28,8 @@ public class InputConfig {
 	private String compgraphPath = InputConfig.DEFAULT_COMPGRAPH_TARGET_FILE;
 	private String normalizedPath = InputConfig.DEFAULT_NORMALIZED_TARGET_FILE;
 	private String preprocessedPath = InputConfig.DEFAULT_PREPROC_TARGET_FILE;
-	// TODO: standard library externals are NOT always loaded, but this was the case before introducing modules
-	// TODO: ensure this in parser
-	private Map<String, PredicateInterpretation> predicateMethods = new HashMap<>(); // Externals.getStandardLibraryExternals();
+
+	private Map<String, PredicateInterpretation> predicateMethods = new HashMap<>();
 	private boolean writeAnswerSetsAsXlsx = InputConfig.DEFAULT_WRITE_XLSX;
 	private String answerSetFileOutputPath;
 
