@@ -33,11 +33,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class SystemConfig {
-
-	// TODO add validation on configs!
-	// TODO naive solver cannot print stats!
-	// TODO introduce debug levels (lvl 1 = print graphs and preprocessed, lvl 2 = same with debugInternalChecks)
-	
 	// Note: Defining constants for default values here rather than just
 	// initializing from those values in order to have the values accessible in
 	// contexts where no AlphaConfig instance exists (e.g. argument parsing from

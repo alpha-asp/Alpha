@@ -820,15 +820,10 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 
 	@Override
 	public int estimate(int atom, boolean truth, BinaryNoGoodPropagationEstimationStrategy strategy) {
-		switch (strategy) {
-			case BinaryNoGoodPropagation:
-				if (hasBinaryNoGoods) {
-					return estimateEffectsOfBinaryNoGoodPropagation(atom, truth) - 1;
-				}
-			case CountBinaryWatches:
-			default:
-				return getNumberOfBinaryWatches(atom, truth);
+		if (BinaryNoGoodPropagationEstimationStrategy.BinaryNoGoodPropagation.equals(strategy)) {
+			return estimateEffectsOfBinaryNoGoodPropagation(atom, truth) - 1;
 		}
+		return getNumberOfBinaryWatches(atom, truth);
 	}
 
 	private int getNumberOfBinaryWatches(int atom, boolean truth) {
