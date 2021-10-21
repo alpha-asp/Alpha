@@ -68,6 +68,6 @@ jobs:
       continue-on-error: true
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-    - uses: codecov/codecov-action@v1
+    - uses: codecov/codecov-action@v2
       if: matrix.os == env.MAIN_OS && matrix.java == env.MAIN_JAVA
       continue-on-error: true
