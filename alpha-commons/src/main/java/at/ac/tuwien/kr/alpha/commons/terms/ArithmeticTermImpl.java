@@ -147,7 +147,7 @@ class ArithmeticTermImpl extends AbstractTerm implements ArithmeticTerm {
 		return arithmeticOperator.eval(leftInt, rightInt);
 	}
 	
-	// FIXME it doesn't seem like this class is really needed, could be handled by an if in ArithmeticTermImpl#getInstance
+	// Note: It doesn't seem like this class is really needed, could be handled by an if in ArithmeticTermImpl#getInstance.
 	public static class MinusTerm extends ArithmeticTermImpl {
 
 		private MinusTerm(Term term) {
