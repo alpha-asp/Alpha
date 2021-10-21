@@ -139,7 +139,6 @@ public class AlphaImpl implements Alpha {
 		return new NormalizeProgramTransformation(config.getAggregateRewritingConfig()).apply(program);
 	}
 
-	// TODO make sure to adapt this without exposing internal implementation types
 	@VisibleForTesting
 	InternalProgram performProgramPreprocessing(NormalProgram program) {
 		LOGGER.debug("Preprocessing InternalProgram!");
