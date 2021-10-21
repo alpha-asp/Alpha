@@ -27,38 +27,32 @@ package at.ac.tuwien.kr.alpha.core.grounder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
-import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
-import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.Literals;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 
 /**
  * Tests {@link NoGoodGenerator}
  */
-// TODO this is a functional test that wants to be a unit test
 public class NoGoodGeneratorTest {
-
-	private static final ProgramParser PARSER = new ProgramParserImpl();
-	private static final NormalizeProgramTransformation NORMALIZE_TRANSFORM = new NormalizeProgramTransformation(
-			SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
 
 	private static final ConstantTerm<String> A = Terms.newSymbolicConstant("a");
 	private static final ConstantTerm<String> B = Terms.newSymbolicConstant("b");
@@ -72,12 +66,21 @@ public class NoGoodGeneratorTest {
 	 */
 	@Test
 	public void collectNeg_ContainsOnlyPositiveLiterals() {
-		ASPCore2Program input = PARSER.parse("p(a,b). "
-				+ "q(a,b) :- not nq(a,b). "
-				+ "nq(a,b) :- not q(a,b).");
-		NormalProgram normal = NORMALIZE_TRANSFORM.apply(input);
-		CompiledProgram program = InternalProgram.fromNormalProgram(normal);
-
+		/*
+		 * program :=
+		 * p(a,b).
+		 * q(a,b) :- not nq(a,b).
+		 * nq(a,b) :- not q(a,b).
+		 */
+		List<Atom> facts = new ArrayList<>();
+		facts.add(Atoms.newBasicAtom(Predicates.getPredicate("p", 2), Terms.newSymbolicConstant("a"), Terms.newSymbolicConstant("b")));
+		List<CompiledRule> rules = new ArrayList<>();
+		rules.add(new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("q", 2), Terms.newSymbolicConstant("a"), Terms.newSymbolicConstant("b"))),
+				Atoms.newBasicAtom(Predicates.getPredicate("nq", 2), Terms.newSymbolicConstant("a"), Terms.newSymbolicConstant("b")).toLiteral(false)));
+		rules.add(new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("nq", 2), Terms.newSymbolicConstant("a"), Terms.newSymbolicConstant("b"))),
+				Atoms.newBasicAtom(Predicates.getPredicate("q", 2), Terms.newSymbolicConstant("a"), Terms.newSymbolicConstant("b")).toLiteral(false)));
+		CompiledProgram program = new InternalProgram(rules, facts);
+		
 		CompiledRule rule = program.getRules().get(1);
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);

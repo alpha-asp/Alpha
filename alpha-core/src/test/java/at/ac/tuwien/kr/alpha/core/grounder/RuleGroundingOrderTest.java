@@ -39,12 +39,18 @@ import org.junit.jupiter.api.Test;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramPartParser;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 
 /**
  * Copyright (c) 2017-2019, the Alpha Team.
@@ -63,24 +69,32 @@ public class RuleGroundingOrderTest {
 
 	@Test
 	public void groundingOrder() {
-		String aspStr = "h(X,C) :- p(X,Y), q(A,B), r(Y,A), s(C)." +
-				"j(A,B,X,Y) :- r1(A,B), r1(X,Y), r1(A,X), r1(B,Y), A = B." +
-				"p(a) :- b = a.";
-		CompiledProgram prog = PARSE_AND_PREPROCESS.apply(aspStr);
-		CompiledRule rule0 = prog.getRules().get(0);
-		RuleGroundingInfo rgo0 = new RuleGroundingInfoImpl(rule0);
-		rgo0.computeGroundingOrders();
-		assertEquals(4, rgo0.getStartingLiterals().size());
-
-		CompiledRule rule1 = prog.getRules().get(1);
-		RuleGroundingInfo rgo1 = new RuleGroundingInfoImpl(rule1);
+		// r1 := h(X,C) :- p(X,Y), q(A,B), r(Y,A), s(C).
+		CompiledRule r1 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("h", 2), Terms.newVariable("X"), Terms.newVariable("C"))),
+				Atoms.newBasicAtom(Predicates.getPredicate("p", 2), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("q", 2), Terms.newVariable("A"), Terms.newVariable("B")).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("r", 2), Terms.newVariable("Y"), Terms.newVariable("A")).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("s", 1), Terms.newVariable("C")).toLiteral());
+		RuleGroundingInfo rgo1 = new RuleGroundingInfoImpl(r1);
 		rgo1.computeGroundingOrders();
 		assertEquals(4, rgo1.getStartingLiterals().size());
 
-		CompiledRule rule2 = prog.getRules().get(2);
-		RuleGroundingInfo rgo2 = new RuleGroundingInfoImpl(rule2);
+		// r2 := j(A,A,X,Y) :- r1(A,A), r1(X,Y), r1(A,X), r1(A,Y).
+		CompiledRule r2 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("j", 4), Terms.newVariable("A"), Terms.newVariable("A"), Terms.newVariable("X"), Terms.newVariable("Y"))),
+				Atoms.newBasicAtom(Predicates.getPredicate("r1", 2), Terms.newVariable("A"), Terms.newVariable("A")).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("r1", 2), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("r1", 2), Terms.newVariable("A"), Terms.newVariable("X")).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("r1", 2), Terms.newVariable("A"), Terms.newVariable("Y")).toLiteral());
+		RuleGroundingInfo rgo2 = new RuleGroundingInfoImpl(r2);
 		rgo2.computeGroundingOrders();
-		assertTrue(rgo2.hasFixedInstantiation());
+		assertEquals(4, rgo2.getStartingLiterals().size());
+
+		// r3 := p(a) :- b = a.
+		CompiledRule r3 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newSymbolicConstant("a"))),
+				Atoms.newComparisonAtom(Terms.newSymbolicConstant("b"), Terms.newSymbolicConstant("a"), ComparisonOperators.EQ).toLiteral());
+		RuleGroundingInfo rgo3 = new RuleGroundingInfoImpl(r3);
+		rgo3.computeGroundingOrders();
+		assertTrue(rgo3.hasFixedInstantiation());
 	}
 
 	@Test
