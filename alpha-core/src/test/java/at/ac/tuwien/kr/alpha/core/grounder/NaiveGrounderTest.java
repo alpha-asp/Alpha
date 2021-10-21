@@ -82,7 +82,7 @@ public class NaiveGrounderTest {
 	final Literal litQ2Y = Atoms.newBasicAtom(Predicates.getPredicate("q2", 1), Terms.newVariable("Y")).toLiteral();
 	final Literal litQ1Y = Atoms.newBasicAtom(Predicates.getPredicate("q1", 1), Terms.newVariable("Y")).toLiteral();
 	final Literal litAX = Atoms.newBasicAtom(Predicates.getPredicate("a", 1), Terms.newVariable("X")).toLiteral();
-	final Literal litA1 = Atoms.newBasicAtom(Predicates.getPredicate("p1", 1), Terms.newConstant(1)).toLiteral();
+	final Literal litA1 = Atoms.newBasicAtom(Predicates.getPredicate("a", 1), Terms.newConstant(1)).toLiteral();
 
 	@BeforeEach
 	public void resetRuleIdGenerator() {
@@ -488,11 +488,11 @@ public class NaiveGrounderTest {
 		List<CompiledRule> rules = new ArrayList<>();
 		rules.add(new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("c", 1), Terms.newVariable("X"))),
 				Atoms.newBasicAtom(Predicates.getPredicate("a", 1), Terms.newVariable("X")).toLiteral(),
-				Atoms.newBasicAtom(Predicates.getPredicate("b", 1), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral()));
-		rules.add(new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("b", 1), Terms.newVariable("X"), Terms.newVariable("Y"))),
-				Atoms.newBasicAtom(Predicates.getPredicate("something", 1), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral()));
+				Atoms.newBasicAtom(Predicates.getPredicate("b", 2), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral()));
+		rules.add(new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("b", 2), Terms.newVariable("X"), Terms.newVariable("Y"))),
+				Atoms.newBasicAtom(Predicates.getPredicate("something", 2), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral()));
 		CompiledProgram program = new InternalProgram(rules, facts);
-		testPermissiveGrounderHeuristicTolerance(program, 0, litAX, 1, 1, new ThriceTruth[] { ThriceTruth.TRUE, ThriceTruth.TRUE }, 2, true,
+		testPermissiveGrounderHeuristicTolerance(program, 0, litAX, 1, 1, new ThriceTruth[] {ThriceTruth.TRUE, ThriceTruth.TRUE }, 2, true,
 				Arrays.asList(0, 0));
 	}
 
@@ -509,11 +509,11 @@ public class NaiveGrounderTest {
 		List<CompiledRule> rules = new ArrayList<>();
 		rules.add(new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("c", 1), Terms.newVariable("X"))),
 				Atoms.newBasicAtom(Predicates.getPredicate("a", 1), Terms.newConstant(1)).toLiteral(),
-				Atoms.newBasicAtom(Predicates.getPredicate("b", 1), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral()));
-		rules.add(new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("b", 1), Terms.newVariable("X"), Terms.newVariable("Y"))),
-				Atoms.newBasicAtom(Predicates.getPredicate("something", 1), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral()));
+				Atoms.newBasicAtom(Predicates.getPredicate("b", 2), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral()));
+		rules.add(new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("b", 2), Terms.newVariable("X"), Terms.newVariable("Y"))),
+				Atoms.newBasicAtom(Predicates.getPredicate("something", 2), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral()));
 		CompiledProgram program = new InternalProgram(rules, facts);
-		testPermissiveGrounderHeuristicTolerance(program, 0, litA1, 1, 1, new ThriceTruth[] { null, null }, 2, true, Arrays.asList(1, 1));
+		testPermissiveGrounderHeuristicTolerance(program, 0, litA1, 1, 1, new ThriceTruth[] {null, null}, 2, true, Arrays.asList(1, 1));
 	}
 
 	@Test
@@ -531,6 +531,7 @@ public class NaiveGrounderTest {
 				Atoms.newBasicAtom(Predicates.getPredicate("a", 1), Terms.newVariable("X")).toLiteral(),
 				Atoms.newBasicAtom(Predicates.getPredicate("b", 1), Terms.newVariable("X")).toLiteral(),
 				Atoms.newBasicAtom(Predicates.getPredicate("b", 1), Terms.newVariable("Y")).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("b", 1), Terms.newVariable("Z")).toLiteral(),
 				Atoms.newComparisonAtom(
 						Terms.newVariable("Y"),
 						Terms.newArithmeticTerm(Terms.newVariable("X"), ArithmeticOperator.PLUS, Terms.newConstant(1)),
@@ -549,7 +550,7 @@ public class NaiveGrounderTest {
 	public void testPermissiveGrounderHeuristicTolerance_2_accept_multiple_facts_of_same_variable() {
 		/*
 		 * program :=
-		 * a(1).
+		 * a(1). b(1)
 		 * c(X) :- a(X), b(X), b(Y), b(Z), Y = X + 1, Z = X + 2.
 		 * b(X) :- something(X).
 		 */
@@ -561,6 +562,7 @@ public class NaiveGrounderTest {
 				Atoms.newBasicAtom(Predicates.getPredicate("a", 1), Terms.newVariable("X")).toLiteral(),
 				Atoms.newBasicAtom(Predicates.getPredicate("b", 1), Terms.newVariable("X")).toLiteral(),
 				Atoms.newBasicAtom(Predicates.getPredicate("b", 1), Terms.newVariable("Y")).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("b", 1), Terms.newVariable("Z")).toLiteral(),
 				Atoms.newComparisonAtom(
 						Terms.newVariable("Y"),
 						Terms.newArithmeticTerm(Terms.newVariable("X"), ArithmeticOperator.PLUS, Terms.newConstant(1)),
