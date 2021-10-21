@@ -36,30 +36,25 @@ tasks.create<Jar>("bundledJar") {
 	 * In order to make sure we don"t overwrite NOTICE and LICENSE files coming from dependency
 	 * jars with each other, number them while copying
 	 */
-
-	/* TODO
-	var i = 1
-	rename(
-       delegateClosureOf({ it ->
-				if (it.equals("NOTICE.txt") || it.equals("NOTICE")) {
-					i++
-					return "NOTICE.${i}.txt"
-				} else {
-					return null
-				}
-			})
-	)
-
-	var j = 1
-	rename(closureOf<Transformer<String, String>> { name ->
-		if (name.equals("LICENSE.txt") || name.equals("LICENSE")) {
-			j++
-			name = "LICENSE.${j}.txt"
+	var noticeCount = 1
+	rename { it : String ->
+		return@rename if ("NOTICE.txt".equals(it) || "NOTICE".equals(it)) {
+			noticeCount++
+			"NOTICE.${noticeCount}.txt"
 		} else {
-			null
+			it
 		}
-	})
-	 */
+	}
+
+	var licenseCount = 1
+	rename { it : String ->
+		return@rename if ("LICENSE.txt".equals(it) || "LICENSE".equals(it)) {
+			licenseCount++
+			"LICENSE.${licenseCount}.txt"
+		} else {
+			it
+		}
+	}
 
 	with(tasks["jar"] as CopySpec)
 }
