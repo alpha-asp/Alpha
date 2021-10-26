@@ -8,7 +8,7 @@ val stringtemplateVersion = "4.0.8"
 dependencies {
 	api(project(":alpha-api"))
 	
-	implementation("org.antlr:ST4:4.0.8")
+	implementation("org.antlr:ST4:${stringtemplateVersion}")
 }
 
 tasks.test {

@@ -24,10 +24,13 @@ dependencies {
     implementation("org.slf4j:slf4j-api:1.7.20")
 
     // JUnit 5
-    val junitVersion = "5.7.1"
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:${junitVersion}")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+    val jupiterVersion = "5.7.1"
+    fun jupiter(component: String): String {
+        return "org.junit.jupiter:junit-jupiter-${component}:${jupiterVersion}"
+    }
+    testImplementation(jupiter("api"))
+    testImplementation(jupiter("params"))
+    testImplementation(jupiter("engine"))
 }
 
 // JUnit 5
