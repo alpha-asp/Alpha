@@ -25,11 +25,12 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import org.junit.jupiter.api.Test;
+
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests {@link ChoiceHeadToNormal}.

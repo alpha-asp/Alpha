@@ -32,12 +32,12 @@ import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
 
 class Choice {
 	private final int atom;
-	private final boolean value;
+	private final boolean truthValue;
 	private final boolean backtracked;
 
-	Choice(int atom, boolean value, boolean backtracked) {
+	Choice(int atom, boolean truthValue, boolean backtracked) {
 		this.atom = atom;
-		this.value = value;
+		this.truthValue = truthValue;
 		this.backtracked = backtracked;
 	}
 
@@ -45,12 +45,24 @@ class Choice {
 		this(atomOf(literal), isPositive(literal), backtracked);
 	}
 
+	/**
+	 * Returns the inverse choice to the given one.
+	 * @param choice the choice to invert.
+	 * @return a new Choice representing the inverse of the given one, or null if the given choice was already backtracked.
+	 */
+	public static Choice getInverted(Choice choice) {
+		if (choice.isBacktracked()) {
+			return null;
+		}
+		return new Choice(choice.getAtom(), !choice.getTruthValue(), true);
+	}
+
 	public int getAtom() {
 		return atom;
 	}
 
-	public boolean getValue() {
-		return value;
+	public boolean getTruthValue() {
+		return truthValue;
 	}
 
 	public boolean isBacktracked() {
@@ -58,14 +70,14 @@ class Choice {
 	}
 	
 	/**
-	 * @return {@link #getAtom()} if {@link #getValue()} is {@code true}, else {@link #getAtom()} {@code * -1}.
+	 * @return {@link #getAtom()} if {@link #getTruthValue()} is {@code true}, else {@link #getAtom()} {@code * -1}.
 	 */
 	public int toSignedInteger() {
-		return (value ? 1 : -1) * atom;
+		return (truthValue ? 1 : -1) * atom;
 	}
 
 	@Override
 	public String toString() {
-		return atom + "=" + (value ? "TRUE" : "FALSE");
+		return atom + "=" + (truthValue ? "TRUE" : "FALSE");
 	}
 }

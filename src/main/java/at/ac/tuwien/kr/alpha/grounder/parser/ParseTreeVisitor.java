@@ -27,6 +27,20 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
+import org.antlr.v4.runtime.RuleContext;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 import at.ac.tuwien.kr.alpha.antlr.AlphaASPBaseVisitor;
 import at.ac.tuwien.kr.alpha.antlr.AlphaASPParser;
 import at.ac.tuwien.kr.alpha.antlr.AlphaASPParser.Directive_heuristicContext;
@@ -66,19 +80,6 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives.DIRECTIVE;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
-import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.tree.TerminalNode;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static java.util.Collections.emptyList;
@@ -344,7 +345,7 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 			ut = (Term) visit(ctx.ut);
 			uop = visitBinop(ctx.uop);
 		}
-		AggregateAtom.AGGREGATEFUNCTION aggregateFunction = visitAggregate_function(ctx.aggregate_function());
+		AggregateAtom.AggregateFunctionSymbol aggregateFunction = visitAggregate_function(ctx.aggregate_function());
 		List<AggregateAtom.AggregateElement> aggregateElements = visitAggregate_elements(ctx.aggregate_elements());
 		return new AggregateAtom(lop, lt, uop, ut, aggregateFunction, aggregateElements).toLiteral(isPositive);
 	}
@@ -418,16 +419,16 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 	}
 
 	@Override
-	public AggregateAtom.AGGREGATEFUNCTION visitAggregate_function(AlphaASPParser.Aggregate_functionContext ctx) {
+	public AggregateAtom.AggregateFunctionSymbol visitAggregate_function(AlphaASPParser.Aggregate_functionContext ctx) {
 		// aggregate_function : AGGREGATE_COUNT | AGGREGATE_MAX | AGGREGATE_MIN | AGGREGATE_SUM;
 		if (ctx.AGGREGATE_COUNT() != null) {
-			return AggregateAtom.AGGREGATEFUNCTION.COUNT;
+			return AggregateAtom.AggregateFunctionSymbol.COUNT;
 		} else if (ctx.AGGREGATE_MAX() != null) {
-			return AggregateAtom.AGGREGATEFUNCTION.MAX;
+			return AggregateAtom.AggregateFunctionSymbol.MAX;
 		} else if (ctx.AGGREGATE_MIN() != null) {
-			return AggregateAtom.AGGREGATEFUNCTION.MIN;
+			return AggregateAtom.AggregateFunctionSymbol.MIN;
 		} else if (ctx.AGGREGATE_SUM() != null) {
-			return AggregateAtom.AGGREGATEFUNCTION.SUM;
+			return AggregateAtom.AggregateFunctionSymbol.SUM;
 		} else {
 			throw notSupported(ctx);
 		}
@@ -661,8 +662,13 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 
 	@Override
 	public HeuristicDirectiveLiteral visitHeuristic_body_literal(AlphaASPParser.Heuristic_body_literalContext ctx) {
-		// heuristic_body_literal : NAF? heuristic_body_atom;
-		return new HeuristicDirectiveLiteral(visitHeuristic_body_atom(ctx.heuristic_body_atom()), ctx.NAF() == null);
+		// heuristic_body_literal : NAF? heuristic_body_atom | aggregate;
+		if (ctx.aggregate() != null) {
+			final AggregateLiteral aggregateLiteral = visitAggregate(ctx.aggregate());
+			return new HeuristicDirectiveLiteral(HeuristicDirectiveAtom.body(aggregateLiteral.getAtom()), !aggregateLiteral.isNegated());
+		} else {
+			return new HeuristicDirectiveLiteral(visitHeuristic_body_atom(ctx.heuristic_body_atom()), ctx.NAF() == null);
+		}
 	}
 
 	@Override

@@ -28,6 +28,10 @@
 
 package at.ac.tuwien.kr.alpha.grounder;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
+
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
@@ -35,9 +39,6 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 public class UnifierTest extends SubstitutionTest {
 

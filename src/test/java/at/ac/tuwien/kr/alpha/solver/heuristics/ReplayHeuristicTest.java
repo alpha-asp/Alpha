@@ -25,17 +25,22 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.solver.*;
-import org.junit.Before;
-import org.junit.Test;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.solver.NoGoodStore;
+import at.ac.tuwien.kr.alpha.solver.NoGoodStoreAlphaRoaming;
+import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 
 /**
  * Tests {@link ReplayHeuristic}
@@ -45,7 +50,7 @@ public class ReplayHeuristicTest {
 	private final boolean debugInternalChecks = true;
 	private ChoiceManager choiceManager;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		AtomStore atomStore = new AtomStoreImpl();
 		WritableAssignment assignment = new TrailAssignment(atomStore);

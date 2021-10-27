@@ -25,13 +25,14 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.heuristics;
 
-import org.junit.Test;
 
 import static at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration.PERMISSIVE_STRING;
 import static at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration.STRICT_STRING;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests {@link GrounderHeuristicsConfiguration}

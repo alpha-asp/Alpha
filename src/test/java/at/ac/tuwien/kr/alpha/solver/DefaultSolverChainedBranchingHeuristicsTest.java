@@ -27,42 +27,44 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.solver.heuristics.*;
-import org.junit.Before;
-import org.junit.Test;
+import at.ac.tuwien.kr.alpha.solver.heuristics.AlphaActiveRuleHeuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BerkMin;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BerkMinLiteral;
+import at.ac.tuwien.kr.alpha.solver.heuristics.ChainedBranchingHeuristics;
+import at.ac.tuwien.kr.alpha.solver.heuristics.DependencyDrivenHeuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.DependencyDrivenPyroHeuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.DependencyDrivenVSIDS;
+import at.ac.tuwien.kr.alpha.solver.heuristics.GeneralizedDependencyDrivenHeuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.GeneralizedDependencyDrivenPyroHeuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.VSIDS;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.buildSolverForRegressionTest;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Tests the creation of {@link ChainedBranchingHeuristics} by {@link DefaultSolver}.
  */
-public class DefaultSolverChainedBranchingHeuristicsTest extends AbstractSolverTests {
+public class DefaultSolverChainedBranchingHeuristicsTest {
 
 	private static final String LS = System.lineSeparator();
 	private static final BasicAtom ATOM_A = new BasicAtom(Predicate.getInstance("a", 0));
 
-	private Solver solver;
-
-	@Before
-	public void setUp() {
+	@RegressionTest
+	public void testChainOfBranchingHeuristics(RegressionTestConfig cfg) {
 		final String testProgram = "a :- not b. " + LS +
 				"b :- not a. " + LS +
 				"c :- not d. " + LS +
 				"d :- not c. " + LS +
 				"#heuristic a : not b.";
-		this.solver = getInstance(testProgram);
-	}
-
-	@Test
-	public void testChainOfBranchingHeuristics() {
+		final Solver solver = buildSolverForRegressionTest(testProgram, cfg);
 		assumeTrue(solver instanceof DefaultSolver);
-		assumeTrue(heuristicsConfiguration.isRespectDomspecHeuristics());
 		final DefaultSolver defaultSolver = (DefaultSolver) solver;
 		assertTrue(defaultSolver.branchingHeuristic instanceof ChainedBranchingHeuristics);
 		final Class heuristicsClass;
-		switch (heuristicsConfiguration.getHeuristic()) {
+		switch (cfg.getBranchingHeuristic()) {
 			case NAIVE:
 				heuristicsClass = NaiveHeuristic.class; break;
 			case BERKMIN:
@@ -92,7 +94,7 @@ public class DefaultSolverChainedBranchingHeuristicsTest extends AbstractSolverT
 			case GDD_VSIDS:
 				heuristicsClass = DependencyDrivenVSIDS.class; break;
 			default:
-				throw new IllegalArgumentException("Unknown branching heuristic: " + heuristicsConfiguration.getHeuristic());
+				throw new IllegalArgumentException("Unknown branching heuristic: " + cfg.getBranchingHeuristic());
 		}
 		if (heuristicsClass == NaiveHeuristic.class) {
 			assertEquals("ChainedBranchingHeuristics[DomainSpecific, " + heuristicsClass.getSimpleName() + "]", defaultSolver.branchingHeuristic.toString());

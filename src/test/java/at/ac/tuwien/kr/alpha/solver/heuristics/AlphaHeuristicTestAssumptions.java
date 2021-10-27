@@ -25,6 +25,17 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Collection;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
@@ -39,16 +50,6 @@ import at.ac.tuwien.kr.alpha.solver.NaiveNoGoodStore;
 import at.ac.tuwien.kr.alpha.solver.TestableChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.Collection;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests assumptions made by {@link DependencyDrivenHeuristic} and other domain-independent heuristics.
@@ -63,7 +64,7 @@ public class AlphaHeuristicTestAssumptions {
 	private TestableChoiceManager choiceManager;
 	private AtomStore atomStore;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		Alpha system = new Alpha();
 		String testProgram = ""
@@ -124,8 +125,8 @@ public class AlphaHeuristicTestAssumptions {
 		
 		System.out.println(noGoods.stream().map(atomStore::noGoodToString).collect(Collectors.joining(", ")));
 
-		assertEquals("Unexpected number of bodyNotHead nogoods", 5, bodyNotHead);
-		assertEquals("Unexpected number of bodyElementsNotBody nogoods", 5, bodyElementsNotBody);
+		assertEquals(5, bodyNotHead, "Unexpected number of bodyNotHead nogoods");
+		assertEquals(5, bodyElementsNotBody, "Unexpected number of bodyElementsNotBody nogoods");
 		assertGreaterThan("Unexpected number of nogoods without head", 4, noHead);
 
 		// there may be other nogoods (e.g. for ChoiceOn, ChoiceOff) which we do not care for here
@@ -153,7 +154,7 @@ public class AlphaHeuristicTestAssumptions {
 				int atom = atomOf(literal);
 				String atomToString = atomStore.atomToString(atom);
 				if (atomToString.startsWith("_R_")) {
-					assertTrue("Atom not choice: " + atomToString, isRuleBody.test(atom));
+					assertTrue(isRuleBody.test(atom), "Atom not choice: " + atomToString);
 				}
 			}
 		}
@@ -164,6 +165,6 @@ public class AlphaHeuristicTestAssumptions {
 	}
 
 	private void assertGreaterThan(String message, long expected, long actual) {
-		assertTrue(message, actual > expected);
+		assertTrue(actual > expected, message);
 	}
 }

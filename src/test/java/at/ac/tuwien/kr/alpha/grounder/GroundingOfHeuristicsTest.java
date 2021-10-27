@@ -27,6 +27,15 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
@@ -39,17 +48,9 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.asSet;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests {@link NaiveGrounder} as it grounds heuristic rules.
@@ -58,12 +59,12 @@ public class GroundingOfHeuristicsTest {
 	private static final ProgramParser PROGRAM_PARSER = new ProgramParser();
 	private final HeuristicsConfiguration heuristicsConfiguration = new HeuristicsConfigurationBuilder().setRespectDomspecHeuristics(true).build();
 
-	@Before
+	@BeforeEach
 	public void resetIdGenerator() {
 		ChoiceRecorder.ID_GENERATOR.resetGenerator();
 	}
 
-	@Before
+	@BeforeEach
 	public void resetRuleIdGenerator() {
 		InternalRule.resetIdGenerator();
 	}

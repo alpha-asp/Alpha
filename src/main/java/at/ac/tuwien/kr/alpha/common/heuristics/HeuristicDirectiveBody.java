@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2020 Siemens AG
+ *  Copyright (c) 2020-2021 Siemens AG
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,10 @@
 
 package at.ac.tuwien.kr.alpha.common.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.Substitutable;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 import java.util.ArrayList;
@@ -41,7 +43,7 @@ import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 
-public class HeuristicDirectiveBody {
+public class HeuristicDirectiveBody implements Substitutable<HeuristicDirectiveBody> {
 
 	private final Set<HeuristicDirectiveAtom> bodyAtomsPositive;
 	private final Set<HeuristicDirectiveAtom> bodyAtomsNegative;
@@ -91,6 +93,11 @@ public class HeuristicDirectiveBody {
 			}
 		}
 		return relevantLiterals;
+	}
+
+	@Override
+	public HeuristicDirectiveBody substitute(Substitution substitution) {
+		return new HeuristicDirectiveBody(substitution.substituteAll(bodyAtomsPositive), substitution.substituteAll(bodyAtomsNegative));
 	}
 
 	@Override

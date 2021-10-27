@@ -25,12 +25,13 @@
  */
 package at.ac.tuwien.kr.alpha.common.heuristics;
 
+import org.junit.jupiter.api.Test;
+
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests {@link HeuristicDirectiveValues.PriorityComparator}.

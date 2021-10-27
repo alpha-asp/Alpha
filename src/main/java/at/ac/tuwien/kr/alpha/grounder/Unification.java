@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2018, the Alpha Team.
+/*
+ * Copyright (c) 2017-2018, 2021, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -28,19 +28,24 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
-import java.util.Set;
-
-import static at.ac.tuwien.kr.alpha.Util.oops;
-
 /**
- * Copyright (c) 2017, the Alpha Team.
+ * Helper methods for unification and instantiation of two given atoms.
+ *
+ * Copyright (c) 2017-2021, the Alpha Team.
  */
 public class Unification {
 
+	/**
+	 * Computes the most-general-unifier of two atoms that share no common variables.
+	 * @param left the one atom to unify with
+	 * @param right to other atom to unify with
+	 * @return the most-general-unifier of the two given atoms if it exists, and null otherwise.
+	 */
 	public static Unifier unifyAtoms(Atom left, Atom right) {
 		return unifyAtoms(left, right, false);
 	}
@@ -56,16 +61,6 @@ public class Unification {
 	}
 
 	private static Unifier unifyAtoms(Atom left, Atom right, boolean keepLeftAsIs) {
-		Set<VariableTerm> leftOccurringVariables = left.getOccurringVariables();
-		Set<VariableTerm> rightOccurringVaribles = right.getOccurringVariables();
-		boolean leftSmaller = leftOccurringVariables.size() < rightOccurringVaribles.size();
-		Set<VariableTerm> smallerSet = leftSmaller ? leftOccurringVariables : rightOccurringVaribles;
-		Set<VariableTerm> largerSet = leftSmaller ? rightOccurringVaribles : leftOccurringVariables;
-		for (VariableTerm variableTerm : smallerSet) {
-			if (largerSet.contains(variableTerm)) {
-				throw oops("Left and right atom share variables.");
-			}
-		}
 		Unifier mgu = new Unifier();
 		if (!left.getPredicate().equals(right.getPredicate())) {
 			return null;
@@ -107,6 +102,25 @@ public class Unification {
 				if (!unifyTerms(leftTerm, rightTerm, currentSubstitution, keepLeftAsIs)) {
 					return false;
 				}
+			}
+			return true;
+		}
+		if (leftSubs instanceof ArithmeticTerm && rightSubs instanceof ArithmeticTerm) {
+			// ArithmeticTerms are similar to FunctionTerms, i.e. if the operator is the same and its subterms unify, the ArithmeticTerms unify.
+			final ArithmeticTerm leftArithmeticTerm = (ArithmeticTerm) leftSubs;
+			final ArithmeticTerm rightArithmeticTerm = (ArithmeticTerm) rightSubs;
+			if (!leftArithmeticTerm.getArithmeticOperator().equals(rightArithmeticTerm.getArithmeticOperator())) {
+				return false;
+			}
+			final Term leftTermLeftSubterm = leftArithmeticTerm.getLeft();
+			final Term rightTermLeftSubterm = rightArithmeticTerm.getLeft();
+			if (!unifyTerms(leftTermLeftSubterm, rightTermLeftSubterm, currentSubstitution, keepLeftAsIs)) {
+				return false;
+			}
+			final Term leftTermRightSubterm = leftArithmeticTerm.getRight();
+			final Term rightTermRightSubterm = rightArithmeticTerm.getRight();
+			if (!unifyTerms(leftTermRightSubterm, rightTermRightSubterm, currentSubstitution, keepLeftAsIs)) {
+				return false;
 			}
 			return true;
 		}

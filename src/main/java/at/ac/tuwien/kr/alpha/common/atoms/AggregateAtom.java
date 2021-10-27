@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2019, the Alpha Team.
+/*
+ * Copyright (c) 2017-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -27,15 +27,16 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
-
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+
+import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Substitutable;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -46,19 +47,20 @@ public class AggregateAtom extends Atom {
 	private final Term lowerBoundTerm;
 	private final ComparisonOperator upperBoundOperator;
 	private final Term upperBoundTerm;
-	private final AGGREGATEFUNCTION aggregatefunction;
+	private final AggregateFunctionSymbol aggregatefunction;
 	private final List<AggregateElement> aggregateElements;
 
-	public AggregateAtom(ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, ComparisonOperator upperBoundOperator, Term upperBoundTerm, AGGREGATEFUNCTION aggregatefunction, List<AggregateElement> aggregateElements) {
+	public AggregateAtom(ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, ComparisonOperator upperBoundOperator, Term upperBoundTerm, AggregateFunctionSymbol aggregatefunction, List<AggregateElement> aggregateElements) {
 		this.lowerBoundOperator = lowerBoundOperator;
 		this.lowerBoundTerm = lowerBoundTerm;
 		this.upperBoundOperator = upperBoundOperator;
 		this.upperBoundTerm = upperBoundTerm;
 		this.aggregatefunction = aggregatefunction;
 		this.aggregateElements = aggregateElements;
-		if (upperBoundOperator != null || lowerBoundOperator != ComparisonOperator.LE || lowerBoundTerm == null) {
-			throw new UnsupportedOperationException("Aggregate construct not yet supported: " + this);
-		}
+	}
+	
+	public AggregateAtom(ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, AggregateFunctionSymbol aggregatefunction, List<AggregateElement> aggregateElements) {
+		this(lowerBoundOperator, lowerBoundTerm, null, null, aggregatefunction, aggregateElements);
 	}
 
 	@Override
@@ -87,7 +89,7 @@ public class AggregateAtom extends Atom {
 	}
 
 	@Override
-	public Atom withTerms(List<Term> terms) {
+	public AggregateAtom withTerms(List<Term> terms) {
 		throw new UnsupportedOperationException("Editing term list is not supported for aggregate atoms!");
 	}
 	
@@ -110,7 +112,14 @@ public class AggregateAtom extends Atom {
 
 	@Override
 	public AggregateAtom substitute(Substitution substitution) {
-		return null;
+		return new AggregateAtom(
+				lowerBoundOperator,
+				substitution.substituteIfNotNull(lowerBoundTerm),
+				upperBoundOperator,
+				substitution.substituteIfNotNull(upperBoundTerm),
+				aggregatefunction,
+				substitution.substituteAll(aggregateElements)
+		);
 	}
 
 	@Override
@@ -176,7 +185,7 @@ public class AggregateAtom extends Atom {
 		return upperBoundTerm;
 	}
 
-	public AGGREGATEFUNCTION getAggregatefunction() {
+	public AggregateFunctionSymbol getAggregatefunction() {
 		return aggregatefunction;
 	}
 
@@ -184,14 +193,14 @@ public class AggregateAtom extends Atom {
 		return Collections.unmodifiableList(aggregateElements);
 	}
 
-	public enum AGGREGATEFUNCTION {
+	public enum AggregateFunctionSymbol {
 		COUNT,
 		MAX,
 		MIN,
 		SUM
 	}
 
-	public static class AggregateElement {
+	public static class AggregateElement implements Substitutable<AggregateElement> {
 		final List<Term> elementTerms;
 		final List<Literal> elementLiterals;
 
@@ -234,6 +243,11 @@ public class AggregateAtom extends Atom {
 				occurringVariables.addAll(literal.getNonBindingVariables());
 			}
 			return occurringVariables;
+		}
+
+		@Override
+		public AggregateElement substitute(Substitution substitution) {
+			return new AggregateElement(substitution.substituteAll(elementTerms), substitution.substituteAll(elementLiterals));
 		}
 
 		@Override

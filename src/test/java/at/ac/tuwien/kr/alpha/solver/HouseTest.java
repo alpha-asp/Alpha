@@ -25,18 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import org.antlr.v4.runtime.CharStreams;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -50,60 +40,90 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.test.util.TestUtils;
+
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.ignoreTestForNaiveSolver;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.ignoreTestForNonDefaultDomainIndependentHeuristics;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.runWithTimeout;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests {@link AbstractSolver} using some HRP (House Reconfiguration Problem) test cases.
  *
  */
-public class HouseTest extends AbstractSolverTests {
+public class HouseTest {
 	private final ProgramParser parser = new ProgramParser();
 
-	@Before
-	public void setUp() {
-		ignoreTestForNaiveSolver();
-		assumeTrue(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
+	private static final int DEBUG_TIMEOUT_FACTOR = 5;
+
+	@RegressionTest
+	public void testHouse_emptyconfig_p05t025(RegressionTestConfig cfg) throws IOException {
+		long timeout = 60000L;
 		// test only on one heuristics to save resources during CI
+		ignoreTestForNaiveSolver(cfg);
+		ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHouse("emptyconfig_p05t025", cfg));
 	}
 
-	@Test(timeout = 60000)
-	public void testHouse_emptyconfig_p05t025() throws IOException {
-		testHouse("emptyconfig_p05t025");
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testHouse_emptyconfig_p10t050(RegressionTestConfig cfg) throws IOException {
+		long timeout = 60000L;
+		// test only on one heuristics to save resources during CI
+		ignoreTestForNaiveSolver(cfg);
+		ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHouse("emptyconfig_p10t050", cfg));
 	}
 
-	@Test
-	@Ignore("ignore to save resources during CI")
-	public void testHouse_emptyconfig_p10t050() throws IOException {
-		testHouse("emptyconfig_p10t050");
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testHouse_emptyconfig_p15t075(RegressionTestConfig cfg) throws IOException {
+		long timeout = 60000L;
+		// test only on one heuristics to save resources during CI
+		ignoreTestForNaiveSolver(cfg);
+		ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHouse("emptyconfig_p15t075", cfg));
 	}
 
-	@Test
-	@Ignore("ignore to save resources during CI")
-	public void testHouse_emptyconfig_p15t075() throws IOException {
-		testHouse("emptyconfig_p15t075");
-	}
-	
-	@Test
-	@Ignore("ignore to save resources during CI")
-	public void testHouse_longthings_2_p02t030c3() throws IOException {
-		testHouse("longthings_2_p02t030c3");
-	}
-	
-	@Test
-	@Ignore("ignore to save resources during CI")
-	public void testHouse_longthings_newroom_p02t024c3() throws IOException {
-		testHouse("longthings_newroom_p02t024c3");
-	}
-	
-	@Test
-	@Ignore("ignore to save resources during CI")
-	public void testHouse_switchthingsize_r02t035() throws IOException {
-		testHouse("switchthingsize_r02t035");
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testHouse_longthings_2_p02t030c3(RegressionTestConfig cfg) throws IOException {
+		long timeout = 60000L;
+		// test only on one heuristics to save resources during CI
+		ignoreTestForNaiveSolver(cfg);
+		ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHouse("longthings_2_p02t030c3", cfg));
 	}
 
-	private void testHouse(String instanceId) throws IOException {
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testHouse_longthings_newroom_p02t024c3(RegressionTestConfig cfg) throws IOException {
+		long timeout = 60000L;
+		// test only on one heuristics to save resources during CI
+		ignoreTestForNaiveSolver(cfg);
+		ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHouse("longthings_newroom_p02t024c3", cfg));
+	}
+
+	@RegressionTest
+	@Disabled("disabled to save resources during CI")
+	public void testHouse_switchthingsize_r02t035(RegressionTestConfig cfg) throws IOException {
+		long timeout = 60000L;
+		// test only on one heuristics to save resources during CI
+		ignoreTestForNaiveSolver(cfg);
+		ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
+		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHouse("switchthingsize_r02t035", cfg));
+	}
+
+	private void testHouse(String instanceId, RegressionTestConfig cfg) throws IOException {
 
 		InputProgram parsedProgram = parser
 				.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "House", "house_alpha_2021-02-04.asp")));
@@ -112,7 +132,7 @@ public class HouseTest extends AbstractSolverTests {
 						.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "House", "instances_alpha", instanceId + ".edb"))))
 				.build();
 
-		Solver solver = getInstance(parsedProgram);
+		Solver solver = TestUtils.buildSolverForRegressionTest(parsedProgram, cfg);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		assertTrue(answerSet.isPresent());
 		checkAnswerSet(answerSet.get());

@@ -1,9 +1,6 @@
-package at.ac.tuwien.kr.alpha.grounder;
+package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,13 +8,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.function.Function;
 
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.api.externals.Externals;
 import at.ac.tuwien.kr.alpha.common.program.AbstractProgram;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
-import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
-import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
-import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 
 public class ProgramTransformationTest {
 
@@ -30,6 +29,7 @@ public class ProgramTransformationTest {
 	private ChoiceHeadToNormal choiceToNormal = new ChoiceHeadToNormal();
 	private IntervalTermToIntervalAtom intervalRewriting = new IntervalTermToIntervalAtom();
 
+	@SuppressWarnings("resource")
 	private static String readTestResource(String resource) throws IOException {
 		InputStream is = ProgramTransformationTest.class.getResourceAsStream(TESTFILES_PATH + resource);
 		BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -47,12 +47,12 @@ public class ProgramTransformationTest {
 		try {
 			String inputCode = ProgramTransformationTest.readTestResource(resourceSet + ".in");
 			String expectedResult = ProgramTransformationTest.readTestResource(resourceSet + ".out");
-			InputProgram inputProg = this.alpha.readProgramString(inputCode);
+			InputProgram inputProg = alpha.readProgramString(inputCode, Externals.scan(ProgramTransformationTest.class));
 			I transformInput = prepareFunc.apply(inputProg);
 			String beforeTransformProg = transformInput.toString();
 			O transformedProg = transform.apply(transformInput);
-			Assert.assertEquals("Transformation result doesn't match expected result", expectedResult, transformedProg.toString());
-			Assert.assertEquals("Transformation modified source program (breaks immutability!)", beforeTransformProg, transformInput.toString());
+			assertEquals(expectedResult, transformedProg.toString(), "Transformation result doesn't match expected result");
+			assertEquals(beforeTransformProg, transformInput.toString(), "Transformation modified source program (breaks immutability!)");
 		} catch (Exception ex) {
 			LOGGER.error("Exception in test, nested exception: " + ex.getMessage(), ex);
 			throw new RuntimeException(ex);
@@ -61,12 +61,29 @@ public class ProgramTransformationTest {
 
 	@Test
 	public void choiceHeadToNormalSimpleTest() {
-		this.genericTransformationTest(this.choiceToNormal, Function.identity(), "choice-to-normal.1");
+		genericTransformationTest(choiceToNormal, Function.identity(), "choice-to-normal.1");
 	}
 
 	@Test
 	public void intervalTermToIntervalAtomSimpleTest() {
-		this.genericTransformationTest(this.intervalRewriting, NormalProgram::fromInputProgram, "interval.1");
+		genericTransformationTest(intervalRewriting, NormalProgram::fromInputProgram, "interval.1");
+	}
+
+	@Test
+	public void intervalTermToIntervalAtomExternalAtomTest() {
+		genericTransformationTest(intervalRewriting, NormalProgram::fromInputProgram, "interval-external_atom");
+	}
+
+	@Test
+	public void intervalTermToIntervalAtomComparisonAtomTest() {
+		genericTransformationTest(intervalRewriting, NormalProgram::fromInputProgram, "interval-comparison_atom");
+	}
+
+	@SuppressWarnings("unused")
+	@at.ac.tuwien.kr.alpha.api.externals.Predicate(name = "say_true")
+	public static boolean sayTrue(int val) {
+		// Dummy method so we can have an external in the transformation test.
+		return true;
 	}
 
 }

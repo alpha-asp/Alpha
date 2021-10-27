@@ -1,13 +1,8 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.api.externals.Externals;
-import at.ac.tuwien.kr.alpha.api.externals.Predicate;
-import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +10,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.jupiter.api.Test;
+
+import at.ac.tuwien.kr.alpha.api.externals.Externals;
+import at.ac.tuwien.kr.alpha.api.externals.Predicate;
+import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
 /**
  * Test for basic functionality of various implementations of {@link Atom}.
@@ -67,26 +71,26 @@ public class AtomsTest {
 		InputProgram p1 = parser.parse("bla(blubb, foo(bar)). bla(blubb, foo(bar)).");
 		Atom a1 = p1.getFacts().get(0);
 		Atom a2 = p1.getFacts().get(1);
-		Assert.assertEquals(a1, a2);
+		assertEquals(a1, a2);
 		InputProgram p2 = parser.parse("foo(1, 2, 3, \"bar\"). foo(1, 2, 3, \"bar\").");
 		Atom a3 = p2.getFacts().get(0);
 		Atom a4 = p2.getFacts().get(1);
-		Assert.assertEquals(a3, a4);
+		assertEquals(a3, a4);
 		InputProgram p3 = parser.parse("foo(BAR). foo(BAR).");
 		Atom a5 = p3.getFacts().get(0);
 		Atom a6 = p3.getFacts().get(1);
-		Assert.assertEquals(a5, a6);
+		assertEquals(a5, a6);
 		InputProgram p4 = parser.parse("foo(b, a, r(\"bla\", BLUBB)). foo(b, a, r(\"bla\", BLUBB)).");
 		Atom a7 = p4.getFacts().get(0);
 		Atom a8 = p4.getFacts().get(1);
-		Assert.assertEquals(a7, a8);
+		assertEquals(a7, a8);
 
-		Assert.assertFalse(a1.equals(a3));
-		Assert.assertFalse(a3.equals(a1));
-		Assert.assertFalse(a1.equals(a5));
-		Assert.assertFalse(a5.equals(a1));
-		Assert.assertFalse(a1.equals(a7));
-		Assert.assertFalse(a7.equals(a1));
+		assertFalse(a1.equals(a3));
+		assertFalse(a3.equals(a1));
+		assertFalse(a1.equals(a5));
+		assertFalse(a5.equals(a1));
+		assertFalse(a1.equals(a7));
+		assertFalse(a7.equals(a1));
 	}
 
 	@Test
@@ -109,12 +113,12 @@ public class AtomsTest {
 		Atom ext1 = p1.getRules().get(0).getBody().stream().findFirst().get().getAtom();
 		InputProgram p2 = parser.parse("a :- &isFoo[1].");
 		Atom ext2 = p2.getRules().get(0).getBody().stream().findFirst().get().getAtom();
-		Assert.assertEquals(ext1, ext2);
-		Assert.assertEquals(ext2, ext1);
+		assertEquals(ext1, ext2);
+		assertEquals(ext2, ext1);
 
-		Assert.assertFalse(ext1.equals(null));
-		Assert.assertFalse(ext1.equals("bla"));
-		Assert.assertTrue(ext1.hashCode() == ext2.hashCode());
+		assertFalse(ext1.equals(null));
+		assertFalse(ext1.equals("bla"));
+		assertTrue(ext1.hashCode() == ext2.hashCode());
 	}
 
 	@Test
@@ -122,17 +126,17 @@ public class AtomsTest {
 		InputProgram p = parser.parse("a:- &extWithOutput[1](OUT).");
 		Atom ext = p.getRules().get(0).getBody().stream().findFirst().get().getAtom();
 		assertExternalAtomGround(ext, false);
-		Assert.assertTrue(((ExternalAtom) ext).hasOutput());
+		assertTrue(((ExternalAtom) ext).hasOutput());
 	}
 
 	private void assertBasicAtomGround(Atom a, boolean expectedGround) {
-		Assert.assertTrue(a instanceof BasicAtom);
-		Assert.assertEquals(expectedGround, a.isGround());
+		assertTrue(a instanceof BasicAtom);
+		assertEquals(expectedGround, a.isGround());
 	}
 
 	private void assertExternalAtomGround(Atom a, boolean expectedGround) {
-		Assert.assertTrue(a instanceof ExternalAtom);
-		Assert.assertEquals(expectedGround, a.isGround());
+		assertTrue(a instanceof ExternalAtom);
+		assertEquals(expectedGround, a.isGround());
 	}
 
 }
