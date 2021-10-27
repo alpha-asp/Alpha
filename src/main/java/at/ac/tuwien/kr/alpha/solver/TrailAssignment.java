@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.IntIterator;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicInfluencerAtom;
 import org.slf4j.Logger;
@@ -151,9 +152,15 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	@Override
 	public int getBasicAtomAssignedMBT() {
-		for (int atom = 1; atom <= atomStore.getMaxAtomId(); atom++) {
-			if (getTruth(atom) == MBT && atomStore.get(atom) instanceof BasicAtom) {
-				return atom;
+		for (int atomId = 1; atomId <= atomStore.getMaxAtomId(); atomId++) {
+			if (getTruth(atomId) == MBT) {
+				final Atom atom = atomStore.get(atomId);
+				if (atom instanceof BasicAtom && !(atom instanceof HeuristicInfluencerAtom)) {
+					// It does not make sense to search for a justification for a HeuristicInfluencerAtom.
+					// Whenever a HeuristicInfluencerAtom is assigned M, there must also be an ordinary BasicAtom assigned M.
+					// For these reasons, HeuristicInfluencerAtoms are excluded here.
+					return atomId;
+				}
 			}
 		}
 		throw oops("No BasicAtom is assigned MBT.");
