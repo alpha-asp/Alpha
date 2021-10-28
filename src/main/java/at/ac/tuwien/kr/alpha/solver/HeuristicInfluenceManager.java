@@ -53,10 +53,19 @@ public class HeuristicInfluenceManager extends InfluenceManager {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(HeuristicInfluenceManager.class);
 
-	// Maps heuristic choice points to all atoms that influence them (enablers, disablers, heuristic choice atom itself).
+	/**
+	 * Maps heuristic choice point IDs to heuristic choice points.
+	 */
+	private final Map<Integer, HeuristicChoicePoint> heuristicChoicePoints = new HashMap<>();
+
+	/**
+	 * Maps heuristic choice points to all atoms that influence them (enablers, disablers, heuristic choice atom itself).
+	 */
 	private final Map<Integer, HeuristicChoicePoint> influencers = new HashMap<>();
 
-	// Maps head atoms of heuristics to heuristic choice points of heuristics with those atoms in the head (there might be several)
+	/**
+	 * Maps head atoms of heuristics to heuristic choice points of heuristics with those atoms in the head (there might be several)
+	 */
 	private final MultiValuedMap<Integer, HeuristicChoicePoint> headAtomsToHeuristics = new HashSetValuedHashMap<>();
 
 	public HeuristicInfluenceManager(WritableAssignment assignment) {
@@ -91,7 +100,9 @@ public class HeuristicInfluenceManager extends InfluenceManager {
 		registerCallbackOnChange(headAtom);
 		registerCallbackOnChange(enablers);
 		registerCallbackOnChange(disablers);
+		registerCallbackOnChange(choicePointAtom);
 		HeuristicChoicePoint choicePoint = new HeuristicChoicePoint(choicePointAtom, headAtom, enablers, disablers);
+		addHeuristicChoicePoint(choicePoint);
 		addHeuristicChoicePointToHeadAtomId(choicePoint, headAtom);
 		addHeuristicChoicePointToInfluencers(choicePoint, enablers);
 		addHeuristicChoicePointToInfluencers(choicePoint, disablers);
@@ -106,6 +117,14 @@ public class HeuristicInfluenceManager extends InfluenceManager {
 		}
 	}
 
+	private void addHeuristicChoicePoint(HeuristicChoicePoint heuristicChoicePoint) {
+		heuristicChoicePoints.put(heuristicChoicePoint.atom, heuristicChoicePoint);
+	}
+
+	private void addHeuristicChoicePointToHeadAtomId(HeuristicChoicePoint heuristicChoicePoint, int headAtomId) {
+		headAtomsToHeuristics.put(headAtomId, heuristicChoicePoint);
+	}
+
 	private void addHeuristicChoicePointToInfluencers(HeuristicChoicePoint heuristicChoicePoint, Integer... atoms) {
 		for (Integer atom : atoms) {
 			if (atom != null) {
@@ -116,10 +135,6 @@ public class HeuristicInfluenceManager extends InfluenceManager {
 		}
 	}
 
-	private void addHeuristicChoicePointToHeadAtomId(HeuristicChoicePoint heuristicChoicePoint, int headAtomId) {
-		headAtomsToHeuristics.put(headAtomId, heuristicChoicePoint);
-	}
-
 	boolean isActive(int atom) {
 		HeuristicChoicePoint choicePoint = influencers.get(atom);
 		return choicePoint != null && choicePoint.isActive && choicePoint.atom == atom;
@@ -127,14 +142,17 @@ public class HeuristicInfluenceManager extends InfluenceManager {
 
 	void callbackOnChanged(int atom) {
 		LOGGER.trace("Callback received on influencer atom: {}", atom);
-		HeuristicChoicePoint influencedHeuristic = influencers.get(atom);
+		final HeuristicChoicePoint heuristicChoicePoint = heuristicChoicePoints.get(atom);
+		if (heuristicChoicePoint != null) {
+			heuristicChoicePoint.recomputeActive();
+		}
+		final HeuristicChoicePoint influencedHeuristic = influencers.get(atom);
 		if (influencedHeuristic != null) {
 			influencedHeuristic.recomputeActive();
 		}
 		for (HeuristicChoicePoint heuristicForHead : headAtomsToHeuristics.get(atom)) {
 			heuristicForHead.recomputeActive();
 		}
-
 	}
 
 	private class HeuristicChoicePoint {
