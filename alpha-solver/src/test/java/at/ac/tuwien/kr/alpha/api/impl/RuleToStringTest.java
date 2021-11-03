@@ -23,7 +23,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.grounder;
+package at.ac.tuwien.kr.alpha.api.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -44,7 +44,6 @@ import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 /**
  * Tests {@link BasicRule#toString()} and {@link InternalRule#toString()}.
  */
-// TODO this is a functional test that wants to be a unit test (and should be integrated with RuleTest?!)
 public class RuleToStringTest {
 	private final ProgramParser parser = new ProgramParserImpl();
 	

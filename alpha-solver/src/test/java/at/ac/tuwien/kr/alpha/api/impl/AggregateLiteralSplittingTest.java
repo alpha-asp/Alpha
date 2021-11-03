@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
+package at.ac.tuwien.kr.alpha.api.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.core.test.util.RuleParser;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateLiteralSplitting;
 
 // TODO this is a functional test that wants to be a unit test
 public class AggregateLiteralSplittingTest {

@@ -37,6 +37,7 @@ import java.util.Set;
  *
  */
 // TODO what the heck??
+// TODO this can go - test only needs to be in proper package
 public class TestableChoiceManager extends ChoiceManager {
 
 	public TestableChoiceManager(WritableAssignment assignment, NoGoodStore store) {

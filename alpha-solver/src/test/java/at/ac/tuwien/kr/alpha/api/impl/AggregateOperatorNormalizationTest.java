@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
+package at.ac.tuwien.kr.alpha.api.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -17,7 +17,7 @@ import at.ac.tuwien.kr.alpha.api.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.test.util.RuleParser;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateOperatorNormalization;
 
 // TODO this is a functional test that wants to be a unit test
 public class AggregateOperatorNormalizationTest {
