@@ -27,14 +27,14 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -80,7 +80,8 @@ public class GroundingOfHeuristicsTest {
 				"*{-(HeuOn(\"0\", \"f\")), -(a(2))}",
 				"*{-(HeuOff(\"0\", \"t\")), +(a(3))}",
 				"*{-(HeuOff(\"0\", \"tm\")), +(a(4))}",
-				"*{-(HeuOff(\"0\", \"f\")), -(a(5))}"
+				"*{-(HeuOff(\"0\", \"f\")), -(a(5))}",
+				"*{-(HeuOff(\"0\", \"tm\")), +(_nb(\"1\", 1))}"
 		);
 		testGenerateHeuristicNoGoods(inputProgram, expectedNoGoodsToString);
 	}
@@ -91,7 +92,8 @@ public class GroundingOfHeuristicsTest {
 				+ "{ guess(N) } :- fact(N)."
 				+ "#heuristic guess(2) : guess(1), T fact(1).");
 		final Set<String> expectedNoGoodsToString = asSet(
-				"*{-(HeuOn(\"0\", \"tm\")), +(guess(1))}"
+				"*{-(HeuOn(\"0\", \"tm\")), +(guess(1))}",
+				"*{-(HeuOff(\"0\", \"tm\")), +(_nguess(\"1\", 2))}"
 		);
 		testGenerateHeuristicNoGoods(inputProgram, expectedNoGoodsToString);
 	}
@@ -102,7 +104,8 @@ public class GroundingOfHeuristicsTest {
 				+ "{ guess(N) } :- fact(N)."
 				+ "#heuristic guess(2) : guess(1), T fact(1).");
 		final Set<String> expectedNoGoodsToString = asSet(
-				"*{-(HeuOn(\"0\", \"tm\")), +(guess(1))}"
+				"*{-(HeuOn(\"0\", \"tm\")), +(guess(1))}",
+				"*{-(HeuOff(\"0\", \"tm\")), +(_nguess(\"1\", 2))}"
 		);
 		testGenerateHeuristicNoGoods(inputProgram, expectedNoGoodsToString);
 	}
@@ -113,7 +116,8 @@ public class GroundingOfHeuristicsTest {
 				+ "{ guess(N) } :- fact(N)."
 				+ "#heuristic guess(2) : guess(1), MT fact(1).");
 		final Set<String> expectedNoGoodsToString = asSet(
-				"*{-(HeuOn(\"0\", \"tm\")), +(guess(1))}"
+				"*{-(HeuOn(\"0\", \"tm\")), +(guess(1))}",
+				"*{-(HeuOff(\"0\", \"tm\")), +(_nguess(\"1\", 2))}"
 		);
 		testGenerateHeuristicNoGoods(inputProgram, expectedNoGoodsToString);
 	}
@@ -160,7 +164,8 @@ public class GroundingOfHeuristicsTest {
 				+ "{ guess(N) } :- fact(N)."
 				+ "#heuristic guess(2) : guess(1), not F fact(1).");
 		final Set<String> expectedNoGoodsToString = asSet(
-				"*{-(HeuOn(\"0\", \"tm\")), +(guess(1))}"
+				"*{-(HeuOn(\"0\", \"tm\")), +(guess(1))}",
+				"*{-(HeuOff(\"0\", \"tm\")), +(_nguess(\"1\", 2))}"
 		);
 		testGenerateHeuristicNoGoods(inputProgram, expectedNoGoodsToString);
 	}
@@ -198,7 +203,8 @@ public class GroundingOfHeuristicsTest {
 				+ "{ guess(N) } :- fact(N)."
 				+ "#heuristic guess(2) : guess(1), F fact(0).");
 		final Set<String> expectedNoGoodsToString = asSet(
-				"*{-(HeuOn(\"0\", \"tm\")), +(guess(1))}"
+				"*{-(HeuOn(\"0\", \"tm\")), +(guess(1))}",
+				"*{-(HeuOff(\"0\", \"tm\")), +(_nguess(\"1\", 2))}"
 		);
 		testGenerateHeuristicNoGoods(inputProgram, expectedNoGoodsToString);
 	}
@@ -209,7 +215,8 @@ public class GroundingOfHeuristicsTest {
 				+ "{ guess(N) } :- fact(N)."
 				+ "#heuristic guess(2) : guess(1), not T fact(0).");
 		final Set<String> expectedNoGoodsToString = asSet(
-				"*{-(HeuOn(\"0\", \"tm\")), +(guess(1))}"
+				"*{-(HeuOn(\"0\", \"tm\")), +(guess(1))}",
+				"*{-(HeuOff(\"0\", \"tm\")), +(_nguess(\"1\", 2))}"
 		);
 		testGenerateHeuristicNoGoods(inputProgram, expectedNoGoodsToString);
 	}
@@ -220,7 +227,8 @@ public class GroundingOfHeuristicsTest {
 				+ "{ guess(N) } :- fact(N)."
 				+ "#heuristic guess(2) : guess(1), not T fact(0).");
 		final Set<String> expectedNoGoodsToString = asSet(
-				"*{-(HeuOn(\"0\", \"tm\")), +(guess(1))}"
+				"*{-(HeuOn(\"0\", \"tm\")), +(guess(1))}",
+				"*{-(HeuOff(\"0\", \"tm\")), +(_nguess(\"1\", 2))}"
 		);
 		testGenerateHeuristicNoGoods(inputProgram, expectedNoGoodsToString);
 	}
@@ -231,7 +239,8 @@ public class GroundingOfHeuristicsTest {
 				+ "{ guess(N) } :- fact(N)."
 				+ "#heuristic guess(2) : guess(1), not TM fact(0).");
 		final Set<String> expectedNoGoodsToString = asSet(
-				"*{-(HeuOn(\"0\", \"tm\")), +(guess(1))}"
+				"*{-(HeuOn(\"0\", \"tm\")), +(guess(1))}",
+				"*{-(HeuOff(\"0\", \"tm\")), +(_nguess(\"1\", 2))}"
 		);
 		testGenerateHeuristicNoGoods(inputProgram, expectedNoGoodsToString);
 	}
