@@ -116,9 +116,18 @@ public class HeuristicAtom extends Atom {
 		));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public ChoiceAtom withTerms(List<Term> terms) {
-		throw new UnsupportedOperationException("Changing terms is not supported for HeuristicAtoms!");
+	public HeuristicAtom withTerms(List<Term> terms) {
+		if (terms.size() != 6) {
+			throw new IllegalArgumentException("Length of terms list does not fit " + this.getClass().getSimpleName() + ": " + terms);
+		}
+		final WeightAtLevel weightAtLevel = new WeightAtLevel(terms.get(0), terms.get(1));
+		final ThriceTruth headSign = ((ConstantTerm<Boolean>) terms.get(2)).getObject() ? ThriceTruth.TRUE : ThriceTruth.FALSE;
+		final FunctionTerm headAtom = (FunctionTerm) terms.get(3);
+		final FunctionTerm positiveCondition = (FunctionTerm) terms.get(4);
+		final FunctionTerm negativeCondition = (FunctionTerm) terms.get(5);
+		return new HeuristicAtom(weightAtLevel, headSign, headAtom, positiveCondition, negativeCondition);
 	}
 
 	@Override
