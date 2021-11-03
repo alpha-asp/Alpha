@@ -48,6 +48,7 @@ import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 import at.ac.tuwien.kr.alpha.grounder.Unification;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -122,21 +123,22 @@ public class HeuristicDirectiveConditionEnhancement extends ProgramTransformatio
 		}
 		for (BasicRule headDerivingRule : headDerivingRules) {
 			HeuristicDirectiveBody newDirectiveBody = new HeuristicDirectiveBody(
-					joinAtoms(directive.getBody().getBodyAtomsPositive(), headDerivingRule.getPositiveBody()),
-					joinAtoms(directive.getBody().getBodyAtomsNegative(), headDerivingRule.getNegativeBody()));
+					joinAtoms(directive.getBody().getBodyAtomsPositive(), headDerivingRule.getPositiveBody(), HeuristicDirectiveAtom.SIGNS_T),
+					joinAtoms(directive.getBody().getBodyAtomsNegative(), headDerivingRule.getNegativeBody(), HeuristicDirectiveAtom.DEFAULT_BODY_SIGNS));
 			newDirectiveBody = unify(newDirectiveBody, directive.getHead().getAtom(), headDerivingRule.getHead());
 			newHeuristicDirectives.add(new HeuristicDirective(directive.getHead(), newDirectiveBody, directive.getWeightAtLevel()));
 		}
 	}
 
-	private Collection<HeuristicDirectiveAtom> joinAtoms(Collection<HeuristicDirectiveAtom> existingHeuristicCondition, Collection<Literal> ruleBodyToAdd) {
+	private Collection<HeuristicDirectiveAtom> joinAtoms(Collection<HeuristicDirectiveAtom> existingHeuristicCondition, Collection<Literal> ruleBodyToAdd, Set<ThriceTruth> defaultSignSet) {
 		final Set<HeuristicDirectiveAtom> newHeuristicCondition = new HashSet<>(existingHeuristicCondition);
 		for (Literal literal : ruleBodyToAdd) {
 			final Atom atom = literal.getAtom();
 			if (!(atom instanceof BasicAtom || atom instanceof ComparisonAtom || atom instanceof AggregateAtom)) {
 				throw new UnsupportedOperationException("Body atom " + atom + " not yet supported by " + this.getClass().getSimpleName());
 			}
-			newHeuristicCondition.add(HeuristicDirectiveAtom.body(atom));
+			final Set<ThriceTruth> signSet = atom instanceof BasicAtom ? defaultSignSet : null;
+			newHeuristicCondition.add(HeuristicDirectiveAtom.body(signSet, atom));
 		}
 		return newHeuristicCondition;
 	}

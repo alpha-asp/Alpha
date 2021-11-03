@@ -25,11 +25,12 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
+
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.common.EnumerationDirective;
 import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
@@ -61,8 +62,8 @@ public class HeuristicDirectiveConditionEnhancementTest {
 
 		program = new ChoiceHeadToNormal().apply(program);
 		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
-		Collection<HeuristicDirective> expectedHeuristicDirectives = Arrays.asList(
-				parseHeuristicDirectiveAndAddNegativeLiteral("#heuristic b(N) : a(N), c(N). [N@2]", negativeChoiceAtom)
+		Collection<HeuristicDirective> expectedHeuristicDirectives = Collections.singletonList(
+				parseHeuristicDirectiveAndAddNegativeLiteral("#heuristic b(N) : a(N), T c(N). [N@2]", negativeChoiceAtom)
 		);
 		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
 	}
@@ -76,8 +77,8 @@ public class HeuristicDirectiveConditionEnhancementTest {
 
 		program = new ChoiceHeadToNormal().apply(program);
 		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
-		Collection<HeuristicDirective> expectedHeuristicDirectives = Arrays.asList(
-				parseHeuristicDirectiveAndAddNegativeLiteral("#heuristic b(N,M) : a(N), d(M), c(N). [N@2]", negativeChoiceAtom)
+		Collection<HeuristicDirective> expectedHeuristicDirectives = Collections.singletonList(
+				parseHeuristicDirectiveAndAddNegativeLiteral("#heuristic b(N,M) : a(N), d(M), T c(N), T d(M). [N@2]", negativeChoiceAtom)
 		);
 		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
 	}
@@ -92,8 +93,8 @@ public class HeuristicDirectiveConditionEnhancementTest {
 		program = new ChoiceHeadToNormal().apply(program);
 		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
 		Collection<HeuristicDirective> expectedHeuristicDirectives = Arrays.asList(
-				programPartParser.parseHeuristicDirective("#heuristic b(N) : a(N), c(N), not d(N). [N@2]"),
-				programPartParser.parseHeuristicDirective("#heuristic b(N) : a(N), not d(N). [N@2]")
+				programPartParser.parseHeuristicDirective("#heuristic b(N) : a(N), T c(N), not d(N). [N@2]"),
+				programPartParser.parseHeuristicDirective("#heuristic b(N) : a(N), T a(N), not d(N). [N@2]")
 		);
 		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
 	}
@@ -109,8 +110,8 @@ public class HeuristicDirectiveConditionEnhancementTest {
 		program = new ChoiceHeadToNormal().apply(program);
 		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
 		Collection<HeuristicDirective> expectedHeuristicDirectives = Arrays.asList(
-				programPartParser.parseHeuristicDirective("#heuristic b(N) : a(N), c(N), not d(N). [N@2]"),
-				programPartParser.parseHeuristicDirective("#heuristic b(N) : a(N), not d(N). [N@2]")
+				programPartParser.parseHeuristicDirective("#heuristic b(N) : a(N), T c(N), not d(N). [N@2]"),
+				programPartParser.parseHeuristicDirective("#heuristic b(N) : a(N), T a(N), not d(N). [N@2]")
 		);
 		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
 	}
@@ -126,8 +127,8 @@ public class HeuristicDirectiveConditionEnhancementTest {
 		program = new ChoiceHeadToNormal().apply(program);
 		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
 		Collection<HeuristicDirective> expectedHeuristicDirectives = Arrays.asList(
-				parseHeuristicDirectiveAndAddNegativeLiteral("#heuristic b(N) : a(N), c(N). [N@2]", negativeChoiceAtom),
-				parseHeuristicDirectiveAndAddNegativeLiteral("#heuristic b(N) : a(N), not d(N). [N@2]", negativeChoiceAtom)
+				parseHeuristicDirectiveAndAddNegativeLiteral("#heuristic b(N) : a(N), T c(N). [N@2]", negativeChoiceAtom),
+				parseHeuristicDirectiveAndAddNegativeLiteral("#heuristic b(N) : a(N), T a(N), not d(N). [N@2]", negativeChoiceAtom)
 		);
 		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
 	}
@@ -143,8 +144,8 @@ public class HeuristicDirectiveConditionEnhancementTest {
 		program = new ChoiceHeadToNormal().apply(program);
 		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
 		Collection<HeuristicDirective> expectedHeuristicDirectives = Arrays.asList(
-				parseHeuristicDirectiveAndAddNegativeLiteral("#heuristic b(N) : a(N), c(N). [N@2]", negativeChoiceAtom),
-				parseHeuristicDirectiveAndAddNegativeLiteral("#heuristic b(N) : a(N), not d(N). [N@2]", negativeChoiceAtom)
+				parseHeuristicDirectiveAndAddNegativeLiteral("#heuristic b(N) : a(N), T c(N). [N@2]", negativeChoiceAtom),
+				parseHeuristicDirectiveAndAddNegativeLiteral("#heuristic b(N) : a(N), T a(N), not d(N). [N@2]", negativeChoiceAtom)
 		);
 		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
 	}
@@ -158,8 +159,8 @@ public class HeuristicDirectiveConditionEnhancementTest {
 
 		program = new ChoiceHeadToNormal().apply(program);
 		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
-		Collection<HeuristicDirective> expectedHeuristicDirectives = Arrays.asList(
-				parseHeuristicDirectiveAndAddNegativeLiteral("#heuristic b(N) : a(N), b(N), N = #sum { Y : p(Y) }, 1 < #count { Z : q(N,Z) }. [N@2]", negativeChoiceAtom)
+		Collection<HeuristicDirective> expectedHeuristicDirectives = Collections.singletonList(
+				parseHeuristicDirectiveAndAddNegativeLiteral("#heuristic b(N) : a(N), T a(N), T b(N), N = #sum { Y : p(Y) }, 1 < #count { Z : q(N,Z) }. [N@2]", negativeChoiceAtom)
 		);
 		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
 	}
@@ -173,8 +174,8 @@ public class HeuristicDirectiveConditionEnhancementTest {
 
 		program = new ChoiceHeadToNormal().apply(program);
 		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
-		Collection<HeuristicDirective> expectedHeuristicDirectives = Arrays.asList(
-				parseHeuristicDirectiveAndAddNegativeLiteral("#heuristic b(N) : a(N), b(X), N <= X. [N@2]", negativeChoiceAtom)
+		Collection<HeuristicDirective> expectedHeuristicDirectives = Collections.singletonList(
+				parseHeuristicDirectiveAndAddNegativeLiteral("#heuristic b(N) : a(N), T a(N), T b(X), N <= X. [N@2]", negativeChoiceAtom)
 		);
 		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
 	}

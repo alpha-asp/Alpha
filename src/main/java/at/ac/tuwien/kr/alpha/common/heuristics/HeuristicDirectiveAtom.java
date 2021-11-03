@@ -26,19 +26,19 @@
 
 package at.ac.tuwien.kr.alpha.common.heuristics;
 
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
+
 import at.ac.tuwien.kr.alpha.common.Substitutable;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
-import org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-
+import static at.ac.tuwien.kr.alpha.Util.asSet;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
@@ -46,7 +46,8 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 public class HeuristicDirectiveAtom implements Comparable<HeuristicDirectiveAtom>, Substitutable<HeuristicDirectiveAtom> {
 
 	public static final ThriceTruth DEFAULT_HEAD_SIGN = TRUE;
-	public static final Set<ThriceTruth> DEFAULT_BODY_SIGNS = new HashSet<>(Arrays.asList(TRUE, MBT));
+	public static final Set<ThriceTruth> DEFAULT_BODY_SIGNS = asSet(TRUE, MBT);
+	public static final Set<ThriceTruth> SIGNS_T = asSet(TRUE);
 
 	private final Set<ThriceTruth> signs;
 	private final Atom atom;
