@@ -27,6 +27,11 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.NoGoodCreator;
@@ -40,11 +45,7 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
+import static at.ac.tuwien.kr.alpha.common.AtomToFunctionTermConverter.toAtom;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
 import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
 import static java.util.Collections.emptyList;
@@ -111,7 +112,7 @@ public class NoGoodGenerator {
 	}
 
 	private Collection<NoGood> generateNoGoodsForHeuristicRule(HeuristicAtom groundHeadAtom, RuleAtom bodyAtom) {
-		BasicAtom groundHeuristicHead = groundHeadAtom.getHeadAtom().toAtom();
+		BasicAtom groundHeuristicHead = toAtom(groundHeadAtom.getHeadAtom());
 		final int heuristicHeadId = atomStore.putIfAbsent(groundHeuristicHead);
 
 		final Collection<NoGood> heuristicNoGoods = choiceRecorder.generateHeuristicNoGoods(groundHeadAtom, bodyAtom, heuristicHeadId, program);

@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2020, the Alpha Team.
+/*
+ * Copyright (c) 2016-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -27,16 +27,15 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
+import java.util.List;
+import java.util.Set;
+
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Substitutable;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * An Atom is the common superclass of all representations of ASP atoms used by Alpha.
@@ -92,13 +91,6 @@ public abstract class Atom implements Comparable<Atom>, Substitutable<Atom> {
 	 * @return a literal that is positive iff the given parameter is true.
 	 */
 	public abstract Literal toLiteral(boolean positive);
-
-	/**
-	 * Converts this atom to a function term (which is needed if the atom is to be nested in another term)
-	 */
-	public FunctionTerm toFunctionTerm() {
-		throw new UnsupportedOperationException(this + " cannot be converted to a function term.");
-	}
 
 	public Atom renameVariables(String newVariablePrefix) {
 		Unifier renamingSubstitution = new Unifier();

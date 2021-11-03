@@ -25,6 +25,9 @@
  */
 package at.ac.tuwien.kr.alpha.common.heuristics;
 
+import java.util.Comparator;
+import java.util.Objects;
+
 import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
 import at.ac.tuwien.kr.alpha.common.WeightAtLevel;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -32,8 +35,7 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
-import java.util.Comparator;
-import java.util.Objects;
+import static at.ac.tuwien.kr.alpha.common.AtomToFunctionTermConverter.toAtom;
 
 /**
  * Holds values defined by a {@link HeuristicDirective} to steer domain-specific heuristic choice for a single ground heuristic directive.
@@ -110,7 +112,7 @@ public class HeuristicDirectiveValues {
 	@SuppressWarnings("unchecked")
 	public static HeuristicDirectiveValues fromHeuristicAtom(HeuristicAtom groundHeuristicAtom, int headAtomId) {
 		WeightAtLevel weightAtLevel = groundHeuristicAtom.getWeightAtLevel();
-		BasicAtom groundHeuristicHead = groundHeuristicAtom.getHeadAtom().toAtom();
+		BasicAtom groundHeuristicHead = toAtom(groundHeuristicAtom.getHeadAtom());
 		return new HeuristicDirectiveValues(headAtomId, groundHeuristicHead, ((ConstantTerm<Integer>)weightAtLevel.getWeight()).getObject(), ((ConstantTerm<Integer>)weightAtLevel.getLevel()).getObject(), groundHeuristicAtom.getHeadSign().toBoolean());
 	}
 	

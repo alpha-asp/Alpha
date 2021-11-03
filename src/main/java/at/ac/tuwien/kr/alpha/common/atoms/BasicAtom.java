@@ -27,14 +27,12 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
@@ -113,11 +111,6 @@ public class BasicAtom extends Atom implements VariableNormalizableAtom {
 	@Override
 	public BasicLiteral toLiteral(boolean positive) {
 		return new BasicLiteral(this, positive);
-	}
-
-	@Override
-	public FunctionTerm toFunctionTerm() {
-		return FunctionTerm.getInstance(predicate.getName(), new ArrayList<>(terms));
 	}
 
 	@Override

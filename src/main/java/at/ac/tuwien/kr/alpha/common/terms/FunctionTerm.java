@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2018, the Alpha Team.
+/*
+ * Copyright (c) 2016-2018, 2020-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -27,13 +27,14 @@
  */
 package at.ac.tuwien.kr.alpha.common.terms;
 
-import at.ac.tuwien.kr.alpha.common.Interner;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
-import java.util.*;
+import at.ac.tuwien.kr.alpha.common.Interner;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 
@@ -102,14 +103,6 @@ public class FunctionTerm extends Term {
 			groundTermList.add(term.substitute(substitution));
 		}
 		return FunctionTerm.getInstance(symbol, groundTermList);
-	}
-
-	/**
-	 * Converts a function term back to an atom.
-	 * @see Atom#toFunctionTerm()
-	 */
-	public BasicAtom toAtom() {
-		return new BasicAtom(Predicate.getInstance(symbol, terms.size()), terms);
 	}
 
 	@Override

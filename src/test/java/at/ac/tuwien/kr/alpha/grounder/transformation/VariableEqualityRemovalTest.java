@@ -25,14 +25,15 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.jupiter.api.Test;
+
 import at.ac.tuwien.kr.alpha.common.WeightAtLevel;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
@@ -50,6 +51,7 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
 
 import static at.ac.tuwien.kr.alpha.Util.asSet;
+import static at.ac.tuwien.kr.alpha.common.AtomToFunctionTermConverter.toFunctionTerm;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -98,7 +100,7 @@ public class VariableEqualityRemovalTest {
 			}
 		}
 
-		final FunctionTerm functionTerm = atomA.toFunctionTerm();
+		final FunctionTerm functionTerm = toFunctionTerm((BasicAtom) atomA);
 		final String strFunctionTermBeforeTransformation = functionTerm.toString();
 
 		new VariableEqualityRemoval().apply(inputProgram);

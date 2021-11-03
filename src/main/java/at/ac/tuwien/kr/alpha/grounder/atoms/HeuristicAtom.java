@@ -27,6 +27,14 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -42,14 +50,8 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
+import static at.ac.tuwien.kr.alpha.common.AtomToFunctionTermConverter.toAtom;
+import static at.ac.tuwien.kr.alpha.common.AtomToFunctionTermConverter.toFunctionTerm;
 import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.toName;
 import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.toSignSet;
 
@@ -202,7 +204,7 @@ public class HeuristicAtom extends Atom {
 		return new HeuristicAtom(
 				heuristicDirective.getWeightAtLevel(),
 				heuristicDirective.getHead().getSigns().iterator().next(),
-				heuristicDirective.getHead().getAtom().toFunctionTerm(),
+				toFunctionTerm((BasicAtom) heuristicDirective.getHead().getAtom()),
 				conditionToFunctionTerm(heuristicDirective.getBody().getBodyAtomsPositive(), FUNCTION_POSITIVE_CONDITION),
 				conditionToFunctionTerm(heuristicDirective.getBody().getBodyAtomsNegative(), FUNCTION_NEGATIVE_CONDITION)
 		);
@@ -214,7 +216,7 @@ public class HeuristicAtom extends Atom {
 			final Atom atom = heuristicDirectiveAtom.getAtom();
 			if (atom instanceof BasicAtom) {
 				String atomFunctionName = toName(heuristicDirectiveAtom.getSigns());
-				terms.add(FunctionTerm.getInstance(atomFunctionName, atom.toFunctionTerm()));
+				terms.add(FunctionTerm.getInstance(atomFunctionName, toFunctionTerm((BasicAtom) atom)));
 			}
 		}
 		return FunctionTerm.getInstance(topLevelFunctionName, terms);
@@ -226,7 +228,7 @@ public class HeuristicAtom extends Atom {
 		for (Term term : terms) {
 			final FunctionTerm termHeuristicDirectiveAtom = (FunctionTerm) term;
 			final Set<ThriceTruth> signSet = toSignSet(termHeuristicDirectiveAtom.getSymbol());
-			condition.add(HeuristicDirectiveAtom.body(signSet, ((FunctionTerm)termHeuristicDirectiveAtom.getTerms().get(0)).toAtom()));
+			condition.add(HeuristicDirectiveAtom.body(signSet, toAtom((FunctionTerm)termHeuristicDirectiveAtom.getTerms().get(0))));
 		}
 		return condition;
 	}
