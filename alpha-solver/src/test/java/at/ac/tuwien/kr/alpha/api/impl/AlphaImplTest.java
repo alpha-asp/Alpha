@@ -80,7 +80,7 @@ import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
-// TODO functional test
+// TODO This is a functional test and should not be run with standard unit tests
 public class AlphaImplTest {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(AspStandardLibrary.class);

@@ -26,7 +26,7 @@ import at.ac.tuwien.kr.alpha.commons.externals.AspStandardLibrary;
 import at.ac.tuwien.kr.alpha.commons.externals.Externals;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
-// TODO functional test
+// // TODO This is a functional test and should not be run with standard unit tests
 public class FixedInterpretationLiteralsTest {
 
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate

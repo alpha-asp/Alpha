@@ -34,7 +34,7 @@ import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
-// TODO this is a functional test
+// TODO This is a functional test and should not be run with standard unit tests
 public class StratifiedEvaluationRegressionTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(StratifiedEvaluationRegressionTest.class);

@@ -42,7 +42,7 @@ import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
  * Tests {@link AbstractSolver} using Omiga benchmark problems.
  *
  */
-// TODO this is a functional test
+// TODO This is a functional test and should not be run with standard unit tests
 public class OmigaBenchmarksTest {
 
 	@SuppressWarnings("unused")

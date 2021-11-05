@@ -22,7 +22,7 @@ import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 
-// TODO this is a functional test (or integration?)
+// TODO This is a functional test and should not be run with standard unit tests
 public class AggregateRewritingContextTest {
 
 	//@formatter:off

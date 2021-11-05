@@ -40,7 +40,7 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderMockWithBasicProgram;
 
-//TODO this is a functional test (or integration?)
+// TODO This is a functional test and should not be run with standard unit tests
 public class SolverStatisticsTests {
 
 	private AtomStore atomStore;

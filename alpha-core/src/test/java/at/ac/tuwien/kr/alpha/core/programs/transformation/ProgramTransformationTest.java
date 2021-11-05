@@ -19,7 +19,7 @@ import at.ac.tuwien.kr.alpha.commons.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 
-// TODO this is a functional test (but seems ok)
+// TODO This is a functional test and should not be run with standard unit tests
 public class ProgramTransformationTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ProgramTransformationTest.class);

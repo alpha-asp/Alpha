@@ -25,7 +25,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.atom;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -46,6 +45,7 @@ import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.ArithmeticOperator;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
@@ -371,7 +371,7 @@ public class NaiveGrounderTest {
 		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, p -> true,
 				GrounderHeuristicsConfiguration.permissive(), true);
 
-		int b = atomStore.putIfAbsent(atom("b", 1));
+		int b = atomStore.putIfAbsent(Atoms.newBasicAtom(Predicates.getPredicate("b", 1), Terms.newConstant(1)));
 		currentAssignment.growForMaxAtomId();
 		currentAssignment.assign(b, bTruth);
 
@@ -609,11 +609,11 @@ public class NaiveGrounderTest {
 
 		int[] bAtomIDs = new int[truthsOfB.length];
 		for (int i = 0; i < truthsOfB.length; i++) {
-			int[] bTerms = new int[arityOfB];
+			List<Term> bTerms = new ArrayList<>();
 			for (int n = 0; n < arityOfB; n++) {
-				bTerms[n] = (n == arityOfB - 1) ? i + 1 : startingInstance;
+				bTerms.add(Terms.newConstant((n == arityOfB - 1) ? i + 1 : startingInstance));
 			}
-			bAtomIDs[i] = atomStore.putIfAbsent(atom("b", bTerms));
+			bAtomIDs[i] = atomStore.putIfAbsent(Atoms.newBasicAtom(Predicates.getPredicate("b", bTerms.size()), bTerms));
 		}
 		addAtomsToWorkingMemoryWithoutChangingTheAssignment(atomStore, grounder, bAtomIDs);
 		assign(currentAssignment, bAtomIDs, truthsOfB);

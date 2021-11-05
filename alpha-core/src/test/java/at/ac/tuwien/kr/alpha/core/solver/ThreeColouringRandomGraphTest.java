@@ -45,7 +45,7 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
-// TODO functional test
+// TODO This is a functional test and should not be run with standard unit tests
 public class ThreeColouringRandomGraphTest {
 	
 	private static final long DEBUG_TIMEOUT_FACTOR = 5;

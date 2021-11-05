@@ -55,7 +55,7 @@ import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
  * In Theory and Practice of Logic Programming, pp. 1-45. DOI:
  * 10.1017/S1471068416000569
  */
-// TODO functional test
+// TODO This is a functional test and should not be run with standard unit tests
 public class ThreeColouringTestWithRandom {
 	
 	private static final long DEBUG_TIMEOUT_FACTOR = 5;

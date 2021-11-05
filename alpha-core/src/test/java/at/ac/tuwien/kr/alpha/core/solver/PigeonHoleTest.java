@@ -42,7 +42,7 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 /**
  * Tests {@link AbstractSolver} using some pigeon-hole test cases (see https://en.wikipedia.org/wiki/Pigeonhole_principle).
  */
-// TODO this is a functional test
+// TODO This is a functional test and should not be run with standard unit tests
 public class PigeonHoleTest {
 	
 	private static final long DEBUG_TIMEOUT_FACTOR = 5;

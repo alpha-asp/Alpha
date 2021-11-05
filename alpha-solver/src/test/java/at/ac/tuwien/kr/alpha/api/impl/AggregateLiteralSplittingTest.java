@@ -11,7 +11,7 @@ import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateLiteralSplitting;
 
-// TODO this is a functional test (or integration?)
+// TODO This is a functional test and should not be run with standard unit tests
 public class AggregateLiteralSplittingTest {
 
 	//@formatter:off

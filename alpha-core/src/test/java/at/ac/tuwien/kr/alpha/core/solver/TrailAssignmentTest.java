@@ -52,7 +52,6 @@ import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 /**
  * Copyright (c) 2018-2020, the Alpha Team.
  */
-// TODO functional test
 public class TrailAssignmentTest {
 	private final TrailAssignment assignment;
 

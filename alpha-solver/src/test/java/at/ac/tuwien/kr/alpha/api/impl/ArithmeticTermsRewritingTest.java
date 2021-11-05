@@ -30,7 +30,7 @@ import at.ac.tuwien.kr.alpha.core.programs.transformation.ArithmeticTermsRewriti
 /**
  * Copyright (c) 2021, the Alpha Team.
  */
-// TODO this is a functional test (or integration?)
+// TODO This is a functional test and should not be run with standard unit tests
 public class ArithmeticTermsRewritingTest {
 
 	private final Map<String, PredicateInterpretation> externalsOfThisClass = Externals.scan(ArithmeticTermsRewritingTest.class);

@@ -7,7 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.terms.ArithmeticOperator;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
@@ -143,5 +146,37 @@ public class UnificationTest {
 				Terms.newFunctionTerm("f", Terms.newSymbolicConstant("a"), Terms.newSymbolicConstant("b")));
 		Unifier unifier = Unification.unifyAtoms(left, right);
 		assertNull(unifier);
+	}
+
+	@Test
+	public void extendUnifier() {
+		VariableTerm varX = Terms.newVariable("X");
+		VariableTerm varY = Terms.newVariable("Y");
+		Unifier sub1 = new Unifier();
+		sub1.put(varX, varY);
+		Unifier sub2 = new Unifier();
+		sub2.put(varY, Terms.newConstant("a"));
+
+		sub1.extendWith(sub2);
+		BasicAtom atom1 = Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newVariable("X"));
+
+		Atom atomSubstituted = atom1.substitute(sub1);
+		assertEquals(Terms.newConstant("a"), atomSubstituted.getTerms().get(0));
+	}
+
+	@Test
+	public void mergeUnifierIntoLeft() {
+		VariableTerm varX = Terms.newVariable("X");
+		VariableTerm varY = Terms.newVariable("Y");
+		VariableTerm varZ = Terms.newVariable("Z");
+		Term constA = Terms.newConstant("a");
+		Unifier left = new Unifier();
+		left.put(varX, varY);
+		left.put(varZ, varY);
+		Unifier right = new Unifier();
+		right.put(varX, constA);
+		Unifier merged = Unifier.mergeIntoLeft(left, right);
+		assertEquals(constA, merged.eval(varY));
+		assertEquals(constA, merged.eval(varZ));
 	}
 }

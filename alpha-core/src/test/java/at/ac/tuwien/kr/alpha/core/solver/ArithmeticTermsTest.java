@@ -8,7 +8,7 @@ import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.assertRegressionTes
  *
  * Copyright (c) 2020, the Alpha Team.
  */
-// TODO functional test
+// // TODO This is a functional test and should not be run with standard unit tests
 public class ArithmeticTermsTest {
 
 	@RegressionTest
