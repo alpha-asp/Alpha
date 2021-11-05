@@ -108,17 +108,6 @@ public class LiteralBindingNonBindingVariablesTest {
 		expectVariables(literal.getNonBindingVariables(), "Y");
 	}
 
-// TODO why do we have this if it's disabled?
-//	@Test
-//	@Disabled("Literals of this kind are compiled away by VariableEqualityRemoval")
-//	public void testPositiveComparisonLiteral_EQ_Bidirectional() {
-//		Rule<Head> rule = parser.parse("p(X) :- q(X,Y), X = Y.").getRules().get(0);
-//		Literal literal = rule.getBody().stream().filter((lit) -> lit.getPredicate() == ComparisonOperators.EQ.toPredicate()).findFirst().get();
-//		assertEquals(false, literal.isNegated());
-//		expectVariables(literal.getBindingVariables());
-//		expectVariables(literal.getNonBindingVariables(), "X", "Y");
-//	}
-
 	@Test
 	public void testNegativeComparisonLiteral_EQ_Bidirectional() {
 		// literal := not X = Y

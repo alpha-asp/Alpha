@@ -49,7 +49,6 @@ import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
  * (Eds.): Proceedings of the Seventeenth European Conference on Artificial Intelligence (ECAI'06): IOS Press, pp. 769–770.
  *
  */
-// TODO what the heck is this?
 public class HeadBodyTransformationTests {
 
 	private static final int DEBUG_TIMEOUT_FACTOR = 5;
