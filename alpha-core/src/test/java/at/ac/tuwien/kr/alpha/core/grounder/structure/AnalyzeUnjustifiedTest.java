@@ -33,52 +33,59 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
-import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
+import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
 
 /**
  * Copyright (c) 2018-2020, the Alpha Team.
  */
-// TODO this is a functional test that wants to be a unit test
 public class AnalyzeUnjustifiedTest {
-
-	private final ProgramParser parser = new ProgramParserImpl();
-	private final NormalizeProgramTransformation normalize = new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
-	private final Function<String, CompiledProgram> parseAndPreprocess = (str) -> {
-		return InternalProgram.fromNormalProgram(normalize.apply(parser.parse(str)));
-	};
 
 	@Test
 	public void justifySimpleRules() {
-		String program = "p(X) :- q(X)." +
-			"q(X) :- p(X)." +
-			"q(5) :- r." +
-			"r :- not nr." +
-			"nr :- not r." +
-			":- not p(5).";
-		CompiledProgram internalProgram = parseAndPreprocess.apply(program);
+		/*
+		 * program :=
+		 * p(X) :- q(X).
+		 * q(X) :- p(X).
+		 * q(5) :- r.
+		 * r :- not nr.
+		 * nr :- not r.
+		 * :- not p(5).
+		 */
+		CompiledProgram program = new InternalProgram(Arrays.asList(
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newVariable("X"))),
+						Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newVariable("X")).toLiteral()),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newVariable("X"))),
+						Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newVariable("X")).toLiteral()),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newConstant(5))),
+						Atoms.newBasicAtom(Predicates.getPredicate("r", 0)).toLiteral()),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("r", 0))),
+						Atoms.newBasicAtom(Predicates.getPredicate("nr", 0)).toLiteral(false)),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("nr", 0))),
+						Atoms.newBasicAtom(Predicates.getPredicate("r", 0)).toLiteral(false)),
+				new InternalRule(null,
+						Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newConstant(5)).toLiteral(false))),
+				Collections.emptyList());
+
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(internalProgram, atomStore, true);
+		NaiveGrounder grounder = new NaiveGrounder(program, atomStore, true);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		int rId = atomStore.get(Atoms.newBasicAtom(Predicates.getPredicate("r", 0)));
@@ -94,24 +101,64 @@ public class AnalyzeUnjustifiedTest {
 
 	@Test
 	public void justifyLargerRules() {
-		String program = "p(X) :- q(X,Y), r(Y), not s(X,Y)." +
-			"{ q(1,X)} :- dom(X)." +
-			"dom(1..3)." +
-			"{r(X)} :- p(X)." +
-			"{r(2)}." +
-			"{s(1,2)}." +
-			":- not p(1).";
-		CompiledProgram internalProgram = parseAndPreprocess.apply(program);
+		/*
+		 * program :=
+		 *     dom(1). dom(2). dom(3).
+		 *     p(X) :- q(X,Y), r(Y), not s(X,Y).
+		 *     q(1,X) :- dom(X), not nq(1, X).
+		 *     nq(1, X) :- dom(X), not q(1, X).
+		 *     r(X) :- p(X), not nr(X).
+		 *     nr(X) :- p(X), not r(X).
+		 *     r(2) :- not n1r(2).
+		 *     n1r(2) :- not r(2).
+		 *     s(1, 2) :- not ns(1, 2).
+		 *     ns(1, 2) :- not s(1, 2).
+		 *     :- not p(1).
+		 */
+		CompiledProgram program = new InternalProgram(Arrays.asList(
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newVariable("X"))),
+						Atoms.newBasicAtom(Predicates.getPredicate("q", 2), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral(),
+						Atoms.newBasicAtom(Predicates.getPredicate("r", 1), Terms.newVariable("Y")).toLiteral(),
+						Atoms.newBasicAtom(Predicates.getPredicate("s", 2), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral(false)),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("q", 2), Terms.newConstant(1), Terms.newVariable("X"))),
+						Atoms.newBasicAtom(Predicates.getPredicate("dom", 1), Terms.newVariable("X")).toLiteral(),
+						Atoms.newBasicAtom(Predicates.getPredicate("nq", 2), Terms.newConstant(1), Terms.newVariable("X")).toLiteral(false)),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("nq", 2), Terms.newConstant(1), Terms.newVariable("X"))),
+						Atoms.newBasicAtom(Predicates.getPredicate("dom", 1), Terms.newVariable("X")).toLiteral(),
+						Atoms.newBasicAtom(Predicates.getPredicate("q", 2), Terms.newConstant(1), Terms.newVariable("X")).toLiteral(false)),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("r", 1), Terms.newVariable("X"))),
+						Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newVariable("X")).toLiteral(),
+						Atoms.newBasicAtom(Predicates.getPredicate("nr", 1), Terms.newVariable("X")).toLiteral(false)),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("nr", 1), Terms.newVariable("X"))),
+						Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newVariable("X")).toLiteral(),
+						Atoms.newBasicAtom(Predicates.getPredicate("r", 1), Terms.newVariable("X")).toLiteral(false)),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("r", 1), Terms.newConstant(2))),
+						Atoms.newBasicAtom(Predicates.getPredicate("n1r", 1), Terms.newConstant(2)).toLiteral(false)),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("n1r", 1), Terms.newConstant(2))),
+						Atoms.newBasicAtom(Predicates.getPredicate("r", 1), Terms.newConstant(2)).toLiteral(false)),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("s", 2), Terms.newConstant(1), Terms.newConstant(2))),
+						Atoms.newBasicAtom(Predicates.getPredicate("ns", 2), Terms.newConstant(1), Terms.newConstant(2)).toLiteral(false)),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("ns", 2), Terms.newConstant(1), Terms.newConstant(2))),
+						Atoms.newBasicAtom(Predicates.getPredicate("s", 2), Terms.newConstant(1), Terms.newConstant(2)).toLiteral(false)),
+				new InternalRule(null,
+						Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newConstant(1)).toLiteral(false))
+				), Arrays.asList(
+						Atoms.newBasicAtom(Predicates.getPredicate("dom", 1), Terms.newConstant(1)),
+						Atoms.newBasicAtom(Predicates.getPredicate("dom", 1), Terms.newConstant(2)),
+						Atoms.newBasicAtom(Predicates.getPredicate("dom", 1), Terms.newConstant(3))
+						)
+				);
+				
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(internalProgram, atomStore, true);
+		NaiveGrounder grounder = new NaiveGrounder(program, atomStore, true);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
-		Atom p1 = parser.parse("p(1).").getFacts().get(0);
-		Atom r2 = parser.parse("r(2).").getFacts().get(0);
-		Atom s12 = parser.parse("s(1,2).").getFacts().get(0);
-		Atom q11 = parser.parse("q(1,1).").getFacts().get(0);
-		Atom q12 = parser.parse("q(1,2).").getFacts().get(0);
-		Atom q13 = parser.parse("q(1,3).").getFacts().get(0);
+		Atom p1 = Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newConstant(1));
+		Atom r2 = Atoms.newBasicAtom(Predicates.getPredicate("r", 1), Terms.newConstant(2));
+		Atom s12 = Atoms.newBasicAtom(Predicates.getPredicate("s", 2), Terms.newConstant(1), Terms.newConstant(2));
+		Atom q11 = Atoms.newBasicAtom(Predicates.getPredicate("q", 2), Terms.newConstant(1), Terms.newConstant(1));
+		Atom q12 = Atoms.newBasicAtom(Predicates.getPredicate("q", 2), Terms.newConstant(1), Terms.newConstant(2));
+		Atom q13 = Atoms.newBasicAtom(Predicates.getPredicate("q", 2), Terms.newConstant(1), Terms.newConstant(3));
 		int p1Id = atomStore.get(p1);
 		int r2Id = atomStore.get(r2);
 		int s12Id = atomStore.get(s12);
@@ -132,22 +179,52 @@ public class AnalyzeUnjustifiedTest {
 
 	@Test
 	public void justifyMultipleReasons() {
-		String program = "n(a). n(b). n(c). n(d). n(e)." +
-			"s(a,b). s(b,c). s(c,d). s(d,e)." +
-			"{ q(X) } :- n(X)." +
-			"p(X) :- q(X)." +
-			"p(X) :- p(Y), s(Y,X)." +
-			":- not p(c).";
-		CompiledProgram internalProgram = parseAndPreprocess.apply(program);
+		/*
+		 * program :=
+		 *     n(a). n(b). n(c). n(d). n(e).
+		 *     s(a,b). s(b,c). s(c,d). s(d,e).
+		 *     q(X) :- n(X), not nq(1, X).
+		 *     nq(1, X) :- n(X), not q(X).
+		 *     p(X) :- q(X).
+		 *     p(X) :- p(Y), s(Y,X).
+		 *     :- not p(c).
+		 */
+		CompiledProgram program = new InternalProgram(Arrays.asList(
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newVariable("X"))),
+						Atoms.newBasicAtom(Predicates.getPredicate("n", 1), Terms.newVariable("X")).toLiteral(),
+						Atoms.newBasicAtom(Predicates.getPredicate("nq", 2), Terms.newConstant(1), Terms.newVariable("X")).toLiteral(false)),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("nq", 2), Terms.newConstant(1), Terms.newVariable("X"))),
+						Atoms.newBasicAtom(Predicates.getPredicate("n", 1), Terms.newVariable("X")).toLiteral(),
+						Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newVariable("X")).toLiteral(false)),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newVariable("X"))),
+						Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newVariable("X")).toLiteral()),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newVariable("X"))),
+						Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newVariable("Y")).toLiteral(),
+						Atoms.newBasicAtom(Predicates.getPredicate("s", 2), Terms.newVariable("Y"), Terms.newVariable("Y")).toLiteral()),
+				new InternalRule(null,
+						Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newSymbolicConstant("c")).toLiteral())
+				), Arrays.asList(
+						Atoms.newBasicAtom(Predicates.getPredicate("n", 1), Terms.newSymbolicConstant("a")),
+						Atoms.newBasicAtom(Predicates.getPredicate("n", 1), Terms.newSymbolicConstant("b")),
+						Atoms.newBasicAtom(Predicates.getPredicate("n", 1), Terms.newSymbolicConstant("c")),
+						Atoms.newBasicAtom(Predicates.getPredicate("n", 1), Terms.newSymbolicConstant("d")),
+						Atoms.newBasicAtom(Predicates.getPredicate("n", 1), Terms.newSymbolicConstant("e")),
+						Atoms.newBasicAtom(Predicates.getPredicate("s", 2), Terms.newSymbolicConstant("a"), Terms.newSymbolicConstant("b")),
+						Atoms.newBasicAtom(Predicates.getPredicate("s", 2), Terms.newSymbolicConstant("b"), Terms.newSymbolicConstant("c")),
+						Atoms.newBasicAtom(Predicates.getPredicate("s", 2), Terms.newSymbolicConstant("c"), Terms.newSymbolicConstant("d")),
+						Atoms.newBasicAtom(Predicates.getPredicate("s", 2), Terms.newSymbolicConstant("d"), Terms.newSymbolicConstant("e"))
+						)
+				);
+		
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(internalProgram, atomStore, true);
+		NaiveGrounder grounder = new NaiveGrounder(program, atomStore, true);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
-		Atom qa = parser.parse("q(a).").getFacts().get(0);
-		Atom qb = parser.parse("q(b).").getFacts().get(0);
-		Atom qc = parser.parse("q(c).").getFacts().get(0);
-		Atom qd = parser.parse("q(d).").getFacts().get(0);
-		Atom qe = parser.parse("q(e).").getFacts().get(0);
+		Atom qa = Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newSymbolicConstant("a"));
+		Atom qb = Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newSymbolicConstant("b"));
+		Atom qc = Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newSymbolicConstant("c"));
+		Atom qd = Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newSymbolicConstant("d"));
+		Atom qe = Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newSymbolicConstant("e"));
 		int qaId = atomStore.get(qa);
 		int qbId = atomStore.get(qb);
 		int qcId = atomStore.get(qc);
@@ -161,12 +238,12 @@ public class AnalyzeUnjustifiedTest {
 		assignment.assign(qdId, ThriceTruth.FALSE);
 		assignment.assign(qeId, ThriceTruth.FALSE);
 
-		Predicate nq = Predicates.getPredicate("_nq", 2, true);
-		Atom nqa = Atoms.newBasicAtom(nq, Arrays.asList(Terms.newConstant("1"), Terms.newSymbolicConstant("a")));
-		Atom nqb = Atoms.newBasicAtom(nq, Arrays.asList(Terms.newConstant("1"), Terms.newSymbolicConstant("b")));
-		Atom nqc = Atoms.newBasicAtom(nq, Arrays.asList(Terms.newConstant("1"), Terms.newSymbolicConstant("c")));
-		Atom nqd = Atoms.newBasicAtom(nq, Arrays.asList(Terms.newConstant("1"), Terms.newSymbolicConstant("d")));
-		Atom nqe = Atoms.newBasicAtom(nq, Arrays.asList(Terms.newConstant("1"), Terms.newSymbolicConstant("e")));
+		Predicate nq = Predicates.getPredicate("nq", 2);
+		Atom nqa = Atoms.newBasicAtom(nq, Arrays.asList(Terms.newConstant(1), Terms.newSymbolicConstant("a")));
+		Atom nqb = Atoms.newBasicAtom(nq, Arrays.asList(Terms.newConstant(1), Terms.newSymbolicConstant("b")));
+		Atom nqc = Atoms.newBasicAtom(nq, Arrays.asList(Terms.newConstant(1), Terms.newSymbolicConstant("c")));
+		Atom nqd = Atoms.newBasicAtom(nq, Arrays.asList(Terms.newConstant(1), Terms.newSymbolicConstant("d")));
+		Atom nqe = Atoms.newBasicAtom(nq, Arrays.asList(Terms.newConstant(1), Terms.newSymbolicConstant("e")));
 		int nqaId = atomStore.get(nqa);
 		int nqbId = atomStore.get(nqb);
 		int nqcId = atomStore.get(nqc);
@@ -180,23 +257,45 @@ public class AnalyzeUnjustifiedTest {
 		assignment.assign(nqdId, ThriceTruth.TRUE);
 		assignment.assign(nqeId, ThriceTruth.TRUE);
 
-		Atom pc = parser.parse("p(c).").getFacts().get(0);
+		Atom pc = Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newSymbolicConstant("c"));
 		Set<Literal> reasons = grounder.justifyAtom(atomStore.get(pc), assignment);
 		assertFalse(reasons.isEmpty());
 	}
 
 	@Test
 	public void justifyNegatedFactsRemovedFromReasons() {
-		String program = "forbidden(2,9). forbidden(1,9)." +
-			"p(X) :- q(X)." +
-			"q(X) :- p(X)." +
-			"q(5) :- r." +
-			"r :- not nr, not forbidden(2,9), not forbidden(1,9)." +
-			"nr :- not r." +
-			":- not p(5).";
-		CompiledProgram internalProgram = parseAndPreprocess.apply(program);
+		/*
+		 * program :=
+		 *     forbidden(2,9). forbidden(1,9).
+		 *     p(X) :- q(X).
+		 *     q(X) :- p(X).
+		 *     q(5) :- r.
+		 *     r :- not nr, not forbidden(2,9), not forbidden(1,9).
+		 *     nr :- not r.
+		 *     :- not p(5).
+		 */
+		CompiledProgram program = new InternalProgram(Arrays.asList(
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newVariable("X"))),
+						Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newVariable("X")).toLiteral()),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newVariable("X"))),
+						Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newVariable("X")).toLiteral()),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newConstant(5))),
+						Atoms.newBasicAtom(Predicates.getPredicate("r", 0)).toLiteral()),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("r", 0))),
+						Atoms.newBasicAtom(Predicates.getPredicate("nr", 0)).toLiteral(false),
+						Atoms.newBasicAtom(Predicates.getPredicate("forbidden", 2), Terms.newConstant(2), Terms.newConstant(9)).toLiteral(false),
+						Atoms.newBasicAtom(Predicates.getPredicate("forbidden", 2), Terms.newConstant(1), Terms.newConstant(9)).toLiteral(false)),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("nr", 0))),
+						Atoms.newBasicAtom(Predicates.getPredicate("r", 0)).toLiteral(false)),
+				new InternalRule(null,
+						Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newConstant(5)).toLiteral())
+				), Arrays.asList(
+						Atoms.newBasicAtom(Predicates.getPredicate("forbidden", 2), Terms.newConstant(2), Terms.newConstant(9)),
+						Atoms.newBasicAtom(Predicates.getPredicate("forbidden", 2), Terms.newConstant(1), Terms.newConstant(9))
+						)
+				);
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(internalProgram, atomStore, true);
+		NaiveGrounder grounder = new NaiveGrounder(program, atomStore, true);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		int rId = atomStore.get(Atoms.newBasicAtom(Predicates.getPredicate("r", 0)));

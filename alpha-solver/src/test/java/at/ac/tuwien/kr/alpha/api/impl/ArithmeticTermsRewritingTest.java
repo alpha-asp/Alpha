@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.programs.transformation;
+package at.ac.tuwien.kr.alpha.api.impl;
 
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,11 +25,12 @@ import at.ac.tuwien.kr.alpha.commons.externals.Externals;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.ArithmeticTermsRewriting;
 
 /**
  * Copyright (c) 2021, the Alpha Team.
  */
-// TODO this is a functional test that wants to be a unit test
+// TODO this is a functional test (or integration?)
 public class ArithmeticTermsRewritingTest {
 
 	private final Map<String, PredicateInterpretation> externalsOfThisClass = Externals.scan(ArithmeticTermsRewritingTest.class);

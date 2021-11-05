@@ -15,7 +15,6 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
  * 
  * Copyright (c) 2019-2021, the Alpha Team.
  */
-// TODO this is a functional test that wants to be a unit test (depends on parser, but should not!)
 public class BasicAtomImplTest {
 
 	@Test

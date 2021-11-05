@@ -7,22 +7,21 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.terms.ArithmeticOperator;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramPartParser;
 
 /**
  * Copyright (c) 2021, the Alpha Team.
  */
-// TODO this is a functional test that wants to be a unit test
 public class UnificationTest {
-
-	private ProgramPartParser partsParser = new ProgramPartParser();
 
 	@Test
 	public void simpleGroundUnification() {
-		Atom pX = partsParser.parseLiteral("p(X)").getAtom();
-		Atom pa = partsParser.parseLiteral("p(abc)").getAtom();
+		Atom pX = Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newVariable("X"));
+		Atom pa = Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newSymbolicConstant("abc"));
 		Unifier unifier = Unification.unifyAtoms(pa, pX);
 		assertNotNull(unifier);
 		assertEquals(1, unifier.getMappedVariables().size());
@@ -31,8 +30,8 @@ public class UnificationTest {
 
 	@Test
 	public void unificationBothSides() {
-		Atom left = partsParser.parseLiteral("p(X, 1)").getAtom();
-		Atom right = partsParser.parseLiteral("p(d, Y)").getAtom();
+		Atom left = Atoms.newBasicAtom(Predicates.getPredicate("p", 2), Terms.newVariable("X"), Terms.newConstant(1));
+		Atom right = Atoms.newBasicAtom(Predicates.getPredicate("p", 2), Terms.newSymbolicConstant("d"), Terms.newVariable("Y"));
 		Unifier unifier = Unification.unifyAtoms(left, right);
 		assertNotNull(unifier);
 		assertEquals(2, unifier.getMappedVariables().size());
@@ -42,8 +41,8 @@ public class UnificationTest {
 
 	@Test
 	public void unificationNonGround() {
-		Atom left = partsParser.parseLiteral("p(X, 13)").getAtom();
-		Atom right = partsParser.parseLiteral("p(Z, Y)").getAtom();
+		Atom left = Atoms.newBasicAtom(Predicates.getPredicate("p", 2), Terms.newVariable("X"), Terms.newConstant(13));
+		Atom right = Atoms.newBasicAtom(Predicates.getPredicate("p", 2), Terms.newVariable("Z"), Terms.newVariable("Y"));
 		Unifier unifier = Unification.unifyAtoms(left, right);
 		assertNotNull(unifier);
 		assertEquals(3, unifier.getMappedVariables().size());
@@ -60,8 +59,18 @@ public class UnificationTest {
 
 	@Test
 	public void unificationWithFunctionTerms() {
-		Atom left = partsParser.parseLiteral("a(b, f(X, 13), g(Z), d)").getAtom();
-		Atom right = partsParser.parseLiteral("a(b, A, g(e), d)").getAtom();
+		// left := a(b, f(X, 13), g(Z), d)
+		Atom left = Atoms.newBasicAtom(Predicates.getPredicate("a", 4),
+				Terms.newSymbolicConstant("b"),
+				Terms.newFunctionTerm("f", Terms.newVariable("X"), Terms.newConstant(13)),
+				Terms.newFunctionTerm("g", Terms.newVariable("Z")),
+				Terms.newSymbolicConstant("d"));
+		// right := a(b, A, g(e), d)
+		Atom right = Atoms.newBasicAtom(Predicates.getPredicate("a", 4),
+				Terms.newSymbolicConstant("b"),
+				Terms.newVariable("A"),
+				Terms.newFunctionTerm("g", Terms.newSymbolicConstant("e")),
+				Terms.newSymbolicConstant("d"));
 		Unifier unifier = Unification.unifyAtoms(left, right);
 		assertNotNull(unifier);
 		assertEquals(3, unifier.getMappedVariables().size());
@@ -70,8 +79,15 @@ public class UnificationTest {
 
 	@Test
 	public void unificationWithArithmeticTerms() {
-		Atom left = partsParser.parseLiteral("a(X - (3 * Y))").getAtom();
-		Atom right = partsParser.parseLiteral("a(15 - Z)").getAtom();
+		// left := a(X - (3 * Y))
+		Atom left = Atoms.newBasicAtom(Predicates.getPredicate("a", 1),
+				Terms.newArithmeticTerm(
+						Terms.newVariable("X"),
+						ArithmeticOperator.MINUS,
+						Terms.newArithmeticTerm(Terms.newConstant(3), ArithmeticOperator.TIMES, Terms.newVariable("Y"))));
+		// right := a(15 - Z)
+		Atom right = Atoms.newBasicAtom(Predicates.getPredicate("a", 1),
+				Terms.newArithmeticTerm(Terms.newConstant(15), ArithmeticOperator.MINUS, Terms.newVariable("Z")));
 		Unifier unifier = Unification.unifyAtoms(left, right);
 		assertNotNull(unifier);
 		assertEquals(3, unifier.getMappedVariables().size());
@@ -80,32 +96,51 @@ public class UnificationTest {
 
 	@Test
 	public void nonunificationWithArithmeticTerms() {
-		Atom left = partsParser.parseLiteral("a(X + 4)").getAtom();
-		Atom right = partsParser.parseLiteral("a(Y - 4)").getAtom();
+		// left := a(X + 4)
+		Atom left = Atoms.newBasicAtom(Predicates.getPredicate("a", 1),
+				Terms.newArithmeticTerm(Terms.newVariable("X"), ArithmeticOperator.PLUS, Terms.newConstant(4)));
+		// right := a(Y - 4)
+		Atom right = Atoms.newBasicAtom(Predicates.getPredicate("a", 1),
+				Terms.newArithmeticTerm(Terms.newVariable("Y"), ArithmeticOperator.MINUS, Terms.newConstant(4)));
 		Unifier unifier = Unification.unifyAtoms(left, right);
 		assertNull(unifier);
 	}
 
 	@Test
 	public void nonunificationWithArithmeticTermsNested() {
-		Atom left = partsParser.parseLiteral("a(X + 7)").getAtom();
-		Atom right = partsParser.parseLiteral("a(Y + (Z - 2))").getAtom();
+		// left := a(X + 7)
+		Atom left = Atoms.newBasicAtom(Predicates.getPredicate("a", 1),
+				Terms.newArithmeticTerm(Terms.newVariable("X"), ArithmeticOperator.PLUS, Terms.newConstant(7)));
+		// right := a(Y + (Z - 2))
+		Atom right = Atoms.newBasicAtom(Predicates.getPredicate("a", 1),
+				Terms.newArithmeticTerm(
+						Terms.newVariable("Y"),
+						ArithmeticOperator.PLUS,
+						Terms.newArithmeticTerm(Terms.newVariable("Z"), ArithmeticOperator.MINUS, Terms.newConstant(2))));
 		Unifier unifier = Unification.unifyAtoms(left, right);
 		assertNull(unifier);
 	}
 
 	@Test
 	public void nonunificationSimple() {
-		Atom left = partsParser.parseLiteral("a(b,X)").getAtom();
-		Atom right = partsParser.parseLiteral("a(c,Y)").getAtom();
+		// left := a(b, X)
+		Atom left = Atoms.newBasicAtom(Predicates.getPredicate("a", 2),
+				Terms.newSymbolicConstant("b"), Terms.newVariable("X"));
+		// right := a(c, Y)
+		Atom right = Atoms.newBasicAtom(Predicates.getPredicate("a", 2),
+				Terms.newSymbolicConstant("c"), Terms.newVariable("Y"));
 		Unifier unifier = Unification.unifyAtoms(left, right);
 		assertNull(unifier);
 	}
 
 	@Test
 	public void nonunificationNested() {
-		Atom left = partsParser.parseLiteral("a(f(X,a))").getAtom();
-		Atom right = partsParser.parseLiteral("a(f(a,b))").getAtom();
+		// left := a(f(X,a))
+		Atom left = Atoms.newBasicAtom(Predicates.getPredicate("a", 1),
+				Terms.newFunctionTerm("f", Terms.newVariable("X"), Terms.newSymbolicConstant("a")));
+		// right := a(f(a,b))
+		Atom right = Atoms.newBasicAtom(Predicates.getPredicate("a", 1),
+				Terms.newFunctionTerm("f", Terms.newSymbolicConstant("a"), Terms.newSymbolicConstant("b")));
 		Unifier unifier = Unification.unifyAtoms(left, right);
 		assertNull(unifier);
 	}
