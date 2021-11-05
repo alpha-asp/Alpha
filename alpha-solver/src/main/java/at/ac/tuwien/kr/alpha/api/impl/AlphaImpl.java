@@ -77,7 +77,7 @@ public class AlphaImpl implements Alpha {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlphaImpl.class);
 
-	private SystemConfig config = new SystemConfig(); // The config is initialized with default values.
+	private SystemConfig config = new SystemConfig(); // Config is initialized with default values.
 	private ProgramParser parser = new ProgramParserImpl();
 
 	public AlphaImpl(SystemConfig cfg) {
