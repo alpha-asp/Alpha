@@ -9,7 +9,7 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 
-// TODO This is a functional test and should not be run with standard unit tests
+// TODO go through implementations, check for stuff to default-implement here
 public interface Literal {
 	Atom getAtom();
 
