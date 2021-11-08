@@ -23,7 +23,7 @@ public interface Alpha {
 	/**
 	 * Reads an ASP program using the configuration and sources specified in a given {@link InputConfig}.
 	 * 
-	 * @param cfg and {@link InputConfig} specifiying program sources (strings, files) as well as config metadata (e.g. literate program,
+	 * @param cfg and {@link InputConfig} specifying program sources (strings, files) as well as config metadata (e.g. literate program,
 	 *            external atoms, etc)
 	 * @return an {@link ASPCore2Program} representing the parsed ASP code from all sources referenced in the given {@link InputConfig}
 	 * @throws IOException in case one or more program sources (e.g. files) cannot be read, or parsing fails
@@ -106,16 +106,51 @@ public interface Alpha {
 	 */
 	Stream<AnswerSet> solve(ASPCore2Program program, java.util.function.Predicate<Predicate> filter);
 
+	/**
+	 * Solves the given {@link NormalProgram}.
+	 * @param program an input program
+	 * @return a {@link Stream} of {@link AnswerSet}s of the given program
+	 */
 	Stream<AnswerSet> solve(NormalProgram program);
 
+	/**
+	 * Solves the given {@link NormalProgram}.
+	 * @param program an input program
+	 * @param filter a {@link java.util.function.Predicate} against which {@link Predicate}s of answer sets are tested.
+	 * @return a {@link Stream} of {@link AnswerSet}s of the given program
+	 */
 	Stream<AnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter);
 
+	/**
+	 * Normalizes a program, i.e. rewrites all syntax constructs not natively supported by Alphas back-end into semantically equivalent ASP code.
+	 * See {@link NormalProgram},
+	 * @param program An {@link ASPCore2Program} to normalize
+	 * @return a {@link NormalProgram} that is a semantic equivalent to the given input program
+	 */
 	NormalProgram normalizeProgram(ASPCore2Program program);
 
+	/**
+	 * Deprecated - Gets the {@link SystemConfig} with which this {@link Alpha} instance was initialized. To be removed in future releases.
+	 */
+	@Deprecated
 	SystemConfig getConfig();
 
+	/**
+	 * Constructs a @{link Solver} pre-loaded with the given {@link ASPCore2Program} from which {@link AnswerSet}s can be obtained via {@link Solver#stream()}.
+	 * 
+	 * @param program the program to solve
+	 * @param filter a {@link java.util.function.Predicate} against which {@link Predicate}s of answer sets are tested.
+	 * @return a {@link Solver} pre-loaded withthe given program
+	 */
 	Solver prepareSolverFor(ASPCore2Program program, java.util.function.Predicate<Predicate> filter);
 
+	/**
+	 * Constructs a @{link Solver} pre-loaded with the given {@link NormalProgram} from which {@link AnswerSet}s can be obtained via {@link Solver#stream()}.
+	 * 
+	 * @param program the program to solve
+	 * @param filter a {@link java.util.function.Predicate} against which {@link Predicate}s of answer sets are tested.
+	 * @return a {@link Solver} pre-loaded withthe given program
+	 */
 	Solver prepareSolverFor(NormalProgram program, java.util.function.Predicate<Predicate> filter);
 
 }

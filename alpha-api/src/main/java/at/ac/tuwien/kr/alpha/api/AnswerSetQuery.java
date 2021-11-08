@@ -5,8 +5,21 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 
+/**
+ * A {@link java.util.function.Predicate} testing {@link Atom}s in order to query {@link AnswerSet}s for {@link Atom}s satisfying a specific
+ * query.
+ * 
+ * Copyright (c) 2021, the Alpha Team.
+ */
 public interface AnswerSetQuery extends java.util.function.Predicate<Atom> {
 
+	/**
+	 * Adds a filter predicate to apply on terms at the given index position.
+	 * 
+	 * @param termIdx the term index on which to apply the new filter
+	 * @param filter  a filter predicate
+	 * @return this answer set query withthe given filter added
+	 */
 	public AnswerSetQuery withFilter(int termIdx, java.util.function.Predicate<Term> filter);
 
 	/**
@@ -64,6 +77,6 @@ public interface AnswerSetQuery extends java.util.function.Predicate<Atom> {
 	 * @param as
 	 * @return
 	 */
-	public List<Atom> applyTo(AnswerSet as);	
-	
+	public List<Atom> applyTo(AnswerSet as);
+
 }
