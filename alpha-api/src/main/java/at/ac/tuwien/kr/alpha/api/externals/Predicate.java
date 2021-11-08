@@ -16,6 +16,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Predicate {
+	
 	/**
 	 * The name of the predicate that will be used to refer to
 	 * the annotated method. If it is the empty string (which
