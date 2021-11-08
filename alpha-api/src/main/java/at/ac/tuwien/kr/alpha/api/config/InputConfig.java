@@ -1,12 +1,21 @@
 package at.ac.tuwien.kr.alpha.api.config;
 
+import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
+import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 
 import java.util.*;
 
+/**
+ * Config structure for ASP input supplied to {@link Alpha} instances.
+ * 
+ * Copyright (c) 2021, the Alpha Team.
+ */
 public class InputConfig {
-	
+
 	public static final java.util.function.Predicate<Predicate> DEFAULT_FILTER = p -> true;
 	public static final boolean DEFAULT_LITERATE = false;
 	public static final int DEFAULT_NUM_ANSWER_SETS = 0;
@@ -43,6 +52,9 @@ public class InputConfig {
 		return this.aspStrings;
 	}
 
+	/**
+	 * Sets a list of strings constituitng valid ASP code which togehter make up (part of) an APS program.
+	 */
 	public void setAspStrings(List<String> aspStrings) {
 		this.aspStrings = aspStrings;
 	}
@@ -51,6 +63,9 @@ public class InputConfig {
 		return this.literate;
 	}
 
+	/**
+	 * Sets whether the ASP code in this input config should be treated as literate (i.e. comment- and code lines "switched").
+	 */
 	public void setLiterate(boolean literate) {
 		this.literate = literate;
 	}
@@ -59,6 +74,9 @@ public class InputConfig {
 		return this.numAnswerSets;
 	}
 
+	/**
+	 * Sets the number of {@link AnswerSet}s Alpha should caluclate for this input. (set zero to calculate all answer sets)
+	 */
 	public void setNumAnswerSets(int numAnswerSets) {
 		this.numAnswerSets = numAnswerSets;
 	}
@@ -71,6 +89,9 @@ public class InputConfig {
 		return this.predicateMethods;
 	}
 
+	/**
+	 * Adds annotated java methods against which external atoms in the ASP input should be resolved.
+	 */
 	public void addPredicateMethods(Map<String, PredicateInterpretation> predicateMethods) {
 		for (Map.Entry<String, PredicateInterpretation> entry : predicateMethods.entrySet()) {
 			if (this.predicateMethods.containsKey(entry.getKey())) {
@@ -88,6 +109,9 @@ public class InputConfig {
 		return this.files;
 	}
 
+	/**
+	 * Sets a list of files containing ASP code that make up (part of) the ASP program represented by this input config.
+	 */
 	public void setFiles(List<String> files) {
 		this.files = files;
 	}
@@ -96,6 +120,9 @@ public class InputConfig {
 		return this.desiredPredicates;
 	}
 
+	/**
+	 * Sets a set of predicates against which answer sets for this input should be filtered.
+	 */
 	public void setDesiredPredicates(Set<String> desiredPredicates) {
 		this.desiredPredicates = desiredPredicates;
 	}
@@ -104,6 +131,10 @@ public class InputConfig {
 		return this.depgraphPath;
 	}
 
+	/**
+	 * Sets a path to which the {@link DependencyGraph} of the input program should be written. Note that
+	 * {@link InputConfig#setDebugPreprocessing(boolean)} has to be active for this to take effect.
+	 */
 	public void setDepgraphPath(String depgraphPath) {
 		this.depgraphPath = depgraphPath;
 	}
@@ -112,6 +143,10 @@ public class InputConfig {
 		return this.compgraphPath;
 	}
 
+	/**
+	 * Sets a path to which the {@link ComponentGraph} of the input program should be written. Note that
+	 * {@link InputConfig#setDebugPreprocessing(boolean)} has to be active for this to take effect.
+	 */
 	public void setCompgraphPath(String compgraphPath) {
 		this.compgraphPath = compgraphPath;
 	}
@@ -120,6 +155,10 @@ public class InputConfig {
 		return this.preprocessedPath;
 	}
 
+	/**
+	 * Sets a path to which the preprocessed (i.e. normalized and up-front evaluated) version of the input program should be written. Note that
+	 * {@link InputConfig#setDebugPreprocessing(boolean)} has to be active for this to take effect.
+	 */
 	public void setPreprocessedPath(String preprocessedPath) {
 		this.preprocessedPath = preprocessedPath;
 	}
@@ -128,6 +167,9 @@ public class InputConfig {
 		return this.writeAnswerSetsAsXlsx;
 	}
 
+	/**
+	 * If set to true, answer sets for this input will be written into an xslx worksheet rather than as plain-text console output.
+	 */
 	public void setWriteAnswerSetsAsXlsx(boolean writeAnswerSetsAsXslx) {
 		this.writeAnswerSetsAsXlsx = writeAnswerSetsAsXslx;
 	}
@@ -136,6 +178,10 @@ public class InputConfig {
 		return this.answerSetFileOutputPath;
 	}
 
+	/**
+	 * If {@link InputConfig#setWriteAnswerSetsAsXlsx(boolean)} is set, answer sets for this input will be written into an xslx worksheet stored
+	 * to the path set here.
+	 */
 	public void setAnswerSetFileOutputPath(String answerSetFileOutputPath) {
 		this.answerSetFileOutputPath = answerSetFileOutputPath;
 	}
@@ -144,6 +190,10 @@ public class InputConfig {
 		return this.normalizedPath;
 	}
 
+	/**
+	 * Sets a path to which the normalized version of the input program should be written. Note that
+	 * {@link InputConfig#setDebugPreprocessing(boolean)} has to be active for this to take effect.
+	 */
 	public void setNormalizedPath(String normalizedPath) {
 		this.normalizedPath = normalizedPath;
 	}
@@ -151,7 +201,10 @@ public class InputConfig {
 	public boolean isDebugPreprocessing() {
 		return this.debugPreprocessing;
 	}
-	
+
+	/**
+	 * Enables collection of debug data during program preprocessing.
+	 */
 	public void setDebugPreprocessing(boolean debugPreprocessing) {
 		this.debugPreprocessing = debugPreprocessing;
 	}
