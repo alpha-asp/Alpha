@@ -2,6 +2,11 @@ package at.ac.tuwien.kr.alpha.api;
 
 import java.io.PrintStream;
 
+/**
+ * A {@link Solver} that collects statistics about the solving process while working.
+ * 
+ * Copyright (c) 2021, the Alpha Team.
+ */
 public interface StatisticsReportingSolver extends Solver {
 	
 	int getNumberOfChoices();

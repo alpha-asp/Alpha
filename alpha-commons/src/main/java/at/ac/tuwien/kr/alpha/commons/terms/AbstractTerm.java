@@ -49,7 +49,6 @@ abstract class AbstractTerm implements Term {
 	@Override
 	public abstract Term substitute(Substitution substitution);
 
-	// TODO change this to work on interfaces and break out of this class
 	private static int priority(Term term) {
 		if (term instanceof ConstantTerm) {
 			return 1;

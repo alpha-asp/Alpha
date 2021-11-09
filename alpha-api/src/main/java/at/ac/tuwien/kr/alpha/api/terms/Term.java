@@ -5,6 +5,11 @@ import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 
+/**
+ * Common super-interface for terms supported by Alpha.
+ * 
+ * Copyright (c) 2021, the Alpha Team.
+ */
 public interface Term extends Comparable<Term> {
 
 	boolean isGround();
@@ -26,9 +31,9 @@ public interface Term extends Comparable<Term> {
 	public static interface RenameCounter {
 
 		Map<VariableTerm, VariableTerm> getRenamedVariables();
-		
+
 		int getAndIncrement();
-		
+
 	}
 
 }

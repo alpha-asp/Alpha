@@ -9,7 +9,13 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 
-// TODO go through implementations, check for stuff to default-implement here
+/**
+ * A literal according to the ASP Core 2 Standard.
+ * Wraps an {@link Atom} that may or may not be negated.
+ *
+ * Copyright (c) 2017-2021, the Alpha Team.
+ */
+// TODO go through implementations and pull out stuff that can be default-implemented here
 public interface Literal {
 	Atom getAtom();
 

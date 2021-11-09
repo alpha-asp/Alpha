@@ -271,7 +271,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public ChoiceHead.ChoiceElement visitChoice_element(ASPCore2Parser.Choice_elementContext ctx) {
 		// choice_element : classical_literal (COLON naf_literals?)?;
-		BasicAtom atom = (BasicAtom) visitClassical_literal(ctx.classical_literal());
+		BasicAtom atom = visitClassical_literal(ctx.classical_literal());
 		if (ctx.naf_literals() != null) {
 			return Heads.newChoiceElement(atom, visitNaf_literals(ctx.naf_literals()));
 		} else {

@@ -32,12 +32,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SystemConfig {
+import at.ac.tuwien.kr.alpha.api.Alpha;
 
-	// TODO add validation on configs!
-	// TODO naive solver cannot print stats!
-	// TODO introduce debug levels (lvl 1 = print graphs and preprocessed, lvl 2 = same with debugInternalChecks)
-	
+/**
+ * Config structure for {@link Alpha} instances.
+ * 
+ * Copyright (c) 2021, the Alpha Team.
+ */
+public class SystemConfig {
 	// Note: Defining constants for default values here rather than just
 	// initializing from those values in order to have the values accessible in
 	// contexts where no AlphaConfig instance exists (e.g. argument parsing from
@@ -88,6 +90,9 @@ public class SystemConfig {
 		return this.grounderName;
 	}
 
+	/**
+	 * Sets the name of the grounder implementation to use.
+	 */
 	public void setGrounderName(String grounderName) {
 		this.grounderName = grounderName;
 	}
@@ -96,6 +101,9 @@ public class SystemConfig {
 		return this.solverName;
 	}
 
+	/**
+	 * Sets the name of the solver implementation to use.
+	 */
 	public void setSolverName(String solverName) {
 		this.solverName = solverName;
 	}
@@ -104,6 +112,9 @@ public class SystemConfig {
 		return this.nogoodStoreName;
 	}
 
+	/**
+	 * Sets the name of the nogood store implementation to use.
+	 */
 	public void setNogoodStoreName(String nogoodStoreName) {
 		this.nogoodStoreName = nogoodStoreName;
 	}
@@ -112,6 +123,10 @@ public class SystemConfig {
 		return this.deterministic;
 	}
 
+	/**
+	 * If set, 0 will be used as random seed for solver-internal branching heuristics, resulting in answer sets of the same program being found
+	 * in a fixed sequence.
+	 */
 	public void setDeterministic(boolean deterministic) {
 		this.deterministic = deterministic;
 	}
@@ -120,6 +135,9 @@ public class SystemConfig {
 		return this.seed;
 	}
 
+	/**
+	 * Sets a fixed seed for solver-internal branching heuristics.
+	 */
 	public void setSeed(long seed) {
 		this.seed = seed;
 	}
@@ -128,6 +146,9 @@ public class SystemConfig {
 		return this.debugInternalChecks;
 	}
 
+	/**
+	 * Enables additional (time-consuming) debug options in the core solving component.
+	 */
 	public void setDebugInternalChecks(boolean debugInternalChecks) {
 		this.debugInternalChecks = debugInternalChecks;
 	}
@@ -136,6 +157,9 @@ public class SystemConfig {
 		return this.branchingHeuristic;
 	}
 
+	/**
+	 * Use the given branching heuristic.
+	 */
 	public void setBranchingHeuristic(Heuristic branchingHeuristic) {
 		this.branchingHeuristic = branchingHeuristic;
 	}
@@ -151,7 +175,7 @@ public class SystemConfig {
 	public void setMomsStrategy(BinaryNoGoodPropagationEstimationStrategy momsStrategy) {
 		this.momsStrategy = momsStrategy;
 	}
-	
+
 	public void setMomsStrategyName(String momsStrategyName) {
 		this.momsStrategy = BinaryNoGoodPropagationEstimationStrategy.valueOf(momsStrategyName);
 	}
@@ -255,5 +279,5 @@ public class SystemConfig {
 	public void setAggregateRewritingConfig(AggregateRewritingConfig aggregateRewritingConfig) {
 		this.aggregateRewritingConfig = aggregateRewritingConfig;
 	}
-	
+
 }

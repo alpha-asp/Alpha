@@ -77,7 +77,7 @@ public class AlphaImpl implements Alpha {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlphaImpl.class);
 
-	private SystemConfig config = new SystemConfig(); // The config is initialized with default values.
+	private SystemConfig config = new SystemConfig(); // Config is initialized with default values.
 	private ProgramParser parser = new ProgramParserImpl();
 
 	public AlphaImpl(SystemConfig cfg) {
@@ -139,7 +139,6 @@ public class AlphaImpl implements Alpha {
 		return new NormalizeProgramTransformation(config.getAggregateRewritingConfig()).apply(program);
 	}
 
-	// TODO make sure to adapt this without exposing internal implementation types
 	@VisibleForTesting
 	InternalProgram performProgramPreprocessing(NormalProgram program) {
 		LOGGER.debug("Preprocessing InternalProgram!");
@@ -218,11 +217,6 @@ public class AlphaImpl implements Alpha {
 		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, grounderHeuristicConfiguration, doDebugChecks);
 
 		return SolverFactory.getInstance(config, atomStore, grounder);
-	}
-
-	@Override
-	public SystemConfig getConfig() {
-		return config;
 	}
 
 	public void setConfig(SystemConfig config) {
