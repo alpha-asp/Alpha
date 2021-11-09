@@ -8,6 +8,11 @@ import java.util.Map;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 
+/**
+ * A parser for {@link ASPCore2Program}s.
+ * 
+ * Copyright (c) 2021, the Alpha Team.
+ */
 public interface ProgramParser {
 
 	default ASPCore2Program parse(String programString) {
