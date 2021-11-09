@@ -2,10 +2,15 @@ package at.ac.tuwien.kr.alpha.api.terms;
 
 import java.util.List;
 
-public interface FunctionTerm extends Term{
+/**
+ * A term representing an uninterpreted function
+ * 
+ * Copyright (c) 2021, the Alpha Team.
+ */
+public interface FunctionTerm extends Term {
 
 	List<Term> getTerms();
-	
+
 	String getSymbol();
 
 }

@@ -7,6 +7,11 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 
+/**
+ * A choice head as defined by the ASP Core 2 Standard.
+ * 
+ * Copyright (c) 2021, the Alpha Team.
+ */
 public interface ChoiceHead extends Head {
 
 	Term getLowerBound();

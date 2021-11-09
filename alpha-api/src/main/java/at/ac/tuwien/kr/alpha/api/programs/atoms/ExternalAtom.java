@@ -6,6 +6,11 @@ import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpreta
 import at.ac.tuwien.kr.alpha.api.programs.VariableNormalizableAtom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 
+/**
+ * An external atom, i.e. an {@link Atom} that is interpreted by calling a linked Java-Method.
+ * 
+ * Copyright (c) 2021, the Alpha Team.
+ */
 public interface ExternalAtom extends Atom, VariableNormalizableAtom {
 
 	boolean hasOutput();
