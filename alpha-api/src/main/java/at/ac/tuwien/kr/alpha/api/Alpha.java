@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.config.InputConfig;
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
@@ -128,12 +127,6 @@ public interface Alpha {
 	 * @return a {@link NormalProgram} that is a semantic equivalent to the given input program
 	 */
 	NormalProgram normalizeProgram(ASPCore2Program program);
-
-	/**
-	 * Deprecated - Gets the {@link SystemConfig} with which this {@link Alpha} instance was initialized. To be removed in future releases.
-	 */
-	@Deprecated
-	SystemConfig getConfig();
 
 	/**
 	 * Constructs a @{link Solver} pre-loaded with the given {@link ASPCore2Program} from which {@link AnswerSet}s can be obtained via {@link Solver#stream()}.

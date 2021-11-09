@@ -219,11 +219,6 @@ public class AlphaImpl implements Alpha {
 		return SolverFactory.getInstance(config, atomStore, grounder);
 	}
 
-	@Override
-	public SystemConfig getConfig() {
-		return config;
-	}
-
 	public void setConfig(SystemConfig config) {
 		this.config = config;
 	}
