@@ -7,6 +7,14 @@ import at.ac.tuwien.kr.alpha.core.parser.AbstractProgramParser;
 
 public class EvologProgramParser extends AbstractProgramParser {
 
+	public EvologProgramParser(Map<String, PredicateInterpretation> externals) {
+		super(externals);
+	}
+
+	public EvologProgramParser() {
+		super();
+	}
+
 	@Override
 	protected EvologParseTreeVisitor createParseTreeVisitor(Map<String, PredicateInterpretation> externals) {
 		return new EvologParseTreeVisitor(externals);

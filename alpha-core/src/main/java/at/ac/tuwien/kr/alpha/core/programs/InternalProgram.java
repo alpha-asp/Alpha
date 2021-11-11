@@ -34,7 +34,6 @@ public class InternalProgram extends AbstractProgram<CompiledRule> implements Co
 	private final Map<Predicate, LinkedHashSet<Instance>> factsByPredicate = new LinkedHashMap<>();
 	private final Map<Integer, CompiledRule> rulesById = new LinkedHashMap<>();
 
-	// TODO constructor param internal rule
 	public InternalProgram(List<CompiledRule> rules, List<Atom> facts) {
 		super(rules, facts, null);
 		recordFacts(facts);

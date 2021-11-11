@@ -2,6 +2,11 @@ package at.ac.tuwien.kr.alpha.api.terms;
 
 import com.google.common.math.IntMath;
 
+/**
+ * Arithmetic operators supported by Alpha.
+ * 
+ * Copyright (c) 2021, the Alpha Team.
+ */
 public enum ArithmeticOperator {
 	PLUS("+"),
 	MINUS("-"),

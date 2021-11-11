@@ -45,6 +45,7 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 
+// TODO This is a functional test and should not be run with standard unit tests
 public class ThreeColouringRandomGraphTest {
 	
 	private static final long DEBUG_TIMEOUT_FACTOR = 5;

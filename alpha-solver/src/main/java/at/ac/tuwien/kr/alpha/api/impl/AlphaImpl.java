@@ -118,25 +118,18 @@ public class AlphaImpl implements Alpha {
 
 	@Override
 	@SuppressWarnings("resource")
-	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) {
+	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
 		ProgramParser parser = parserFactory.get();
 		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder();
 		InputProgram tmpProg;
 		for (Path path : paths) {
 			InputStream stream;
-			try {
-				if (!literate) {
-					stream = Files.newInputStream(path);
-				} else {
-					stream = Channels.newInputStream(Util.streamToChannel(Util.literate(Files.lines(path))));
-
-				}
-				tmpProg = parser.parse(stream, externals);
-				stream.close();
-			} catch (IOException ex) {
-				LOGGER.error("Failed parsing program due to IOException", ex);
-				throw new RuntimeException("Failed to parse program!");
+			if (!literate) {
+				stream = Files.newInputStream(path);
+			} else {
+				stream = Channels.newInputStream(Util.streamToChannel(Util.literate(Files.lines(path))));
 			}
+			tmpProg = parser.parse(stream, externals);
 			prgBuilder.accumulate(tmpProg);
 		}
 		return prgBuilder.build();
@@ -227,17 +220,6 @@ public class AlphaImpl implements Alpha {
 	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program.
 	 */
 	private Solver prepareSolverFor(CompiledProgram program, java.util.function.Predicate<Predicate> filter) {
-//		String grounderName = config.getGrounderName();
-//		boolean doDebugChecks = config.isDebugInternalChecks();
-//
-//		GrounderHeuristicsConfiguration grounderHeuristicConfiguration = GrounderHeuristicsConfiguration
-//				.getInstance(config.getGrounderToleranceConstraints(), config.getGrounderToleranceRules());
-//		grounderHeuristicConfiguration.setAccumulatorEnabled(config.isGrounderAccumulatorEnabled());
-//
-//		AtomStore atomStore = new AtomStoreImpl();
-//		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, grounderHeuristicConfiguration, doDebugChecks);
-//
-//		return SolverFactory.getInstance(config, atomStore, grounder);
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = grounderFactory.createGrounder(program, atomStore, filter);
 		return solverFactory.createSolver(grounder, atomStore);

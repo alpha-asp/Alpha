@@ -10,6 +10,7 @@ import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpreta
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.parser.AbstractProgramParser;
 import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
+import at.ac.tuwien.kr.alpha.core.parser.evolog.EvologProgramParser;
 
 public class Programs {
 
@@ -17,8 +18,9 @@ public class Programs {
 		throw new AssertionError("This is a pure utility class and should therefore not be instantiated!");
 	}
 
+	// TODO integrate this Method into Alpha interface so we have a parser following overall system config
 	public static InputProgram fromInputStream(InputStream is, Map<String, PredicateInterpretation> externals) throws IOException {
-		AbstractProgramParser parser = new ASPCore2ProgramParser();
+		AbstractProgramParser parser = new EvologProgramParser();
 		return parser.parse(CharStreams.fromStream(is), externals);
 	}
 

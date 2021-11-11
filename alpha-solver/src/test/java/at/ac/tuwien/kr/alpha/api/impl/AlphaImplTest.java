@@ -50,8 +50,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,18 +68,19 @@ import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.externals.AspStandardLibrary;
+import at.ac.tuwien.kr.alpha.commons.externals.Externals;
+import at.ac.tuwien.kr.alpha.commons.externals.MethodPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.commons.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.MethodPredicateInterpretation;
-import at.ac.tuwien.kr.alpha.core.externals.AspStandardLibrary;
-import at.ac.tuwien.kr.alpha.core.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
+// TODO This is a functional test and should not be run with standard unit tests
 public class AlphaImplTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AspStandardLibrary.class);

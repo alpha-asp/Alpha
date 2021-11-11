@@ -29,10 +29,14 @@ import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
@@ -41,7 +45,7 @@ import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
+import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 
 public class ChoiceManagerTests {
 	private Grounder grounder;
@@ -50,11 +54,19 @@ public class ChoiceManagerTests {
 
 	@BeforeEach
 	public void setUp() {
-		String testProgram = "h :- b1, b2, not b3, not b4.";
-		CompiledProgram internalProgram = InternalProgram
-				.fromNormalProgram(TestUtils.parseAndNormalizeWithDefaultConfig(testProgram));
+		/*
+		 * program :=
+		 *     h :- b1, b2, not b3, not b4.
+		 */
+		CompiledProgram program = new InternalProgram(Collections.singletonList(
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("h", 0))),
+						Atoms.newBasicAtom(Predicates.getPredicate("b1", 0)).toLiteral(),
+						Atoms.newBasicAtom(Predicates.getPredicate("b2", 0)).toLiteral(),
+						Atoms.newBasicAtom(Predicates.getPredicate("b3", 0)).toLiteral(false),
+						Atoms.newBasicAtom(Predicates.getPredicate("b4", 0)).toLiteral(false))
+				), Collections.emptyList());
 		atomStore = new AtomStoreImpl();
-		grounder = new NaiveGrounder(internalProgram, atomStore, true);
+		grounder = new NaiveGrounder(program, atomStore, true);
 		WritableAssignment assignment = new TrailAssignment(atomStore);
 		NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment);
 		choiceManager = new ChoiceManager(assignment, store);

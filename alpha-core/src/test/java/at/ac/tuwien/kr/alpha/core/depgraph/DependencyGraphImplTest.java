@@ -5,19 +5,21 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph.Node;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.test.util.DependencyGraphUtils;
-import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 public class DependencyGraphImplTest {
 
@@ -59,9 +61,12 @@ public class DependencyGraphImplTest {
 
 	@Test
 	public void reachabilityCheckSimpleTest() {
-		NormalProgram normalProg = TestUtils.parseAndNormalizeWithDefaultConfig("b :- a.");
-		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
-		DependencyGraph dg = analyzed.getDependencyGraph();
+		// rule := b :- a.
+		CompiledRule rule = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("b", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("a", 0)).toLiteral());
+		Map<Integer, CompiledRule> rules = new HashMap<>();
+		rules.put(0, rule);
+		DependencyGraph dg = DependencyGraphImpl.buildDependencyGraph(rules);
 
 		Node a = dg.getNodeForPredicate(Predicates.getPredicate("a", 0));
 		Node b = dg.getNodeForPredicate(Predicates.getPredicate("b", 0));
@@ -77,14 +82,22 @@ public class DependencyGraphImplTest {
 
 	@Test
 	public void reachabilityCheckWithHopsTest() {
-		StringBuilder bld = new StringBuilder();
-		bld.append("b :- a.").append("\n");
-		bld.append("c :- b.").append("\n");
-		bld.append("d :- c.").append("\n");
+		// r1 := b :- a.
+		CompiledRule r1 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("b", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("a", 0)).toLiteral());
+		// r2 := c :- b.
+		CompiledRule r2 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("c", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("b", 0)).toLiteral());
+		// r3 := d :- c.
+		CompiledRule r3 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("d", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("c", 0)).toLiteral());
 
-		NormalProgram normalProg = TestUtils.parseAndNormalizeWithDefaultConfig(bld.toString());
-		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
-		DependencyGraph dg = analyzed.getDependencyGraph();
+		Map<Integer, CompiledRule> rules = new HashMap<>();
+		rules.put(0, r1);
+		rules.put(1, r2);
+		rules.put(2, r3);
+		DependencyGraph dg = DependencyGraphImpl.buildDependencyGraph(rules);
+
 		Node a = dg.getNodeForPredicate(Predicates.getPredicate("a", 0));
 		Node b = dg.getNodeForPredicate(Predicates.getPredicate("b", 0));
 		Node c = dg.getNodeForPredicate(Predicates.getPredicate("c", 0));
@@ -109,16 +122,31 @@ public class DependencyGraphImplTest {
 
 	@Test
 	public void reachabilityWithCyclesTest() {
-		StringBuilder bld = new StringBuilder();
-		bld.append("b :- a, f1.").append("\n");
-		bld.append("c :- b.").append("\n");
-		bld.append("d :- c.").append("\n");
-		bld.append("a :- d.").append("\n");
-		bld.append("x :- d, f1.");
+		// r1 := b :- a, f1.
+		CompiledRule r1 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("b", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("a", 0)).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("f1", 0)).toLiteral());
+		// r2 := c :- b.
+		CompiledRule r2 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("c", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("b", 0)).toLiteral());
+		// r3 := d :- c.
+		CompiledRule r3 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("d", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("c", 0)).toLiteral());
+		// r4 := a :- d.
+		CompiledRule r4 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("a", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("d", 0)).toLiteral());
+		// r5 := x :- d, f1.
+		CompiledRule r5 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("x", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("d", 0)).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("f1", 0)).toLiteral());
 
-		NormalProgram normalProg = TestUtils.parseAndNormalizeWithDefaultConfig(bld.toString());
-		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
-		DependencyGraph dg = analyzed.getDependencyGraph();
+		Map<Integer, CompiledRule> rules = new HashMap<>();
+		rules.put(0, r1);
+		rules.put(1, r2);
+		rules.put(2, r3);
+		rules.put(3, r4);
+		rules.put(4, r5);
+		DependencyGraph dg = DependencyGraphImpl.buildDependencyGraph(rules);
 		Node a = dg.getNodeForPredicate(Predicates.getPredicate("a", 0));
 		Node b = dg.getNodeForPredicate(Predicates.getPredicate("b", 0));
 		Node c = dg.getNodeForPredicate(Predicates.getPredicate("c", 0));
@@ -151,13 +179,17 @@ public class DependencyGraphImplTest {
 
 	@Test
 	public void stronglyConnectedComponentsSimpleTest() {
-		StringBuilder bld = new StringBuilder();
-		bld.append("b :- a.").append("\n");
-		bld.append("a :- b.").append("\n");
+		// r1 := b:- a.
+		CompiledRule r1 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("b", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("a", 0)).toLiteral());
+		// r2 := a :- b.
+		CompiledRule r2 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("a", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("b", 0)).toLiteral());
 
-		NormalProgram normalProg = TestUtils.parseAndNormalizeWithDefaultConfig(bld.toString());
-		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
-		DependencyGraph dg = analyzed.getDependencyGraph();
+		Map<Integer, CompiledRule> rules = new HashMap<>();
+		rules.put(0, r1);
+		rules.put(1, r2);
+		DependencyGraph dg = DependencyGraphImpl.buildDependencyGraph(rules);
 		Node a = dg.getNodeForPredicate(Predicates.getPredicate("a", 0));
 		Node b = dg.getNodeForPredicate(Predicates.getPredicate("b", 0));
 
@@ -180,21 +212,51 @@ public class DependencyGraphImplTest {
 
 	@Test
 	public void stronglyConnectedComponentsMultipleComponentsTest() {
-		String inputProgram = "f0.\n" +
-				"f1.\n" +
-				"f2.\n" +
-				"f3.\n" +
-				"a :- f0, f1, not b.\n" +
-				"b :- f0, f1, not a.\n" +
-				"c :- f2, f3, not d.\n" +
-				"d :- f2, f3, not c.\n" +
-				"x :- a, c, y.\n" +
-				"y :- b, d, x.\n" +
-				"z :- x, y, z.";
-
-		NormalProgram normalProg = TestUtils.parseAndNormalizeWithDefaultConfig(inputProgram);
-		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
-		DependencyGraph dg = analyzed.getDependencyGraph();
+		// r1 := a :- f0, f1, not b.
+		CompiledRule r1 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("a", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("f0", 0)).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("f1", 0)).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("b", 0)).toLiteral(false));
+		// r2 := b :- f0, f1, not a.
+		CompiledRule r2 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("b", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("f0", 0)).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("f1", 0)).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("a", 0)).toLiteral(false));
+		// r3 := c :- f2, f3, not d.
+		CompiledRule r3 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("c", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("f2", 0)).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("f3", 0)).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("d", 0)).toLiteral(false));
+		// r4 := d :- f2, f3, not c.
+		CompiledRule r4 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("d", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("f2", 0)).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("f3", 0)).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("c", 0)).toLiteral(false));
+		// r5 := x :- a, c, y.
+		CompiledRule r5 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("x", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("a", 0)).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("c", 0)).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("y", 0)).toLiteral());
+		// r6 := y :- b, d, x.
+		CompiledRule r6 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("y", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("b", 0)).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("d", 0)).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("x", 0)).toLiteral());
+		// r7 := z :- x, y, z.
+		CompiledRule r7 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("z", 0))),
+				Atoms.newBasicAtom(Predicates.getPredicate("x", 0)).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("y", 0)).toLiteral(),
+				Atoms.newBasicAtom(Predicates.getPredicate("z", 0)).toLiteral());
+		
+		Map<Integer, CompiledRule> rules = new HashMap<>();
+		rules.put(0, r1);
+		rules.put(1, r2);
+		rules.put(2, r3);
+		rules.put(3, r4);
+		rules.put(4, r5);
+		rules.put(5, r6);
+		rules.put(6, r7);
+		DependencyGraph dg = DependencyGraphImpl.buildDependencyGraph(rules);
 
 		Node f0 = dg.getNodeForPredicate(Predicates.getPredicate("f0", 0));
 		Node f1 = dg.getNodeForPredicate(Predicates.getPredicate("f1", 0));

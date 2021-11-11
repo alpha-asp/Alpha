@@ -60,7 +60,6 @@ import at.ac.tuwien.kr.alpha.app.ComponentGraphWriter;
 import at.ac.tuwien.kr.alpha.app.DependencyGraphWriter;
 import at.ac.tuwien.kr.alpha.app.config.CommandLineParser;
 import at.ac.tuwien.kr.alpha.commons.util.SimpleAnswerSetFormatter;
-import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 
 /**
  * Main entry point for Alpha.

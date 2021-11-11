@@ -32,12 +32,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import at.ac.tuwien.kr.alpha.api.Alpha;
+
+/**
+ * Config structure for {@link Alpha} instances.
+ * 
+ * Copyright (c) 2021, the Alpha Team.
+ */
 public class SystemConfig {
-
-	// TODO add validation on configs!
-	// TODO naive solver cannot print stats!
-	// TODO introduce debug levels (lvl 1 = print graphs and preprocessed, lvl 2 = same with debugInternalChecks)
-
 	// Note: Defining constants for default values here rather than just
 	// initializing from those values in order to have the values accessible in
 	// contexts where no AlphaConfig instance exists (e.g. argument parsing from
@@ -86,6 +88,9 @@ public class SystemConfig {
 		return this.solverName;
 	}
 
+	/**
+	 * Sets the name of the solver implementation to use.
+	 */
 	public void setSolverName(String solverName) {
 		this.solverName = solverName;
 	}
@@ -94,6 +99,9 @@ public class SystemConfig {
 		return this.nogoodStoreName;
 	}
 
+	/**
+	 * Sets the name of the nogood store implementation to use.
+	 */
 	public void setNogoodStoreName(String nogoodStoreName) {
 		this.nogoodStoreName = nogoodStoreName;
 	}
@@ -102,6 +110,9 @@ public class SystemConfig {
 		return this.seed;
 	}
 
+	/**
+	 * Sets a fixed seed for solver-internal branching heuristics.
+	 */
 	public void setSeed(long seed) {
 		this.seed = seed;
 	}
@@ -110,6 +121,9 @@ public class SystemConfig {
 		return this.debugInternalChecks;
 	}
 
+	/**
+	 * Enables additional (time-consuming) debug options in the core solving component.
+	 */
 	public void setDebugInternalChecks(boolean debugInternalChecks) {
 		this.debugInternalChecks = debugInternalChecks;
 	}
@@ -118,6 +132,9 @@ public class SystemConfig {
 		return this.branchingHeuristic;
 	}
 
+	/**
+	 * Use the given branching heuristic.
+	 */
 	public void setBranchingHeuristic(Heuristic branchingHeuristic) {
 		this.branchingHeuristic = branchingHeuristic;
 	}

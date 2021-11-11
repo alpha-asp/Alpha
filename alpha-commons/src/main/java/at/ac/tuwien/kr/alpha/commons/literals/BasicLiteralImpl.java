@@ -68,7 +68,7 @@ class BasicLiteralImpl extends AbstractLiteral implements BasicLiteral { // TODO
 	 */
 	@Override
 	public BasicLiteralImpl substitute(Substitution substitution) {
-		return new BasicLiteralImpl((BasicAtom) getAtom().substitute(substitution), positive);
+		return new BasicLiteralImpl(getAtom().substitute(substitution), positive);
 	}
 
 	/**

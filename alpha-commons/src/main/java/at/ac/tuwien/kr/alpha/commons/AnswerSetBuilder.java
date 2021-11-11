@@ -75,6 +75,7 @@ public class AnswerSetBuilder {
 
 		// Note that usage of terms does not pollute the heap,
 		// since we are only reading, not writing.
+		@SuppressWarnings("varargs")
 		List<Term> termList = Stream
 				.of(terms)
 				.map(Terms::newConstant)

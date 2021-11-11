@@ -25,15 +25,15 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
@@ -52,11 +52,12 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 
+// TODO should this be part of an AtomStoreTest??
 public class AtomCounterTests {
 
 	private AtomStore atomStore;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		this.atomStore = new AtomStoreImpl();
 	}
@@ -124,17 +125,17 @@ public class AtomCounterTests {
 	private void createRuleAtom() {
 		BasicAtom atomAA = Atoms.newBasicAtom(Predicates.getPredicate("aa", 0));
 		CompiledRule ruleAA = new InternalRule(Heads.newNormalHead(atomAA),
-				Collections.singleton(Atoms.newBasicAtom(Predicates.getPredicate("bb", 0)).toLiteral(false)));
+				Collections.singletonList(Atoms.newBasicAtom(Predicates.getPredicate("bb", 0)).toLiteral(false)));
 		atomStore.putIfAbsent(new RuleAtom(ruleAA, new BasicSubstitution()));
 	}
 
 	private void expectGetNumberOfAtoms(AtomCounter atomCounter, String classOfAtoms, int expectedNumber) {
-		assertEquals("Unexpected number of " + classOfAtoms + "s", expectedNumber, atomCounter.getNumberOfAtoms(classOfAtoms));
+		assertEquals(expectedNumber, atomCounter.getNumberOfAtoms(classOfAtoms), "Unexpected number of " + classOfAtoms + "s");
 	}
 
 	private void expectGetStatsByType(AtomCounter atomCounter, String classOfAtoms, int expectedNumber) {
-		assertTrue("Expected number of " + classOfAtoms + "s not contained in stats string",
-				atomCounter.getStatsByType().contains(classOfAtoms + ": " + expectedNumber));
+		assertTrue(atomCounter.getStatsByType().contains(classOfAtoms + ": " + expectedNumber),
+				"Expected number of " + classOfAtoms + "s not contained in stats string");
 	}
 
 }

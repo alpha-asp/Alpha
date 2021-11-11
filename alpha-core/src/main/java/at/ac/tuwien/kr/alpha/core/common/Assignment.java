@@ -158,8 +158,6 @@ public interface Assignment {
 	 */
 	int getMBTCount();
 
-	void backtrack();
-
 	/**
 	 * Grows all internal data structures to accommodate for all atoms known.
 	 */
@@ -175,10 +173,4 @@ public interface Assignment {
 	 * @return some BasicAtom that is assigned MBT.
 	 */
 	int getBasicAtomAssignedMBT();
-
-	/**
-	 * Assigns all unassigned atoms to FALSE.
-	 * @return true if any atom was assigned.
-	 */
-	boolean closeUnassignedAtoms();
 }

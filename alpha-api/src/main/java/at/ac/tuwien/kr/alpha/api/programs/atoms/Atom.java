@@ -9,6 +9,9 @@ import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 
+/**
+ * An Atom is the common super-interface of all representations of ASP atoms used by Alpha.
+ */
 public interface Atom extends Comparable<Atom> {
 
 	Predicate getPredicate();

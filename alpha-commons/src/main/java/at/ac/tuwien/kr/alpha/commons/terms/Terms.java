@@ -97,7 +97,6 @@ public final class Terms {
 		return renamingSubstitution;
 	}
 	
-	// TODO break this into separate class to avoid cyclic dependency Terms <-> ArithmeticTermImpl
 	public static Integer evaluateGroundTerm(Term term) {
 		if (!term.isGround()) {
 			throw new RuntimeException("Cannot evaluate arithmetic term since it is not ground: " + term);
@@ -105,7 +104,6 @@ public final class Terms {
 		return evaluateGroundTermHelper(term);
 	}
 
-	// TODO break this into separate class to avoid cyclic dependency Terms <-> ArithmeticTermImpl	
 	static Integer evaluateGroundTermHelper(Term term) {
 		if (term instanceof ConstantTerm
 				&& ((ConstantTerm<?>) term).getObject() instanceof Integer) {

@@ -8,15 +8,25 @@ import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 
-public interface AggregateAtom extends Atom{
+/**
+ * An {@link Atom} representing a comparison over an aggregate function.
+ * 
+ * Copyright (c) 2021, the Alpha Team.
+ */
+public interface AggregateAtom extends Atom {
 
+	/**
+	 * Aggregate functions supported by Alpha.
+	 * 
+	 * Copyright (c) 2021, the Alpha Team.
+	 */
 	enum AggregateFunctionSymbol {
 		COUNT,
 		MAX,
 		MIN,
 		SUM
 	}
-	
+
 	ComparisonOperator getLowerBoundOperator();
 
 	Term getLowerBoundTerm();
@@ -24,26 +34,26 @@ public interface AggregateAtom extends Atom{
 	ComparisonOperator getUpperBoundOperator();
 
 	Term getUpperBoundTerm();
-	
+
 	AggregateFunctionSymbol getAggregateFunction();
-	
+
 	List<VariableTerm> getAggregateVariables();
-	
+
 	List<AggregateElement> getAggregateElements();
-	
+
 	@Override
 	AggregateLiteral toLiteral(boolean positive);
-	
+
 	interface AggregateElement {
-		
+
 		List<Term> getElementTerms();
-		
+
 		List<Literal> getElementLiterals();
-		
+
 		List<VariableTerm> getOccurringVariables();
-		
+
 		boolean isGround();
-		
+
 	}
-	
+
 }

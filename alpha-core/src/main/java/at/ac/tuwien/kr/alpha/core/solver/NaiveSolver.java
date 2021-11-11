@@ -253,7 +253,7 @@ public class NaiveSolver extends AbstractSolver {
 		Choice lastChoice = choiceStack.pop();
 
 		int lastChoiceAtom = lastChoice.getAtom();
-		boolean lastChoiceValue = lastChoice.getValue();
+		boolean lastChoiceValue = lastChoice.getTruthValue();
 
 		// Remove truth assignments of current decision level
 		for (Integer atomId : decisionLevels.get(decisionLevel)) {

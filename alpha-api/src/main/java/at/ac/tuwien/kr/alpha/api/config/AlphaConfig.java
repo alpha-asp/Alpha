@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.api.config;
 
 /**
- * Wrapper type for AlphaConfig and InputConfig.
+ * Wrapper type for {@link SystemConfig} and {@link InputConfig}.
  */
 public class AlphaConfig {
 

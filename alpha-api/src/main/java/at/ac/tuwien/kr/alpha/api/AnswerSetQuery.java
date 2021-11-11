@@ -5,9 +5,22 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 
+/**
+ * A {@link java.util.function.Predicate} testing {@link Atom}s in order to query {@link AnswerSet}s for {@link Atom}s satisfying a specific
+ * query.
+ * 
+ * Copyright (c) 2021, the Alpha Team.
+ */
 public interface AnswerSetQuery extends java.util.function.Predicate<Atom> {
 
-	public AnswerSetQuery withFilter(int termIdx, java.util.function.Predicate<Term> filter);
+	/**
+	 * Adds a filter predicate to apply on terms at the given index position.
+	 * 
+	 * @param termIdx the term index on which to apply the new filter
+	 * @param filter  a filter predicate
+	 * @return this answer set query withthe given filter added
+	 */
+	AnswerSetQuery withFilter(int termIdx, java.util.function.Predicate<Term> filter);
 
 	/**
 	 * Convenience method - adds a filter to match names of symbolic constants against a string.
@@ -16,7 +29,7 @@ public interface AnswerSetQuery extends java.util.function.Predicate<Atom> {
 	 * @param str
 	 * @return
 	 */
-	public AnswerSetQuery withConstantEquals(int termIdx, String str);
+	AnswerSetQuery withConstantEquals(int termIdx, String str);
 
 	/**
 	 * Convenience method - adds a filter to match values of constant terms against a string.
@@ -25,7 +38,7 @@ public interface AnswerSetQuery extends java.util.function.Predicate<Atom> {
 	 * @param str
 	 * @return
 	 */
-	public AnswerSetQuery withStringEquals(int termIdx, String str);
+	AnswerSetQuery withStringEquals(int termIdx, String str);
 
 	/**
 	 * Convenience method - adds a filter to check for function terms with a given function symbol and arity.
@@ -35,7 +48,7 @@ public interface AnswerSetQuery extends java.util.function.Predicate<Atom> {
 	 * @param funcArity
 	 * @return
 	 */
-	public AnswerSetQuery withFunctionTerm(int termIdx, String funcSymbol, int funcArity);
+	AnswerSetQuery withFunctionTerm(int termIdx, String funcSymbol, int funcArity);
 
 	/**
 	 * Convenience method - adds a filter to check whether a term is equal to a given term.
@@ -44,7 +57,7 @@ public interface AnswerSetQuery extends java.util.function.Predicate<Atom> {
 	 * @param otherTerm
 	 * @return
 	 */
-	public AnswerSetQuery withTermEquals(int termIdx, Term otherTerm);
+	AnswerSetQuery withTermEquals(int termIdx, Term otherTerm);
 
 	/**
 	 * Applies this query to an atom. Filters are worked off in
@@ -56,7 +69,7 @@ public interface AnswerSetQuery extends java.util.function.Predicate<Atom> {
 	 * @return true iff the atom satisfies the query
 	 */
 	@Override
-	public boolean test(Atom atom);
+	boolean test(Atom atom);
 
 	/**
 	 * Applies this query to an {@link AnswerSet}.
@@ -64,6 +77,6 @@ public interface AnswerSetQuery extends java.util.function.Predicate<Atom> {
 	 * @param as
 	 * @return
 	 */
-	public List<Atom> applyTo(AnswerSet as);	
-	
+	List<Atom> applyTo(AnswerSet as);
+
 }

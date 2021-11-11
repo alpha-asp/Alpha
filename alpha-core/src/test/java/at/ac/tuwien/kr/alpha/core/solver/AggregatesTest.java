@@ -34,6 +34,7 @@ import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.ignoreTestForSimpli
 /**
  * Tests if correct answer sets for programs containing aggregates are computed.
  */
+// TODO This is a functional test and should not be run with standard unit tests
 public class AggregatesTest {
 
 	private static final String LS = System.lineSeparator();

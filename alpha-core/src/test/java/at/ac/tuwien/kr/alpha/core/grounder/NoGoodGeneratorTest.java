@@ -27,14 +27,19 @@ package at.ac.tuwien.kr.alpha.core.grounder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.Literals;
@@ -44,7 +49,6 @@ import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
-import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 /**
  * Tests {@link NoGoodGenerator}
@@ -63,15 +67,26 @@ public class NoGoodGeneratorTest {
 	 */
 	@Test
 	public void collectNeg_ContainsOnlyPositiveLiterals() {
-		String input = "p(a,b). "
-				+ "q(a,b) :- not nq(a,b). "
-				+ "nq(a,b) :- not q(a,b).";
-		NormalProgram normal = TestUtils.parseAndNormalizeWithDefaultConfig(input);
-		CompiledProgram program = InternalProgram.fromNormalProgram(normal);
+		/*
+		 * program :=
+		 * p(a,b).
+		 * q(a,b) :- not nq(a,b).
+		 * nq(a,b) :- not q(a,b).
+		 */
+		List<Atom> facts = new ArrayList<>();
+		facts.add(Atoms.newBasicAtom(Predicates.getPredicate("p", 2), Terms.newSymbolicConstant("a"), Terms.newSymbolicConstant("b")));
+		List<CompiledRule> rules = new ArrayList<>();
+		rules.add(new InternalRule(
+				Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("q", 2), Terms.newSymbolicConstant("a"), Terms.newSymbolicConstant("b"))),
+				Atoms.newBasicAtom(Predicates.getPredicate("nq", 2), Terms.newSymbolicConstant("a"), Terms.newSymbolicConstant("b")).toLiteral(false)));
+		rules.add(new InternalRule(
+				Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("nq", 2), Terms.newSymbolicConstant("a"), Terms.newSymbolicConstant("b"))),
+				Atoms.newBasicAtom(Predicates.getPredicate("q", 2), Terms.newSymbolicConstant("a"), Terms.newSymbolicConstant("b")).toLiteral(false)));
+		CompiledProgram program = new InternalProgram(rules, facts);
 
 		CompiledRule rule = program.getRules().get(1);
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = new NaiveGrounder(program, atomStore, true);
+		Grounder grounder = new GrounderFactory(new GrounderHeuristicsConfiguration(), true).createGrounder(program, atomStore);
 		NoGoodGenerator noGoodGenerator = ((NaiveGrounder) grounder).noGoodGenerator;
 		Substitution substitution = new BasicSubstitution();
 		substitution.put(X, A);

@@ -44,6 +44,7 @@ import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
  * Tests {@link AbstractSolver} using a racks configuration problem.
  *
  */
+// TODO This is a functional test and should not be run with standard unit tests
 @Disabled("disabled to save resources during CI")
 public class RacksTest {
 
