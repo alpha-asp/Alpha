@@ -1,7 +1,10 @@
-package at.ac.tuwien.kr.alpha.core.programs.transformation;
+package at.ac.tuwien.kr.alpha.api.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static at.ac.tuwien.kr.alpha.test.AlphaAssertions.assertAnswerSetsEqual;
+import static at.ac.tuwien.kr.alpha.test.AlphaAssertions.assertAnswerSetsEqualWithBase;
+import static at.ac.tuwien.kr.alpha.test.AlphaAssertions.assertFactsContainedInProgram;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +18,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
@@ -32,13 +39,13 @@ import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.solver.SolverConfig;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.core.solver.heuristics.HeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 // TODO This is a functional test and should not be run with standard unit tests
 public class StratifiedEvaluationRegressionTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(StratifiedEvaluationRegressionTest.class);
 
+	//@formatter:off
 	private static final String STRATIFIED_NEG_ASP = "base(X) :- req(X), not incomp(X).\n"
 			+ "depend_base(X, Y) :- base(X), base(Y).\n"
 			+ "dep_b_hlp(X) :- depend_base(X, _).\n"
@@ -59,31 +66,31 @@ public class StratifiedEvaluationRegressionTest {
 	private static final String EQUALITY_ASP = "equal :- 1 = 1.";
 	private static final String EQUALITY_WITH_VAR_ASP = "a(1). a(2). a(3). b(X) :- a(X), X = 1. c(X) :- a(X), X = 2. d(X) :- X = 3, a(X).";
 
-	private static final ImmutablePair<Consumer<CompiledProgram>, Consumer<Set<AnswerSet>>> BASIC_VERIFIERS = new ImmutablePair<>(
+	private static final ImmutablePair<Consumer<NormalProgram>, Consumer<Set<AnswerSet>>> BASIC_VERIFIERS = new ImmutablePair<>(
 			StratifiedEvaluationRegressionTest::verifyProgramBasic, StratifiedEvaluationRegressionTest::verifyAnswerSetsBasic);
-	private static final ImmutablePair<Consumer<CompiledProgram>, Consumer<Set<AnswerSet>>> BASIC_MULTI_INSTANCE_VERIFIERS = new ImmutablePair<>(
+	private static final ImmutablePair<Consumer<NormalProgram>, Consumer<Set<AnswerSet>>> BASIC_MULTI_INSTANCE_VERIFIERS = new ImmutablePair<>(
 			StratifiedEvaluationRegressionTest::verifyProgramBasicMultiInstance, StratifiedEvaluationRegressionTest::verifyAnswerSetsBasicMultiInstance);
-	private static final ImmutablePair<Consumer<CompiledProgram>, Consumer<Set<AnswerSet>>> BASIC_NEGATION_VERIFIERS = new ImmutablePair<>(
+	private static final ImmutablePair<Consumer<NormalProgram>, Consumer<Set<AnswerSet>>> BASIC_NEGATION_VERIFIERS = new ImmutablePair<>(
 			StratifiedEvaluationRegressionTest::verifyProgramBasicNegation, StratifiedEvaluationRegressionTest::verifyAnswerSetsBasicNegation);
-	private static final ImmutablePair<Consumer<CompiledProgram>, Consumer<Set<AnswerSet>>> PART_STRATIFIED_VERIFIERS = new ImmutablePair<>(
+	private static final ImmutablePair<Consumer<NormalProgram>, Consumer<Set<AnswerSet>>> PART_STRATIFIED_VERIFIERS = new ImmutablePair<>(
 			StratifiedEvaluationRegressionTest::verifyProgramPartStratified, StratifiedEvaluationRegressionTest::verifyAnswerSetsPartStratified);
-	private static final ImmutablePair<Consumer<CompiledProgram>, Consumer<Set<AnswerSet>>> POSITIVE_RECURSIVE_VERIFIERS = new ImmutablePair<>(
+	private static final ImmutablePair<Consumer<NormalProgram>, Consumer<Set<AnswerSet>>> POSITIVE_RECURSIVE_VERIFIERS = new ImmutablePair<>(
 			StratifiedEvaluationRegressionTest::verifyProgramPositiveRecursive, StratifiedEvaluationRegressionTest::verifyAnswerSetsPositiveRecursive);
-	private static final ImmutablePair<Consumer<CompiledProgram>, Consumer<Set<AnswerSet>>> EMPTY_PROG_VERIFIERS = new ImmutablePair<>(
+	private static final ImmutablePair<Consumer<NormalProgram>, Consumer<Set<AnswerSet>>> EMPTY_PROG_VERIFIERS = new ImmutablePair<>(
 			StratifiedEvaluationRegressionTest::verifyProgramEmptyProg, StratifiedEvaluationRegressionTest::verifyAnswerSetsEmptyProg);
-	private static final ImmutablePair<Consumer<CompiledProgram>, Consumer<Set<AnswerSet>>> FACTS_ONLY_VERIFIERS = new ImmutablePair<>(
+	private static final ImmutablePair<Consumer<NormalProgram>, Consumer<Set<AnswerSet>>> FACTS_ONLY_VERIFIERS = new ImmutablePair<>(
 			StratifiedEvaluationRegressionTest::verifyProgramFactsOnly, StratifiedEvaluationRegressionTest::verifyAnswerSetsFactsOnly);
-	private static final ImmutablePair<Consumer<CompiledProgram>, Consumer<Set<AnswerSet>>> STRATIFIED_NO_FACTS_VERIFIERS = new ImmutablePair<>(
+	private static final ImmutablePair<Consumer<NormalProgram>, Consumer<Set<AnswerSet>>> STRATIFIED_NO_FACTS_VERIFIERS = new ImmutablePair<>(
 			StratifiedEvaluationRegressionTest::verifyProgramStratNoFacts, StratifiedEvaluationRegressionTest::verifyAnswerSetsStratNoFacts);
-	private static final ImmutablePair<Consumer<CompiledProgram>, Consumer<Set<AnswerSet>>> STRATIFIED_W_FACTS_VERIFIERS = new ImmutablePair<>(
+	private static final ImmutablePair<Consumer<NormalProgram>, Consumer<Set<AnswerSet>>> STRATIFIED_W_FACTS_VERIFIERS = new ImmutablePair<>(
 			StratifiedEvaluationRegressionTest::verifyProgramStratWithFacts, StratifiedEvaluationRegressionTest::verifyAnswerSetsStratWithFacts);
-	private static final ImmutablePair<Consumer<CompiledProgram>, Consumer<Set<AnswerSet>>> EQUALITY_VERIFIERS = new ImmutablePair<>(
+	private static final ImmutablePair<Consumer<NormalProgram>, Consumer<Set<AnswerSet>>> EQUALITY_VERIFIERS = new ImmutablePair<>(
 			StratifiedEvaluationRegressionTest::verifyProgramEquality, StratifiedEvaluationRegressionTest::verifyAnswerSetsEquality);
-	private static final ImmutablePair<Consumer<CompiledProgram>, Consumer<Set<AnswerSet>>> EQUALITY_WITH_VAR_VERIFIERS = new ImmutablePair<>(
+	private static final ImmutablePair<Consumer<NormalProgram>, Consumer<Set<AnswerSet>>> EQUALITY_WITH_VAR_VERIFIERS = new ImmutablePair<>(
 			StratifiedEvaluationRegressionTest::verifyProgramEqualityWithVar, StratifiedEvaluationRegressionTest::verifyAnswerSetsEqualityWithVar);
 
 	public static List<Arguments> params() {
-		List<ImmutablePair<String, ImmutablePair<Consumer<CompiledProgram>, Consumer<Set<AnswerSet>>>>> testCases = new ArrayList<>();
+		List<ImmutablePair<String, ImmutablePair<Consumer<NormalProgram>, Consumer<Set<AnswerSet>>>>> testCases = new ArrayList<>();
 		List<Arguments> paramList = new ArrayList<>();
 		testCases.add(new ImmutablePair<>(BASIC_TEST_ASP, BASIC_VERIFIERS));
 		testCases.add(new ImmutablePair<>(BASIC_MULTI_INSTANCE_ASP, BASIC_MULTI_INSTANCE_VERIFIERS));
@@ -100,69 +107,75 @@ public class StratifiedEvaluationRegressionTest {
 		testCases.forEach((pair) -> paramList.add(Arguments.of(pair.left, pair.right.left, pair.right.right)));
 		return paramList;
 	}
+	//@formatter:on
 
 	@ParameterizedTest
 	@MethodSource("at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluationRegressionTest#params")
-	public void runTest(String aspString, Consumer<CompiledProgram> programVerifier, Consumer<Set<AnswerSet>> resultVerifier) {
-		// Parse and pre-evaulate program
-		AnalyzedProgram analyzed = AnalyzedProgram
-				.analyzeNormalProgram(TestUtils.parseAndNormalizeWithDefaultConfig(aspString));
-		CompiledProgram evaluated = new StratifiedEvaluation().apply(analyzed);
+	public void runTest(String aspString, Consumer<NormalProgram> programVerifier,
+			Consumer<Set<AnswerSet>> resultVerifier) {
+		// Parse and pre-evaluate program
+		// Alpha instance with default config, Evolog support and stratified evaluation enabled
+		Alpha alpha = AlphaFactory.newAlpha();
+		InputProgram input = alpha.readProgramString(aspString);
+		DebugSolvingContext dbgInfo = alpha.prepareDebugSolve(input);
+		NormalProgram evaluated = dbgInfo.getPreprocessedProgram();
 		// Verify stratified evaluation result
 		programVerifier.accept(evaluated);
 		// Solve remaining program
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = new GrounderFactory(new GrounderHeuristicsConfiguration(), false).createGrounder(evaluated, atomStore);
+		Grounder grounder = new GrounderFactory(new GrounderHeuristicsConfiguration(), false).createGrounder(evaluated,
+				atomStore);
 		SolverConfig solverCfg = new SolverConfig();
 		solverCfg.setEnableDebugChecks(false);
 		solverCfg.setRandomSeed(System.nanoTime());
 		solverCfg.setDisableJustifications(false);
 		solverCfg.setDisableNogoodDeletion(false);
 		solverCfg.setHeuristicsConfiguration(
-				HeuristicsConfiguration.builder()
-						.setHeuristic(SystemConfig.DEFAULT_BRANCHING_HEURISTIC)
+				HeuristicsConfiguration.builder().setHeuristic(SystemConfig.DEFAULT_BRANCHING_HEURISTIC)
 						.setMomsStrategy(SystemConfig.DEFAULT_MOMS_STRATEGY)
-						.setReplayChoices(SystemConfig.DEFAULT_REPLAY_CHOICES)
-						.build());
+						.setReplayChoices(SystemConfig.DEFAULT_REPLAY_CHOICES).build());
 		Solver solver = new SolverFactory("default", "alpharoaming", solverCfg).createSolver(grounder, atomStore);
 		Set<AnswerSet> answerSets = solver.collectSet();
 		resultVerifier.accept(answerSets);
 	}
 
-	private static void verifyProgramBasic(CompiledProgram evaluated) {
-		TestUtils.assertFactsContainedInProgram(evaluated, TestUtils.basicAtomWithSymbolicTerms("a"), TestUtils.basicAtomWithSymbolicTerms("b"));
+	private static void verifyProgramBasic(NormalProgram evaluated) {
+		assertFactsContainedInProgram(evaluated, Atoms.newBasicAtom(Predicates.getPredicate("a", 0)),
+				Atoms.newBasicAtom(Predicates.getPredicate("b", 0)));
 		assertEquals(2, evaluated.getFacts().size());
 		assertTrue(evaluated.getRules().size() == 0);
 	}
 
 	private static void verifyAnswerSetsBasic(Set<AnswerSet> answerSets) {
-		TestUtils.assertAnswerSetsEqual("a, b", answerSets);
+		assertAnswerSetsEqual("a, b", answerSets);
 	}
 
-	private static void verifyProgramBasicMultiInstance(CompiledProgram evaluated) {
-		TestUtils.assertFactsContainedInProgram(evaluated, TestUtils.basicAtomWithSymbolicTerms("q", "a"), TestUtils.basicAtomWithSymbolicTerms("q", "b"));
+	private static void verifyProgramBasicMultiInstance(NormalProgram evaluated) {
+		assertFactsContainedInProgram(evaluated, Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newSymbolicConstant("a")),
+		Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newSymbolicConstant("b")));
 		assertTrue(evaluated.getRules().size() == 0);
 	}
 
 	private static void verifyAnswerSetsBasicMultiInstance(Set<AnswerSet> answerSets) {
-		TestUtils.assertAnswerSetsEqual("p(a), p(b), q(a), q(b)", answerSets);
+		assertAnswerSetsEqual("p(a), p(b), q(a), q(b)", answerSets);
 	}
 
-	private static void verifyProgramBasicNegation(CompiledProgram evaluated) {
-		TestUtils.assertFactsContainedInProgram(evaluated, TestUtils.basicAtomWithSymbolicTerms("s", "a", "b"),
+	private static void verifyProgramBasicNegation(NormalProgram evaluated) {
+		assertFactsContainedInProgram(evaluated, TestUtils.basicAtomWithSymbolicTerms("s", "a", "b"),
 				TestUtils.basicAtomWithSymbolicTerms("s", "a", "d"));
 		assertEquals(7, evaluated.getFacts().size());
 		assertEquals(0, evaluated.getRules().size());
 	}
 
 	private static void verifyAnswerSetsBasicNegation(Set<AnswerSet> answerSets) {
-		TestUtils.assertAnswerSetsEqual("p(a), q(b), p(c), q(d), r(c), s(a,b), s(a,d)", answerSets);
+		assertAnswerSetsEqual("p(a), q(b), p(c), q(d), r(c), s(a,b), s(a,d)", answerSets);
 	}
 
-	private static void verifyProgramPartStratified(CompiledProgram evaluated) {
-		TestUtils.assertFactsContainedInProgram(evaluated, TestUtils.basicAtomWithSymbolicTerms("p", "a"), TestUtils.basicAtomWithSymbolicTerms("q", "a"),
-				TestUtils.basicAtomWithSymbolicTerms("p", "b"),
-				TestUtils.basicAtomWithSymbolicTerms("m", "c"), TestUtils.basicAtomWithSymbolicTerms("n", "d"), TestUtils.basicAtomWithSymbolicTerms("r", "a"),
+	private static void verifyProgramPartStratified(NormalProgram evaluated) {
+		assertFactsContainedInProgram(evaluated, TestUtils.basicAtomWithSymbolicTerms("p", "a"),
+				TestUtils.basicAtomWithSymbolicTerms("q", "a"), TestUtils.basicAtomWithSymbolicTerms("p", "b"),
+				TestUtils.basicAtomWithSymbolicTerms("m", "c"), TestUtils.basicAtomWithSymbolicTerms("n", "d"),
+				TestUtils.basicAtomWithSymbolicTerms("r", "a"),
 				TestUtils.basicAtomWithSymbolicTerms("s", "a", "c", "d"),
 				TestUtils.basicAtomWithSymbolicTerms("t", "a", "b"));
 		LOGGER.debug("part stratified evaluated prog is:\n{}", evaluated.toString());
@@ -170,28 +183,31 @@ public class StratifiedEvaluationRegressionTest {
 	}
 
 	private static void verifyAnswerSetsPartStratified(Set<AnswerSet> answerSets) {
-		TestUtils.assertAnswerSetsEqual(new String[] { "p(a), q(a), p(b), m(c), n(d), r(a), s(a,c,d), t(a,b), either(a)",
+		assertAnswerSetsEqual(new String[] { "p(a), q(a), p(b), m(c), n(d), r(a), s(a,c,d), t(a,b), either(a)",
 				"p(a), q(a), p(b), m(c), n(d), r(a), s(a,c,d), t(a,b), or(a)" }, answerSets);
 	}
 
-	private static void verifyProgramPositiveRecursive(CompiledProgram evaluated) {
+	private static void verifyProgramPositiveRecursive(NormalProgram evaluated) {
 		Predicate num = Predicates.getPredicate("num", 1);
-		TestUtils.assertFactsContainedInProgram(evaluated, Atoms.newBasicAtom(Predicates.getPredicate("max_num", 1), Terms.newConstant(10)),
-				Atoms.newBasicAtom(num, Terms.newConstant(0)),
-				Atoms.newBasicAtom(num, Terms.newConstant(1)), Atoms.newBasicAtom(num, Terms.newConstant(2)),
-				Atoms.newBasicAtom(num, Terms.newConstant(3)), Atoms.newBasicAtom(num, Terms.newConstant(4)),
-				Atoms.newBasicAtom(num, Terms.newConstant(5)), Atoms.newBasicAtom(num, Terms.newConstant(6)),
-				Atoms.newBasicAtom(num, Terms.newConstant(7)), Atoms.newBasicAtom(num, Terms.newConstant(8)),
-				Atoms.newBasicAtom(num, Terms.newConstant(9)), Atoms.newBasicAtom(num, Terms.newConstant(10)));
+		assertFactsContainedInProgram(evaluated,
+				Atoms.newBasicAtom(Predicates.getPredicate("max_num", 1), Terms.newConstant(10)),
+				Atoms.newBasicAtom(num, Terms.newConstant(0)), Atoms.newBasicAtom(num, Terms.newConstant(1)),
+				Atoms.newBasicAtom(num, Terms.newConstant(2)), Atoms.newBasicAtom(num, Terms.newConstant(3)),
+				Atoms.newBasicAtom(num, Terms.newConstant(4)), Atoms.newBasicAtom(num, Terms.newConstant(5)),
+				Atoms.newBasicAtom(num, Terms.newConstant(6)), Atoms.newBasicAtom(num, Terms.newConstant(7)),
+				Atoms.newBasicAtom(num, Terms.newConstant(8)), Atoms.newBasicAtom(num, Terms.newConstant(9)),
+				Atoms.newBasicAtom(num, Terms.newConstant(10)));
 		LOGGER.debug("Recursive program evaluated is:\n{}", evaluated.toString());
 		assertEquals(0, evaluated.getRules().size());
 	}
 
 	private static void verifyAnswerSetsPositiveRecursive(Set<AnswerSet> answerSets) {
-		TestUtils.assertAnswerSetsEqual("max_num(10), num(0), num(1), num(2), num(3), num(4), num(5), num(6), num(7), num(8), num(9), num(10)", answerSets);
+		assertAnswerSetsEqual(
+				"max_num(10), num(0), num(1), num(2), num(3), num(4), num(5), num(6), num(7), num(8), num(9), num(10)",
+				answerSets);
 	}
 
-	private static void verifyProgramEmptyProg(CompiledProgram evaluated) {
+	private static void verifyProgramEmptyProg(NormalProgram evaluated) {
 		assertTrue(evaluated.getRules().isEmpty());
 		assertTrue(evaluated.getRulesById().isEmpty());
 		assertTrue(evaluated.getPredicateDefiningRules().isEmpty());
@@ -204,7 +220,7 @@ public class StratifiedEvaluationRegressionTest {
 		assertTrue(answerSets.iterator().next().isEmpty());
 	}
 
-	private static void verifyProgramFactsOnly(CompiledProgram evaluated) {
+	private static void verifyProgramFactsOnly(NormalProgram evaluated) {
 		assertTrue(evaluated.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("a")));
 		assertTrue(evaluated.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("b")));
 		assertTrue(evaluated.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("c")));
@@ -215,10 +231,10 @@ public class StratifiedEvaluationRegressionTest {
 	}
 
 	private static void verifyAnswerSetsFactsOnly(Set<AnswerSet> answerSets) {
-		TestUtils.assertAnswerSetsEqual("a, b, c, p(a), q(b,c), r(c,c,a), s(b)", answerSets);
+		assertAnswerSetsEqual("a, b, c, p(a), q(b,c), r(c,c,a), s(b)", answerSets);
 	}
 
-	private static void verifyProgramStratNoFacts(CompiledProgram evaluated) {
+	private static void verifyProgramStratNoFacts(NormalProgram evaluated) {
 		assertTrue(evaluated.getFacts().isEmpty());
 	}
 
@@ -227,7 +243,7 @@ public class StratifiedEvaluationRegressionTest {
 		assertTrue(answerSets.iterator().next().isEmpty());
 	}
 
-	private static void verifyProgramStratWithFacts(CompiledProgram evaluated) {
+	private static void verifyProgramStratWithFacts(NormalProgram evaluated) {
 		// rules should all be taken care of at this point
 		assertTrue(evaluated.getRules().isEmpty());
 		assertTrue(evaluated.getRulesById().isEmpty());
@@ -246,27 +262,31 @@ public class StratifiedEvaluationRegressionTest {
 	}
 
 	private static void verifyAnswerSetsStratWithFacts(Set<AnswerSet> answerSets) {
-		TestUtils.assertAnswerSetsEqual("req(a), req(b), incomp(b), base(a), depend_base(a,a), dep_b_hlp(a), depend_further(a)", answerSets);
+		assertAnswerSetsEqual("req(a), req(b), incomp(b), base(a), depend_base(a,a), dep_b_hlp(a), depend_further(a)",
+				answerSets);
 	}
 
-	private static void verifyProgramEquality(CompiledProgram evaluated) {
+	private static void verifyProgramEquality(NormalProgram evaluated) {
 		assertEquals(0, evaluated.getRules().size());
 		assertTrue(evaluated.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("equal")));
 	}
 
 	private static void verifyAnswerSetsEquality(Set<AnswerSet> answerSets) {
-		TestUtils.assertAnswerSetsEqual("equal", answerSets);
+		assertAnswerSetsEqual("equal", answerSets);
 	}
 
-	private static void verifyProgramEqualityWithVar(CompiledProgram evaluated) {
+	private static void verifyProgramEqualityWithVar(NormalProgram evaluated) {
 		assertEquals(0, evaluated.getRules().size());
-		assertTrue(evaluated.getFacts().contains(Atoms.newBasicAtom(Predicates.getPredicate("a", 1), Terms.newConstant(1))));
-		assertTrue(evaluated.getFacts().contains(Atoms.newBasicAtom(Predicates.getPredicate("c", 1), Terms.newConstant(2))));
-		assertTrue(evaluated.getFacts().contains(Atoms.newBasicAtom(Predicates.getPredicate("d", 1), Terms.newConstant(3))));
+		assertTrue(evaluated.getFacts()
+				.contains(Atoms.newBasicAtom(Predicates.getPredicate("a", 1), Terms.newConstant(1))));
+		assertTrue(evaluated.getFacts()
+				.contains(Atoms.newBasicAtom(Predicates.getPredicate("c", 1), Terms.newConstant(2))));
+		assertTrue(evaluated.getFacts()
+				.contains(Atoms.newBasicAtom(Predicates.getPredicate("d", 1), Terms.newConstant(3))));
 	}
 
 	private static void verifyAnswerSetsEqualityWithVar(Set<AnswerSet> answerSets) {
-		TestUtils.assertAnswerSetsEqual("a(1), a(2), a(3), b(1), c(2), d(3)", answerSets);
+		assertAnswerSetsEqual("a(1), a(2), a(3), b(1), c(2), d(3)", answerSets);
 	}
 
 }

@@ -60,5 +60,6 @@ tasks.create<Jar>("bundledJar") {
 }
 
 tasks.test {
+	dependsOn(":alpha-solver:test")
 	useJUnitPlatform()
 }
