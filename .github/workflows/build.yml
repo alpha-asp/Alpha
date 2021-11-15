@@ -32,25 +32,27 @@ jobs:
       # OS to be the "main" one.
       MAIN_OS: ubuntu
     steps:
+    # See https://github.com/marketplace/actions/checkout
     - uses: actions/checkout@v2
       with:
         submodules: recursive
         fetch-depth: 0
+    # See https://github.com/marketplace/actions/gradle-wrapper-validation
+    - uses: gradle/wrapper-validation-action@v1
+    # See https://github.com/marketplace/actions/setup-java-jdk
     - uses: actions/setup-java@v2
       with:
         java-version: ${{ matrix.java }}
         distribution: 'temurin'
-        architecture: x64
-        cache: 'gradle'
-
-    - run: ./gradlew build --stacktrace
-      if: runner.os != 'Windows'
-    - run: .\gradlew build --stacktrace
-      if: runner.os == 'Windows'
-
-    - run: ./gradlew jacocoTestReport coveralls
+    # See https://github.com/marketplace/actions/gradle-build-action
+    - uses: gradle/gradle-build-action@v2
+      with:
+        arguments: build --stacktrace
+    - uses: gradle/gradle-build-action@v2
       if: matrix.os == env.MAIN_OS && matrix.java == env.MAIN_JAVA
       continue-on-error: true
+      with:
+        arguments: jacocoTestReport coveralls
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
     - uses: codecov/codecov-action@v1
