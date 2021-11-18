@@ -29,7 +29,7 @@ public interface Predicate extends Comparable<Predicate> {
 	}
 
 	/**
-	 * Indicates whether this predicate is internal. Internal predicates are no shown in answer sets.
+	 * Indicates whether this predicate is internal. Internal predicates are not shown in answer sets.
 	 */
 	boolean isInternal();
 
