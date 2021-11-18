@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.api.terms;
 
 /**
- * A {@link Term} that is the result of an arithmetic calculation.
+ * A {@link Term} that is a binary arithmetic expression.
  * 
  * Copyright (c) 2021, the Alpha Team.
  */
