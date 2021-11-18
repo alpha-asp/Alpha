@@ -44,6 +44,7 @@ import java.util.SortedSet;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
@@ -56,7 +57,7 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderMockWithChoice;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderMockWithBasicProgram;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.test.AnswerSetsParser;
 
 // // TODO This is a functional test and should not be run with standard unit tests
@@ -80,7 +81,7 @@ public class SolverTests {
 
 		final Atom fact = Atoms.newBasicAtom(Predicates.getPredicate("foo", 1), Terms.newConstant(thingy));
 
-		final InputProgram program = new InputProgram(
+		final InputProgram program = new InputProgramImpl(
 			Collections.emptyList(),
 			Collections.singletonList(fact),
 			new InlineDirectivesImpl()

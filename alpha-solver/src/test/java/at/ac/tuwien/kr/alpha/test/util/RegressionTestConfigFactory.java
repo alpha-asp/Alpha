@@ -29,7 +29,6 @@ public class RegressionTestConfigFactory {
 	 * 
 	 * @return
 	 */
-	// TODO add switch for evolog support
 	private static List<SystemConfig> buildConfigs() {
 		// Check whether we are running in a CI environment.
 		boolean ci = Boolean.valueOf(System.getenv("CI"));

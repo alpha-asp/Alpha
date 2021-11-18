@@ -12,43 +12,14 @@ import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.Solver;
-import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.core.parser.evolog.EvologProgramParser;
-import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
-import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
-import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
 
 // TODO This is a functional test and should not be run with standard unit tests
 public class AggregateRewritingTest {
-
-	// private static final ProgramParser PARSER = new EvologProgramParser();
-	// private static final GrounderFactory GROUNDER_FACTORY = new GrounderFactory(new GrounderHeuristicsConfiguration(), false);
-	// private static final SolverFactory SOLVER_FACTORY = new SolverFactory();
-
-	// private static final Function<String, List<AnswerSet>> NORMALIZE_AND_SOLVE = (str) -> {
-	// 	SystemConfig cfg = new SystemConfig();
-	// 	InputProgram prog = PARSER.parse(str);
-	// 	NormalProgram normalized = new NormalizeProgramTransformation(cfg.getAggregateRewritingConfig()).apply(prog);
-	// 	CompiledProgram compiled = InternalProgram.fromNormalProgram(normalized);
-	// 	AtomStore atomStore = new AtomStoreImpl();
-	// 	Grounder grounder = GROUNDER_FACTORY.createGrounder(compiled, atomStore);
-	// 	Solver solver = SOLVER_FACTORY.createSolver(grounder, atomStore);
-	// 	return solver.collectList();
-	// };
 
 	//@formatter:off
 	// Smoke-test case for "X <= #count{...}" aggregate
@@ -106,6 +77,7 @@ public class AggregateRewritingTest {
 			+ "	Y = #count { X : p( X ) }, 1 <= #count { X : p( X ) }, Z = #max { W : p( W ) }.";
 	//@formatter:on
 
+	// Use an alpha instance with default config for all test cases
 	private final Alpha alpha = AlphaFactory.newAlpha();
 	private final Function<String, List<AnswerSet>> solve = (asp) -> {
 		InputProgram prog = alpha.readProgramString(asp);
