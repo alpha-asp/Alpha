@@ -74,9 +74,9 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 
 	private final WritableAssignment assignment;
 	private final LearnedNoGoodDeletion learnedNoGoodDeletion;
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings(value = {"rawtypes", "unchecked"})
 	private ArrayList<WatchedNoGood>[] watches = new ArrayList[0];
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings(value = {"rawtypes", "unchecked"})
 	private ArrayList<WatchedNoGood>[] watchesAlpha = new ArrayList[0];
 	private BinaryWatchList[] binaryWatches = new BinaryWatchList[0];
 	private int maxAtomId;
@@ -97,7 +97,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		this(assignment, false);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings(value = {"rawtypes", "unchecked"})
 	void clear() {
 		assignment.clear();
 		learnedNoGoodDeletion.reset();
