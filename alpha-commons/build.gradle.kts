@@ -1,5 +1,5 @@
 plugins {
-    id("alpha.java-library-conventions")
+	id("alpha.java-library-conventions")
 }
 
 // Keep this in sync with antlr version to avoid multiple versions in classpath

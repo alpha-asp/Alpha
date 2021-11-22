@@ -1,10 +1,10 @@
 plugins {
-    id("alpha.java-application-conventions")
+	id("alpha.java-application-conventions")
 }
 
 dependencies {
-    implementation(project(":alpha-solver"))
-    implementation(project(":alpha-commons"))
+	implementation(project(":alpha-solver"))
+	implementation(project(":alpha-commons"))
 
 	implementation("commons-cli:commons-cli:1.3.1")
 
@@ -16,7 +16,7 @@ dependencies {
 val main = "at.ac.tuwien.kr.alpha.Main"
 
 application {
-    mainClass.set(main)
+	mainClass.set(main)
 }
 
 tasks.create<Jar>("bundledJar") {
