@@ -20,14 +20,14 @@ application {
 }
 
 tasks.create<Jar>("bundledJar") {
+	dependsOn(":alpha-api:jar", ":alpha-commons:jar", ":alpha-core:jar", ":alpha-solver:jar")
+
 	manifest {
 		attributes["Main-Class"] = main
 	}
 
 	with(tasks["jar"] as CopySpec)
 
-	from(configurations.compileClasspath.get().map({ if (it.isDirectory()) it else zipTree(it) }))
-	// TODO: is there a neater way to do this?
 	from(configurations.runtimeClasspath.get().map({ if (it.isDirectory()) it else zipTree(it) }))
 
 	archiveFileName.set("${project.name}-bundled.jar")
@@ -55,8 +55,6 @@ tasks.create<Jar>("bundledJar") {
 			it
 		}
 	}
-
-	with(tasks["jar"] as CopySpec)
 }
 
 tasks.test {
