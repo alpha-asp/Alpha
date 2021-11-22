@@ -21,7 +21,7 @@ dependencies {
 	implementation("org.apache.commons:commons-text:1.9")
 
 	implementation("org.reflections:reflections:0.9.11")
-	implementation("org.slf4j:slf4j-api:1.7.20")
+	implementation("org.slf4j:slf4j-api:1.7.25")
 
 	// JUnit 5
 	val jupiterVersion = "5.7.1"

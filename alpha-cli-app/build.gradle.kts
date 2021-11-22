@@ -11,6 +11,12 @@ dependencies {
 	val poiVersion = "4.1.1"
 	implementation("org.apache.poi:poi:${poiVersion}")
 	implementation("org.apache.poi:poi-ooxml:${poiVersion}")
+
+	// Logging Implementation and SLF4J
+	implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.14.1") {
+		// Exclude the SLF4J API, because we already have it via `alpha.java-application-conventions`.
+		exclude("org.slf4j", "slf4j-api")
+	}
 }
 
 val main = "at.ac.tuwien.kr.alpha.Main"
@@ -24,6 +30,7 @@ tasks.create<Jar>("bundledJar") {
 
 	manifest {
 		attributes["Main-Class"] = main
+		attributes["Multi-Release"] = true
 	}
 
 	with(tasks["jar"] as CopySpec)
@@ -31,6 +38,8 @@ tasks.create<Jar>("bundledJar") {
 	from(configurations.runtimeClasspath.get().map({ if (it.isDirectory()) it else zipTree(it) }))
 
 	archiveFileName.set("${project.name}-bundled.jar")
+
+	exclude("META-INF/DEPENDENCIES")
 	
 	/*
 	 * In order to make sure we don"t overwrite NOTICE and LICENSE files coming from dependency
@@ -55,6 +64,8 @@ tasks.create<Jar>("bundledJar") {
 			it
 		}
 	}
+
+	duplicatesStrategy = DuplicatesStrategy.FAIL
 }
 
 tasks.test {
