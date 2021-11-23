@@ -45,7 +45,7 @@ tasks.create<Jar>("bundledJar") {
 	 * In order to make sure we don"t overwrite NOTICE and LICENSE files coming from dependency
 	 * jars with each other, number them while copying
 	 */
-	var noticeCount = 1
+	var noticeCount = 0
 	rename { it : String ->
 		return@rename if ("NOTICE.txt".equals(it) || "NOTICE".equals(it)) {
 			noticeCount++
