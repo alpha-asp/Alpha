@@ -78,7 +78,7 @@ public class ComparisonOperators {
 
 		@Override
 		public ComparisonOperator negate() {
-			return ComparisonOperators.LE;
+			return ComparisonOperators.LT;
 		}
 
 		@Override
