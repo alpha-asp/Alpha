@@ -75,7 +75,7 @@ import at.ac.tuwien.kr.alpha.core.util.Substitutions;
 /**
  * The new default solver employed in Alpha.
  *
- * Copyright (c) 2016-2020, the Alpha Team.
+ * Copyright (c) 2016-2021, the Alpha Team.
  */
 public class DefaultSolver extends AbstractSolver implements StatisticsReportingSolver {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolver.class);
