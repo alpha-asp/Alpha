@@ -13,7 +13,7 @@ import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 
 /**
- * Main API entry point for the Alpha ASP system. Provides facalitites for parsing, normalizing and solving ASP programs.
+ * Main API entry point for the Alpha ASP system. Provides facilities for parsing, normalizing and solving ASP programs.
  * 
  * Copyright (c) 2021, the Alpha Team.
  */
