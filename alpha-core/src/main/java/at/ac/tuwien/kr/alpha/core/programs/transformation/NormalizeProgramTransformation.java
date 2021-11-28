@@ -35,7 +35,7 @@ public class NormalizeProgramTransformation extends ProgramTransformation<ASPCor
 
 		// Construct the normal program.
 		NormalProgram retVal = NormalProgramImpl.fromInputProgram(tmpPrg);
-		// Transform intervals
+		// Transform intervals.
 		retVal = new IntervalTermToIntervalAtom().apply(retVal);
 		// Rewrite ArithmeticTerms.
 		retVal = new ArithmeticTermsRewriting().apply(retVal);
