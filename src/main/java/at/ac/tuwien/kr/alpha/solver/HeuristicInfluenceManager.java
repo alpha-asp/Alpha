@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import org.apache.commons.collections4.MultiValuedMap;
@@ -137,29 +138,38 @@ public class HeuristicInfluenceManager extends InfluenceManager {
 	}
 
 	void checkActiveChoicePoints() {
-		// TODO: implement
-//		HashSet<HeuristicChoicePoint> actualActiveChoicePoints = new HashSet<>();
-//		for (int i = 0; i < influencers.length; i++) {
-//			HeuristicChoicePoint choicePoint = influencers[i];
-//			if (choicePoint == null) {
-//				continue;
-//			}
-//			if (checkActiveChoicePoint(choicePoint)) {
-//				actualActiveChoicePoints.add(choicePoint);
-//			}
-//		}
-//		if (!actualActiveChoicePoints.equals(activeChoicePoints)) {
-//			throw oops("ChoiceInfluenceManager internal checker detected wrong activeChoicePoints");
-//		}
-//		LOGGER.trace("Checking internal choice manger: all ok.");
+		HashSet<Integer> actualActiveChoicePointAtoms = new HashSet<>();
+		for (HeuristicChoicePoint heuristicChoicePoint : heuristicChoicePoints.values()) {
+			if (checkActiveChoicePoint(heuristicChoicePoint)) {
+				actualActiveChoicePointAtoms.add(heuristicChoicePoint.atom);
+			}
+		}
+		if (!actualActiveChoicePointAtoms.equals(activeChoicePointsAtoms)) {
+			throw oops(this.getClass().getSimpleName() + " internal checker detected wrong activeChoicePoints");
+		}
+		LOGGER.trace("Checking internal " + this.getClass().getSimpleName() + ": all ok.");
 	}
 
 	private boolean checkActiveChoicePoint(HeuristicChoicePoint heuristicChoicePoint) {
-		// TODO: implement
-//		ThriceTruth atomTruth = assignment.getTruth(heuristicChoicePoint.atom);
-//		boolean isNotChosen = atomTruth == null || atomTruth == MBT;
-//		return isActive && isNotChosen;
-		throw new UnsupportedOperationException();
+		final Integer[] enablers = heuristicChoicePoint.enablers;
+		final Integer[] disablers = heuristicChoicePoint.disablers;
+		final ThriceTruth truthEnablerTM = getNullsafeTruth(enablers[IDX_TM]);
+		boolean isActive = enablers[IDX_TM] == null || truthEnablerTM == TRUE || truthEnablerTM == MBT;
+		isActive &= enablers[IDX_T] == null || getNullsafeTruth(enablers[IDX_T]) == TRUE;
+		isActive &= enablers[IDX_M] == null || getNullsafeTruth(enablers[IDX_M]) == MBT;
+		isActive &= enablers[IDX_F] == null || getNullsafeTruth(enablers[IDX_F]) == TRUE;
+
+		final ThriceTruth truthDisablerTM = getNullsafeTruth(disablers[IDX_TM]);
+		isActive &= truthDisablerTM != TRUE && truthDisablerTM != MBT;
+		isActive &= getNullsafeTruth(disablers[IDX_T]) != TRUE;
+		isActive &= getNullsafeTruth(disablers[IDX_M]) != MBT;
+		isActive &= getNullsafeTruth(disablers[IDX_F]) != TRUE;
+
+		isActive &= assignment.isUnassignedOrMBT(heuristicChoicePoint.headAtom);
+
+		ThriceTruth atomTruth = assignment.getTruth(heuristicChoicePoint.atom);
+		boolean isNotChosen = atomTruth == null || atomTruth == MBT;
+		return isActive && isNotChosen;
 	}
 
 	boolean isActive(int atom) {
@@ -183,6 +193,10 @@ public class HeuristicInfluenceManager extends InfluenceManager {
 		for (HeuristicChoicePoint heuristicForHead : headAtomsToHeuristics.get(atom)) {
 			heuristicForHead.recomputeActive();
 		}
+	}
+
+	private ThriceTruth getNullsafeTruth(Integer atom) {
+		return atom == null ? null : assignment.getTruth(atom);
 	}
 
 	private class HeuristicChoicePoint {
@@ -228,10 +242,6 @@ public class HeuristicInfluenceManager extends InfluenceManager {
 
 			isActive &= assignment.isUnassignedOrMBT(headAtom);
 			return isActive;
-		}
-
-		private ThriceTruth getNullsafeTruth(Integer atom) {
-			return atom == null ? null : assignment.getTruth(atom);
 		}
 
 		private boolean isNotChosen() {

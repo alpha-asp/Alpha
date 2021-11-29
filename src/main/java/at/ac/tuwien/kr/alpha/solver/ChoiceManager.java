@@ -27,10 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,6 +37,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
@@ -142,6 +142,7 @@ public class ChoiceManager implements Checkable {
 		LOGGER.trace("Updating assignments of ChoiceManager.");
 		if (checksEnabled) {
 			choicePointInfluenceManager.checkActiveChoicePoints();
+			heuristicInfluenceManager.checkActiveChoicePoints();
 		}
 	}
 
