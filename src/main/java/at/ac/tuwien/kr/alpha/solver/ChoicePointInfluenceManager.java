@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2020, the Alpha Team.
+ * Copyright (c) 2017-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -27,15 +27,15 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -120,6 +120,9 @@ public class ChoicePointInfluenceManager extends InfluenceManager {
 	}
 
 	boolean isActive(int atom) {
+		if (checksEnabled) {
+			checkActiveChoicePoints();
+		}
 		ChoicePoint choicePoint = influencers[atom];
 		return choicePoint != null && choicePoint.isActive && choicePoint.atom == atom;
 	}

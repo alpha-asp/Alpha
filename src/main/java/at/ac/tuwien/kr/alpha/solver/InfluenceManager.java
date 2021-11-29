@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2020, the Alpha Team.
+ * Copyright (c) 2017-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -51,6 +51,9 @@ public abstract class InfluenceManager implements Checkable {
 	abstract boolean isActive(int atom);
 
 	int getNextActiveAtomOrDefault(int defaultAtom) {
+		if (checksEnabled) {
+			checkActiveChoicePoints();
+		}
 		return activeChoicePointsAtoms.size() > 0 ? activeChoicePointsAtoms.iterator().next() : defaultAtom;
 	}
 
@@ -58,6 +61,8 @@ public abstract class InfluenceManager implements Checkable {
 	public void setChecksEnabled(boolean checksEnabled) {
 		this.checksEnabled = checksEnabled;
 	}
+
+	abstract void checkActiveChoicePoints();
 
 	abstract void callbackOnChanged(int atom);
 	

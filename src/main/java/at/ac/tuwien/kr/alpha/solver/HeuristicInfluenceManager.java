@@ -27,15 +27,16 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.IDX_F;
@@ -135,7 +136,36 @@ public class HeuristicInfluenceManager extends InfluenceManager {
 		}
 	}
 
+	void checkActiveChoicePoints() {
+		// TODO: implement
+//		HashSet<HeuristicChoicePoint> actualActiveChoicePoints = new HashSet<>();
+//		for (int i = 0; i < influencers.length; i++) {
+//			HeuristicChoicePoint choicePoint = influencers[i];
+//			if (choicePoint == null) {
+//				continue;
+//			}
+//			if (checkActiveChoicePoint(choicePoint)) {
+//				actualActiveChoicePoints.add(choicePoint);
+//			}
+//		}
+//		if (!actualActiveChoicePoints.equals(activeChoicePoints)) {
+//			throw oops("ChoiceInfluenceManager internal checker detected wrong activeChoicePoints");
+//		}
+//		LOGGER.trace("Checking internal choice manger: all ok.");
+	}
+
+	private boolean checkActiveChoicePoint(HeuristicChoicePoint heuristicChoicePoint) {
+		// TODO: implement
+//		ThriceTruth atomTruth = assignment.getTruth(heuristicChoicePoint.atom);
+//		boolean isNotChosen = atomTruth == null || atomTruth == MBT;
+//		return isActive && isNotChosen;
+		throw new UnsupportedOperationException();
+	}
+
 	boolean isActive(int atom) {
+		if (checksEnabled) {
+			checkActiveChoicePoints();
+		}
 		HeuristicChoicePoint choicePoint = influencers.get(atom);
 		return choicePoint != null && choicePoint.isActive && choicePoint.atom == atom;
 	}
