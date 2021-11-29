@@ -4,17 +4,23 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 /**
- * Strategies to estimate the amount of influence of a literal.
+ * The available strategies for estimating initial heuristic values for heuristics like VSIDS.
+ * Modern heuristics determine dynamically which atoms are of high interest. Initial values however must be determined
+ * by some other mechanism. One possibility is MOMS where the propagation from binary nogoods is used to estimate how
+ * much influence each atom might have.
  */
 public enum BinaryNoGoodPropagationEstimationStrategy {
 	/**
-	 * Counts binary watches involving the literal under consideration
+	 * Estimate influence of literal under consideration by simply counting the number of binary nogoods (i.e., the
+	 * length of the binary watch-list) this literal occurs in.
+	 * Requires less computation than BinaryNoGoodPropagation but is also less precise.
 	 */
 	CountBinaryWatches,
 
 	/**
-	 * Assigns true to the literal under consideration, then does propagation only on binary nogoods
-	 * and counts how many other atoms are assigned during this process, then backtracks
+	 * Count how many atoms are assigned after the literal under consideration is assigned true.
+	 * This requires an assignment and a propagation cycle followed by a backtracking. More precise than
+	 * CountBinaryWatches but significantly more computation required.
 	 */
 	BinaryNoGoodPropagation;
 
