@@ -27,20 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.structure;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -56,6 +42,19 @@ import at.ac.tuwien.kr.alpha.grounder.Instance;
 import at.ac.tuwien.kr.alpha.grounder.Unification;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
@@ -258,12 +257,11 @@ public class AnalyzeUnjustified {
 						continue;
 					}
 				} // Note: in case the atom is not in the atomStore, it came from a fact and hence is true.
-				Unifier sigma = Unification.instantiate(bSigmaY, atom);
+				Unifier sigma = Unification.instantiate(b, atom);
 				if (sigma == null) {
 					log("Atom does not unify with picked body literal.");
 					continue;
 				}
-				sigma = new Unifier(sigma).extendWith(sigmaY);
 
 				Atom bSigma = b.substitute(sigma);
 				if (!bSigma.isGround()) {
