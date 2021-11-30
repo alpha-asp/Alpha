@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2020, the Alpha Team.
+/*
+ * Copyright (c) 2016-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -27,19 +27,20 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
+import java.util.List;
+import java.util.Set;
+
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Substitutable;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 
-import java.util.List;
-import java.util.Set;
-
 /**
  * An Atom is the common superclass of all representations of ASP atoms used by Alpha.
  */
-public abstract class Atom implements Comparable<Atom> {
+public abstract class Atom implements Comparable<Atom>, Substitutable<Atom> {
 
 	public abstract Predicate getPredicate();
 

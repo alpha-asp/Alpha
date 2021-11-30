@@ -43,9 +43,9 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
  * Tests {@link AbstractSolver} using some pigeon-hole test cases (see https://en.wikipedia.org/wiki/Pigeonhole_principle).
  */
 public class PigeonHoleTest {
-	
+
 	private static final long DEBUG_TIMEOUT_FACTOR = 5;
-	
+
 	@RegressionTest
 	public void test2Pigeons2Holes(RegressionTestConfig cfg) {
 		long timeout = 5000L;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -25,13 +25,10 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.Collection;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.Collection;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -44,8 +41,14 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
+
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ChoiceManagerTests {
+	private final HeuristicsConfiguration heuristicsConfiguration = new HeuristicsConfigurationBuilder().build();
 	private Grounder grounder;
 	private ChoiceManager choiceManager;
 	private AtomStore atomStore;
@@ -58,7 +61,7 @@ public class ChoiceManagerTests {
 		NormalProgram normalProgram = system.normalizeProgram(parsedProgram);
 		InternalProgram internalProgram = InternalProgram.fromNormalProgram(normalProgram);
 		atomStore = new AtomStoreImpl();
-		grounder = new NaiveGrounder(internalProgram, atomStore, true);
+		grounder = new NaiveGrounder(internalProgram, atomStore, heuristicsConfiguration, true);
 		WritableAssignment assignment = new TrailAssignment(atomStore);
 		NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment);
 		choiceManager = new ChoiceManager(assignment, store);

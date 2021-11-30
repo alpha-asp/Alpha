@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -27,20 +27,31 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.IntIterator;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.IntIterator;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicInfluencerAtom;
 
 import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
 import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
 import static at.ac.tuwien.kr.alpha.solver.Atoms.isAtom;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 /**
  * An implementation of Assignment using a trail (of literals) and arrays as underlying structures for storing
@@ -69,7 +80,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	};
 
 	private final AtomStore atomStore;
-	private ChoiceManager choiceManagerCallback;
+	private ChoiceManager choiceManager;
 
 	/**
 	 * Contains for each known atom a value whose two least
@@ -135,7 +146,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	@Override
 	public void setCallback(ChoiceManager choiceManager) {
-		choiceManagerCallback = choiceManager;
+		this.choiceManager = choiceManager;
 	}
 
 	@Override
@@ -145,9 +156,15 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	@Override
 	public int getBasicAtomAssignedMBT() {
-		for (int atom = 1; atom <= atomStore.getMaxAtomId(); atom++) {
-			if (getTruth(atom) == MBT && atomStore.get(atom) instanceof BasicAtom) {
-				return atom;
+		for (int atomId = 1; atomId <= atomStore.getMaxAtomId(); atomId++) {
+			if (getTruth(atomId) == MBT) {
+				final Atom atom = atomStore.get(atomId);
+				if (atom instanceof BasicAtom && !(atom instanceof HeuristicInfluencerAtom)) {
+					// It does not make sense to search for a justification for a HeuristicInfluencerAtom.
+					// Whenever a HeuristicInfluencerAtom is assigned M, there must also be an ordinary BasicAtom assigned M.
+					// For these reasons, HeuristicInfluencerAtoms are excluded here.
+					return atomId;
+				}
 			}
 		}
 		throw oops("No BasicAtom is assigned MBT.");
@@ -199,7 +216,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	private void informCallback(int atom) {
 		if (callbackUponChange[atom]) {
-			choiceManagerCallback.callbackOnChanged(atom);
+			choiceManager.callbackOnChanged(atom);
 		}
 	}
 
@@ -358,7 +375,10 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			if (value == TRUE) {
 				strongDecisionLevels[atom] = getDecisionLevel();
 			}
-			informCallback(atom);
+			if (impliedBy != CLOSING_INDICATOR_ANTECEDENT) {
+				// we assume that callbacks need not be informed during closing
+				informCallback(atom);
+			}
 			didChange = true;
 			return null;
 		}
@@ -517,7 +537,9 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	public boolean closeUnassignedAtoms() {
 		boolean didAssign = false;
 		for (int i = 1; i <= atomStore.getMaxAtomId(); i++) {
-			if (!isAssigned(i)) {
+			if (!isAssigned(i) && !(atomStore.get(i) instanceof HeuristicInfluencerAtom)) {
+				// HeuristicInfluencerAtom may stay unassigned because they are irrelevant in answer sets.
+				// here they are ignored to avoid conflicts (which can occur when a heuristic becomes applicable due to atoms being assigned false during closing)
 				assign(i, FALSE, CLOSING_INDICATOR_ANTECEDENT);
 				didAssign = true;
 			}
@@ -571,6 +593,14 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			newlyAssignedAtoms.add(atomOf(trail[trailIndex]));
 		}
 		return newlyAssignedAtoms.size();
+	}
+
+	@Override
+	public int getNumberOfActiveChoicePoints() {
+		if (choiceManager == null) {
+			throw new UnsupportedOperationException("No ChoiceManager known by TrailAssignment");
+		}
+		return choiceManager.getNumberOfActiveChoicePoints();
 	}
 
 	@Override

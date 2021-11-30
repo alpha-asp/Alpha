@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2019, the Alpha Team.
+/*
+ * Copyright (c) 2017-2021, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -63,6 +63,8 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.NormalizeProgramTransformat
 import at.ac.tuwien.kr.alpha.grounder.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
 
 public class Alpha {
 
@@ -122,7 +124,7 @@ public class Alpha {
 	}
 
 	public NormalProgram normalizeProgram(InputProgram program) {
-		return new NormalizeProgramTransformation(config.getAggregateRewritingConfig()).apply(program);
+		return new NormalizeProgramTransformation(config.getAggregateRewritingConfig(), config.isIgnoreDomspecHeuristics()).apply(program);
 	}
 
 	public InternalProgram performProgramPreprocessing(InternalProgram program) {
@@ -183,7 +185,7 @@ public class Alpha {
 
 	/**
 	 * Solves the given program and filters answer sets based on the passed predicate.
-	 * 
+	 *
 	 * @param program an {@link InternalProgram} to solve
 	 * @param filter       {@link Predicate} filtering {@at.ac.tuwien.kr.alpha.common.Predicate}s in the returned answer sets
 	 * @return a Stream of answer sets representing stable models of the given program
@@ -211,9 +213,20 @@ public class Alpha {
 		grounderHeuristicConfiguration.setAccumulatorEnabled(config.isGrounderAccumulatorEnabled());
 
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, grounderHeuristicConfiguration, doDebugChecks);
+		HeuristicsConfiguration heuristicsConfiguration = buildHeuristicsConfiguration(program);
+		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, heuristicsConfiguration, filter, grounderHeuristicConfiguration, doDebugChecks);
 
-		return SolverFactory.getInstance(config, atomStore, grounder);
+		return SolverFactory.getInstance(config, atomStore, grounder, heuristicsConfiguration);
+	}
+
+	private HeuristicsConfiguration buildHeuristicsConfiguration(InternalProgram program) {
+		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
+		heuristicsConfigurationBuilder.setHeuristic(this.config.getBranchingHeuristic());
+		heuristicsConfigurationBuilder.setMomsStrategy(this.config.getMomsStrategy());
+		final boolean existsHeuristicRule = program.existsHeuristicRule();
+		heuristicsConfigurationBuilder.setRespectDomspecHeuristics(!this.config.isIgnoreDomspecHeuristics() && existsHeuristicRule);
+		heuristicsConfigurationBuilder.setReplayChoices(this.config.getReplayChoices());
+		return heuristicsConfigurationBuilder.build();
 	}
 
 	public SystemConfig getConfig() {

@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -32,14 +32,16 @@ import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringJoiner;
 import java.util.stream.Collector;
@@ -74,7 +76,7 @@ public class Util {
 			return a.size() - b.size();
 		}
 
-		if (a.isEmpty() && b.isEmpty()) {
+		if (a.isEmpty()) {
 			return 0;
 		}
 
@@ -114,7 +116,7 @@ public class Util {
 		});
 	}
 
-	public static ReadableByteChannel streamToChannel(Stream<String> lines) throws IOException {
+	public static ReadableByteChannel streamToChannel(Stream<String> lines) {
 		return Channels.newChannel(new ByteArrayInputStream(lines.collect(Collectors.joining(System.lineSeparator())).getBytes(StandardCharsets.UTF_8)));
 	}
 
@@ -126,7 +128,7 @@ public class Util {
 	/**
 	 * Creates a stringtemplate (see {@link ST}) intended for rendering to ASP code from a given string.
 	 * The template uses "$" as attribute delimiter.
-	 * 
+	 *
 	 * @param template the template string
 	 * @return an ST that is initialized with the given template string
 	 */
@@ -137,7 +139,7 @@ public class Util {
 	/**
 	 * Loads a stringtemplate group intended for rendering ASP code from a file.
 	 * Templates are assumed to use "$" as attribute delimiter.
-	 * 
+	 *
 	 * @param classPathUrl
 	 * @return
 	 */
@@ -145,5 +147,9 @@ public class Util {
 		STGroupFile groupFile = new STGroupFile(url, "UTF-8", '$', '$');
 		return groupFile;
 	}
-	
+
+	@SafeVarargs
+	public static <T> Set<T> asSet(T... elements) {
+		return new HashSet<>(Arrays.asList(elements));
+	}
 }

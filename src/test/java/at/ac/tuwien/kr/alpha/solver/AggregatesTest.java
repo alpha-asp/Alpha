@@ -69,19 +69,19 @@ public class AggregatesTest {
 		String program = "sum_things(S) :- S = #sum{X : thing(X)}.";
 		assertRegressionTestAnswerSet(cfg, program, "sum_things(0)");
 	}
-	
+
 	@AggregateRegressionTest
 	public void aggregateSumEqNegativeSum(RegressionTestConfig cfg) {
 		ignoreTestForSimplifiedSumAggregates(cfg);
 		String program = "thing(-1). thing(-2). thing(-3). sum_things(S) :- S = #sum{X : thing(X)}.";
 		assertRegressionTestAnswerSet(cfg, program, "thing(-1), thing(-2), thing(-3), sum_things(-6)");
 	}
-	
+
 	@AggregateRegressionTest
 	public void aggregateSumEqMixedElementsSum(RegressionTestConfig cfg) {
 		ignoreTestForSimplifiedSumAggregates(cfg);
 		String program = "thing(-1). thing(6). thing(-3). sum_things(S) :- S = #sum{X : thing(X)}.";
-		assertRegressionTestAnswerSet(cfg, program, "thing(-1), thing(6), thing(-3), sum_things(2)");		
+		assertRegressionTestAnswerSet(cfg, program, "thing(-1), thing(6), thing(-3), sum_things(2)");
 	}
 
 	@AggregateRegressionTest
@@ -89,7 +89,7 @@ public class AggregatesTest {
 		String program = "zero_leq_sum :- 0 <= #sum{X : thing(X)}.";
 		assertRegressionTestAnswerSet(cfg, program, "zero_leq_sum");
 	}
-	
+
 	@AggregateRegressionTest
 	public void aggregateSumLeNegativeSum(RegressionTestConfig cfg) {
 		ignoreTestForSimplifiedSumAggregates(cfg);
@@ -116,7 +116,7 @@ public class AggregatesTest {
 				"summed_up_thing(-5), summed_up_thing(5)",
 				"");
 	}
-	
+
 	@AggregateRegressionTest
 	public void aggregateCountLeWithChoicePositive(RegressionTestConfig cfg) {
 		String program = "potential_thing(1..4). "
@@ -173,7 +173,7 @@ public class AggregatesTest {
 				"thing(2), thing(4), sum_things(6)",
 				"thing(3), thing(4), sum_things(7)");
 	}
-	
+
 	@AggregateRegressionTest
 	public void aggregateSumEqOverMixedValuesWithChoicePositive(RegressionTestConfig cfg) {
 		ignoreTestForSimplifiedSumAggregates(cfg);

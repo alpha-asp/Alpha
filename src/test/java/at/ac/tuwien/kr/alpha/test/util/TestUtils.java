@@ -1,12 +1,5 @@
 package at.ac.tuwien.kr.alpha.test.util;
 
-import static java.util.Collections.emptySet;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import com.ibm.icu.impl.Assert;
-
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.function.Executable;
@@ -47,6 +40,14 @@ import at.ac.tuwien.kr.alpha.solver.RegressionTestConfig;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
+import com.ibm.icu.impl.Assert;
+
+import static java.util.Collections.emptySet;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestUtils {
 
@@ -100,6 +101,19 @@ public class TestUtils {
 		TestUtils.assertAnswerSetsEqual(expectedAnswerSets, actual);
 	}
 
+	public static void checkExpectedAtomsInAnswerSet(AnswerSet answerSet, List<BasicAtom> atomsExpectedInAnswerSet, List<BasicAtom> atomsNotExpectedInAnswerSet) {
+		for (BasicAtom atom : atomsExpectedInAnswerSet) {
+			if (!answerSet.getPredicateInstances(atom.getPredicate()).contains(atom)) {
+				fail("Answer set does not contain " + atom);
+			}
+		}
+		for (BasicAtom atom : atomsNotExpectedInAnswerSet) {
+			if (answerSet.getPredicateInstances(atom.getPredicate()).contains(atom)) {
+				fail("Answer set contains " + atom);
+			}
+		}
+	}
+
 	public static void assertFactsContainedInProgram(AbstractProgram<?> prog, Atom... facts) {
 		for (Atom fact : facts) {
 			assertTrue(prog.getFacts().contains(fact));
@@ -137,7 +151,7 @@ public class TestUtils {
 		return new BasicAtom(Predicate.getInstance(predicateName, terms.length), terms);
 	}
 
-	public static Atom atom(String predicateName, int... termInts) {
+	public static BasicAtom atom(String predicateName, int... termInts) {
 		Term[] terms = new Term[termInts.length];
 		for (int i = 0; i < termInts.length; i++) {
 			terms[i] = ConstantTerm.getInstance(termInts[i]);
@@ -160,11 +174,13 @@ public class TestUtils {
 
 	private static Solver buildSolverFromSystemConfig(InputProgram prog, SystemConfig cfg) {
 		AtomStore atomStore = new AtomStoreImpl();
-		NormalProgram normalProg = new NormalizeProgramTransformation(cfg.getAggregateRewritingConfig()).apply(prog);
+		NormalProgram normalProg = new NormalizeProgramTransformation(cfg.getAggregateRewritingConfig(), cfg.isIgnoreDomspecHeuristics()).apply(prog);
 		InternalProgram preprocessed = cfg.isEvaluateStratifiedPart() ? new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normalProg))
 				: InternalProgram.fromNormalProgram(normalProg);
+		final HeuristicsConfiguration heuristicsConfiguration = getHeuristicsConfiguration(cfg);
 		return SolverFactory.getInstance(cfg, atomStore,
-				GrounderFactory.getInstance(cfg.getGrounderName(), preprocessed, atomStore, cfg.isDebugInternalChecks()));
+				GrounderFactory.getInstance(cfg.getGrounderName(), preprocessed, atomStore, heuristicsConfiguration, cfg.isDebugInternalChecks()),
+				heuristicsConfiguration);
 	}
 
 	public static Solver buildSolverForRegressionTest(InputProgram prog, RegressionTestConfig cfg) {
@@ -177,7 +193,7 @@ public class TestUtils {
 
 	public static Solver buildSolverForRegressionTest(AtomStore atomStore, Grounder grounder, RegressionTestConfig cfg) {
 		SystemConfig systemCfg = cfg.toSystemConfig();
-		return SolverFactory.getInstance(systemCfg, atomStore, grounder);
+		return SolverFactory.getInstance(systemCfg, atomStore, grounder, getHeuristicsConfiguration(systemCfg));
 	}
 
 	public static Set<AnswerSet> collectRegressionTestAnswerSets(InputProgram prog, RegressionTestConfig cfg) {
@@ -219,6 +235,16 @@ public class TestUtils {
 	
 	public static void ignoreTestForSimplifiedSumAggregates(RegressionTestConfig cfg) {
 		Assumptions.assumeTrue(cfg.isSupportNegativeSumElements());
+	}
+
+	private static HeuristicsConfiguration getHeuristicsConfiguration(SystemConfig cfg) {
+		final HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder()
+				.setHeuristic(cfg.getBranchingHeuristic())
+				.setRespectDomspecHeuristics(!cfg.isIgnoreDomspecHeuristics())
+				.setMomsStrategy(cfg.getMomsStrategy())
+				.setReplayChoices(cfg.getReplayChoices())
+				.build();
+		return heuristicsConfiguration;
 	}
 
 }

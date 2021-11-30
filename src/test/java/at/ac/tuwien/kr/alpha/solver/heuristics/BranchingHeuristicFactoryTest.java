@@ -59,8 +59,8 @@ public class BranchingHeuristicFactoryTest {
 
 	@Test
 	public void testChainedHeuristicWithReplay() {
-		HeuristicsConfigurationBuilder builder = new HeuristicsConfigurationBuilder().setHeuristic(BranchingHeuristicFactory.Heuristic.VSIDS).setReplayChoices(Arrays.asList(1, 2, 3));
-		BranchingHeuristic branchingHeuristic = BranchingHeuristicFactory.getInstance(builder.build(), null, null, choiceManager, null);
+		HeuristicsConfigurationBuilder builder = new HeuristicsConfigurationBuilder().setRespectDomspecHeuristics(false).setHeuristic(BranchingHeuristicFactory.Heuristic.VSIDS).setReplayChoices(Arrays.asList(1, 2, 3));
+		BranchingHeuristic branchingHeuristic = BranchingHeuristicFactory.getInstance(builder.build(), null, choiceManager, null);
 		assertEquals(ChainedBranchingHeuristics.class, branchingHeuristic.getClass());
 		assertTrue(branchingHeuristic instanceof ChainedBranchingHeuristics, "Unexpected type of branchingHeuristic: " + branchingHeuristic.getClass());
 		assertEquals(ChainedBranchingHeuristics.class.getSimpleName() + "[" + ReplayHeuristic.class.getSimpleName() + ", " + VSIDS.class.getSimpleName() + "]", branchingHeuristic.toString());
@@ -68,8 +68,8 @@ public class BranchingHeuristicFactoryTest {
 
 	@Test
 	public void testChainedHeuristicWithoutReplay() {
-		HeuristicsConfigurationBuilder builder = new HeuristicsConfigurationBuilder().setHeuristic(BranchingHeuristicFactory.Heuristic.VSIDS).setReplayChoices(null);
-		BranchingHeuristic branchingHeuristic = BranchingHeuristicFactory.getInstance(builder.build(), null, null, choiceManager, null);
+		HeuristicsConfigurationBuilder builder = new HeuristicsConfigurationBuilder().setRespectDomspecHeuristics(false).setHeuristic(BranchingHeuristicFactory.Heuristic.VSIDS).setReplayChoices(null);
+		BranchingHeuristic branchingHeuristic = BranchingHeuristicFactory.getInstance(builder.build(), null, choiceManager, null);
 		assertEquals(VSIDS.class, branchingHeuristic.getClass());
 	}
 

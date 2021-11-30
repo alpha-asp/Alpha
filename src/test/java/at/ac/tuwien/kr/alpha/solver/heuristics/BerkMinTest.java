@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 Siemens AG
+ * Copyright (c) 2016-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -35,10 +35,7 @@ import java.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
-import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.solver.NaiveNoGoodStore;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
@@ -179,7 +176,7 @@ public class BerkMinTest {
 	
 	@Test
 	public void learnNoGood() {
-		NoGood learnedNoGood = NoGood.learnt(fromOldLiterals(1, 2));
+		NoGood learnedNoGood = NoGoodCreator.learnt(fromOldLiterals(1, 2));
 		int backjumpLevel = 1;
 		@SuppressWarnings("unused")
 		boolean clearLastChoiceAfterBackjump = true;

@@ -1,19 +1,19 @@
 /*
  * Copyright (c) 2017-2020, the Alpha Team.
  * All rights reserved.
- * 
+ *
  * Additional changes made by Siemens.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -29,11 +29,6 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
@@ -42,13 +37,17 @@ import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /**
  * Copyright (c) 2017-2019, the Alpha Team.
  */
 public class RuleGroundingOrderTest {
 
 	private static final ProgramPartParser PROGRAM_PART_PARSER = new ProgramPartParser();
-
 
 	@Test
 	public void groundingOrder() {
@@ -84,7 +83,7 @@ public class RuleGroundingOrderTest {
 			computeGroundingOrdersForRule(internalPrg, 0);
 		});
 	}
-	
+
 	@Test
 	public void testPositionFromWhichAllVarsAreBound_ground() {
 		String aspStr = "a :- b, not c.";
@@ -94,7 +93,7 @@ public class RuleGroundingOrderTest {
 		RuleGroundingOrders rgo0 = computeGroundingOrdersForRule(internalPrg, 0);
 		assertEquals(0, rgo0.getFixedGroundingOrder().getPositionFromWhichAllVarsAreBound());
 	}
-	
+
 	@Test
 	public void testPositionFromWhichAllVarsAreBound_simpleNonGround() {
 		String aspStr = "a(X) :- b(X), not c(X).";

@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, the Alpha Team.
+/*
+ * Copyright (c) 2016-2018, 2020, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -27,15 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnswerSet;
-import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnswerSets;
-import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnswerSetsWithBase;
-import static at.ac.tuwien.kr.alpha.test.util.TestUtils.buildSolverForRegressionTest;
-import static at.ac.tuwien.kr.alpha.test.util.TestUtils.collectRegressionTestAnswerSets;
-import static java.util.Collections.singleton;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -56,8 +47,17 @@ import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.test.util.AnswerSetsParser;
 
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnswerSet;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnswerSets;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertRegressionTestAnswerSetsWithBase;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.collectRegressionTestAnswerSets;
+import static java.util.Collections.singleton;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class SolverTests {
-	
+
 	private static class Thingy implements Comparable<Thingy> {
 		@Override
 		public String toString() {
@@ -90,7 +90,7 @@ public class SolverTests {
 	@RegressionTest
 	public void testFactsOnlyProgram(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
-			cfg, 
+			cfg,
 			"p(a). p(b). foo(13). foo(16). q(a). q(c).",
 
 			"q(a), q(c), p(a), p(b), foo(13), foo(16)"
@@ -100,7 +100,7 @@ public class SolverTests {
 	@RegressionTest
 	public void testSimpleRule(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
-			cfg, 
+			cfg,
 			"p(a). p(b). r(X) :- p(X).",
 
 			"p(a), p(b), r(a), r(b)"
@@ -110,7 +110,7 @@ public class SolverTests {
 	@RegressionTest
 	public void testSimpleRuleWithGroundPart(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
-			cfg, 
+			cfg,
 			"p(1)." +
 				"p(2)." +
 				"q(X) :-  p(X), p(1).",
@@ -122,7 +122,7 @@ public class SolverTests {
 	@RegressionTest
 	public void testProgramZeroArityPredicates(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
-			cfg, 
+			cfg,
 			"a. p(X) :- b, r(X).",
 
 		"a"
@@ -230,7 +230,7 @@ public class SolverTests {
 	@RegressionTest
 	public void choiceProgramConstraintSimple(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
-				cfg, 
+				cfg,
 				"fact(a).\n" + 
 				"choice(either, X) :- fact(X), not choice(or, X).\n" + 
 				"choice(or, X) :- fact(X), not choice(either, X).\n" + 
@@ -243,7 +243,7 @@ public class SolverTests {
 	@RegressionTest
 	public void choiceProgramConstraintSimple2(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
-				cfg, 
+				cfg,
 				"fact(a).\n" + 
 				"desired(either).\n" + 
 				"choice(either, X) :- fact(X), not choice(or, X).\n" + 
@@ -364,7 +364,7 @@ public class SolverTests {
 	@RegressionTest
 	public void testFunctionTermEquality(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
-			cfg, 
+			cfg,
 			"r1(f(a,b)). r2(f(a,b)). a :- r1(X), r2(Y), X = Y.",
 
 			"r1(f(a,b)), r2(f(a,b)), a"
@@ -451,7 +451,7 @@ public class SolverTests {
 			"nassign(l9,r4)"
 		);
 	}
-	
+
 	@RegressionTest
 	public void sameVariableTwiceInAtom(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSets(
@@ -497,7 +497,7 @@ public class SolverTests {
 	@RegressionTest
 	public void conflictFromUnaryNoGood(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
-			cfg, 
+			cfg,
 			"d(b)." +
 			"sel(X) :- not nsel(X), d(X)." +
 			"nsel(X) :- not sel(X), d(X)." +
@@ -605,7 +605,7 @@ public class SolverTests {
 	@RegressionTest
 	public void groundAtomInRule(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
-			cfg, 
+			cfg,
 			"p :- dom(X), q, q2." +
 				"dom(1)." +
 				"q :- not nq." +
@@ -673,7 +673,7 @@ public class SolverTests {
 	@RegressionTest
 	public void simpleArithmetics(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
-			cfg, 
+			cfg,
 			"eight(X) :- X = 4 + 5 - 1." +
 			"three(X) :- X = Z, Y = 1..10, Z = Y / 3, Z > 2, Z < 4.",
 
@@ -683,7 +683,7 @@ public class SolverTests {
 	@RegressionTest
 	public void arithmeticsMultiplicationBeforeAddition(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSet(
-			cfg, 
+			cfg,
 			"seven(X) :- 1+2 * 3 = X.",
 
 			"seven(7)");
@@ -695,7 +695,7 @@ public class SolverTests {
 	@RegressionTest
 	public void involvedUnsatisfiableProgram(RegressionTestConfig cfg) {
 		assertRegressionTestAnswerSets(
-			cfg,	
+			cfg,
 			"x :- c1, c2, not x." +
 			"c1 :- not a1." +
 			"c1 :- not b1." +

@@ -55,6 +55,7 @@ public class SystemConfig {
 	public static final boolean DEFAULT_DISABLE_JUSTIFICATION_SEARCH = false;
 	public static final boolean DEFAULT_DEBUG_INTERNAL_CHECKS = false;
 	public static final boolean DEFAULT_SORT_ANSWER_SETS = false;
+	public static final boolean DEFAULT_IGNORE_DOMSPEC_HEURISTICS = false;
 	public static final List<Integer> DEFAULT_REPLAY_CHOICES = Collections.emptyList();
 	public static final boolean DEFAULT_STRATIFIED_EVALUATION = true;
 	public static final boolean DEFAULT_DISABLE_NOGOOD_DELETION = false;
@@ -76,6 +77,7 @@ public class SystemConfig {
 	private boolean printStats = DEFAULT_PRINT_STATS;
 	private boolean disableJustificationSearch = DEFAULT_DISABLE_JUSTIFICATION_SEARCH;
 	private boolean sortAnswerSets = DEFAULT_SORT_ANSWER_SETS;
+	private boolean ignoreDomspecHeuristics = DEFAULT_IGNORE_DOMSPEC_HEURISTICS;
 	private List<Integer> replayChoices = DEFAULT_REPLAY_CHOICES;
 	private boolean evaluateStratifiedPart = DEFAULT_STRATIFIED_EVALUATION;
 	private boolean disableNoGoodDeletion = DEFAULT_DISABLE_NOGOOD_DELETION;
@@ -189,6 +191,14 @@ public class SystemConfig {
 		this.sortAnswerSets = sortAnswerSets;
 	}
 
+	public boolean isIgnoreDomspecHeuristics() {
+		return ignoreDomspecHeuristics;
+	}
+
+	public void setIgnoreDomspecHeuristics(boolean ignoreDomspecHeuristics) {
+		this.ignoreDomspecHeuristics = ignoreDomspecHeuristics;
+	}
+
 	public List<Integer> getReplayChoices() {
 		return replayChoices;
 	}
@@ -256,5 +266,5 @@ public class SystemConfig {
 	public void setAggregateRewritingConfig(AggregateRewritingConfig aggregateRewritingConfig) {
 		this.aggregateRewritingConfig = aggregateRewritingConfig;
 	}
-	
+
 }

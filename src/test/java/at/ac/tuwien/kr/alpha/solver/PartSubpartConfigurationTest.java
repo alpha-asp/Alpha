@@ -32,7 +32,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Disabled;
 
@@ -41,9 +40,9 @@ import org.junit.jupiter.api.Disabled;
  *
  */
 public class PartSubpartConfigurationTest {
-	
+
 	private static final int DEBUG_TIMEOUT_FACTOR = 5;
-	
+
 	@RegressionTest
 	public void testN2(RegressionTestConfig cfg) {
 		long timeout = 1000L;
@@ -122,6 +121,6 @@ public class PartSubpartConfigurationTest {
 
 	private String concat(List<String> rules) {
 		String ls = System.lineSeparator();
-		return rules.stream().collect(Collectors.joining(ls));
+		return String.join(ls, rules);
 	}
 }

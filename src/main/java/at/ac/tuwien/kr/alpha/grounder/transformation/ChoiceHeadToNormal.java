@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2018, the Alpha Team.
+/*
+ * Copyright (c) 2017-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -44,9 +44,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * Copyright (c) 2017-2020, the Alpha Team.
- */
 public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, InputProgram> {
 	private final static String PREDICATE_NEGATION_PREFIX = "_n";
 
@@ -89,13 +86,7 @@ public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, Inpu
 				}
 
 				// Construct head atom for the choice.
-				Predicate headPredicate = head.getPredicate();
-
-				Predicate negPredicate = Predicate.getInstance(PREDICATE_NEGATION_PREFIX + headPredicate.getName(), headPredicate.getArity() + 1, true);
-				List<Term> headTerms = new ArrayList<>(head.getTerms());
-				headTerms.add(0, ConstantTerm.getInstance("1")); // FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for
-																	// classical negative atoms.
-				Atom negHead = new BasicAtom(negPredicate, headTerms);
+				Atom negHead = constructNegativeChoiceAtom(head);
 
 				// Construct two guessing rules.
 				List<Literal> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
@@ -103,7 +94,7 @@ public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, Inpu
 				additionalRules.add(new BasicRule(new NormalHead(negHead), guessingRuleBodyWithNegHead));
 
 				List<Literal> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
-				guessingRuleBodyWithHead.add(new BasicAtom(negPredicate, headTerms).toLiteral(false));
+				guessingRuleBodyWithHead.add(negHead.toLiteral(false));
 				additionalRules.add(new BasicRule(new NormalHead(head), guessingRuleBodyWithHead));
 
 				// TODO: when cardinality constraints are possible, process the boundaries by adding a constraint with a cardinality check.
@@ -111,6 +102,14 @@ public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, Inpu
 		}
 		return programBuilder.addRules(srcRules).addRules(additionalRules).addFacts(inputProgram.getFacts())
 				.addInlineDirectives(inputProgram.getInlineDirectives()).build();
+	}
+
+	public static Atom constructNegativeChoiceAtom(Atom headAtom) {
+		final Predicate headPredicate = headAtom.getPredicate();
+		final Predicate negPredicate = Predicate.getInstance(PREDICATE_NEGATION_PREFIX + headPredicate.getName(), headPredicate.getArity() + 1, true);
+		final List<Term> headTerms = new ArrayList<>(headAtom.getTerms());
+		headTerms.add(0, ConstantTerm.getInstance("1")); // FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for classical negative atoms.
+		return new BasicAtom(negPredicate, headTerms);
 	}
 
 	private static boolean containsIntervalTerms(Atom atom) {
