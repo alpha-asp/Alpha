@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2016-2021, the Alpha Team.
+/**
+ * Copyright (c) 2016, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -58,25 +58,16 @@ public interface WritableAssignment extends Assignment {
 	 * @param value the truth value to assign the atom
 	 * @param impliedBy the antecedent that is implying the atom.
 	 * @param decisionLevel the decision level on which the assignment is to take effect.
-	 * @param informCallbacks whether callbacks shall be informed of the assignment.
 	 * @return null if the assignment is consistent or a ConflictCause otherwise.
 	 */
-	ConflictCause assign(int atom, ThriceTruth value, Antecedent impliedBy, int decisionLevel, boolean informCallbacks);
-
-	default ConflictCause assign(int atom, ThriceTruth value, Antecedent impliedBy, int decisionLevel) {
-		return assign(atom, value, impliedBy, decisionLevel, true);
-	}
-
-	default ConflictCause assign(int atom, ThriceTruth value, Antecedent impliedBy, boolean informCallbacks) {
-		return assign(atom, value, impliedBy, getDecisionLevel(), informCallbacks);
-	}
+	ConflictCause assign(int atom, ThriceTruth value, Antecedent impliedBy, int decisionLevel);
 
 	default ConflictCause assign(int atom, ThriceTruth value, Antecedent impliedBy) {
-		return assign(atom, value, impliedBy, true);
+		return assign(atom, value, impliedBy, getDecisionLevel());
 	}
 
 	default ConflictCause assign(int atom, ThriceTruth value) {
-		return assign(atom, value, null, true);
+		return assign(atom, value, null);
 	}
 
 	ConflictCause choose(int atom, ThriceTruth value);

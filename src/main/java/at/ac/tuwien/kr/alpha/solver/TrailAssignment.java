@@ -27,31 +27,22 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.IntIterator;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicInfluencerAtom;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
 import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.common.Literals.*;
 import static at.ac.tuwien.kr.alpha.solver.Atoms.isAtom;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
 /**
  * An implementation of Assignment using a trail (of literals) and arrays as underlying structures for storing
@@ -318,8 +309,8 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	}
 
 	@Override
-	public ConflictCause assign(int atom, ThriceTruth value, Antecedent impliedBy, boolean informCallbacks) {
-		ConflictCause conflictCause = assignWithTrail(atom, value, impliedBy, informCallbacks);
+	public ConflictCause assign(int atom, ThriceTruth value, Antecedent impliedBy) {
+		ConflictCause conflictCause = assignWithTrail(atom, value, impliedBy);
 		if (conflictCause != null && LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Assign is conflicting: atom: {}, value: {}, impliedBy: {}.", atom, value, impliedBy);
 		}
@@ -327,8 +318,8 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	}
 
 	@Override
-	public ConflictCause assign(int atom, ThriceTruth value, Antecedent impliedBy, int decisionLevel, boolean informCallbacks) {
-		ConflictCause conflictCause = assign(atom, value, impliedBy, informCallbacks);
+	public ConflictCause assign(int atom, ThriceTruth value, Antecedent impliedBy, int decisionLevel) {
+		ConflictCause conflictCause = assign(atom, value, impliedBy);
 		if (conflictCause == null && decisionLevel < getDecisionLevel()) {
 			outOfOrderLiterals.add(new OutOfOrderLiteral(atom, value, decisionLevel, impliedBy));
 			if (highestDecisionLevelContainingOutOfOrderLiterals < getDecisionLevel()) {
@@ -342,7 +333,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		return oldTruth == null || oldTruth.toBoolean() == value.toBoolean();
 	}
 
-	private ConflictCause assignWithTrail(int atom, ThriceTruth value, Antecedent impliedBy, boolean informCallbacks) {
+	private ConflictCause assignWithTrail(int atom, ThriceTruth value, Antecedent impliedBy) {
 		if (!isAtom(atom)) {
 			throw new IllegalArgumentException("not an atom");
 		}
@@ -375,9 +366,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			if (value == TRUE) {
 				strongDecisionLevels[atom] = getDecisionLevel();
 			}
-			if (informCallbacks) {
-				informCallback(atom);
-			}
+			informCallback(atom);
 			didChange = true;
 			return null;
 		}
@@ -539,7 +528,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			if (!isAssigned(i) && !(atomStore.get(i) instanceof HeuristicInfluencerAtom)) {
 				// HeuristicInfluencerAtom may stay unassigned because they are irrelevant in answer sets.
 				// here they are ignored to avoid conflicts (which can occur when a heuristic becomes applicable due to atoms being assigned false during closing)
-				assign(i, FALSE, CLOSING_INDICATOR_ANTECEDENT, false);
+				assign(i, FALSE, CLOSING_INDICATOR_ANTECEDENT);
 				didAssign = true;
 			}
 		}
