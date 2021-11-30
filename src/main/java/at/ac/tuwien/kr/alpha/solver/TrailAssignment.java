@@ -27,22 +27,31 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.IntIterator;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicInfluencerAtom;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
 import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
 import static at.ac.tuwien.kr.alpha.solver.Atoms.isAtom;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 /**
  * An implementation of Assignment using a trail (of literals) and arrays as underlying structures for storing
@@ -366,7 +375,10 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			if (value == TRUE) {
 				strongDecisionLevels[atom] = getDecisionLevel();
 			}
-			informCallback(atom);
+			if (impliedBy != CLOSING_INDICATOR_ANTECEDENT) {
+				// we assume that callbacks need not be informed during closing
+				informCallback(atom);
+			}
 			didChange = true;
 			return null;
 		}
