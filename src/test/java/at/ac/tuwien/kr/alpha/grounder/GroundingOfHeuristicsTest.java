@@ -75,7 +75,7 @@ public class GroundingOfHeuristicsTest {
 				+ "{ b(N) } :- a(N)."
 				+ "#heuristic b(1) : T a(0), MT a(1), F a(2), not T a(3), not MT a(4), not F a(5). [3@2]");
 		final Set<String> expectedNoGoodsToString = asSet(
-				"*{-(HeuOn(\"0\", \"t\")), +(a(0)), +(a(1))}",
+				"*{-(HeuOn(\"0\", \"t\")), +(a(1)), +(a(0))}",
 				"*{-(HeuOn(\"0\", \"tm\")), +(a(1))}",
 				"*{-(HeuOn(\"0\", \"f\")), -(a(2))}",
 				"*{-(HeuOff(\"0\", \"t\")), +(a(3))}",
