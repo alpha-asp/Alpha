@@ -8,8 +8,8 @@ val antlrVersion = "4.7"
 val stringtemplateVersion = "4.0.8"
 
 dependencies {
-	api(project(":alpha-api")) // TODO does it make more sense to use implementation scope?
-	api(project(":alpha-commons")) // TODO does it make more sense to use implementation scope?
+	api(project(":alpha-api"))
+	api(project(":alpha-commons"))
 
 	// We need to give the ANTLR Plugin a hint.
 	antlr("org.antlr:antlr4:${antlrVersion}")

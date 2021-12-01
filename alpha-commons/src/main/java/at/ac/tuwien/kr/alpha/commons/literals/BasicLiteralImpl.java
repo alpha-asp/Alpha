@@ -44,7 +44,7 @@ import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
  *
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-class BasicLiteralImpl extends AbstractLiteral implements BasicLiteral { // TODO could we parameterize Literal with Atom type?
+class BasicLiteralImpl extends AbstractLiteral implements BasicLiteral {
 
 	BasicLiteralImpl(BasicAtom atom, boolean positive) {
 		super(atom, positive);

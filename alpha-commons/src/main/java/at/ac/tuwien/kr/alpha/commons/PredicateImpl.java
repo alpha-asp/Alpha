@@ -24,14 +24,6 @@ class PredicateImpl implements Predicate {
 		this.solverInternal = solverInternal;
 	}
 
-	static PredicateImpl getInstance(String symbol, int arity) {
-		return getInstance(symbol, arity, false, false);
-	}
-
-	static PredicateImpl getInstance(String symbol, int arity, boolean internal) {
-		return getInstance(symbol, arity, internal, false);
-	}
-
 	static PredicateImpl getInstance(String symbol, int arity, boolean internal, boolean solverInternal) {
 		return INTERNER.intern(new PredicateImpl(symbol, arity, internal, solverInternal));
 	}
