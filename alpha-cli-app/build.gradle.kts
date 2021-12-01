@@ -55,7 +55,7 @@ tasks.create<Jar>("bundledJar") {
 		}
 	}
 
-	var licenseCount = 1
+	var licenseCount = 0
 	rename { it : String ->
 		return@rename if ("LICENSE.txt".equals(it) || "LICENSE".equals(it)) {
 			licenseCount++
