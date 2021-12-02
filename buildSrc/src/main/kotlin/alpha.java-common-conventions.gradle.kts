@@ -12,8 +12,8 @@ repositories {
 	mavenCentral { metadataSources { mavenPom() } }
 }
 
-java.sourceCompatibility = JavaVersion.VERSION_1_8
-java.targetCompatibility = JavaVersion.VERSION_1_8
+java.sourceCompatibility = JavaVersion.VERSION_17
+java.targetCompatibility = JavaVersion.VERSION_17
 
 dependencies {
 	implementation("org.apache.commons:commons-collections4:4.4")
