@@ -25,10 +25,10 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 
@@ -41,12 +41,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class EmptyDomainSpecificHeuristicsStoreTest {
 	private static final int INITIAL_GENERATED_ID = 100;
 
-	private DefaultDomainSpecificHeuristicsStore store;
+	private EmptyDomainSpecificHeuristicsStore store;
 	private AtomicInteger idGenerator = new AtomicInteger(INITIAL_GENERATED_ID);
 
 	@BeforeEach
 	public void setUp() {
-		this.store = new DefaultDomainSpecificHeuristicsStore();
+		this.store = new EmptyDomainSpecificHeuristicsStore();
 		this.store.setChoiceManager(null);
 	}
 
