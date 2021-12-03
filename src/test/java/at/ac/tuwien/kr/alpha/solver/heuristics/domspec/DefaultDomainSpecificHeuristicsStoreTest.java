@@ -25,15 +25,15 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
@@ -74,6 +74,7 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 	public void testInsert_1_atom() {
 		int id = idGenerator.getAndIncrement();
 		HeuristicDirectiveValues info1 = info(1, 1, 1);
+		store.growForMaxAtomId(INITIAL_GENERATED_ID + 1);
 		store.addInfo(id, info1);
 		choiceManager.makeAtomsActive(id);
 		List<HeuristicDirectiveValues> orderedList = listHeuristicsOrderedByDecreasingPriority();
@@ -86,6 +87,7 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 		int id2 = idGenerator.getAndIncrement();
 		HeuristicDirectiveValues info1 = info(1, 2, 3);
 		HeuristicDirectiveValues info2 = info(2, 2, 3);
+		store.growForMaxAtomId(INITIAL_GENERATED_ID + 2);
 		store.addInfo(id1, info1);
 		store.addInfo(id2, info2);
 		choiceManager.makeAtomsActive(id1, id2);
@@ -102,6 +104,7 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 		HeuristicDirectiveValues info1 = info(1, 2, 3);
 		HeuristicDirectiveValues info2 = info(2, 2, 1);
 		HeuristicDirectiveValues info3 = info(3, 2, 2);
+		store.growForMaxAtomId(INITIAL_GENERATED_ID + 3);
 		store.addInfo(id1, info1);
 		store.addInfo(id2, info2);
 		store.addInfo(id3, info3);
@@ -118,6 +121,7 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 		HeuristicDirectiveValues info1 = info(1, 4, 1);
 		HeuristicDirectiveValues info2 = info(2, 2, 1);
 		HeuristicDirectiveValues info3 = info(3, 3, 1);
+		store.growForMaxAtomId(INITIAL_GENERATED_ID + 3);
 		store.addInfo(id1, info1);
 		store.addInfo(id2, info2);
 		store.addInfo(id3, info3);

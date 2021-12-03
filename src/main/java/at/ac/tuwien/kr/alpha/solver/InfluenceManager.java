@@ -27,9 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 /**
  * Manages influence of atoms on the activity of certain other atoms. Can be used for either choice points or heuristic atoms.
  *
@@ -39,7 +36,6 @@ import java.util.Set;
 public abstract class InfluenceManager implements Checkable {
 
 	protected final WritableAssignment assignment;
-	protected final Set<Integer> activeChoicePointsAtoms = new LinkedHashSet<>();
 
 	protected ActivityListener activityListener;
 	protected boolean checksEnabled;
@@ -49,13 +45,6 @@ public abstract class InfluenceManager implements Checkable {
 	}
 
 	abstract boolean isActive(int atom);
-
-	int getNextActiveAtomOrDefault(int defaultAtom) {
-		if (checksEnabled) {
-			checkActiveChoicePoints();
-		}
-		return activeChoicePointsAtoms.size() > 0 ? activeChoicePointsAtoms.iterator().next() : defaultAtom;
-	}
 
 	@Override
 	public void setChecksEnabled(boolean checksEnabled) {

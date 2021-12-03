@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2018-2019 Siemens AG
+/*
+ * Copyright (c) 2018-2019, 2021 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -46,4 +46,7 @@ public class EmptyDomainSpecificHeuristicsStore implements DomainSpecificHeurist
 	public void setChoiceManager(ChoiceManager choiceManager) {
 	}
 
+	@Override
+	public void growForMaxAtomId(int maxAtomId) {
+	}
 }

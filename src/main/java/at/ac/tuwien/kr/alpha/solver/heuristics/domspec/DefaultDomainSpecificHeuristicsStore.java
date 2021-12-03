@@ -25,33 +25,34 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.PriorityQueue;
+
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues.PriorityComparator;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.InfluenceManager;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.PriorityQueue;
+import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
 
 /**
  * Stores a mapping between heuristic IDs and their corresponding domain-specific heuristic values.
  */
 public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuristicsStore {
 
-	private final Map<Integer, HeuristicDirectiveValues> mapHeuristicToHeuristicValue = new HashMap<>();
+	private HeuristicDirectiveValues[] heuristicDirectiveValues = new HeuristicDirectiveValues[0];
 	private final PriorityQueue<Integer> prioritisedHeuristics = new PriorityQueue<>(new HeuristicPriorityComparator().reversed());
 
 	@Override
 	public void addInfo(int heuristicId, HeuristicDirectiveValues values) {
-		mapHeuristicToHeuristicValue.put(heuristicId, values);
+		heuristicDirectiveValues[heuristicId] = values;
 	}
 
 	@Override
 	public HeuristicDirectiveValues poll() {
 		Integer heuristicId = prioritisedHeuristics.poll();
-		return heuristicId == null ? null : mapHeuristicToHeuristicValue.get(heuristicId);
+		return heuristicId == null ? null : heuristicDirectiveValues[heuristicId];
 	}
 
 	@Override
@@ -59,6 +60,19 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 		if (choiceManager != null) {
 			choiceManager.setHeuristicActivityListener(new HeuristicActivityListener());
 		}
+	}
+
+	public void growForMaxAtomId(int maxAtomId) {
+		// Grow arrays only if needed.
+		if (heuristicDirectiveValues.length > maxAtomId) {
+			return;
+		}
+		// Grow to default size, except if bigger array is required due to maxAtomId.
+		int newCapacity = arrayGrowthSize(heuristicDirectiveValues.length);
+		if (newCapacity < maxAtomId + 1) {
+			newCapacity = maxAtomId + 1;
+		}
+		heuristicDirectiveValues = Arrays.copyOf(heuristicDirectiveValues, newCapacity);
 	}
 
 	private class HeuristicActivityListener implements InfluenceManager.ActivityListener {
@@ -79,7 +93,7 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 
 		@Override
 		public int compare(Integer heu1, Integer heu2) {
-			return priorityComparator.compare(mapHeuristicToHeuristicValue.get(heu1), mapHeuristicToHeuristicValue.get(heu2));
+			return priorityComparator.compare(heuristicDirectiveValues[heu1], heuristicDirectiveValues[heu2]);
 		}
 
 	}

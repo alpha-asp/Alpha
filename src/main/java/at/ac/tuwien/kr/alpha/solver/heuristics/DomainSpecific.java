@@ -25,6 +25,13 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
 import at.ac.tuwien.kr.alpha.common.Literals;
@@ -33,12 +40,6 @@ import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DomainSpecificHeuristicsStore;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
@@ -99,7 +100,7 @@ public class DomainSpecific implements BranchingHeuristic {
 				Optional<Integer> body = chooseLiteralForValues(currentValues);
 				if (body.isPresent()) {
 					chosenLiteral = body.get();
-					LOGGER.debug(String.format("Weight of chosen heuristic: %d@%d", currentValues.getWeight(), currentValues.getLevel()));
+					LOGGER.debug("Weight of chosen heuristic: {}@{}", currentValues.getWeight(), currentValues.getLevel());
 					break;
 				} else {
 					LOGGER.warn("Ground heuristic directive with head {} not applicable because no active rule can derive it.", currentValues.getGroundHeadAtom());

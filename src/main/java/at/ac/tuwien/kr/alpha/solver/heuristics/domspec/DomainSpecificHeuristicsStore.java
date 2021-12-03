@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2018-2019 Siemens AG
+/*
+ * Copyright (c) 2018-2019, 2021 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -43,4 +43,5 @@ public interface DomainSpecificHeuristicsStore {
 
 	void setChoiceManager(ChoiceManager choiceManager);
 
+	void growForMaxAtomId(int maxAtomId);
 }

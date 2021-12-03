@@ -216,6 +216,8 @@ public class ChoiceManager implements Checkable {
 
 	public void growForMaxAtomId(int maxAtomId) {
 		choicePointInfluenceManager.growForMaxAtomId(maxAtomId);
+		heuristicInfluenceManager.growForMaxAtomId(maxAtomId);
+		domainSpecificHeuristics.growForMaxAtomId(maxAtomId);
 	}
 
 	private void addHeadsToBodies(Map<Integer, Set<Integer>> headsToBodies) {
@@ -254,7 +256,7 @@ public class ChoiceManager implements Checkable {
 	 * @return the number of active choice points
 	 */
 	public int getNumberOfActiveChoicePoints() {
-		return choicePointInfluenceManager.activeChoicePointsAtoms.size();
+		return choicePointInfluenceManager.getNumberOfActiveChoicePoints();
 	}
 
 	public boolean isAtomChoice(int atom) {

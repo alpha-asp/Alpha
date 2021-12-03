@@ -54,6 +54,7 @@ public class ChoicePointInfluenceManager extends InfluenceManager {
 	// Active choice points and all atoms that influence a choice point (enabler, disabler, choice atom itself).
 	private final Set<ChoicePoint> activeChoicePoints = new LinkedHashSet<>();
 	private ChoicePoint[] influencers = new ChoicePoint[0];
+	private final Set<Integer> activeChoicePointsAtoms = new LinkedHashSet<>();
 
 	public ChoicePointInfluenceManager(WritableAssignment assignment) {
 		super(assignment);
@@ -140,6 +141,20 @@ public class ChoicePointInfluenceManager extends InfluenceManager {
 		if (choicePoint != null) {
 			choicePoint.recomputeActive();
 		}
+	}
+
+	/**
+	 * @return the number of active choice points
+	 */
+	public int getNumberOfActiveChoicePoints() {
+		return activeChoicePointsAtoms.size();
+	}
+
+	int getNextActiveAtomOrDefault(int defaultAtom) {
+		if (checksEnabled) {
+			checkActiveChoicePoints();
+		}
+		return activeChoicePointsAtoms.size() > 0 ? activeChoicePointsAtoms.iterator().next() : defaultAtom;
 	}
 
 	public void growForMaxAtomId(int maxAtomId) {
