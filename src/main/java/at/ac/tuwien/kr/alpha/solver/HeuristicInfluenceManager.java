@@ -56,6 +56,11 @@ public class HeuristicInfluenceManager extends InfluenceManager {
 	private static final Logger LOGGER = LoggerFactory.getLogger(HeuristicInfluenceManager.class);
 
 	/**
+	 * A special HeuristicChoicePoint indicating that several HeuristicChoicePoints exist in a mapping
+	 */
+	private final HeuristicChoicePoint MULTIVALUE_INDICATOR = new HeuristicChoicePoint(0, 0, null, null);
+
+	/**
 	 * Array of heuristic choice points, indexed by atom IDs, which may be enablers, disablers, heuristic choice atom itself.
 	 */
 	private HeuristicChoicePoint[] heuristicChoicePoints = new HeuristicChoicePoint[0];
@@ -119,7 +124,17 @@ public class HeuristicInfluenceManager extends InfluenceManager {
 	}
 
 	private void addHeuristicChoicePointToHeadAtomId(HeuristicChoicePoint heuristicChoicePoint, int headAtomId) {
+		// mapping of head atom IDs is special, because there might be several heuristics for the same head atom!
+		if (heuristicChoicePoints[headAtomId] == null) {
+			heuristicChoicePoints[headAtomId] = heuristicChoicePoint;
+			return;
+		}
+		
+		if (heuristicChoicePoints[headAtomId] != MULTIVALUE_INDICATOR) {
+			headAtomsToHeuristics.put(headAtomId, heuristicChoicePoints[headAtomId]);
+		}
 		headAtomsToHeuristics.put(headAtomId, heuristicChoicePoint);
+		heuristicChoicePoints[headAtomId] = MULTIVALUE_INDICATOR;
 	}
 
 	private void addHeuristicChoicePointToInfluencers(HeuristicChoicePoint heuristicChoicePoint, Integer... atoms) {
@@ -182,13 +197,12 @@ public class HeuristicInfluenceManager extends InfluenceManager {
 	void callbackOnChanged(int atom) {
 		LOGGER.trace("Callback received on influencer atom: {}", atom);
 		final HeuristicChoicePoint heuristicChoicePoint = heuristicChoicePoints[atom];
-		if (heuristicChoicePoint != null) {
-			heuristicChoicePoint.recomputeActive();
-		}
-		if (headAtomsToHeuristics.containsKey(atom)) {
+		if (heuristicChoicePoint == MULTIVALUE_INDICATOR) {
 			for (HeuristicChoicePoint heuristicForHead : headAtomsToHeuristics.get(atom)) {
 				heuristicForHead.recomputeActive();
 			}
+		} else if (heuristicChoicePoint != null) {
+			heuristicChoicePoint.recomputeActive();
 		}
 	}
 
