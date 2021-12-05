@@ -25,27 +25,18 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
-import static at.ac.tuwien.kr.alpha.commons.util.Util.arrayGrowthSize;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isPositive;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-
-import org.apache.commons.collections4.MultiValuedMap;
-import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
+import at.ac.tuwien.kr.alpha.api.config.BinaryNoGoodPropagationEstimationStrategy;
+import at.ac.tuwien.kr.alpha.core.common.Assignment;
+import at.ac.tuwien.kr.alpha.core.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.ac.tuwien.kr.alpha.api.config.BinaryNoGoodPropagationEstimationStrategy;
-import at.ac.tuwien.kr.alpha.core.common.Assignment;
-import at.ac.tuwien.kr.alpha.core.common.NoGood;
-import at.ac.tuwien.kr.alpha.core.solver.ChoiceManager;
-import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
-import at.ac.tuwien.kr.alpha.core.solver.heuristics.activity.BodyActivityProvider;
-import at.ac.tuwien.kr.alpha.core.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
+import java.util.Arrays;
+
+import static at.ac.tuwien.kr.alpha.commons.util.Util.arrayGrowthSize;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isPositive;
 
 /**
  * This implementation is inspired by the VSIDS implementation in <a href="https://github.com/potassco/clasp">clasp</a>.

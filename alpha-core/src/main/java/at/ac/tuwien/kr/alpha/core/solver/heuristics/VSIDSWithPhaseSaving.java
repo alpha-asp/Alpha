@@ -1,16 +1,16 @@
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.grounder.structure.AtomChoiceRelation;
-import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
-import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+import at.ac.tuwien.kr.alpha.api.config.BinaryNoGoodPropagationEstimationStrategy;
+import at.ac.tuwien.kr.alpha.core.common.Assignment;
+import at.ac.tuwien.kr.alpha.core.grounder.structure.AtomChoiceRelation;
+import at.ac.tuwien.kr.alpha.core.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToLiteral;
 
 /**
  * This implementation is similar to {@link VSIDS} but uses the saved phase for the truth of the chosen atom.
@@ -26,16 +26,16 @@ public class VSIDSWithPhaseSaving extends AbstractVSIDS {
 	private long numNoChoicePoint;
 	private long numNotActiveChoicePoint;
 
-	private VSIDSWithPhaseSaving(Assignment assignment, ChoiceManager choiceManager, AtomChoiceRelation atomChoiceRelation, HeapOfActiveAtoms heapOfActiveAtoms, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
+	private VSIDSWithPhaseSaving(Assignment assignment, ChoiceManager choiceManager, AtomChoiceRelation atomChoiceRelation, HeapOfActiveAtoms heapOfActiveAtoms, BinaryNoGoodPropagationEstimationStrategy momsStrategy) {
 		super(assignment, choiceManager, heapOfActiveAtoms, momsStrategy);
 		this.atomChoiceRelation = atomChoiceRelation;
 	}
 
-	private VSIDSWithPhaseSaving(Assignment assignment, ChoiceManager choiceManager, AtomChoiceRelation atomChoiceRelation, int decayPeriod, double decayFactor, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
+	private VSIDSWithPhaseSaving(Assignment assignment, ChoiceManager choiceManager, AtomChoiceRelation atomChoiceRelation, int decayPeriod, double decayFactor, BinaryNoGoodPropagationEstimationStrategy momsStrategy) {
 		this(assignment, choiceManager, atomChoiceRelation, new HeapOfRelatedChoiceAtoms(decayPeriod, decayFactor, choiceManager, atomChoiceRelation),  momsStrategy);
 	}
 
-	VSIDSWithPhaseSaving(Assignment assignment, ChoiceManager choiceManager, AtomChoiceRelation atomChoiceRelation, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
+	VSIDSWithPhaseSaving(Assignment assignment, ChoiceManager choiceManager, AtomChoiceRelation atomChoiceRelation, BinaryNoGoodPropagationEstimationStrategy momsStrategy) {
 		this(assignment, choiceManager, atomChoiceRelation, DEFAULT_DECAY_PERIOD, DEFAULT_DECAY_FACTOR,  momsStrategy);
 	}
 

@@ -25,9 +25,9 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
-import at.ac.tuwien.kr.alpha.solver.heuristics.ChainedBranchingHeuristics;
-import at.ac.tuwien.kr.alpha.solver.heuristics.VSIDSWithPhaseSaving;
+import at.ac.tuwien.kr.alpha.core.solver.heuristics.BranchingHeuristic;
+import at.ac.tuwien.kr.alpha.core.solver.heuristics.ChainedBranchingHeuristics;
+import at.ac.tuwien.kr.alpha.core.solver.heuristics.VSIDSWithPhaseSaving;
 import org.slf4j.Logger;
 
 /**

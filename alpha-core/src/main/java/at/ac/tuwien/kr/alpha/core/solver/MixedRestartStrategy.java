@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
+import static at.ac.tuwien.kr.alpha.core.solver.NoGoodStore.LBD_NO_VALUE;
 
 /**
  * A restart strategy that mixes dynamic restarts and Luby sequence-based restarts.
@@ -59,9 +59,9 @@ public class MixedRestartStrategy {
 			throw oops("Conflict has no LBD value.");
 		}
 		fast -= fast >> 5;
-		fast += lbd << (32 - 5);
+		fast += (long) lbd << (32 - 5);
 		slow -= slow >> 14;
-		slow += lbd << (32 - 14);
+		slow += (long) lbd << (32 - 14);
 	}
 
 	int getTotalRestarts() {

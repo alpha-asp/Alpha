@@ -1,10 +1,10 @@
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.grounder.structure.AtomChoiceRelation;
-import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.core.common.NoGood;
+import at.ac.tuwien.kr.alpha.core.grounder.structure.AtomChoiceRelation;
+import at.ac.tuwien.kr.alpha.core.solver.ChoiceManager;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
 
 /**
  * A heap of active choice points that uses {@link AtomChoiceRelation} for initializing activities of related choice points.

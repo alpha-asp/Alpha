@@ -27,12 +27,11 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.api.config.InitialAtomPhase;
+import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 
-import java.util.Arrays;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 /**
  * Factory returning atom phase initializers, which determine the initial phase given to atoms that were previously
@@ -42,22 +41,11 @@ import java.util.stream.Collectors;
  */
 public abstract class PhaseInitializerFactory {
 
-	public enum InitialPhase {
-		ALLTRUE,
-		ALLFALSE,
-		RANDOM,
-		RULESTRUEATOMSFALSE;
-
-		public static String listAllowedValues() {
-			return Arrays.stream(values()).map(InitialPhase::toString).map(String::toLowerCase).collect(Collectors.joining(", "));
-		}
-	}
-
 	public abstract static class PhaseInitializer {
 		public abstract boolean getNextInitialPhase(int atom);
 	}
 
-	public static PhaseInitializer getInstance(InitialPhase initialPhase, Random random, AtomStore atomStore) {
+	public static PhaseInitializer getInstance(InitialAtomPhase initialPhase, Random random, AtomStore atomStore) {
 		switch (initialPhase) {
 			case ALLTRUE:
 				return getPhaseInitializerAllTrue();

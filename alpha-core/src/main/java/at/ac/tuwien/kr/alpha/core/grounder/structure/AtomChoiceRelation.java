@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.arrayGrowthSize;
 
 /**
  * Stores and provides relationships between ordinary atoms and those that represent choice points.

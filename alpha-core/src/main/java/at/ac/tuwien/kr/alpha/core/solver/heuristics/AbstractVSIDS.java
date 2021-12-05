@@ -1,16 +1,16 @@
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
-import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProvider;
+import at.ac.tuwien.kr.alpha.api.config.BinaryNoGoodPropagationEstimationStrategy;
+import at.ac.tuwien.kr.alpha.core.common.Assignment;
+import at.ac.tuwien.kr.alpha.core.common.NoGood;
+import at.ac.tuwien.kr.alpha.core.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.core.solver.heuristics.activity.BodyActivityProvider;
+import at.ac.tuwien.kr.alpha.core.solver.learning.GroundConflictNoGoodLearner;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToLiteral;
 
 /**
  * Combines fields and methods common to several VSIDS variants.
@@ -29,7 +29,7 @@ public abstract class AbstractVSIDS implements ActivityBasedBranchingHeuristic {
 	protected final HeapOfActiveAtoms heapOfActiveAtoms;
 	protected final Collection<NoGood> bufferedNoGoods = new ArrayList<>();
 
-	public AbstractVSIDS(Assignment assignment, ChoiceManager choiceManager, HeapOfActiveAtoms heapOfActiveAtoms, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
+	public AbstractVSIDS(Assignment assignment, ChoiceManager choiceManager, HeapOfActiveAtoms heapOfActiveAtoms, BinaryNoGoodPropagationEstimationStrategy momsStrategy) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
 		this.heapOfActiveAtoms = heapOfActiveAtoms;
@@ -78,7 +78,7 @@ public abstract class AbstractVSIDS implements ActivityBasedBranchingHeuristic {
 	}
 
 	@Override
-	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
+	public void analyzedConflict(GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult) {
 		ingestBufferedNoGoods();	// The analysisResult may contain new atoms whose activity must be initialized.
 		for (int resolutionAtom : analysisResult.resolutionAtoms) {
 			incrementActivityResolutionAtom(resolutionAtom);

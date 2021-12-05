@@ -36,7 +36,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToLiteral;
 
 /**
  * A variant of {@link DependencyDrivenHeuristic} that prefers to choose atoms representing bodies of rules whose heads

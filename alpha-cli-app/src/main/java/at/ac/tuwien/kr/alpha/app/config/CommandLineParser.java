@@ -27,13 +27,13 @@
  */
 package at.ac.tuwien.kr.alpha.app.config;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
-
+import at.ac.tuwien.kr.alpha.api.config.AggregateRewritingConfig;
+import at.ac.tuwien.kr.alpha.api.config.AlphaConfig;
+import at.ac.tuwien.kr.alpha.api.config.BinaryNoGoodPropagationEstimationStrategy;
+import at.ac.tuwien.kr.alpha.api.config.Heuristic;
+import at.ac.tuwien.kr.alpha.api.config.InitialAtomPhase;
+import at.ac.tuwien.kr.alpha.api.config.InputConfig;
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -45,13 +45,12 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.ac.tuwien.kr.alpha.api.config.AggregateRewritingConfig;
-import at.ac.tuwien.kr.alpha.api.config.AlphaConfig;
-import at.ac.tuwien.kr.alpha.api.config.BinaryNoGoodPropagationEstimationStrategy;
-import at.ac.tuwien.kr.alpha.api.config.Heuristic;
-import at.ac.tuwien.kr.alpha.api.config.InputConfig;
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.commons.solver.heuristics.PhaseInitializerFactory;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
 
 /**
@@ -156,7 +155,7 @@ public class CommandLineParser {
 			+ SystemConfig.DEFAULT_ENABLE_RESTARTS + ")")
 		.build();
 	private static final Option OPT_INITIAL_PHASE = Option.builder("ph").longOpt("initialPhase").hasArg(true).argName("initializer")
-		.desc("set the initial phase [ " + PhaseInitializerFactory.InitialPhase.listAllowedValues() + " ] (default: " + SystemConfig.DEFAULT_PHASE_INITIALIZER + "). " +
+		.desc("set the initial phase [ " + InitialAtomPhase.listAllowedValues() + " ] (default: " + SystemConfig.DEFAULT_PHASE_INITIALIZER + "). " +
 			"Note: only works in conjunction with the " + Heuristic.VSIDS_PHASE_SAVING + " branching heuristic.")
 		.build();
 	//@formatter:on
@@ -495,7 +494,7 @@ public class CommandLineParser {
 			cfg.setPhaseInitializerName(initialPhase);
 		} catch (IllegalArgumentException e) {
 			throw new ParseException("Unknown initial phase: " + initialPhase + ". Please try one of the following: "
-					+ PhaseInitializerFactory.InitialPhase.listAllowedValues());
+					+ InitialAtomPhase.listAllowedValues());
 		}
 	}
 }
