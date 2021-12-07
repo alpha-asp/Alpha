@@ -10,7 +10,7 @@ authors:
 - family-names: "Langowski"
   given-names: "Michael"
   affiliation: "TU Wien"
-  #orcid: TODO
+  orcid: "https://orcid.org/0000-0001-6572-0357"
 - family-names: "Leutgeb"
   given-names: "Lorenz"
   affiliation: "TU Wien"
