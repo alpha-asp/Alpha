@@ -1,0 +1,35 @@
+# https://citation-file-format.github.io/
+cff-version: 1.2.0
+message: "If you use this software, please cite it using these metadata."
+title: "Alpha"
+abstract: "A lazy-grounding Answer-Set Programming System"
+# Authors are sorted:
+# First people, sorted by `family-names`, `given-names`.
+# Second entities, sorted by `name`.
+authors:
+- family-names: "Langowski"
+  given-names: "Michael"
+  affiliation: "TU Wien"
+  orcid: "https://orcid.org/0000-0001-6572-0357"
+- family-names: "Leutgeb"
+  given-names: "Lorenz"
+  affiliation: "TU Wien"
+  orcid: "https://orcid.org/0000-0003-0391-3430"
+- family-names: "Taupe"
+  given-names: "Richard"
+  affiliation: "Siemens AG"
+  orcid: "https://orcid.org/0000-0001-7639-1616"
+- family-names: "Weinzierl"
+  given-names: "Antonius"
+  affiliation: "TU Wien"
+  orcid: "https://orcid.org/0000-0003-2040-6123"
+license: "BSD-2-Clause"
+repository-code: "https://github.com/alpha-asp/alpha"
+doi: "10.5281/zenodo.1418963"
+identifiers:
+  - description: "v0.4.0"
+    type: doi
+    value: "10.5281/zenodo.2641359"
+  - description: "v0.3.0"
+    type: doi
+    value: "10.5281/zenodo.1418964"
