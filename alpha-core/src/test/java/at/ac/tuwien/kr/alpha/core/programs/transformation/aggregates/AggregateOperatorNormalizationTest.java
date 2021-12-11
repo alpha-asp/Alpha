@@ -155,7 +155,10 @@ public class AggregateOperatorNormalizationTest {
 		ArithmeticTerm incrementTerm = (ArithmeticTerm) comparisonRightHandTerm;
 		assertEquals(ArithmeticOperator.PLUS, incrementTerm.getOperator());
 		assertEquals(Terms.newConstant(1), incrementTerm.getRightOperand());
-		assertEquals(sourceAggregate.getAtom().getLowerBoundTerm(), incrementTerm.getLeftOperand());
+		Term sourceBound = sourceAggregate.getAtom().getLowerBoundTerm() != null ? 
+			sourceAggregate.getAtom().getLowerBoundTerm() 
+			: sourceAggregate.getAtom().getUpperBoundTerm();
+		assertEquals(sourceBound, incrementTerm.getLeftOperand());
 	}
 
 }

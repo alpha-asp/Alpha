@@ -39,8 +39,8 @@ import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
  * </ul>
  * Operators for "#min" and "#max" aggregates are not rewritten.
  * 
- * Note that input programs must only contain aggregate literals of form <code>VAR OP #aggr{...}</code>, i.e. with only
- * a left term and operator. When preprocessing programs, apply this transformation AFTER
+ * Note that input programs must only contain aggregate literals of form <code>TERM OP #aggr{...}</code> or <code>#aggr{...} OP TERM</code>, i.e. with only
+ * a left or right term and operator (but not both). When preprocessing programs, apply this transformation AFTER
  * {@link at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateLiteralSplitting}.
  * 
  * Copyright (c) 2020-2021, the Alpha Team.
@@ -69,6 +69,16 @@ public final class AggregateOperatorNormalization {
 
 	private static List<Literal> rewriteAggregateOperator(AggregateLiteral lit) {
 		AggregateAtom atom = lit.getAtom();
+		if (atom.getLowerBoundOperator() == null && atom.getUpperBoundOperator() != null) {
+			return rewriteAggregateOperator(
+				Atoms.newAggregateAtom(
+					atom.getUpperBoundOperator().negate(), 
+					atom.getUpperBoundTerm(), 
+					atom.getAggregateFunction(), 
+					atom.getAggregateElements())
+					.toLiteral(!lit.isNegated())
+				);
+		}
 		if (lit.getAtom().getAggregateFunction() == AggregateFunctionSymbol.MIN || lit.getAtom().getAggregateFunction() == AggregateFunctionSymbol.MAX) {
 			// No operator normalization needed for #min/#max aggregates.
 			return Collections.singletonList(lit);
