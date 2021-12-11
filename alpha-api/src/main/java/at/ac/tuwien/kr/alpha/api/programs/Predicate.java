@@ -13,7 +13,7 @@ public interface Predicate extends Comparable<Predicate> {
 	String getName();
 
 	/**
-	 * The arity, i.e. number of arguments of an instance, of this predicate.
+	 * The arity, i.e. number of arguments/terms of an instance over this predicate.
 	 */
 	int getArity();
 
@@ -29,7 +29,7 @@ public interface Predicate extends Comparable<Predicate> {
 	}
 
 	/**
-	 * Indicates whether this predicate is internal. Internal predicates are no shown in answer sets.
+	 * Indicates whether this predicate is internal. Internal predicates are not shown in answer sets.
 	 */
 	boolean isInternal();
 

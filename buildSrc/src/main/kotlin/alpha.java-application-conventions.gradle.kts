@@ -1,4 +1,4 @@
 plugins {
-    id("alpha.java-common-conventions")
-    id("application")
+	id("alpha.java-common-conventions")
+	id("application")
 }

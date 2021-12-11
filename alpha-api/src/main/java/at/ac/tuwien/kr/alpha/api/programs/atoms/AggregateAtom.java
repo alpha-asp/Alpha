@@ -9,7 +9,7 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 
 /**
- * An {@link Atom} representing a comparison over an aggregate function.
+ * An {@link Atom} representing a comparison over an aggregate function, for example '13 < #sum{ X : p(X) }'.
  * 
  * Copyright (c) 2021, the Alpha Team.
  */

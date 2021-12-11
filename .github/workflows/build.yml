@@ -3,10 +3,8 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ${{ matrix.os }}-latest
-    continue-on-error: ${{ matrix.continue-on-error }}
     strategy:
       matrix:
-        continue-on-error: [false]
         # We test against Java releases:
         #  - greater than 7
         #  AND
@@ -21,22 +19,9 @@ jobs:
         - 8
         # LTS and in "Premier Support" as of 2019-03 (until 2023-09)
         - 11
-        # Not succeeded as of 2021-04. Scheduled to be succeeded by
-        # Java 17 on 2021-09-14, see http://openjdk.java.net/projects/jdk/17/
-        - 16
+        # LTS as of 2021-11 (until 2029)
+        - 17
         os: [ubuntu, windows]
-        include:
-        - continue-on-error: true
-          os: macos
-          java: 16
-        # Gradle does not yet work with Java 17. Planned for 7.3.
-        # https://github.com/gradle/gradle/issues/16857
-        #- continue-on-error: true
-        #  os: windows
-        #  java: 17
-        #- continue-on-error: true
-        #  os: ubuntu
-        #  java: 17
     env:
       # We only post coverage data for exactly one build to coveralls.
       # To pick that build from the build matrix, we designate one
@@ -47,25 +32,27 @@ jobs:
       # OS to be the "main" one.
       MAIN_OS: ubuntu
     steps:
+    # See https://github.com/marketplace/actions/checkout
     - uses: actions/checkout@v2
       with:
         submodules: recursive
         fetch-depth: 0
+    # See https://github.com/marketplace/actions/gradle-wrapper-validation
+    - uses: gradle/wrapper-validation-action@v1
+    # See https://github.com/marketplace/actions/setup-java-jdk
     - uses: actions/setup-java@v2
       with:
         java-version: ${{ matrix.java }}
         distribution: 'temurin'
-        architecture: x64
-        cache: 'gradle'
-
-    - run: ./gradlew build --stacktrace
-      if: runner.os != 'Windows'
-    - run: .\gradlew build --stacktrace
-      if: runner.os == 'Windows'
-
-    - run: ./gradlew jacocoTestReport coveralls
+    # See https://github.com/marketplace/actions/gradle-build-action
+    - uses: gradle/gradle-build-action@v2
+      with:
+        arguments: build --stacktrace
+    - uses: gradle/gradle-build-action@v2
       if: matrix.os == env.MAIN_OS && matrix.java == env.MAIN_JAVA
       continue-on-error: true
+      with:
+        arguments: jacocoTestReport coveralls
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
     - uses: codecov/codecov-action@v1

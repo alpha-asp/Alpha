@@ -1,7 +1,7 @@
 plugins {
-    `kotlin-dsl`
+	`kotlin-dsl`
 }
 
 repositories {
-    mavenCentral { metadataSources { mavenPom() } }
+	mavenCentral { metadataSources { mavenPom() } }
 }
