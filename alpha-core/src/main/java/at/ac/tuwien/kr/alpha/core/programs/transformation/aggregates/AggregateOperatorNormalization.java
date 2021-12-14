@@ -70,14 +70,22 @@ public final class AggregateOperatorNormalization {
 	private static List<Literal> rewriteAggregateOperator(AggregateLiteral lit) {
 		AggregateAtom atom = lit.getAtom();
 		if (atom.getLowerBoundOperator() == null && atom.getUpperBoundOperator() != null) {
-			return rewriteAggregateOperator(
-				Atoms.newAggregateAtom(
+			ComparisonOperator operator = atom.getUpperBoundOperator();
+			AggregateLiteral flipped; // "flip" right-hand operator and term to left-hand ones.
+			if (operator.equals(ComparisonOperators.EQ) || operator.equals(ComparisonOperators.NE)) {
+				flipped = Atoms.newAggregateAtom(
+					atom.getUpperBoundOperator(), 
+					atom.getUpperBoundTerm(), 
+					atom.getAggregateFunction(), 
+					atom.getAggregateElements()).toLiteral(!lit.isNegated());
+			} else {
+				flipped = Atoms.newAggregateAtom(
 					atom.getUpperBoundOperator().negate(), 
 					atom.getUpperBoundTerm(), 
 					atom.getAggregateFunction(), 
-					atom.getAggregateElements())
-					.toLiteral(!lit.isNegated())
-				);
+					atom.getAggregateElements()).toLiteral(!lit.isNegated());
+			}
+			return rewriteAggregateOperator(flipped);
 		}
 		if (lit.getAtom().getAggregateFunction() == AggregateFunctionSymbol.MIN || lit.getAtom().getAggregateFunction() == AggregateFunctionSymbol.MAX) {
 			// No operator normalization needed for #min/#max aggregates.
