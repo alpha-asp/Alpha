@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
- * <p>
+ *
  * Additional changes made by Siemens.
- * <p>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * <p>
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
- * <p>
+ *    list of conditions and the following disclaimer.
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
- * <p>
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,10 +25,15 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.grounder;
+package at.ac.tuwien.kr.alpha.grounder;
 
-import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,39 +48,31 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.AnswerSets;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
-import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
-import at.ac.tuwien.kr.alpha.commons.util.Util;
-import at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
-import at.ac.tuwien.kr.alpha.core.common.Assignment;
-import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-import at.ac.tuwien.kr.alpha.core.common.IntIterator;
-import at.ac.tuwien.kr.alpha.core.common.NoGood;
-import at.ac.tuwien.kr.alpha.core.common.NoGoodInterface;
-import at.ac.tuwien.kr.alpha.core.grounder.bridges.Bridge;
-import at.ac.tuwien.kr.alpha.core.grounder.instantiation.AssignmentStatus;
-import at.ac.tuwien.kr.alpha.core.grounder.instantiation.BindingResult;
-import at.ac.tuwien.kr.alpha.core.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy;
-import at.ac.tuwien.kr.alpha.core.grounder.instantiation.LiteralInstantiationResult;
-import at.ac.tuwien.kr.alpha.core.grounder.instantiation.LiteralInstantiator;
-import at.ac.tuwien.kr.alpha.core.grounder.structure.AnalyzeUnjustified;
-import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.Util;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
+import at.ac.tuwien.kr.alpha.common.IntIterator;
+import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.NoGoodInterface;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
+import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.grounder.instantiation.AssignmentStatus;
+import at.ac.tuwien.kr.alpha.grounder.instantiation.BindingResult;
+import at.ac.tuwien.kr.alpha.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy;
+import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationResult;
+import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiator;
+import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
 
 /**
  * A semi-naive grounder.
@@ -90,14 +87,14 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final NogoodRegistry registry = new NogoodRegistry();
 	final NoGoodGenerator noGoodGenerator;
 	private final ChoiceRecorder choiceRecorder;
-	private final CompiledProgram program;
+	private final InternalProgram program;
 	private final AnalyzeUnjustified analyzeUnjustified;
 
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private final Map<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
-	private final Map<Integer, CompiledRule> knownNonGroundRules;
+	private final Map<Integer, InternalRule> knownNonGroundRules;
 
-	private ArrayList<CompiledRule> fixedRules = new ArrayList<>();
+	private ArrayList<InternalRule> fixedRules = new ArrayList<>();
 	private LinkedHashSet<Atom> removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
 	private final boolean debugInternalChecks;
 
@@ -108,16 +105,16 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final LiteralInstantiator ruleInstantiator;
 	private final DefaultLazyGroundingInstantiationStrategy instantiationStrategy;
 
-	public NaiveGrounder(CompiledProgram program, AtomStore atomStore, boolean debugInternalChecks, Bridge... bridges) {
+	public NaiveGrounder(InternalProgram program, AtomStore atomStore, boolean debugInternalChecks, Bridge... bridges) {
 		this(program, atomStore, new GrounderHeuristicsConfiguration(), debugInternalChecks, bridges);
 	}
 
-	private NaiveGrounder(CompiledProgram program, AtomStore atomStore, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks,
+	private NaiveGrounder(InternalProgram program, AtomStore atomStore, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks,
 			Bridge... bridges) {
 		this(program, atomStore, p -> true, heuristicsConfiguration, debugInternalChecks, bridges);
 	}
 
-	NaiveGrounder(CompiledProgram program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter,
+	NaiveGrounder(InternalProgram program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter,
 			GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, Bridge... bridges) {
 		super(filter, bridges);
 		this.atomStore = atomStore;
@@ -133,7 +130,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 		this.initializeFactsAndRules();
 
-		final Set<CompiledRule> uniqueGroundRulePerGroundHead = getRulesWithUniqueHead();
+		final Set<InternalRule> uniqueGroundRulePerGroundHead = getRulesWithUniqueHead();
 		choiceRecorder = new ChoiceRecorder(atomStore);
 		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, this.program, uniqueGroundRulePerGroundHead);
 
@@ -162,7 +159,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		workingMemory.initialize(ChoiceAtom.ON);
 
 		// Initialize rules and constraints in working memory.
-		for (CompiledRule nonGroundRule : program.getRulesById().values()) {
+		for (InternalRule nonGroundRule : program.getRulesById().values()) {
 			// Create working memories for all predicates occurring in the rule.
 			for (Predicate predicate : nonGroundRule.getOccurringPredicates()) {
 				// FIXME: this also contains interval/builtin predicates that are not needed.
@@ -170,30 +167,30 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 
 			// If the rule has fixed ground instantiations, it is not registered but grounded once like facts.
-			if (nonGroundRule.getGroundingInfo().hasFixedInstantiation()) {
+			if (nonGroundRule.getGroundingOrders().fixedInstantiation()) {
 				fixedRules.add(nonGroundRule);
 				continue;
 			}
 
 			// Register each starting literal at the corresponding working memory.
-			for (Literal literal : nonGroundRule.getGroundingInfo().getStartingLiterals()) {
+			for (Literal literal : nonGroundRule.getGroundingOrders().getStartingLiterals()) {
 				registerLiteralAtWorkingMemory(literal, nonGroundRule);
 			}
 		}
 	}
 
-	private Set<CompiledRule> getRulesWithUniqueHead() {
+	private Set<InternalRule> getRulesWithUniqueHead() {
 		// FIXME: below optimisation (adding support nogoods if there is only one rule instantiation per unique atom over the interpretation) could
 		// be done as a transformation (adding a non-ground constraint corresponding to the nogood that is generated by the grounder).
 		// Record all unique rule heads.
-		final Set<CompiledRule> uniqueGroundRulePerGroundHead = new HashSet<>();
+		final Set<InternalRule> uniqueGroundRulePerGroundHead = new HashSet<>();
 
-		for (Map.Entry<Predicate, LinkedHashSet<CompiledRule>> headDefiningRules : program.getPredicateDefiningRules().entrySet()) {
+		for (Map.Entry<Predicate, LinkedHashSet<InternalRule>> headDefiningRules : program.getPredicateDefiningRules().entrySet()) {
 			if (headDefiningRules.getValue().size() != 1) {
 				continue;
 			}
 
-			CompiledRule nonGroundRule = headDefiningRules.getValue().iterator().next();
+			InternalRule nonGroundRule = headDefiningRules.getValue().iterator().next();
 			// Check that all variables of the body also occur in the head (otherwise grounding is not unique).
 			Atom headAtom = nonGroundRule.getHeadAtom();
 
@@ -224,7 +221,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 * 
 	 * @param nonGroundRule the rule in which the literal occurs.
 	 */
-	private void registerLiteralAtWorkingMemory(Literal literal, CompiledRule nonGroundRule) {
+	private void registerLiteralAtWorkingMemory(Literal literal, InternalRule nonGroundRule) {
 		if (literal.isNegated()) {
 			throw new RuntimeException("Literal to register is negated. Should not happen.");
 		}
@@ -278,15 +275,15 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			predicateInstances.putIfAbsent(factPredicate, new TreeSet<>());
 			for (Instance factInstance : facts.getValue()) {
 				SortedSet<Atom> instances = predicateInstances.get(factPredicate);
-				instances.add(Atoms.newBasicAtom(factPredicate, factInstance.terms));
+				instances.add(new BasicAtom(factPredicate, factInstance.terms));
 			}
 		}
 
 		if (knownPredicates.isEmpty()) {
-			return AnswerSets.EMPTY_SET;
+			return BasicAnswerSet.EMPTY;
 		}
 
-		return AnswerSets.newAnswerSet(knownPredicates, predicateInstances);
+		return new BasicAnswerSet(knownPredicates, predicateInstances);
 	}
 
 	/**
@@ -302,10 +299,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			workingMemory.addInstances(predicate, true, factsFromProgram.get(predicate));
 		}
 
-		for (CompiledRule nonGroundRule : fixedRules) {
+		for (InternalRule nonGroundRule : fixedRules) {
 			// Generate NoGoods for all rules that have a fixed grounding.
-			RuleGroundingOrder groundingOrder = nonGroundRule.getGroundingInfo().getFixedGroundingOrder();
-			BindingResult bindingResult = getGroundInstantiations(nonGroundRule, groundingOrder, new BasicSubstitution(), null);
+			RuleGroundingOrder groundingOrder = nonGroundRule.getGroundingOrders().getFixedGroundingOrder();
+			BindingResult bindingResult = getGroundInstantiations(nonGroundRule, groundingOrder, new Substitution(), null);
 			groundAndRegister(nonGroundRule, bindingResult.getGeneratedSubstitutions(), groundNogoods);
 		}
 
@@ -337,14 +334,14 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 			for (FirstBindingAtom firstBindingAtom : firstBindingAtoms) {
 				// Use the recently added instances from the modified working memory to construct an initial substitution
-				CompiledRule nonGroundRule = firstBindingAtom.rule;
+				InternalRule nonGroundRule = firstBindingAtom.rule;
 
 				// Generate substitutions from each recent instance.
 				for (Instance instance : modifiedWorkingMemory.getRecentlyAddedInstances()) {
 					// Check instance if it matches with the atom.
 
-					final Substitution unifier = BasicSubstitution.specializeSubstitution(firstBindingAtom.startingLiteral, instance,
-							BasicSubstitution.EMPTY_SUBSTITUTION);
+					final Substitution unifier = Substitution.specializeSubstitution(firstBindingAtom.startingLiteral, instance,
+							Substitution.EMPTY_SUBSTITUTION);
 
 					if (unifier == null) {
 						continue;
@@ -352,7 +349,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 					final BindingResult bindingResult = getGroundInstantiations(
 							nonGroundRule,
-							nonGroundRule.getGroundingInfo().orderStartingFrom(firstBindingAtom.startingLiteral),
+							nonGroundRule.getGroundingOrders().orderStartingFrom(firstBindingAtom.startingLiteral),
 							unifier,
 							currentAssignment);
 
@@ -400,7 +397,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 * @param substitutions the substitutions to be applied.
 	 * @param newNoGoods    a set of nogoods to which newly generated nogoods will be added.
 	 */
-	private void groundAndRegister(final CompiledRule nonGroundRule, final List<Substitution> substitutions, final Map<Integer, NoGood> newNoGoods) {
+	private void groundAndRegister(final InternalRule nonGroundRule, final List<Substitution> substitutions, final Map<Integer, NoGood> newNoGoods) {
 		for (Substitution substitution : substitutions) {
 			List<NoGood> generatedNoGoods = noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution);
 			registry.register(generatedNoGoods, newNoGoods);
@@ -438,13 +435,13 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	/**
-	 * Helper method used by {@link NaiveGrounder#bindNextAtomInRule(RuleGroundingOrderImpl, int, int, int, BasicSubstitution)}.
-	 *
-	 * Takes an <code>ImmutablePair</code> of a {@link BasicSubstitution} and an accompanying {@link AssignmentStatus} and calls
+	 * Helper method used by {@link NaiveGrounder#bindNextAtomInRule(RuleGroundingOrder, int, int, int, Substitution)}.
+	 * 
+	 * Takes an <code>ImmutablePair</code> of a {@link Substitution} and an accompanying {@link AssignmentStatus} and calls
 	 * <code>bindNextAtomInRule</code> for the next literal in the grounding order.
 	 * If the assignment status for the last bound literal was {@link AssignmentStatus#UNASSIGNED}, the <code>remainingTolerance</code>
 	 * parameter is decreased by 1. If the remaining tolerance drops below zero, this method returns an empty {@link BindingResult}.
-	 *
+	 * 
 	 * @param groundingOrder
 	 * @param orderPosition
 	 * @param originalTolerance
@@ -494,12 +491,12 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	//@formatter:off
 	/**
-	 * Computes ground substitutions for a literal based on a {@link RuleGroundingOrderImpl} and a {@link BasicSubstitution}.
-	 *
+	 * Computes ground substitutions for a literal based on a {@link RuleGroundingOrder} and a {@link Substitution}.
+	 * 
 	 * Computes ground substitutions for the literal at position <code>orderPosition</code> of <code>groundingOrder</code>
 	 * Actual substitutions are computed by this grounder's {@link LiteralInstantiator}. 
-	 *
-	 * @param groundingOrder a {@link RuleGroundingOrderImpl} representing the body literals of a rule in the 
+	 * 
+	 * @param groundingOrder a {@link RuleGroundingOrder} representing the body literals of a rule in the 
 	 * 						 sequence in which the should be bound during grounding.
 	 * @param orderPosition the current position within <code>groundingOrder</code>, indicates which literal should be bound
 	 * @param originalTolerance the original tolerance of the used grounding heuristic
@@ -588,7 +585,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	@Override
-	public CompiledRule getNonGroundRule(Integer ruleId) {
+	public InternalRule getNonGroundRule(Integer ruleId) {
 		return knownNonGroundRules.get(ruleId);
 	}
 
@@ -620,8 +617,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	/**
 	 * Checks that every nogood not marked as {@link NoGoodInterface.Type#INTERNAL} contains only
-	 * atoms which are not {@link PredicateImpl#isSolverInternal()} (except {@link RuleAtom}s, which are allowed).
-	 *
+	 * atoms which are not {@link Predicate#isSolverInternal()} (except {@link RuleAtom}s, which are allowed).
+	 * 
 	 * @param newNoGoods
 	 */
 	private void checkTypesOfNoGoods(Collection<NoGood> newNoGoods) {
@@ -638,10 +635,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	private static class FirstBindingAtom {
-		final CompiledRule rule;
+		final InternalRule rule;
 		final Literal startingLiteral;
 
-		FirstBindingAtom(CompiledRule rule, Literal startingLiteral) {
+		FirstBindingAtom(InternalRule rule, Literal startingLiteral) {
 			this.rule = rule;
 			this.startingLiteral = startingLiteral;
 		}
