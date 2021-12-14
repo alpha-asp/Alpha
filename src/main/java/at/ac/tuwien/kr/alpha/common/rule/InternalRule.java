@@ -136,4 +136,15 @@ public class InternalRule extends NormalRule {
 		return this.ruleId;
 	}
 
+	public InternalRule removeLiteral(Literal literal) {
+		Atom headAtom = this.getHeadAtom();
+		List<Literal> newBody = new ArrayList<>(this.getBody().size());
+		for (Literal bodyLiteral : this.getBody()) {
+			if(!literal.equals(bodyLiteral)) {
+				newBody.add(bodyLiteral);
+			}
+		}
+		return new InternalRule(new NormalHead(headAtom), newBody);
+	}
+
 }
