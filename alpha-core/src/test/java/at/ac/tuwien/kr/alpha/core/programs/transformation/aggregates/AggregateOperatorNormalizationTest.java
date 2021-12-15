@@ -45,6 +45,11 @@ public class AggregateOperatorNormalizationTest {
 	 */
 	public static final String OPERATOR_NORMALIZATION_RIGHT_OP_ONLY =
 			"bla :- dom(X), #count{N : thing(N)} < X.";
+	public static final String OPERATOR_NORMALIZATION_RIGHT_OP_EQ =
+			"bla :- #count{X : thing(X)} = Y.";
+	// Check an AggregateFuntction that needs just literal flipping, but no rewriting
+	public static final String OPERATOR_NORMALIZATION_RIGHT_OP_NO_REWRITE = 
+			"bla :- #max{X : thing(X)} >= 4.";
 	//@formatter:on
 
 	@Test
@@ -115,8 +120,23 @@ public class AggregateOperatorNormalizationTest {
 	public void normalizeRightHandComparison() {
 		Rule<Head> inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_RIGHT_OP_ONLY);
 		Rule<Head> rewritten = AggregateOperatorNormalization.normalize(inputRule);
+		// literal gets flipped to "X > #count{N : thing(N)}",
+		// then rewritten to "not X <= #count{N : thing(N)}"
 		assertOperatorNormalized(rewritten, ComparisonOperators.LE, false);
-		assertAggregateBoundIncremented(inputRule, rewritten);
+	}
+
+	@Test
+	public void normalizeRightHandComparisonEq() {
+		Rule<Head> inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_RIGHT_OP_EQ);
+		Rule<Head> rewritten = AggregateOperatorNormalization.normalize(inputRule);
+		assertEquals(RuleParser.parse("bla :- Y = #count{X : thing(X)}."), rewritten);
+	}
+
+	@Test
+	public void normalizeRightHandComparisonNoRewrite() {
+		Rule<Head> inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_RIGHT_OP_NO_REWRITE);
+		Rule<Head> rewritten = AggregateOperatorNormalization.normalize(inputRule);
+		assertEquals(RuleParser.parse("bla :- 4 <= #max{X : thing(X)}."), rewritten);
 	}
 
 	private static void assertOperatorNormalized(Rule<Head> rewrittenRule, ComparisonOperator expectedRewrittenOperator,
@@ -155,9 +175,8 @@ public class AggregateOperatorNormalizationTest {
 		ArithmeticTerm incrementTerm = (ArithmeticTerm) comparisonRightHandTerm;
 		assertEquals(ArithmeticOperator.PLUS, incrementTerm.getOperator());
 		assertEquals(Terms.newConstant(1), incrementTerm.getRightOperand());
-		Term sourceBound = sourceAggregate.getAtom().getLowerBoundTerm() != null ? 
-			sourceAggregate.getAtom().getLowerBoundTerm() 
-			: sourceAggregate.getAtom().getUpperBoundTerm();
+		Term sourceBound = sourceAggregate.getAtom().getLowerBoundTerm() != null ? sourceAggregate.getAtom().getLowerBoundTerm()
+				: sourceAggregate.getAtom().getUpperBoundTerm();
 		assertEquals(sourceBound, incrementTerm.getLeftOperand());
 	}
 
