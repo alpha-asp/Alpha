@@ -13,7 +13,7 @@ dependencies {
 	implementation("org.apache.poi:poi-ooxml:${poiVersion}")
 
 	// Logging Implementation and SLF4J
-	implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.15.0") {
+	implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.16.0") {
 		// Exclude the SLF4J API, because we already have it via `alpha.java-application-conventions`.
 		exclude("org.slf4j", "slf4j-api")
 	}
