@@ -38,10 +38,10 @@ public class AggregateOperatorNormalizationTest {
 			"bla :- dom(X), not X > #count{N : thing(N)}.";
 	public static final String OPERATOR_NORMALIZATION_GE_NEG_ASP =
 			"bla :- dom(X), not X >= #count{N : thing(N)}.";
-	/*
-	 * See github issue #311:
+	/**
 	 * Operator normalization must also make sure that literals with only a right-hand term
 	 * are normalized to left-hand term only (and then operator-normalized if necessary) 
+	 * @see <a href="https://github.com/alpha-asp/alpha/issues/311">#311</a> 
 	 */
 	public static final String OPERATOR_NORMALIZATION_RIGHT_OP_ONLY =
 			"bla :- dom(X), #count{N : thing(N)} < X.";
