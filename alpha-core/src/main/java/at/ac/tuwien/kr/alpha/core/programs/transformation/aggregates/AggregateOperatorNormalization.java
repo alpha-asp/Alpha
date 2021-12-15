@@ -39,7 +39,8 @@ import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
  * </ul>
  * Operators for "#min" and "#max" aggregates are not rewritten.
  * 
- * Note that input programs must only contain aggregate literals of form <code>TERM OP #aggr{...}</code> or <code>#aggr{...} OP TERM</code>, i.e. with only
+ * Note that input programs must only contain aggregate literals of form <code>TERM OP #aggr{...}</code> or <code>#aggr{...} OP TERM</code>,
+ * i.e. with only
  * a left or right term and operator (but not both). When preprocessing programs, apply this transformation AFTER
  * {@link at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateLiteralSplitting}.
  * 
@@ -70,22 +71,7 @@ public final class AggregateOperatorNormalization {
 	private static List<Literal> rewriteAggregateOperator(AggregateLiteral lit) {
 		AggregateAtom atom = lit.getAtom();
 		if (atom.getLowerBoundOperator() == null && atom.getUpperBoundOperator() != null) {
-			ComparisonOperator operator = atom.getUpperBoundOperator();
-			AggregateLiteral flipped; // "flip" right-hand operator and term to left-hand ones.
-			if (operator.equals(ComparisonOperators.EQ) || operator.equals(ComparisonOperators.NE)) {
-				flipped = Atoms.newAggregateAtom(
-					atom.getUpperBoundOperator(), 
-					atom.getUpperBoundTerm(), 
-					atom.getAggregateFunction(), 
-					atom.getAggregateElements()).toLiteral(!lit.isNegated());
-			} else {
-				flipped = Atoms.newAggregateAtom(
-					atom.getUpperBoundOperator().negate(), 
-					atom.getUpperBoundTerm(), 
-					atom.getAggregateFunction(), 
-					atom.getAggregateElements()).toLiteral(!lit.isNegated());
-			}
-			return rewriteAggregateOperator(flipped);
+			return rewriteAggregateOperator(convertToLeftHandComparison(lit));
 		}
 		if (lit.getAtom().getAggregateFunction() == AggregateFunctionSymbol.MIN || lit.getAtom().getAggregateFunction() == AggregateFunctionSymbol.MAX) {
 			// No operator normalization needed for #min/#max aggregates.
@@ -134,6 +120,34 @@ public final class AggregateOperatorNormalization {
 		Term increment = Terms.newArithmeticTerm(term, ArithmeticOperator.PLUS, Terms.newConstant(1));
 		ComparisonAtom atom = Atoms.newComparisonAtom(targetVariable, increment, ComparisonOperators.EQ);
 		return atom.toLiteral();
+	}
+
+	/**
+	 * Helper function to convert aggregate literals of form <code>#aggr{...} OP TERM</code> to literals of form
+	 * <code>TERM OP #aggr{...}</code>.
+	 * 
+	 * @param lit an aggregate literal with only a right-hand term comparison
+	 * @return a semantically equivalent literal with only a left-hand comparison
+	 */
+	private static AggregateLiteral convertToLeftHandComparison(AggregateLiteral lit) {
+		AggregateAtom atom = lit.getAtom();
+		ComparisonOperator operator = atom.getUpperBoundOperator();
+		ComparisonOperator flippedOperator;
+		if (operator.equals(ComparisonOperators.EQ) || operator.equals(ComparisonOperators.NE)) {
+			flippedOperator = operator;
+		} else if (operator.equals(ComparisonOperators.LE)) {
+			flippedOperator = ComparisonOperators.GE;
+		} else if (operator.equals(ComparisonOperators.LT)) {
+			flippedOperator = ComparisonOperators.GT;
+		} else if (operator.equals(ComparisonOperators.GE)) {
+			flippedOperator = ComparisonOperators.LE;
+		} else if (operator.equals(ComparisonOperators.GT)) {
+			flippedOperator = ComparisonOperators.LT;
+		} else {
+			throw new IllegalArgumentException("Unsupported comparison operator for aggregate atom: " + operator);
+		}
+		return Atoms.newAggregateAtom(flippedOperator, atom.getUpperBoundTerm(), atom.getAggregateFunction(), atom.getAggregateElements())
+				.toLiteral(!lit.isNegated());
 	}
 
 }
