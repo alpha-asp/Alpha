@@ -6,4 +6,5 @@ package at.ac.tuwien.kr.alpha.api.rules.heads;
  * Copyright (c) 2021, the Alpha Team.
  */
 public interface Head {
+
 }

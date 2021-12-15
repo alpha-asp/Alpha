@@ -17,6 +17,7 @@ import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
  */
 // TODO go through implementations and pull out stuff that can be default-implemented here
 public interface Literal {
+	
 	Atom getAtom();
 
 	boolean isNegated();
