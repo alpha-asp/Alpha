@@ -15,7 +15,7 @@ public class RuleParser {
 			throw new IllegalArgumentException("Expected exactly one rule and no facts!");
 		}
 		if (prog.getRules().size() != 1) {
-			throw new IllegalArgumentException("Excepted exactly one rule");
+			throw new IllegalArgumentException("Expected exactly one rule");
 		}
 		return prog.getRules().get(0);
 	}
