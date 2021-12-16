@@ -31,6 +31,9 @@ dependencies {
 	testImplementation(jupiter("api"))
 	testImplementation(jupiter("params"))
 	testImplementation(jupiter("engine"))
+
+	// Logging for tests
+	testImplementation("org.slf4j:slf4j-simple:1.7.32")
 }
 
 // JUnit 5
