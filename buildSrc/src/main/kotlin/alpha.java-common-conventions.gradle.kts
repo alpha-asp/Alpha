@@ -21,7 +21,7 @@ dependencies {
 	implementation("org.apache.commons:commons-text:1.9")
 
 	implementation("org.reflections:reflections:0.9.11")
-	implementation("org.slf4j:slf4j-api:1.7.25")
+	implementation("org.slf4j:slf4j-api:1.7.32")
 
 	// JUnit 5
 	val jupiterVersion = "5.7.1"
@@ -31,6 +31,9 @@ dependencies {
 	testImplementation(jupiter("api"))
 	testImplementation(jupiter("params"))
 	testImplementation(jupiter("engine"))
+
+	// Logging for tests
+	testImplementation("org.slf4j:slf4j-simple:1.7.32")
 }
 
 // JUnit 5
