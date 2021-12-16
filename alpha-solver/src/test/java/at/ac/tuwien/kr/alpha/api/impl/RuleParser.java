@@ -12,7 +12,7 @@ public class RuleParser {
 		ProgramParser parser = new ProgramParserImpl();
 		ASPCore2Program prog = parser.parse(str);
 		if (!prog.getFacts().isEmpty()) {
-			throw new IllegalArgumentException("Excepted exactly one rule and no facts!");
+			throw new IllegalArgumentException("Expected exactly one rule and no facts!");
 		}
 		if (prog.getRules().size() != 1) {
 			throw new IllegalArgumentException("Excepted exactly one rule");
