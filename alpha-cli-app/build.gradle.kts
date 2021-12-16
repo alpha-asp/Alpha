@@ -37,7 +37,7 @@ tasks.create<Jar>("bundledJar") {
 
 	from(configurations.runtimeClasspath.get().map({ if (it.isDirectory()) it else zipTree(it) }))
 
-	archiveFileName.set("${project.name}-bundled.jar")
+	archiveFileName.set("${project.name}-${project.version}-bundled.jar")
 
 	exclude("META-INF/DEPENDENCIES")
 	
