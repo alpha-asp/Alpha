@@ -38,6 +38,18 @@ public class AggregateOperatorNormalizationTest {
 			"bla :- dom(X), not X > #count{N : thing(N)}.";
 	public static final String OPERATOR_NORMALIZATION_GE_NEG_ASP =
 			"bla :- dom(X), not X >= #count{N : thing(N)}.";
+	/**
+	 * Operator normalization must also make sure that literals with only a right-hand term
+	 * are normalized to left-hand term only (and then operator-normalized if necessary) 
+	 * @see <a href="https://github.com/alpha-asp/alpha/issues/311">#311</a> 
+	 */
+	public static final String OPERATOR_NORMALIZATION_RIGHT_OP_ONLY =
+			"bla :- dom(X), #count{N : thing(N)} < X.";
+	public static final String OPERATOR_NORMALIZATION_RIGHT_OP_EQ =
+			"bla :- #count{X : thing(X)} = Y.";
+	// Check an AggregateFuntction that needs just literal flipping, but no rewriting
+	public static final String OPERATOR_NORMALIZATION_RIGHT_OP_NO_REWRITE = 
+			"bla :- #max{X : thing(X)} >= 4.";
 	//@formatter:on
 
 	@Test
@@ -104,6 +116,29 @@ public class AggregateOperatorNormalizationTest {
 		assertAggregateBoundIncremented(inputRule, rewritten);
 	}
 
+	@Test
+	public void normalizeRightHandComparison() {
+		Rule<Head> inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_RIGHT_OP_ONLY);
+		Rule<Head> rewritten = AggregateOperatorNormalization.normalize(inputRule);
+		// literal gets flipped to "X > #count{N : thing(N)}",
+		// then rewritten to "not X <= #count{N : thing(N)}"
+		assertOperatorNormalized(rewritten, ComparisonOperators.LE, false);
+	}
+
+	@Test
+	public void normalizeRightHandComparisonEq() {
+		Rule<Head> inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_RIGHT_OP_EQ);
+		Rule<Head> rewritten = AggregateOperatorNormalization.normalize(inputRule);
+		assertEquals(RuleParser.parse("bla :- Y = #count{X : thing(X)}."), rewritten);
+	}
+
+	@Test
+	public void normalizeRightHandComparisonNoRewrite() {
+		Rule<Head> inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_RIGHT_OP_NO_REWRITE);
+		Rule<Head> rewritten = AggregateOperatorNormalization.normalize(inputRule);
+		assertEquals(RuleParser.parse("bla :- 4 <= #max{X : thing(X)}."), rewritten);
+	}
+
 	private static void assertOperatorNormalized(Rule<Head> rewrittenRule, ComparisonOperator expectedRewrittenOperator,
 			boolean expectedRewrittenLiteralPositive) {
 		AggregateLiteral rewrittenAggregate = null;
@@ -140,7 +175,9 @@ public class AggregateOperatorNormalizationTest {
 		ArithmeticTerm incrementTerm = (ArithmeticTerm) comparisonRightHandTerm;
 		assertEquals(ArithmeticOperator.PLUS, incrementTerm.getOperator());
 		assertEquals(Terms.newConstant(1), incrementTerm.getRightOperand());
-		assertEquals(sourceAggregate.getAtom().getLowerBoundTerm(), incrementTerm.getLeftOperand());
+		Term sourceBound = sourceAggregate.getAtom().getLowerBoundTerm() != null ? sourceAggregate.getAtom().getLowerBoundTerm()
+				: sourceAggregate.getAtom().getUpperBoundTerm();
+		assertEquals(sourceBound, incrementTerm.getLeftOperand());
 	}
 
 }
