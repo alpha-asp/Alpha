@@ -78,9 +78,9 @@ jobs:
     - run: gu install native-image
     - uses: gradle/gradle-build-action@v2
       with:
-        arguments: build --stacktrace alpha-cli-app:nativeImage -x test
-    - run: ./alpha-cli-app/build/native-image/alpha --help
-    - run: ./alpha-cli-app/build/native-image/alpha -str 'a.'
+        arguments: build --stacktrace alpha-cli-app:nativeCompile -x test
+    - run: ./alpha-cli-app/build/native/nativeCompile/alpha --help
+    - run: ./alpha-cli-app/build/native/nativeCompile/alpha -str 'a.'
     - uses: actions/upload-artifact@v2
       with:
         name: alpha

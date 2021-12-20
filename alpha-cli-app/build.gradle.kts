@@ -1,6 +1,6 @@
 plugins {
 	id("alpha.java-application-conventions")
-	id("org.mikeneck.graalvm-native-image") version "1.4.1"
+	id("org.graalvm.buildtools.native") version "0.9.8"
 }
 
 dependencies {
@@ -73,13 +73,21 @@ tasks.test {
 	useJUnitPlatform()
 }
 
-tasks.nativeImage {
-	mainClass = main
-	executableName = "alpha"
-	arguments(
-		"--no-fallback",
-		"-H:Log=registerResource",
-		"-H:+ReportExceptionStackTraces",
-		"--report-unsupported-elements-at-runtime",
-	)
+graalvmNative {
+	binaries {
+		named("main") {
+			imageName.set("alpha")
+			mainClass.set(main)
+			buildArgs.addAll(
+				"--no-fallback",
+				"-H:Log=registerResource",
+				"-H:+ReportExceptionStackTraces",
+				"--report-unsupported-elements-at-runtime"
+			)
+			javaLauncher.set(javaToolchains.launcherFor {
+				languageVersion.set(JavaLanguageVersion.of(17))
+				vendor.set(JvmVendorSpec.matching("GraalVM"))
+			})
+		}
+	}
 }
