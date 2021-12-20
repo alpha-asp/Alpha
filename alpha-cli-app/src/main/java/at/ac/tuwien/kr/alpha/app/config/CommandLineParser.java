@@ -32,6 +32,7 @@ import java.io.FileInputStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.function.Consumer;
 
 import org.apache.commons.cli.CommandLine;
@@ -72,6 +73,7 @@ public class CommandLineParser {
 	
 	// "special", i.e. non-configuration options
 	private static final Option OPT_HELP = Option.builder("h").longOpt("help").hasArg(false).desc("shows this help").build();
+	private static final Option OPT_VERSION = Option.builder().longOpt("version").hasArg(false).desc("prints the version and exits").build();
 
 	// input-specific options
 	private static final Option OPT_INPUT = Option.builder("i").longOpt("input").hasArg(true).argName("file").type(FileInputStream.class)
@@ -158,6 +160,7 @@ public class CommandLineParser {
 		 * Below code adds all options defined above to CLI_OPTS - needed for parsing
 		 */
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_HELP);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_VERSION);
 
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NUM_ANSWER_SETS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_FILTER);
@@ -223,8 +226,10 @@ public class CommandLineParser {
 		/*
 		 * below put invocations are used to "register" the handler methods for each commandline option
 		 */
-		// help is handled separately, therefore dummy handler
+		// help and version are handled separately, therefore dummy handlers
 		this.globalOptionHandlers.put(CommandLineParser.OPT_HELP.getOpt(), (o, c) -> { });
+		this.globalOptionHandlers.put(CommandLineParser.OPT_VERSION.getOpt(), (o, c) -> { });
+
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER.getOpt(), this::handleGrounder);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_SOLVER.getOpt(), this::handleSolver);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NOGOOD_STORE.getOpt(), this::handleNogoodStore);
@@ -269,6 +274,9 @@ public class CommandLineParser {
 		if (commandLine.hasOption(CommandLineParser.OPT_HELP.getOpt())) {
 			LOGGER.debug("Found help option!");
 			this.handleHelp();
+		} else if (commandLine.hasOption(CommandLineParser.OPT_VERSION.getLongOpt())) {
+			LOGGER.debug("Found version option!");
+			this.handleVersion();
 		} else {
 			this.validate(commandLine);
 		}
@@ -308,6 +316,16 @@ public class CommandLineParser {
 		return helpBuffer.toString();
 	}
 
+	public String getVersion() {
+		try {
+			Properties properties = new Properties();
+			properties.load(CommandLineParser.class.getResourceAsStream("/META-INF/build.properties"));
+			return properties.getProperty("project.version");
+		} catch (Exception e) {
+			return "unknown (" + e.getMessage() + ")";
+		}
+	}
+
 	private void validate(CommandLine commandLine) throws ParseException {
 		if (!commandLine.hasOption(CommandLineParser.OPT_INPUT.getOpt()) && !commandLine.hasOption(CommandLineParser.OPT_ASPSTRING.getOpt())) {
 			throw new ParseException("Missing input source - need to specifiy either a file (" + CommandLineParser.OPT_INPUT.getOpt() + ") or a string ("
@@ -328,6 +346,10 @@ public class CommandLineParser {
 
 	private void handleHelp() {
 		this.abortAction.accept(this.getUsageMessage());
+	}
+
+	private void handleVersion() {
+		this.abortAction.accept(this.getVersion());
 	}
 
 	private void handleInput(Option opt, InputConfig cfg) {
