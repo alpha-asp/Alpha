@@ -58,3 +58,25 @@ jobs:
     - uses: codecov/codecov-action@v1
       if: matrix.os == env.MAIN_OS && matrix.java == env.MAIN_JAVA
       continue-on-error: true
+  native-image:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        fetch-depth: 0
+    - name: Set up Graal
+      run: |
+        mkdir graalvm
+        wget -qO- 'https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.3.0/graalvm-ce-java17-linux-amd64-21.3.0.tar.gz' | tar xzf - --strip-components=1 -C graalvm
+        echo "${PWD}/graalvm/bin" >> $GITHUB_PATH
+        echo "JAVA_HOME=${PWD}/graalvm"
+    - run: sudo apt-get install -y build-essential libz-dev zlib1g-dev
+    - run: |
+        echo $LD_LIBRARY_PATH
+        sudo ldconfig
+    - run: gu install native-image
+    - uses: gradle/gradle-build-action@v2
+      with:
+        gradle-version: '7.3'
+        arguments: build --stacktrace alpha-cli-app:nativeImage
