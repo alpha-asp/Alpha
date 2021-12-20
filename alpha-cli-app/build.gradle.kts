@@ -1,5 +1,6 @@
 plugins {
 	id("alpha.java-application-conventions")
+	id("org.mikeneck.graalvm-native-image") version "1.4.1"
 }
 
 dependencies {
@@ -70,4 +71,15 @@ tasks.create<Jar>("bundledJar") {
 
 tasks.test {
 	useJUnitPlatform()
+}
+
+tasks.nativeImage {
+	mainClass = main
+	executableName = "alpha"
+	arguments(
+		"--no-fallback",
+		"-H:Log=registerResource",
+		"-H:+ReportExceptionStackTraces",
+		"--report-unsupported-elements-at-runtime",
+	)
 }

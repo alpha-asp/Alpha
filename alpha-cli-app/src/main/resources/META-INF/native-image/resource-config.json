@@ -1,0 +1,13 @@
+{
+  "resources": {
+    "includes": [
+      {
+        "pattern": "^stringtemplates/aggregate-encodings.stg$"
+      },
+      {
+        "pattern": "^simplelogger.properties$"
+      }
+    ]
+  },
+  "bundles": []
+}
