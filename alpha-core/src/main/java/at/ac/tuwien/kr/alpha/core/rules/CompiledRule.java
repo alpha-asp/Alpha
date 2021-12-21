@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha.core.rules;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingInfo;
 
@@ -17,4 +18,6 @@ public interface CompiledRule extends NormalRule {
 	CompiledRule renameVariables(String str);
 
 	boolean isGround();
+
+	CompiledRule returnCopyWithoutLiteral(Literal literal);
 }

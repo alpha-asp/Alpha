@@ -29,7 +29,9 @@ package at.ac.tuwien.kr.alpha.core.rules;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import com.google.common.annotations.VisibleForTesting;
 
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
@@ -143,15 +145,28 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 		return this.ruleId;
 	}
 
-	public InternalRule removeLiteral(Literal literal) {
-		Atom headAtom = this.getHeadAtom();
+	public InternalRule returnCopyWithoutLiteral(Literal literal) {
+		BasicAtom headAtom = this.getHeadAtom();
 		List<Literal> newBody = new ArrayList<>(this.getBody().size());
 		for (Literal bodyLiteral : this.getBody()) {
 			if(!literal.equals(bodyLiteral)) {
 				newBody.add(bodyLiteral);
 			}
 		}
-		return new InternalRule(new NormalHead(headAtom), newBody);
+		return new InternalRule(Heads.newNormalHead(headAtom), newBody);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		InternalRule that = (InternalRule) o;
+
+		return Objects.equals(occurringPredicates, that.occurringPredicates);
 	}
 
 }
