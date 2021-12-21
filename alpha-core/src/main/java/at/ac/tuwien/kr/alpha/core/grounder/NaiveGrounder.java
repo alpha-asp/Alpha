@@ -312,7 +312,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	@Override
-	public Map<Integer, NoGood> getNoGoods(Assignment currentAssignment) {
+	public Map<Integer, NoGood> getNoGoods(Assignment assignment) {
 		// In first call, prepare facts and ground rules.
 		final Map<Integer, NoGood> newNoGoods = fixedRules != null ? bootstrap() : new LinkedHashMap<>();
 
@@ -351,7 +351,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 							nonGroundRule,
 							nonGroundRule.getGroundingOrders().orderStartingFrom(firstBindingAtom.startingLiteral),
 							unifier,
-							currentAssignment);
+                            assignment);
 
 					groundAndRegister(nonGroundRule, bindingResult.getGeneratedSubstitutions(), newNoGoods);
 				}
@@ -410,8 +410,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	// Ideally, this method should be private. It's only visible because NaiveGrounderTest needs to access it.
-	BindingResult getGroundInstantiations(CompiledRule rule, RuleGroundingOrder groundingOrder, Substitution partialSubstitution,
-			Assignment currentAssignment) {
+	BindingResult getGroundInstantiations(InternalRule rule, RuleGroundingOrder groundingOrder, Substitution partialSubstitution,
+			Assignment assignment) {
 		int tolerance = heuristicsConfiguration.getTolerance(rule.isConstraint());
 		if (tolerance < 0) {
 			tolerance = Integer.MAX_VALUE;
@@ -420,7 +420,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// Update instantiationStrategy with current assignment.
 		// Note: Actually the assignment could be an instance variable of the grounder (shared with solver),
 		// but this would have a larger impact on grounder/solver communication design as a whole.
-		instantiationStrategy.setCurrentAssignment(currentAssignment);
+		instantiationStrategy.setCurrentAssignment(assignment);
 		BindingResult bindingResult = bindNextAtomInRule(groundingOrder, 0, tolerance, tolerance, partialSubstitution);
 		if (LOGGER.isDebugEnabled()) {
 			for (int i = 0; i < bindingResult.size(); i++) {
@@ -599,8 +599,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	@Override
-	public Set<Literal> justifyAtom(int atomToJustify, Assignment currentAssignment) {
-		Set<Literal> literals = analyzeUnjustified.analyze(atomToJustify, currentAssignment);
+	public Set<Literal> justifyAtom(int atomToJustify, Assignment assignment) {
+		Set<Literal> literals = analyzeUnjustified.analyze(atomToJustify, assignment);
 		// Remove facts from justification before handing it over to the solver.
 		for (Iterator<Literal> iterator = literals.iterator(); iterator.hasNext();) {
 			Literal literal = iterator.next();
