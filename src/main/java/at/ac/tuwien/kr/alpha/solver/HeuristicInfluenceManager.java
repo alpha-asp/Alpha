@@ -58,7 +58,7 @@ public class HeuristicInfluenceManager extends InfluenceManager {
 	/**
 	 * A special HeuristicChoicePoint indicating that several HeuristicChoicePoints exist in a mapping
 	 */
-	private final HeuristicChoicePoint MULTIVALUE_INDICATOR = new HeuristicChoicePoint(0, 0, null, null);
+	private final HeuristicChoicePoint multivalueIndicator = new HeuristicChoicePoint(0, 0, null, null);
 
 	/**
 	 * Array of heuristic choice points, indexed by atom IDs, which may be enablers, disablers, heuristic choice atom itself.
@@ -130,11 +130,11 @@ public class HeuristicInfluenceManager extends InfluenceManager {
 			return;
 		}
 		
-		if (heuristicChoicePoints[headAtomId] != MULTIVALUE_INDICATOR) {
+		if (heuristicChoicePoints[headAtomId] != multivalueIndicator) {
 			headAtomsToHeuristics.put(headAtomId, heuristicChoicePoints[headAtomId]);
 		}
 		headAtomsToHeuristics.put(headAtomId, heuristicChoicePoint);
-		heuristicChoicePoints[headAtomId] = MULTIVALUE_INDICATOR;
+		heuristicChoicePoints[headAtomId] = multivalueIndicator;
 	}
 
 	private void addHeuristicChoicePointToInfluencers(HeuristicChoicePoint heuristicChoicePoint, Integer... atoms) {
@@ -197,7 +197,7 @@ public class HeuristicInfluenceManager extends InfluenceManager {
 	void callbackOnChanged(int atom) {
 		LOGGER.trace("Callback received on influencer atom: {}", atom);
 		final HeuristicChoicePoint heuristicChoicePoint = heuristicChoicePoints[atom];
-		if (heuristicChoicePoint == MULTIVALUE_INDICATOR) {
+		if (heuristicChoicePoint == multivalueIndicator) {
 			for (HeuristicChoicePoint heuristicForHead : headAtomsToHeuristics.get(atom)) {
 				heuristicForHead.recomputeActive();
 			}
