@@ -175,7 +175,7 @@ public class ReificationHelper {
 		for (Rule<? extends Head> rule : program.getRules()) {
 			reified.addAll(reifyRule(rule));
 		}
-		for(Atom fact : program.getFacts()) {
+		for (Atom fact : program.getFacts()) {
 			ConstantTerm<?> factId = idProvider.get();
 			reified.add(Atoms.newBasicAtom(FACT, factId));
 			reified.addAll(reifyAtom(factId, fact));
