@@ -36,6 +36,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -59,6 +60,10 @@ import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.commons.programs.ReificationHelper;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
@@ -231,8 +236,8 @@ public class AlphaImpl implements Alpha {
 	@Override
 	public DebugSolvingContext prepareDebugSolve(NormalProgram program) {
 		return prepareDebugSolve(program, InputConfig.DEFAULT_FILTER);
-	}	
-	
+	}
+
 	@Override
 	public DebugSolvingContext prepareDebugSolve(final ASPCore2Program program, java.util.function.Predicate<Predicate> filter) {
 		return prepareDebugSolve(normalizeProgram(program), filter);
@@ -253,27 +258,27 @@ public class AlphaImpl implements Alpha {
 		compGraph = analyzed.getComponentGraph();
 		final Solver solver = prepareSolverFor(analyzed, filter);
 		return new DebugSolvingContext() {
-			
+
 			@Override
 			public Solver getSolver() {
 				return solver;
 			}
-			
+
 			@Override
 			public NormalProgram getPreprocessedProgram() {
 				return preprocessed;
 			}
-			
+
 			@Override
 			public NormalProgram getNormalizedProgram() {
 				return program;
 			}
-			
+
 			@Override
 			public DependencyGraph getDependencyGraph() {
 				return depGraph;
 			}
-			
+
 			@Override
 			public ComponentGraph getComponentGraph() {
 				return compGraph;
@@ -289,6 +294,14 @@ public class AlphaImpl implements Alpha {
 	@Override
 	public Solver prepareSolverFor(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
 		return prepareSolverFor(performProgramPreprocessing(program), filter);
+	}
+
+	@Override
+	public Set<BasicAtom> reify(ASPCore2Program program) {
+		final IntIdGenerator intIdGen = new IntIdGenerator(0);
+		return new ReificationHelper(() -> {
+			return Terms.newConstant(intIdGen.getNextId());
+		}).reifyProgram(program);
 	}
 
 }

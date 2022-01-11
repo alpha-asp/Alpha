@@ -33,6 +33,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Paths;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
@@ -55,6 +56,7 @@ import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.util.AnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.app.ComponentGraphWriter;
 import at.ac.tuwien.kr.alpha.app.DependencyGraphWriter;
@@ -92,18 +94,28 @@ public class Main {
 		}
 
 		InputConfig inputCfg = cfg.getInputConfig();
-		Solver solver;
-		if (inputCfg.isDebugPreprocessing()) {
-			DebugSolvingContext dbgCtx = alpha.prepareDebugSolve(program);
-			Main.writeNormalProgram(dbgCtx.getNormalizedProgram(), inputCfg.getNormalizedPath());
-			Main.writeNormalProgram(dbgCtx.getPreprocessedProgram(), inputCfg.getPreprocessedPath());
-			Main.writeDependencyGraph(dbgCtx.getDependencyGraph(), inputCfg.getDepgraphPath());
-			Main.writeComponentGraph(dbgCtx.getComponentGraph(), inputCfg.getCompgraphPath());
-			solver = dbgCtx.getSolver();
+
+		// Note: We might potentially want to get the reified program as an AnswerSet and
+		// apply all the formatting we can do on answer sets also on reified programs.
+		if (inputCfg.isReifyInput()) {
+			Set<BasicAtom> reified = alpha.reify(program);
+			for (BasicAtom atom : reified) {
+				System.out.println(atom);
+			}
 		} else {
-			solver = alpha.prepareSolverFor(program, inputCfg.getFilter());
+			Solver solver;
+			if (inputCfg.isDebugPreprocessing()) {
+				DebugSolvingContext dbgCtx = alpha.prepareDebugSolve(program);
+				Main.writeNormalProgram(dbgCtx.getNormalizedProgram(), inputCfg.getNormalizedPath());
+				Main.writeNormalProgram(dbgCtx.getPreprocessedProgram(), inputCfg.getPreprocessedPath());
+				Main.writeDependencyGraph(dbgCtx.getDependencyGraph(), inputCfg.getDepgraphPath());
+				Main.writeComponentGraph(dbgCtx.getComponentGraph(), inputCfg.getCompgraphPath());
+				solver = dbgCtx.getSolver();
+			} else {
+				solver = alpha.prepareSolverFor(program, inputCfg.getFilter());
+			}
+			Main.computeAndConsumeAnswerSets(solver, cfg);
 		}
-		Main.computeAndConsumeAnswerSets(solver, cfg);
 	}
 
 	/**
