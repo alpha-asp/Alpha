@@ -39,6 +39,9 @@ public class ReificationHelper {
 	static final Predicate RULE_HEAD = Predicates.getPredicate("rule_head", 2);
 	static final Predicate RULE_BODY_LITERAL = Predicates.getPredicate("rule_bodyLiteral", 2);
 
+	// Predicates describing facts.
+	static final Predicate FACT = Predicates.getPredicate("fact", 1);
+
 	// Predicates describing heads.
 	static final Predicate HEAD_TYPE = Predicates.getPredicate("head_type", 2);
 
@@ -172,7 +175,15 @@ public class ReificationHelper {
 		for (Rule<? extends Head> rule : program.getRules()) {
 			reified.addAll(reifyRule(rule));
 		}
-		// TODO add reified predicate info
+		for(Atom fact : program.getFacts()) {
+			ConstantTerm<?> factId = idProvider.get();
+			reified.add(Atoms.newBasicAtom(FACT, factId));
+			reified.addAll(reifyAtom(factId, fact));
+		}
+		for (Map.Entry<Predicate, ConstantTerm<?>> entry : reifiedPredicates.entrySet()) {
+			reified.add(Atoms.newBasicAtom(PREDICATE, entry.getValue(), Terms.newConstant(entry.getKey().getName()),
+					Terms.newConstant(entry.getKey().getArity())));
+		}
 		return reified;
 	}
 

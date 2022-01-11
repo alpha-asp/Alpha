@@ -100,7 +100,7 @@ public class Main {
 		if (inputCfg.isReifyInput()) {
 			Set<BasicAtom> reified = alpha.reify(program);
 			for (BasicAtom atom : reified) {
-				System.out.println(atom);
+				System.out.println(atom + ".");
 			}
 		} else {
 			Solver solver;
