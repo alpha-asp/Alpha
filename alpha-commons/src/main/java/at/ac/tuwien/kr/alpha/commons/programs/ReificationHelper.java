@@ -171,6 +171,7 @@ public class ReificationHelper {
 	}
 
 	public Set<BasicAtom> reifyProgram(ASPCore2Program program) {
+		// TODO reify directives
 		Set<BasicAtom> reified = new LinkedHashSet<>();
 		for (Rule<? extends Head> rule : program.getRules()) {
 			reified.addAll(reifyRule(rule));
@@ -384,6 +385,7 @@ public class ReificationHelper {
 				Terms.newConstant(term.getObject().getClass().getName())));
 		reified.add(Atoms.newBasicAtom(CONSTANT_TERM_SYMBOLIC, termId,
 				Terms.newSymbolicConstant(Boolean.toString(term.isSymbolic()))));
+		// TODO what if a string contains quotes?
 		reified.add(Atoms.newBasicAtom(CONSTANT_TERM_VALUE, termId, Terms.newConstant(term.getObject().toString())));
 		return reified;
 	}
