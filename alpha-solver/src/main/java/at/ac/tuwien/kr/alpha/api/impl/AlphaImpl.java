@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import at.ac.tuwien.kr.alpha.core.programs.transformation.SimplePreprocessing;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,7 +143,9 @@ public class AlphaImpl implements Alpha {
 	@VisibleForTesting
 	InternalProgram performProgramPreprocessing(NormalProgram program) {
 		LOGGER.debug("Preprocessing InternalProgram!");
-		InternalProgram retVal = InternalProgram.fromNormalProgram(program);
+		SimplePreprocessing simplePreprocessing = new SimplePreprocessing();
+		NormalProgram simplePreprocessed = simplePreprocessing.apply(program);
+		InternalProgram retVal = InternalProgram.fromNormalProgram(simplePreprocessed);
 		if (config.isEvaluateStratifiedPart()) {
 			AnalyzedProgram analyzed = new AnalyzedProgram(retVal.getRules(), retVal.getFacts());
 			retVal = new StratifiedEvaluation().apply(analyzed);

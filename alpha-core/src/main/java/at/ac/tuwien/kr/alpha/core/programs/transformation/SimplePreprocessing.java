@@ -1,79 +1,78 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import at.ac.tuwien.kr.alpha.api.programs.Program;
+import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.core.grounder.Unification;
-import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
-import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
+import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 
 /**
  * Simplifies an internal input program by simplifying and deleting redundant rules.
  */
 
-public class SimplePreprocessing extends ProgramTransformation<CompiledProgram, CompiledProgram> {
+public class SimplePreprocessing extends ProgramTransformation<NormalProgram, NormalProgram> {
 
 	@Override
-	public CompiledProgram apply(CompiledProgram inputProgram) {
-		List<CompiledRule> srcRules = new ArrayList<>(inputProgram.getRules());
-		List<CompiledRule> transformedRules = new ArrayList<>();
-
-		for (CompiledRule rule : srcRules) {
-			boolean redundantRule = false;
-
-			Atom headAtom = rule.getHead().getAtom();
-			Set<Literal> body = rule.getBody();
-			Set<Literal> positiveBody = rule.getPositiveBody();
-			Set<Literal> negativeBody = rule.getNegativeBody();
-			CompiledRule simplifiedRule = null;
-
-			//implements s0: delete duplicate rules
-			if (transformedRules.contains(rule)) {
-				redundantRule = true;
+	public NormalProgram apply(NormalProgram inputProgram) {
+		List<NormalRule> srcRules = inputProgram.getRules();
+		Set<Atom> facts = new LinkedHashSet<>(inputProgram.getFacts());
+		boolean modified = true;
+		while (modified) {
+			modified = false;
+			//implements s0 by using a Set (deleting duplicate rules)
+			Set<NormalRule> newRules = new LinkedHashSet<>();
+			for (NormalRule rule : srcRules) {
+				//s9
+				if (checkForNonDerivableLiterals(rule, srcRules, facts)) {
+					continue;
+				}
+				//s10
+				NormalRule simplifiedRule = simplifyRule(rule, srcRules, facts);
+				if (simplifiedRule == null) {
+					continue;
+				}
+				else if (simplifiedRule.getBody().isEmpty()) {
+					facts.add(simplifiedRule.getHeadAtom());
+					modified = true;
+					continue;
+				} else {
+					if(!simplifiedRule.equals(rule)) {
+						modified = true;
+						rule = simplifiedRule;
+					}
+				}
+				newRules.add(rule);
 			}
-			//implements s2
-			if (!redundantRule && checkForConflictingBodyLiterals(positiveBody, negativeBody)) {
-				redundantRule = true;
-			}
-			//implements s3
-			if (!redundantRule && checkForHeadInBody(body, headAtom)) {
-				redundantRule = true;
-			}
-			//implements s9
-			if (!redundantRule && checkForUnreachableLiterals(srcRules, rule, inputProgram.getFacts())) {
-				redundantRule = true;
-			}
-			//implements s10
-			simplifiedRule = checkForSimplifiableRule(srcRules, rule, inputProgram.getFacts());
-			if (simplifiedRule != null) {
-				rule = simplifiedRule;
-			}
-
-			if(!redundantRule) {
-				transformedRules.add(rule);
-			}
+			srcRules = new LinkedList<>(newRules);
 		}
-
-		if(inputProgram.getClass() == InternalProgram.class) {
-			return new InternalProgram(transformedRules, inputProgram.getFacts());
+		Set<NormalRule> newRules = new LinkedHashSet<>();
+		for (NormalRule rule: srcRules) {
+			//s2
+			if (checkForConflictingBodyLiterals(rule.getPositiveBody(), rule.getNegativeBody())) {
+				continue;
+			}
+			//s3
+			if (checkForHeadInBody(rule.getBody(), rule.getHeadAtom())) {
+				continue;
+			}
+			newRules.add(rule);
 		}
-		else {
-			return new AnalyzedProgram(transformedRules, inputProgram.getFacts());
-		}
+		return new NormalProgramImpl(new LinkedList<>(newRules),new LinkedList<>(facts),inputProgram.getInlineDirectives());
 	}
 
 	/**
 	 * This method checks if a rule contains a literal in both the positive and the negative body.
 	 * implements s2
+	 * @return true if the rule contains conflicting literals, false otherwise
 	 */
 	private boolean checkForConflictingBodyLiterals(Set<Literal> positiveBody, Set<Literal> negativeBody) {
 		for (Literal positiveLiteral : positiveBody) {
@@ -87,6 +86,7 @@ public class SimplePreprocessing extends ProgramTransformation<CompiledProgram, 
 	/**
 	 * This method checks if the head atom occurs in the rule's body.
 	 * implements s3
+	 * @return true if the body contains the head atom, false otherwise
 	 */
 	private boolean checkForHeadInBody(Set<Literal> body, Atom headAtom) {
 		for (Literal literal : body) {
@@ -98,17 +98,81 @@ public class SimplePreprocessing extends ProgramTransformation<CompiledProgram, 
 	}
 
 	/**
-	 * This method checks for rules with bodies containing not derivable literals or negated literals, that are facts.
+	 * This method checks rules for bodies containing non-derivable literals or negated literals, that are facts.
 	 * implements s9
+	 * @param rule the rule to check
+	 * @param rules the rules from which the literals should be derivable from
+	 * @param facts the facts from which the literals should be derivable from
+	 * @return true if the rule is non-derivable, false if it is derivable
 	 */
-	private boolean checkForUnreachableLiterals (List<CompiledRule> rules, CompiledRule rule, List<Atom> facts) {
+	private boolean checkForNonDerivableLiterals(NormalRule rule, List<NormalRule> rules, Set<Atom> facts) {
 		for (Literal literal : rule.getBody()) {
 			if (literal.isNegated()) {
-				if (!facts.contains(literal.getAtom())) {
-					return false;
+				if (facts.contains(literal.getAtom())) {
+					return true;
 				}
 			} else {
-				if (isDerivable(literal, rules)) {
+				if (isNonDerivable(literal, rules)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * This method checks for literals from rule bodies, that are already facts or non-derivable.
+	 * implements s10
+	 * @param rule the rule to check
+	 * @param rules the rules from which the literals should be derivable from
+	 * @param facts the facts from which the literals should be derivable from
+	 * @return the possibly shortened rule or null, if the rule is not derivable
+	 */
+	private NormalRule simplifyRule(NormalRule rule, List<NormalRule> rules, Set<Atom> facts) {
+		for (Literal literal : rule.getBody()) {
+			if (literal.isNegated()) {
+				if (facts.contains(literal.getAtom())) {
+					return null;
+				}
+				else if (isNonDerivable(literal, rules)) {
+					return simplifyRule(removeLiteralFromRule(rule, literal), rules, facts);
+				}
+			}
+			else {
+				if (isNonDerivable(literal, rules)) {
+					return null;
+				}
+				else if (facts.contains(literal.getAtom())) {
+					return simplifyRule(removeLiteralFromRule(rule, literal), rules, facts);
+				}
+			}
+		}
+		return rule;
+	}
+
+	/**
+	 * This method checks whether a literal is non-derivable, i.e. it is not unifiable with the head atom of a rule.
+	 * implements s5 conditions
+	 * @param literal the literal to check
+	 * @param rules the rules from which the literal should be derivable from
+	 * @return true if the literal is not derivable, false otherwise
+	 */
+	private boolean isNonDerivable(Literal literal, List<NormalRule> rules) {
+		for (NormalRule rule : rules) {
+			boolean hasSharedVariable = false;
+			Set<VariableTerm> leftOccurringVariables = literal.getAtom().getOccurringVariables();
+			Set<VariableTerm> rightOccurringVariables = rule.getHeadAtom().getOccurringVariables();
+			boolean leftSmaller = leftOccurringVariables.size() < rightOccurringVariables.size();
+			Set<VariableTerm> smallerSet = leftSmaller ? leftOccurringVariables : rightOccurringVariables;
+			Set<VariableTerm> largerSet = leftSmaller ? rightOccurringVariables : leftOccurringVariables;
+			for (VariableTerm variableTerm : smallerSet) {
+				if (largerSet.contains(variableTerm)) {
+					hasSharedVariable = true;
+					break;
+				}
+			}
+			if (!hasSharedVariable) {
+				if(Unification.unifyAtoms(literal.getAtom(), rule.getHeadAtom()) != null) {
 					return false;
 				}
 			}
@@ -117,35 +181,17 @@ public class SimplePreprocessing extends ProgramTransformation<CompiledProgram, 
 	}
 
 	/**
-	 * This method checks for literals from rule bodies, that are already facts (when positive)
-	 * or not derivable (when negated).
-	 * implements s10
+	 * Returns a copy of the rule with the specified literal removed
+	 ** @return the rule without the specified literal
 	 */
-	private CompiledRule checkForSimplifiableRule (List<CompiledRule> rules, CompiledRule rule, List<Atom> facts) {
-		for (Literal literal : rule.getBody()) {
-			if (literal.isNegated()) {
-				if (facts.contains(literal.getAtom())) {
-					return null;
-				} else return rule.returnCopyWithoutLiteral(literal);
-			} else {
-				if (!isDerivable(literal, rules)) {
-					return rule.returnCopyWithoutLiteral(literal);
-				} else return null;
+	private NormalRule removeLiteralFromRule(NormalRule rule, Literal literal) {
+		BasicAtom headAtom = rule.getHeadAtom();
+		List<Literal> newBody = new LinkedList<>();
+		for (Literal bodyLiteral : rule.getBody()) {
+			if (!literal.equals(bodyLiteral)) {
+				newBody.add(bodyLiteral);
 			}
 		}
-		return null;
-	}
-
-	/**
-	 * This method checks whether a literal is derivable, ie. it is unifiable with the head atom of a rule.
-	 * implements s5 conditions
-	 */
-	private boolean isDerivable(Literal literal, List<CompiledRule> rules){
-		for (Rule<? extends NormalHead> rule : rules) {
-			if (Unification.unifyAtoms(literal.getAtom(), rule.getHead().getAtom()) != null) {
-				return true;
-			}
-		}
-		return false;
+		return new NormalRuleImpl(Heads.newNormalHead(headAtom), newBody);
 	}
 }
