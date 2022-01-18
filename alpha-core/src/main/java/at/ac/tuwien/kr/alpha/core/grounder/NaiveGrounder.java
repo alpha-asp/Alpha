@@ -113,12 +113,12 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	private NaiveGrounder(CompiledProgram program, AtomStore atomStore, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks,
-						  Bridge... bridges) {
+				Bridge... bridges) {
 		this(program, atomStore, p -> true, heuristicsConfiguration, debugInternalChecks, bridges);
 	}
 
 	NaiveGrounder(CompiledProgram program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter,
-				  GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, Bridge... bridges) {
+				GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, Bridge... bridges) {
 		super(filter, bridges);
 		this.atomStore = atomStore;
 		this.heuristicsConfiguration = heuristicsConfiguration;
@@ -414,7 +414,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	// Ideally, this method should be private. It's only visible because NaiveGrounderTest needs to access it.
 	BindingResult getGroundInstantiations(CompiledRule rule, RuleGroundingOrder groundingOrder, Substitution partialSubstitution,
-										  Assignment currentAssignment) {
+										Assignment currentAssignment) {
 		int tolerance = heuristicsConfiguration.getTolerance(rule.isConstraint());
 		if (tolerance < 0) {
 			tolerance = Integer.MAX_VALUE;
@@ -454,7 +454,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 *         tolerance is less than zero.
 	 */
 	private BindingResult continueBinding(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance,
-										  ImmutablePair<Substitution, AssignmentStatus> lastLiteralBindingResult) {
+										ImmutablePair<Substitution, AssignmentStatus> lastLiteralBindingResult) {
 		Substitution substitution = lastLiteralBindingResult.left;
 		AssignmentStatus lastBoundLiteralAssignmentStatus = lastLiteralBindingResult.right;
 		switch (lastBoundLiteralAssignmentStatus) {
@@ -478,7 +478,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	private BindingResult advanceAndBindNextAtomInRule(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance,
-													   Substitution partialSubstitution) {
+													Substitution partialSubstitution) {
 		groundingOrder.considerUntilCurrentEnd();
 		return bindNextAtomInRule(groundingOrder, orderPosition + 1, originalTolerance, remainingTolerance, partialSubstitution);
 	}
@@ -509,7 +509,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 */
 	//@formatter:on
 	private BindingResult bindNextAtomInRule(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance,
-											 Substitution partialSubstitution) {
+											Substitution partialSubstitution) {
 		Literal currentLiteral = groundingOrder.getLiteralAtOrderPosition(orderPosition);
 		if (currentLiteral == null) {
 			LOGGER.trace("No more literals found in grounding order, therefore stopping binding!");

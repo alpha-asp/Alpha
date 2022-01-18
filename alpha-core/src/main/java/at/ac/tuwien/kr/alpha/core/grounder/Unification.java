@@ -65,10 +65,10 @@ public class Unification {
 
 	private static Unifier unifyAtoms(Atom left, Atom right, boolean keepLeftAsIs) {
 		Set<VariableTerm> leftOccurringVariables = left.getOccurringVariables();
-		Set<VariableTerm> rightOccurringVaribles = right.getOccurringVariables();
-		boolean leftSmaller = leftOccurringVariables.size() < rightOccurringVaribles.size();
-		Set<VariableTerm> smallerSet = leftSmaller ? leftOccurringVariables : rightOccurringVaribles;
-		Set<VariableTerm> largerSet = leftSmaller ? rightOccurringVaribles : leftOccurringVariables;
+		Set<VariableTerm> rightOccurringVariables = right.getOccurringVariables();
+		boolean leftSmaller = leftOccurringVariables.size() < rightOccurringVariables.size();
+		Set<VariableTerm> smallerSet = leftSmaller ? leftOccurringVariables : rightOccurringVariables;
+		Set<VariableTerm> largerSet = leftSmaller ? rightOccurringVariables : leftOccurringVariables;
 		for (VariableTerm variableTerm : smallerSet) {
 			if (largerSet.contains(variableTerm)) {
 				throw oops("Left and right atom share variables.");
