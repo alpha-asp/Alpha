@@ -13,8 +13,6 @@ import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 
 import java.util.*;
 
-import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
-
 /**
  * Simplifies an internal input program by simplifying and deleting redundant rules.
  */
@@ -28,14 +26,10 @@ public class SimplePreprocessing extends ProgramTransformation<NormalProgram, No
 		boolean modified = true;
 		while (modified) {
 			modified = false;
-			//implements s0 by using a Set (deleting duplicate rules)
+			//implements s0 by using a Set (delete duplicate rules)
 			Set<NormalRule> newRules = new LinkedHashSet<>();
 			for (NormalRule rule : srcRules) {
-				//s9
-				if (checkForNonDerivableLiterals(rule, srcRules, facts)) {
-					continue;
-				}
-				//s10
+				//s9 + s10
 				NormalRule simplifiedRule = simplifyRule(rule, srcRules, facts);
 				if (simplifiedRule == null) {
 					continue;
