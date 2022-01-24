@@ -38,6 +38,7 @@ import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DomainSpecificHeuristicsStore;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 
@@ -99,7 +100,7 @@ public class DomainSpecific implements BranchingHeuristic {
 				Optional<Integer> body = chooseLiteralForValues(currentValues);
 				if (body.isPresent()) {
 					chosenLiteral = body.get();
-					LOGGER.debug("Weight of chosen heuristic: {}@{}", currentValues.getWeight(), currentValues.getLevel());
+					LOGGER.debug("Domain-specific choice: sign={}, headId={}, head={}, bodyId={}, priority={}@{}", ThriceTruth.valueOf(currentValues.getSign()), currentValues.getHeadAtomId(), currentValues.getGroundHeadAtom(), atomOf(chosenLiteral), currentValues.getWeight(), currentValues.getLevel());
 					break;
 				} else {
 					LOGGER.warn("Ground heuristic directive with head {} not applicable because no active rule can derive it.", currentValues.getGroundHeadAtom());

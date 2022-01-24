@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -27,9 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -43,6 +40,9 @@ import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -457,8 +457,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			// Backtrack highest decision level.
 			final int previousDecisionLevel = assignment.getDecisionLevel();
 			final Choice backtrackedChoice = choiceManager.backtrack();
-			if (LOGGER.isTraceEnabled()) {
-				LOGGER.trace("Backtracked choice atom is {}={}@{}.", backtrackedChoice.getAtom(),
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("Backtracked {}={}@{}.", backtrackedChoice.getAtom(),
 					backtrackedChoice.getTruthValue() ? TRUE : FALSE, previousDecisionLevel);
 			}
 
