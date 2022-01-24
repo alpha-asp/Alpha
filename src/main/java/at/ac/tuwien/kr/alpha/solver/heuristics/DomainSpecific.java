@@ -94,7 +94,6 @@ public class DomainSpecific implements BranchingHeuristic {
 
 		HeuristicDirectiveValues currentValues;
 		int chosenLiteral = DEFAULT_CHOICE_LITERAL;
-		int discardedBecauseNoBody = 0;
 		while ((currentValues = heuristicsStore.poll()) != null) {
 			if (assignment.isUnassignedOrMBT(currentValues.getHeadAtomId())) {
 				Optional<Integer> body = chooseLiteralForValues(currentValues);
@@ -104,13 +103,11 @@ public class DomainSpecific implements BranchingHeuristic {
 					break;
 				} else {
 					LOGGER.warn("Ground heuristic directive with head {} not applicable because no active rule can derive it.", currentValues.getGroundHeadAtom());
-					discardedBecauseNoBody++;
 				}
 			} else {
 				throw oops("Heuristic chosen whose head is already assigned");
 			}
 		}
-		LOGGER.debug("{} HeuristicDirectiveValues discarded because no active body found", discardedBecauseNoBody);
 
 		return chosenLiteral;
 	}
