@@ -6,14 +6,15 @@ import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -26,10 +27,12 @@ public class SimplePreprocessingTest {
 	private final ProgramParser parser = new ProgramParserImpl();
 	private final NormalizeProgramTransformation normalizer = new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
 	private final SimplePreprocessing evaluator = new SimplePreprocessing();
-	private final Function<String, NormalProgram> parseAndEvaluate = (str) -> {
+	private final Function<String, NormalProgram> parseAndNormalize = (str) -> {
+		return normalizer.apply(parser.parse(str));
+	};
+	private final Function<String, NormalProgram> parseAndPreprocess = (str) -> {
 		return evaluator.apply(normalizer.apply(parser.parse(str)));
 	};
-
 	private final Function<CompiledProgram, Set<AnswerSet>> solveCompiledProg = (prog) -> {
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", prog, atomStore, false);
@@ -38,56 +41,130 @@ public class SimplePreprocessingTest {
 	};
 
 	@Test
-	public void testDuplicateRules() {
-		String aspStr1 = "a :- b. a :- b. b.";
-		String aspStr2 = "a :- b.         b.";
-		NormalProgram evaluated1 = parseAndEvaluate.apply(aspStr1);
-		NormalProgram evaluated2 = parseAndEvaluate.apply(aspStr2);
-		assertEquals(evaluated1.getRules(), evaluated2.getRules());
+	public void testDuplicateRuleRemoval() {
+		String aspStr1 = "a :- not b. a :- not b. b :- not a.";
+		String aspStr2 = "a :- not b.             b :- not a.";
+		NormalProgram evaluated1 = parseAndPreprocess.apply(aspStr1);
+		NormalProgram evaluated2 = parseAndNormalize.apply(aspStr2);
+		assertEquals(evaluated2.getRules(), evaluated1.getRules());
+
+		NormalProgram evaluated3 = parseAndNormalize.apply(aspStr1);
+		Set<AnswerSet> as1 = solveCompiledProg.apply(InternalProgram.fromNormalProgram(evaluated1));
+		Set<AnswerSet> as2 = solveCompiledProg.apply(InternalProgram.fromNormalProgram(evaluated3));
+		TestUtils.assertAnswerSetsEqual(as1,as2);
 	}
 
 	@Test
-	public void testConflictingBodyLiterals() {
-		String aspStr1 = "a :- b, not b. b :- c.";
-		String aspStr2 = "               b :- c.";
-		NormalProgram evaluated1 = parseAndEvaluate.apply(aspStr1);
-		NormalProgram evaluated2 = parseAndEvaluate.apply(aspStr2);
-		assertEquals(evaluated1.getRules(), evaluated2.getRules());
+	public void testConflictingRuleRemoval() {
+		String aspStr1 = "a :- b, not b. b :- not c. c :- not b.";
+		String aspStr2 = "               b :- not c. c :- not b.";
+		NormalProgram evaluated1 = parseAndPreprocess.apply(aspStr1);
+		NormalProgram evaluated2 = parseAndNormalize.apply(aspStr2);
+		assertEquals(evaluated2.getRules(), evaluated1.getRules());
+
+		NormalProgram evaluated3 = parseAndNormalize.apply(aspStr1);
+		Set<AnswerSet> as1 = solveCompiledProg.apply(InternalProgram.fromNormalProgram(evaluated1));
+		Set<AnswerSet> as2 = solveCompiledProg.apply(InternalProgram.fromNormalProgram(evaluated3));
+		TestUtils.assertAnswerSetsEqual(as1,as2);
 	}
 
 	@Test
-	public void testHeadInBody() {
-		String aspStr1 = "a :- a, not b. b :- c.";
-		String aspStr2 = "               b :- c.";
-		NormalProgram evaluated1 = parseAndEvaluate.apply(aspStr1);
-		NormalProgram evaluated2 = parseAndEvaluate.apply(aspStr2);
-		assertEquals(evaluated1.getRules(), evaluated2.getRules());
+	public void testHeadInBodyRuleRemoval() {
+		String aspStr1 = "a :- a, not b. b :- not c. c :- not b.";
+		String aspStr2 = "               b :- not c. c :- not b.";
+		NormalProgram evaluated1 = parseAndPreprocess.apply(aspStr1);
+		NormalProgram evaluated2 = parseAndNormalize.apply(aspStr2);
+		assertEquals(evaluated2.getRules(), evaluated1.getRules());
+
+		NormalProgram evaluated3 = parseAndNormalize.apply(aspStr1);
+		Set<AnswerSet> as1 = solveCompiledProg.apply(InternalProgram.fromNormalProgram(evaluated1));
+		Set<AnswerSet> as2 = solveCompiledProg.apply(InternalProgram.fromNormalProgram(evaluated3));
+		TestUtils.assertAnswerSetsEqual(as1,as2);
 	}
 
-	//@Test
-	public void testNonDerivableLiterals() {
-		String aspStr1 = "a :- not b. b :- c. d. e :- not d.";
-		String aspStr2 = "a :- not b.         d.";
-		NormalProgram evaluated1 = parseAndEvaluate.apply(aspStr1);
-		NormalProgram evaluated2 = parseAndEvaluate.apply(aspStr2);
-		assertEquals(evaluated1.getRules(), evaluated2.getRules());
+	@Test
+	public void testNoFireRuleRemoval() {
+		String aspStr1 = "a :- not b. b :- not a. b :- c. d. e :- not d.";
+		String aspStr2 = "a :- not b. b :- not a.         d.";
+		NormalProgram evaluated1 = parseAndPreprocess.apply(aspStr1);
+		NormalProgram evaluated2 = parseAndNormalize.apply(aspStr2);
+		assertEquals(evaluated2.getRules(), evaluated1.getRules());
+
+		NormalProgram evaluated3 = parseAndNormalize.apply(aspStr1);
+		Set<AnswerSet> as1 = solveCompiledProg.apply(InternalProgram.fromNormalProgram(evaluated1));
+		Set<AnswerSet> as2 = solveCompiledProg.apply(InternalProgram.fromNormalProgram(evaluated3));
+		TestUtils.assertAnswerSetsEqual(as1,as2);
 	}
 
-	//@Test
-	public void testSimplifiedRules() {
-		String aspStr1 = "a :- b, not c. b. c :- not a. e :- a, not d.";
+	@Test
+	public void testAlwaysTrueLiteralRemoval() {
+		String aspStr1 = "a :- b, not c. b. c :- not a.";
 		String aspStr2 = "a :-    not c. b. c :- not a.";
-		NormalProgram evaluated1 = parseAndEvaluate.apply(aspStr1);
-		NormalProgram evaluated2 = parseAndEvaluate.apply(aspStr2);
-		assertEquals(evaluated1.getRules(), evaluated2.getRules());
+		NormalProgram evaluated1 = parseAndPreprocess.apply(aspStr1);
+		NormalProgram evaluated2 = parseAndNormalize.apply(aspStr2);
+		assertEquals(evaluated2.getRules(), evaluated1.getRules());
+
+		NormalProgram evaluated3 = parseAndNormalize.apply(aspStr1);
+		Set<AnswerSet> as1 = solveCompiledProg.apply(InternalProgram.fromNormalProgram(evaluated1));
+		Set<AnswerSet> as2 = solveCompiledProg.apply(InternalProgram.fromNormalProgram(evaluated3));
+		TestUtils.assertAnswerSetsEqual(as1,as2);
 	}
 
 	@Test
-	public void testNonGroundProgram() {
-		String aspStr1 = "r(X) :- q(Y), not p(Y). q(Y). p(Y) :- not r(X). s(b) :- r(a), not t(d).";
-		String aspStr2 = "r(X) :-       not p(Y). q(Y). p(Y) :- not r(X).";
-		NormalProgram evaluated1 = parseAndEvaluate.apply(aspStr1);
-		NormalProgram evaluated2 = parseAndEvaluate.apply(aspStr2);
-		assertEquals(evaluated1.getRules(), evaluated2.getRules());
+	public void testNonDerivableLiteralRemovalNonGround() {
+		String aspStr1 = "r(X) :- p(X), not q(c). p(a). u(Y) :- s(Y), not v(Y). s(b) :- p(a), not v(a). v(a) :- not u(b).";
+		String aspStr2 = "r(X) :- p(X).           p(a). u(Y) :- s(Y), not v(Y). s(b) :-       not v(a). v(a) :- not u(b).";
+		NormalProgram evaluated1 = parseAndPreprocess.apply(aspStr1);
+		NormalProgram evaluated2 = parseAndNormalize.apply(aspStr2);
+		assertEquals(evaluated2.getRules(), evaluated1.getRules());
+		TestUtils.assertFactsContainedInProgram(evaluated1, evaluated2.getFacts().toArray(new Atom[0]));
+
+		NormalProgram evaluated3 = parseAndNormalize.apply(aspStr1);
+		Set<AnswerSet> as1 = solveCompiledProg.apply(InternalProgram.fromNormalProgram(evaluated1));
+		Set<AnswerSet> as2 = solveCompiledProg.apply(InternalProgram.fromNormalProgram(evaluated3));
+		TestUtils.assertAnswerSetsEqual(as1,as2);
+	}
+
+	@Test void testNonDerivableLiteralRemovalNonGround2() {
+		String aspStr1 = "p(X) :- q(X), not r(X). q(Y) :- p(Y), s(a). s(a).";
+		String aspStr2 = "p(X) :- q(X), not r(X). q(Y) :- p(Y).       s(a).";
+		//TODO: should be "p(X) :- q(X).           q(Y) :- p(Y).       s(a)." Need to rename Variables before Unification.
+		NormalProgram evaluated1 = parseAndPreprocess.apply(aspStr1);
+		NormalProgram evaluated2 = parseAndNormalize.apply(aspStr2);
+		assertEquals(evaluated2.getRules(), evaluated1.getRules());
+		TestUtils.assertFactsContainedInProgram(evaluated1, evaluated2.getFacts().toArray(new Atom[0]));
+
+		NormalProgram evaluated3 = parseAndNormalize.apply(aspStr1);
+		Set<AnswerSet> as1 = solveCompiledProg.apply(InternalProgram.fromNormalProgram(evaluated1));
+		Set<AnswerSet> as2 = solveCompiledProg.apply(InternalProgram.fromNormalProgram(evaluated3));
+		TestUtils.assertAnswerSetsEqual(as1,as2);
+	}
+
+	@Test void testRuleToFact() {
+		String aspStr1 = "r(c) :- q(a), not p(b). q(a).";
+		String aspStr2 = "r(c).                   q(a).";
+		NormalProgram evaluated1 = parseAndPreprocess.apply(aspStr1);
+		NormalProgram evaluated2 = parseAndNormalize.apply(aspStr2);
+		assertEquals(evaluated2.getRules(), evaluated1.getRules());
+		TestUtils.assertFactsContainedInProgram(evaluated1, evaluated2.getFacts().toArray(new Atom[0]));
+
+		NormalProgram evaluated3 = parseAndNormalize.apply(aspStr1);
+		Set<AnswerSet> as1 = solveCompiledProg.apply(InternalProgram.fromNormalProgram(evaluated1));
+		Set<AnswerSet> as2 = solveCompiledProg.apply(InternalProgram.fromNormalProgram(evaluated3));
+		TestUtils.assertAnswerSetsEqual(as1,as2);
+	}
+
+	@Test void testAlwaysTrueLiteralRemovalNonGround() {
+		String aspStr1 = "r(X) :- t(X), s(b), not q(a). s(b). t(X) :- r(X). q(a) :- not r(a).";
+		String aspStr2 = "r(X) :- t(X),       not q(a). s(b). t(X) :- r(X). q(a) :- not r(a).";
+		NormalProgram evaluated1 = parseAndPreprocess.apply(aspStr1);
+		NormalProgram evaluated2 = parseAndNormalize.apply(aspStr2);
+		assertEquals(evaluated2.getRules(), evaluated1.getRules());
+		TestUtils.assertFactsContainedInProgram(evaluated1, evaluated2.getFacts().toArray(new Atom[0]));
+
+		NormalProgram evaluated3 = parseAndNormalize.apply(aspStr1);
+		Set<AnswerSet> as1 = solveCompiledProg.apply(InternalProgram.fromNormalProgram(evaluated1));
+		Set<AnswerSet> as2 = solveCompiledProg.apply(InternalProgram.fromNormalProgram(evaluated3));
+		TestUtils.assertAnswerSetsEqual(as1,as2);
 	}
 }
