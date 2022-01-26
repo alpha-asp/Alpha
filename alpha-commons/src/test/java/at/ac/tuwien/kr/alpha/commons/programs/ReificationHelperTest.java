@@ -70,6 +70,18 @@ public class ReificationHelperTest {
 	}
 
 	@Test
+	public void reifyStringWithQuotes() {
+		ConstantTerm<String> constant = Terms.newConstant("someStringWith\"Quotes\"");
+		Supplier<ConstantTerm<?>> idGen = newIdGenerator();
+		ConstantTerm<?> reifiedId = idGen.get();
+		Set<BasicAtom> reified = new ReificationHelper(idGen).reifyConstantTerm(reifiedId, constant);
+		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("term_type", 2), reifiedId, Terms.newSymbolicConstant("constant"))));
+		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("constantTerm_type", 2), reifiedId, Terms.newConstant("string"))));
+		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("constantTerm_value", 2), reifiedId, Terms.newConstant("someStringWith\\\"Quotes\\\""))));
+
+	}
+
+	@Test
 	public void reifyIntegerConstant() {
 		ConstantTerm<Integer> constant = Terms.newConstant(666);
 		Supplier<ConstantTerm<?>> idGen = newIdGenerator();

@@ -393,8 +393,7 @@ public class ReificationHelper {
 		}
 		reified.add(Atoms.newBasicAtom(TERM_TYPE, termId, TERM_TYPE_CONSTANT));
 		reified.add(Atoms.newBasicAtom(CONSTANT_TERM_TYPE, termId, Terms.newConstant(termType)));
-		// TODO what if a string contains quotes?
-		reified.add(Atoms.newBasicAtom(CONSTANT_TERM_VALUE, termId, Terms.newConstant(term.getObject().toString())));
+		reified.add(Atoms.newBasicAtom(CONSTANT_TERM_VALUE, termId, Terms.newConstant(term.getObject().toString().replace("\"", "\\\""))));
 		return reified;
 	}
 
