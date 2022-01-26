@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
@@ -277,7 +278,52 @@ public class ReificationHelperTest {
 								(a) -> a.getPredicate().equals(Predicates.getPredicate("externalAtom_outputTerm", 3)))
 						.collect(Collectors.toList())
 						.size());
+	}
 
+	@Test
+	public void reifyAtom() {
+		Atom basicAtom = Atoms.newBasicAtom(Predicates.getPredicate("p", 2), Terms.newVariable("X"), Terms.newVariable("Y"));
+		
+		Atom cmpAtom = Atoms.newComparisonAtom(Terms.newConstant(5), Terms.newVariable("X"), ComparisonOperators.LE);
+		
+		List<Term> element1Terms = new ArrayList<>();
+		element1Terms.add(Terms.newVariable("X"));
+		List<Literal> element1Literals = new ArrayList<>();
+		element1Literals.add(Atoms.newBasicAtom(Predicates.getPredicate("dom1", 1), Terms.newVariable("X")).toLiteral());
+		AggregateElement element1 = Atoms.newAggregateElement(element1Terms, element1Literals);
+		List<Term> element2Terms = new ArrayList<>();
+		element1Terms.add(Terms.newVariable("Y"));
+		List<Literal> element2Literals = new ArrayList<>();
+		element1Literals.add(Atoms.newBasicAtom(Predicates.getPredicate("dom2", 1), Terms.newVariable("Y")).toLiteral());
+		AggregateElement element2 = Atoms.newAggregateElement(element2Terms, element2Literals);
+		List<AggregateElement> elements = new ArrayList<>();
+		elements.add(element1);
+		elements.add(element2);
+		Atom aggAtom = Atoms.newAggregateAtom(ComparisonOperators.EQ, Terms.newVariable("X"), AggregateFunctionSymbol.COUNT, elements);
+
+		List<Term> extInput = new ArrayList<>();
+		List<Term> extOutput = new ArrayList<>();
+		extInput.add(Terms.newVariable("I"));
+		extOutput.add(Terms.newVariable("O"));
+		ExternalAtom extAtom = Atoms.newExternalAtom(Predicates.getPredicate("ext", 2), (trms) -> Collections.emptySet(), extInput, extOutput);
+
+		Supplier<ConstantTerm<?>> idGen = newIdGenerator();
+		
+		ConstantTerm<?> reifiedBasicAtomId = idGen.get();
+		Set<BasicAtom> reifiedBasicAtom = new ReificationHelper(idGen).reifyAtom(reifiedBasicAtomId, basicAtom);
+		assertTrue(reifiedBasicAtom.contains(Atoms.newBasicAtom(Predicates.getPredicate("atom_type", 2), reifiedBasicAtomId, Terms.newSymbolicConstant("basic"))));
+
+		ConstantTerm<?> reifiedCmpAtomId = idGen.get();
+		Set<BasicAtom> reifiedCmpAtom = new ReificationHelper(idGen).reifyAtom(reifiedCmpAtomId, cmpAtom);
+		assertTrue(reifiedCmpAtom.contains(Atoms.newBasicAtom(Predicates.getPredicate("atom_type", 2), reifiedCmpAtomId, Terms.newSymbolicConstant("comparison"))));
+
+		ConstantTerm<?> reifiedAggAtomId = idGen.get();
+		Set<BasicAtom> reifiedAggAtom = new ReificationHelper(idGen).reifyAtom(reifiedAggAtomId, aggAtom);
+		assertTrue(reifiedAggAtom.contains(Atoms.newBasicAtom(Predicates.getPredicate("atom_type", 2), reifiedAggAtomId, Terms.newSymbolicConstant("aggregate"))));
+
+		ConstantTerm<?> reifiedExtAtomId = idGen.get();
+		Set<BasicAtom> reifiedExtAtom = new ReificationHelper(idGen).reifyAtom(reifiedExtAtomId, extAtom);
+		assertTrue(reifiedExtAtom.contains(Atoms.newBasicAtom(Predicates.getPredicate("atom_type", 2), reifiedExtAtomId, Terms.newSymbolicConstant("external"))));
 	}
 
 }
