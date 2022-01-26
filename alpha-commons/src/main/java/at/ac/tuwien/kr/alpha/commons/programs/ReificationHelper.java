@@ -95,8 +95,7 @@ public class ReificationHelper {
 	static final Predicate TERM_TYPE = Predicates.getPredicate("term_type", 2);
 
 	// Predicates describing constant terms.
-	static final Predicate CONSTANT_TERM_CLASS = Predicates.getPredicate("constantTerm_class", 2);
-	static final Predicate CONSTANT_TERM_SYMBOLIC = Predicates.getPredicate("constantTerm_symbolic", 2);
+	static final Predicate CONSTANT_TERM_TYPE = Predicates.getPredicate("constantTerm_type", 2);
 	static final Predicate CONSTANT_TERM_VALUE = Predicates.getPredicate("constantTerm_value", 2);
 
 	// Predicates describing variable terms.
@@ -147,6 +146,7 @@ public class ReificationHelper {
 
 	private static final Map<ComparisonOperator, ConstantTerm<String>> CMP_OPS = new HashMap<>();
 	private static final Map<AggregateFunctionSymbol, ConstantTerm<String>> AGG_FUNCS = new HashMap<>();
+	private static final Map<Class<?>, String> TERM_TYPES = new HashMap<>();
 
 	static {
 		CMP_OPS.put(ComparisonOperators.EQ, CMP_OP_EQ);
@@ -160,6 +160,9 @@ public class ReificationHelper {
 		AGG_FUNCS.put(AggregateFunctionSymbol.SUM, AGGREGATE_FUNCTION_SUM);
 		AGG_FUNCS.put(AggregateFunctionSymbol.MIN, AGGREGATE_FUNCTION_MIN);
 		AGG_FUNCS.put(AggregateFunctionSymbol.MAX, AGGREGATE_FUNCTION_MAX);
+
+		TERM_TYPES.put(String.class, "string");
+		TERM_TYPES.put(Integer.class, "integer");
 	}
 
 	private final Supplier<ConstantTerm<?>> idProvider;
@@ -382,11 +385,14 @@ public class ReificationHelper {
 
 	Set<BasicAtom> reifyConstantTerm(ConstantTerm<?> termId, ConstantTerm<?> term) {
 		Set<BasicAtom> reified = new LinkedHashSet<>();
+		String termType;
+		if (term.isSymbolic()) {
+			termType = "symbol";
+		} else {
+			termType = TERM_TYPES.getOrDefault(term.getObject().getClass(), "object(" + term.getObject().getClass().getName() + ")");
+		}
 		reified.add(Atoms.newBasicAtom(TERM_TYPE, termId, TERM_TYPE_CONSTANT));
-		reified.add(Atoms.newBasicAtom(CONSTANT_TERM_CLASS, termId,
-				Terms.newConstant(term.getObject().getClass().getName())));
-		reified.add(Atoms.newBasicAtom(CONSTANT_TERM_SYMBOLIC, termId,
-				Terms.newSymbolicConstant(Boolean.toString(term.isSymbolic()))));
+		reified.add(Atoms.newBasicAtom(CONSTANT_TERM_TYPE, termId, Terms.newConstant(termType)));
 		// TODO what if a string contains quotes?
 		reified.add(Atoms.newBasicAtom(CONSTANT_TERM_VALUE, termId, Terms.newConstant(term.getObject().toString())));
 		return reified;

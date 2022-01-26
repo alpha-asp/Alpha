@@ -54,8 +54,7 @@ public class ReificationHelperTest {
 		ConstantTerm<?> reifiedId = idGen.get();
 		Set<BasicAtom> reified = new ReificationHelper(idGen).reifyConstantTerm(reifiedId, constant);
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("term_type", 2), reifiedId, Terms.newSymbolicConstant("constant"))));
-		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("constantTerm_class", 2), reifiedId, Terms.newConstant("java.lang.String"))));
-		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("constantTerm_symbolic", 2), reifiedId, Terms.newSymbolicConstant("true"))));
+		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("constantTerm_type", 2), reifiedId, Terms.newConstant("symbol"))));
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("constantTerm_value", 2), reifiedId, Terms.newConstant("someConstant"))));
 	}
 
@@ -66,8 +65,7 @@ public class ReificationHelperTest {
 		ConstantTerm<?> reifiedId = idGen.get();
 		Set<BasicAtom> reified = new ReificationHelper(idGen).reifyConstantTerm(reifiedId, constant);
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("term_type", 2), reifiedId, Terms.newSymbolicConstant("constant"))));
-		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("constantTerm_class", 2), reifiedId, Terms.newConstant("java.lang.String"))));
-		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("constantTerm_symbolic", 2), reifiedId, Terms.newSymbolicConstant("false"))));
+		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("constantTerm_type", 2), reifiedId, Terms.newConstant("string"))));
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("constantTerm_value", 2), reifiedId, Terms.newConstant("someString"))));
 	}
 
@@ -78,8 +76,7 @@ public class ReificationHelperTest {
 		ConstantTerm<?> reifiedId = idGen.get();
 		Set<BasicAtom> reified = new ReificationHelper(idGen).reifyConstantTerm(reifiedId, constant);
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("term_type", 2), reifiedId, Terms.newSymbolicConstant("constant"))));
-		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("constantTerm_class", 2), reifiedId, Terms.newConstant("java.lang.Integer"))));
-		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("constantTerm_symbolic", 2), reifiedId, Terms.newSymbolicConstant("false"))));
+		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("constantTerm_type", 2), reifiedId, Terms.newConstant("integer"))));
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("constantTerm_value", 2), reifiedId, Terms.newConstant(Integer.toString(666)))));
 	}
 
