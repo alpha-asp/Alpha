@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -11,9 +12,12 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateElement;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.ArithmeticOperator;
 import at.ac.tuwien.kr.alpha.api.terms.ArithmeticTerm;
@@ -208,21 +212,72 @@ public class ReificationHelperTest {
 						.size());
 	}
 
-	// @Test
-	// public void reifyAggregateAtom() {
-	// 	List<Term> element1Terms = new ArrayList<>();
-	// 	element1Terms.add(Terms.newVariable("X"));
-	// 	List<Literal> element1Literals = new ArrayList<>();
-	// 	element1Literals.add(Atoms.newBasicAtom(Predicates.getPredicate("dom1", 1), Terms.newVariable("X")).toLiteral());
-	// 	AggregateElement element1 = Atoms.newAggregateElement(element1Terms, element1Literals);
+	@Test
+	public void reifyAggregateAtom() {
+		List<Term> element1Terms = new ArrayList<>();
+		element1Terms.add(Terms.newVariable("X"));
+		List<Literal> element1Literals = new ArrayList<>();
+		element1Literals.add(Atoms.newBasicAtom(Predicates.getPredicate("dom1", 1), Terms.newVariable("X")).toLiteral());
+		AggregateElement element1 = Atoms.newAggregateElement(element1Terms, element1Literals);
 
-	// 	List<Term> element2Terms = new ArrayList<>();
-	// 	element1Terms.add(Terms.newVariable("Y"));
-	// 	List<Literal> element2Literals = new ArrayList<>();
-	// 	element1Literals.add(Atoms.newBasicAtom(Predicates.getPredicate("dom2", 1), Terms.newVariable("Y")).toLiteral());
-	// 	AggregateElement element2 = Atoms.newAggregateElement(element2Terms, element2Literals);
+		List<Term> element2Terms = new ArrayList<>();
+		element1Terms.add(Terms.newVariable("Y"));
+		List<Literal> element2Literals = new ArrayList<>();
+		element1Literals.add(Atoms.newBasicAtom(Predicates.getPredicate("dom2", 1), Terms.newVariable("Y")).toLiteral());
+		AggregateElement element2 = Atoms.newAggregateElement(element2Terms, element2Literals);
 
-	// 	AggregateAtom atom = Atoms.newAggregateAtom(lowerBoundOperator, lowerBoundTerm, aggregatefunction, aggregateElements)
-	// }
+		List<AggregateElement> elements = new ArrayList<>();
+		elements.add(element1);
+		elements.add(element2);
+		AggregateAtom atom = Atoms.newAggregateAtom(ComparisonOperators.EQ, Terms.newVariable("X"), AggregateFunctionSymbol.COUNT, elements);
+
+		Supplier<ConstantTerm<?>> idGen = newIdGenerator();
+		ConstantTerm<?> reifiedId = idGen.get();
+		Set<BasicAtom> reified = new ReificationHelper(idGen).reifyAggregateAtom(reifiedId, atom);
+
+		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("atom_type", 2), reifiedId, Terms.newSymbolicConstant("aggregate"))));
+		assertTrue(reified
+				.contains(Atoms.newBasicAtom(Predicates.getPredicate("aggregateAtom_aggregateFunction", 2), reifiedId, Terms.newSymbolicConstant("count"))));
+		assertEquals(2,
+				reified.stream()
+						.filter(
+								(a) -> a.getPredicate().equals(Predicates.getPredicate("aggregateAtom_aggregateElement", 2)))
+						.collect(Collectors.toList())
+						.size());
+	}
+
+	@Test
+	public void reifyExternalAtom() {
+		List<Term> extInput = new ArrayList<>();
+		List<Term> extOutput = new ArrayList<>();
+		extInput.add(Terms.newVariable("I"));
+		extOutput.add(Terms.newVariable("O"));
+		ExternalAtom atom = Atoms.newExternalAtom(Predicates.getPredicate("ext", 2), (trms) -> Collections.emptySet(), extInput, extOutput);
+
+		Supplier<ConstantTerm<?>> idGen = newIdGenerator();
+		ConstantTerm<?> reifiedId = idGen.get();
+		Set<BasicAtom> reified = new ReificationHelper(idGen).reifyExternalAtom(reifiedId, atom);
+
+		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("atom_type", 2), reifiedId, Terms.newSymbolicConstant("external"))));
+		assertEquals(1,
+				reified.stream()
+						.filter(
+								(a) -> a.getPredicate().equals(Predicates.getPredicate("externalAtom_name", 2)))
+						.collect(Collectors.toList())
+						.size());
+		assertEquals(1,
+				reified.stream()
+						.filter(
+								(a) -> a.getPredicate().equals(Predicates.getPredicate("externalAtom_inputTerm", 3)))
+						.collect(Collectors.toList())
+						.size());
+		assertEquals(1,
+				reified.stream()
+						.filter(
+								(a) -> a.getPredicate().equals(Predicates.getPredicate("externalAtom_outputTerm", 3)))
+						.collect(Collectors.toList())
+						.size());
+
+	}
 
 }

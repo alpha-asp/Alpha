@@ -318,10 +318,12 @@ public class ReificationHelper {
 		reified.add(Atoms.newBasicAtom(EXTERNAL_ATOM_NAME, atomId, Terms.newConstant(atom.getPredicate().getName())));
 		for (int i = 0; i < atom.getInput().size(); i++) {
 			ConstantTerm<?> inTermId = idProvider.get();
+			reified.add(Atoms.newBasicAtom(EXTERNAL_ATOM_INPUT_TERM, atomId, Terms.newConstant(i), inTermId));
 			reified.addAll(reifyTerm(inTermId, atom.getInput().get(i)));
 		}
 		for (int i = 0; i < atom.getOutput().size(); i++) {
 			ConstantTerm<?> outTermId = idProvider.get();
+			reified.add(Atoms.newBasicAtom(EXTERNAL_ATOM_OUTPUT_TERM, atomId, Terms.newConstant(i), outTermId));
 			reified.addAll(reifyTerm(outTermId, atom.getOutput().get(i)));
 		}
 		return reified;
