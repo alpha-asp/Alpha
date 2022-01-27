@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Siemens AG
+ * Copyright (c) 2021-2022 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.common.EnumerationDirective;
@@ -176,6 +177,52 @@ public class HeuristicDirectiveConditionEnhancementTest {
 		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
 		Collection<HeuristicDirective> expectedHeuristicDirectives = Collections.singletonList(
 				parseHeuristicDirectiveAndAddNegativeLiteral("#heuristic b(N) : a(N), T a(N), T b(X), N <= X. [N@2]", negativeChoiceAtom)
+		);
+		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
+	}
+
+	@Test
+	public void testUnificationWithConstantTerm() {
+		InputProgram program = parser.parse("elem(d,1). comUnit(1)."
+				+ "{ gt(A,X,U) } :- elem(A,X), comUnit(U)."
+				+ "assign(1,d,D) :- elem(d,D), comUnit(1), not gt(d,D,1)."
+				+ "#heuristic assign(U,T,X) : T comUnit(U), T elem(T,X).");
+
+		program = new ChoiceHeadToNormal().apply(program);
+		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
+		Collection<HeuristicDirective> expectedHeuristicDirectives = Collections.singletonList(
+				programPartParser.parseHeuristicDirective("#heuristic assign(1,d,D) : T comUnit(1), T elem(d,D), not gt(d,D,1).")
+		);
+		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
+	}
+
+	@Test
+	@Disabled("standardising apart is not yet implemented by HeuristicDirectiveConditionEnhancement#unify")
+	public void testUnificationWithArithmeticTerm_StandardisingApartNecessary() {
+		InputProgram program = parser.parse("elem(d,1). comUnit(1)."
+				+ "{ gt(A,X,U) } :- elem(A,X), comUnit(U)."
+				+ "assign(U+1,d,D) :- elem(d,D), comUnit(U), not gt(d,D,U+1)."
+				+ "#heuristic assign(U,T,X) : T comUnit(U), T elem(T,X).");
+
+		program = new ChoiceHeadToNormal().apply(program);
+		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
+		Collection<HeuristicDirective> expectedHeuristicDirectives = Collections.singletonList(
+				programPartParser.parseHeuristicDirective("#heuristic assign(U+1,d,D) : T comUnit(U), T elem(d,D), not gt(d,D,U+1).")
+		);
+		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
+	}
+
+	@Test
+	public void testUnificationWithArithmeticTerm() {
+		InputProgram program = parser.parse("elem(d,1). comUnit(1)."
+				+ "{ gt(A,X,U) } :- elem(A,X), comUnit(U)."
+				+ "assign(U1,d,D) :- elem(d,D), comUnit(U), comUnit(U1), U1=U+1, not gt(d,D,U1)."
+				+ "#heuristic assign(Un,T,X) : T comUnit(Un), T elem(T,X).");
+
+		program = new ChoiceHeadToNormal().apply(program);
+		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
+		Collection<HeuristicDirective> expectedHeuristicDirectives = Collections.singletonList(
+				programPartParser.parseHeuristicDirective("#heuristic assign(U1,d,D) : T elem(d,D), T comUnit(U), T comUnit(U1), U1=U+1, not gt(d,D,U1).")
 		);
 		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
 	}

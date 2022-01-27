@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Siemens AG
+ * Copyright (c) 2021-2022 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -125,8 +125,7 @@ public class HeuristicDirectiveConditionEnhancement extends ProgramTransformatio
 			HeuristicDirectiveBody newDirectiveBody = new HeuristicDirectiveBody(
 					joinAtoms(directive.getBody().getBodyAtomsPositive(), headDerivingRule.getPositiveBody(), HeuristicDirectiveAtom.SIGNS_T),
 					joinAtoms(directive.getBody().getBodyAtomsNegative(), headDerivingRule.getNegativeBody(), HeuristicDirectiveAtom.DEFAULT_BODY_SIGNS));
-			newDirectiveBody = unify(newDirectiveBody, directive.getHead().getAtom(), headDerivingRule.getHead());
-			newHeuristicDirectives.add(new HeuristicDirective(directive.getHead(), newDirectiveBody, directive.getWeightAtLevel()));
+			newHeuristicDirectives.add(unify(directive, newDirectiveBody, headDerivingRule.getHead()));
 		}
 	}
 
@@ -143,7 +142,8 @@ public class HeuristicDirectiveConditionEnhancement extends ProgramTransformatio
 		return newHeuristicCondition;
 	}
 
-	private HeuristicDirectiveBody unify(HeuristicDirectiveBody newDirectiveBody, Atom directiveHeadAtom, Head ruleHead) {
+	private HeuristicDirective unify(HeuristicDirective originalDirective, HeuristicDirectiveBody newDirectiveBody, Head ruleHead) {
+		final Atom directiveHeadAtom = originalDirective.getHead().getAtom();
 		Atom ruleHeadAtom = null;
 		if (ruleHead instanceof NormalHead) {
 			final NormalHead normalRuleHead = (NormalHead) ruleHead;
@@ -162,7 +162,17 @@ public class HeuristicDirectiveConditionEnhancement extends ProgramTransformatio
 		} else {
 			throw oops(this.getClass().getSimpleName() + " only supports rules with normal or disjunctive heads, all other heads should have been normalized already");
 		}
-		final Unifier unifier = Unification.instantiate(ruleHeadAtom, directiveHeadAtom);
-		return unifier == null ? newDirectiveBody : newDirectiveBody.substitute(unifier);
+		// TODO: to be correct, strictly speaking we would have to standardise apart before unification,
+		//  because the current implementation cannot handle cases like the following:
+		// assign(U+1,d,D) :- elem(d,D), comUnit(U), not gt(d,D,U+1).
+		// #heuristic assign(U,T,X) : T comUnit(U), T elem(T,X).
+		Unifier unifier = Unification.instantiate(ruleHeadAtom, directiveHeadAtom);
+		if (unifier == null) {
+			unifier = Unification.instantiate(directiveHeadAtom, ruleHeadAtom);
+		}
+		if (unifier != null) {
+			return new HeuristicDirective(originalDirective.getHead().substitute(unifier), newDirectiveBody.substitute(unifier), originalDirective.getWeightAtLevel().substitute(unifier));
+		}
+		throw oops("Could not unify heuristic directive with head-deriving rule.");
 	}
 }
