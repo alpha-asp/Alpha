@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, the Alpha Team.
+ * Copyright (c) 2019-2022, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -28,10 +28,13 @@
 package at.ac.tuwien.kr.alpha.common.rule;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.common.Substitutable;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.head.Head;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 /**
  * Represents a non-ground rule or a constraint. A {@link BasicRule} has a general {@link Head}, meaning both choice
@@ -39,7 +42,7 @@ import at.ac.tuwien.kr.alpha.common.rule.head.Head;
  * This implementation represents a rule after being parsed from a given ASP program, but before being transformed into
  * a {@link NormalRule}.
  */
-public class BasicRule extends AbstractRule<Head> {
+public class BasicRule extends AbstractRule<Head> implements Substitutable<BasicRule> {
 
 	public BasicRule(Head head, List<Literal> body) {
 		super(head, body);
@@ -47,10 +50,12 @@ public class BasicRule extends AbstractRule<Head> {
 
 	public static BasicRule getInstance(Head head, Literal... body) {
 		List<Literal> bodyLst = new ArrayList<>();
-		for (Literal lit : body) {
-			bodyLst.add(lit);
-		}
+		Collections.addAll(bodyLst, body);
 		return new BasicRule(head, bodyLst);
 	}
 
+	@Override
+	public BasicRule substitute(Substitution substitution) {
+		return new BasicRule(getHead().substitute(substitution), substitution.substituteAll(getBody()));
+	}
 }

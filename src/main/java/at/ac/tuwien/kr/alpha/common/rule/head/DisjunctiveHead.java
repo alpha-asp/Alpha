@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2018, 2020, the Alpha Team.
+/*
+ * Copyright (c) 2017-2018, 2020, 2022, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -27,16 +27,13 @@
  */
 package at.ac.tuwien.kr.alpha.common.rule.head;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-
-import java.util.Arrays;
 import java.util.List;
+
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 
-/**
- * Copyright (c) 2017-2018, the Alpha Team.
- */
 public class DisjunctiveHead extends Head {
 	public final List<Atom> disjunctiveAtoms;
 
@@ -45,10 +42,6 @@ public class DisjunctiveHead extends Head {
 		if (disjunctiveAtoms != null && disjunctiveAtoms.size() > 1) {
 			throw new UnsupportedOperationException("Disjunction in rule heads is not yet supported");
 		}
-	}
-
-	public DisjunctiveHead(Atom singletonHead) {
-		this(Arrays.asList(singletonHead));
 	}
 
 	@Override
@@ -63,6 +56,11 @@ public class DisjunctiveHead extends Head {
 			}
 		}
 		return true;
+	}
+
+	@Override
+	public DisjunctiveHead substitute(Substitution substitution) {
+		return new DisjunctiveHead(substitution.substituteAll(disjunctiveAtoms));
 	}
 
 	@Override
@@ -86,13 +84,9 @@ public class DisjunctiveHead extends Head {
 		}
 		DisjunctiveHead other = (DisjunctiveHead) obj;
 		if (this.disjunctiveAtoms == null) {
-			if (other.disjunctiveAtoms != null) {
-				return false;
-			}
-		} else if (!this.disjunctiveAtoms.equals(other.disjunctiveAtoms)) {
-			return false;
+			return other.disjunctiveAtoms == null;
+		} else {
+			return this.disjunctiveAtoms.equals(other.disjunctiveAtoms);
 		}
-		return true;
 	}
-
 }
