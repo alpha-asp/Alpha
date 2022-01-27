@@ -30,7 +30,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.common.EnumerationDirective;
@@ -197,8 +196,7 @@ public class HeuristicDirectiveConditionEnhancementTest {
 	}
 
 	@Test
-	@Disabled("standardising apart is not yet implemented by HeuristicDirectiveConditionEnhancement#unify")
-	public void testUnificationWithArithmeticTerm_StandardisingApartNecessary() {
+	public void testUnificationWithArithmeticTerm_SharedVariables() {
 		InputProgram program = parser.parse("elem(d,1). comUnit(1)."
 				+ "{ gt(A,X,U) } :- elem(A,X), comUnit(U)."
 				+ "assign(U+1,d,D) :- elem(d,D), comUnit(U), not gt(d,D,U+1)."
@@ -207,7 +205,7 @@ public class HeuristicDirectiveConditionEnhancementTest {
 		program = new ChoiceHeadToNormal().apply(program);
 		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
 		Collection<HeuristicDirective> expectedHeuristicDirectives = Collections.singletonList(
-				programPartParser.parseHeuristicDirective("#heuristic assign(U+1,d,D) : T comUnit(U), T elem(d,D), not gt(d,D,U+1).")
+				programPartParser.parseHeuristicDirective("#heuristic assign(U+1,d,D) : T comUnit(U), T elem(d,D), T comUnit(U+1), not gt(d,D,U+1).")
 		);
 		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
 	}

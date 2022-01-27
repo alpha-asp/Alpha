@@ -98,7 +98,7 @@ public class HeuristicDirectiveConditionEnhancement extends ProgramTransformatio
 		return prgBuilder.build();
 	}
 
-	private void transformAndAdd(HeuristicDirective directive, Collection<Directive> newHeuristicDirectives, InputProgram inputProgram) {
+	private void transformAndAdd(final HeuristicDirective directive, final Collection<Directive> newHeuristicDirectives, final InputProgram inputProgram) {
 		final Atom directiveHeadAtom = directive.getHead().getAtom();
 		final Collection<BasicRule> headDerivingRules = new ArrayList<>();
 		for (BasicRule rule : inputProgram.getRules()) {
@@ -122,10 +122,22 @@ public class HeuristicDirectiveConditionEnhancement extends ProgramTransformatio
 			}
 		}
 		for (BasicRule headDerivingRule : headDerivingRules) {
-			HeuristicDirectiveBody newDirectiveBody = new HeuristicDirectiveBody(
-					joinAtoms(directive.getBody().getBodyAtomsPositive(), headDerivingRule.getPositiveBody(), HeuristicDirectiveAtom.SIGNS_T),
-					joinAtoms(directive.getBody().getBodyAtomsNegative(), headDerivingRule.getNegativeBody(), HeuristicDirectiveAtom.DEFAULT_BODY_SIGNS));
-			newHeuristicDirectives.add(unify(directive, newDirectiveBody, headDerivingRule.getHead()));
+			final Atom ruleHeadAtom = getMatchingRuleHeadAtom(headDerivingRule.getHead(), directiveHeadAtom);
+			Unifier unifier = Unification.instantiate(ruleHeadAtom, directiveHeadAtom);
+			HeuristicDirective unifiedDirective = directive;
+			if (unifier != null) {
+				headDerivingRule = headDerivingRule.substitute(unifier);
+			} else {
+				unifier = Unification.instantiate(directiveHeadAtom, ruleHeadAtom);
+				if (unifier != null) {
+					unifiedDirective = new HeuristicDirective(directive.getHead().substitute(unifier), directive.getBody().substitute(unifier), directive.getWeightAtLevel().substitute(unifier));
+				}
+			}
+			final HeuristicDirectiveBody newDirectiveBody = new HeuristicDirectiveBody(
+					joinAtoms(unifiedDirective.getBody().getBodyAtomsPositive(), headDerivingRule.getPositiveBody(), HeuristicDirectiveAtom.SIGNS_T),
+					joinAtoms(unifiedDirective.getBody().getBodyAtomsNegative(), headDerivingRule.getNegativeBody(), HeuristicDirectiveAtom.DEFAULT_BODY_SIGNS));
+			final HeuristicDirective enhancedDirective = new HeuristicDirective(unifiedDirective.getHead(), newDirectiveBody, unifiedDirective.getWeightAtLevel());
+			newHeuristicDirectives.add(enhancedDirective);
 		}
 	}
 
@@ -142,8 +154,7 @@ public class HeuristicDirectiveConditionEnhancement extends ProgramTransformatio
 		return newHeuristicCondition;
 	}
 
-	private HeuristicDirective unify(HeuristicDirective originalDirective, HeuristicDirectiveBody newDirectiveBody, Head ruleHead) {
-		final Atom directiveHeadAtom = originalDirective.getHead().getAtom();
+	private Atom getMatchingRuleHeadAtom(Head ruleHead, Atom directiveHeadAtom) {
 		Atom ruleHeadAtom = null;
 		if (ruleHead instanceof NormalHead) {
 			final NormalHead normalRuleHead = (NormalHead) ruleHead;
@@ -162,17 +173,6 @@ public class HeuristicDirectiveConditionEnhancement extends ProgramTransformatio
 		} else {
 			throw oops(this.getClass().getSimpleName() + " only supports rules with normal or disjunctive heads, all other heads should have been normalized already");
 		}
-		// TODO: to be correct, strictly speaking we would have to standardise apart before unification,
-		//  because the current implementation cannot handle cases like the following:
-		// assign(U+1,d,D) :- elem(d,D), comUnit(U), not gt(d,D,U+1).
-		// #heuristic assign(U,T,X) : T comUnit(U), T elem(T,X).
-		Unifier unifier = Unification.instantiate(ruleHeadAtom, directiveHeadAtom);
-		if (unifier == null) {
-			unifier = Unification.instantiate(directiveHeadAtom, ruleHeadAtom);
-		}
-		if (unifier != null) {
-			return new HeuristicDirective(originalDirective.getHead().substitute(unifier), newDirectiveBody.substitute(unifier), originalDirective.getWeightAtLevel().substitute(unifier));
-		}
-		throw oops("Could not unify heuristic directive with head-deriving rule.");
+		return ruleHeadAtom;
 	}
 }

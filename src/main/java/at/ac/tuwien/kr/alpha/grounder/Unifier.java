@@ -1,6 +1,31 @@
+/*
+ * Copyright (c) 2018, 2020-2022, the Alpha Team.
+ * All rights reserved.
+ *
+ * Additional changes made by Siemens.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1) Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ * 2) Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package at.ac.tuwien.kr.alpha.grounder;
-
-import static at.ac.tuwien.kr.alpha.Util.oops;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -11,6 +36,8 @@ import java.util.TreeMap;
 
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * A variable substitution allowing variables to occur on the right-hand side. Chains of variable substitutions are
@@ -66,13 +93,6 @@ public class Unifier extends Substitution {
 
 	@Override
 	public <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term term) {
-		// If term is not ground, store it for right-hand side reverse-lookup.
-		if (!term.isGround()) {
-			for (VariableTerm rightHandVariable : term.getOccurringVariables()) {
-				rightHandVariableOccurrences.putIfAbsent(rightHandVariable, new ArrayList<>());
-				rightHandVariableOccurrences.get(rightHandVariable).add(variableTerm);
-			}
-		}
 		// Note: We're destroying type information here.
 		Term ret = substitution.put(variableTerm, term);
 
@@ -88,6 +108,14 @@ public class Unifier extends Substitution {
 					continue;
 				}
 				substitution.put(rightHandOccurrence, previousRightHand.substitute(this));
+			}
+		}
+
+		// If term is not ground, store it for right-hand side reverse-lookup.
+		if (!term.isGround()) {
+			for (VariableTerm rightHandVariable : term.getOccurringVariables()) {
+				rightHandVariableOccurrences.putIfAbsent(rightHandVariable, new ArrayList<>());
+				rightHandVariableOccurrences.get(rightHandVariable).add(variableTerm);
 			}
 		}
 
