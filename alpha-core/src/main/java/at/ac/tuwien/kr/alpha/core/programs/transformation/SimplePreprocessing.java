@@ -5,12 +5,12 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.core.grounder.Unification;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 
+import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import java.util.*;
 
 /**
@@ -25,7 +25,7 @@ public class SimplePreprocessing extends ProgramTransformation<NormalProgram, No
 		//Implements s0 by using a Set (delete duplicate rules).
 		Set<NormalRule> newRules = new LinkedHashSet<>();
 		Set<Atom> facts = new LinkedHashSet<>(inputProgram.getFacts());
-		boolean canBeModified = true;
+		boolean canBePreprocessed = true;
 		for (NormalRule rule: srcRules) {
 			//s2
 			if (checkForConflictingBodyLiterals(rule.getPositiveBody(), rule.getNegativeBody())) {
@@ -39,20 +39,20 @@ public class SimplePreprocessing extends ProgramTransformation<NormalProgram, No
 		}
 		srcRules = new LinkedList<>(newRules);
 		//s9 + s10
-		while (canBeModified) {
+		while (canBePreprocessed) {
 			newRules = new LinkedHashSet<>();
-			canBeModified = false;
+			canBePreprocessed = false;
 			for (NormalRule rule : srcRules) {
-				SimpleReturn simpleReturn = simplifyRule(rule, srcRules, facts);
-				if (simpleReturn != null) {
-					if (simpleReturn == SimpleReturn.NO_FIRE) {
-						canBeModified = true;
-					} else if (simpleReturn.isFact()) {
-						facts.add(simpleReturn.getRule().getHeadAtom());
-						canBeModified = true;
-					} else if (simpleReturn.isModified()) {
-						newRules.add(simpleReturn.getRule());
-						canBeModified = true;
+				SimpleReturn simplifiedRule = simplifyRule(rule, srcRules, facts);
+				if (simplifiedRule != null) {
+					if (simplifiedRule == SimpleReturn.NO_FIRE) {
+						canBePreprocessed = true;
+					} else if (simplifiedRule.isFact()) {
+						facts.add(simplifiedRule.getRule().getHeadAtom());
+						canBePreprocessed = true;
+					} else if (simplifiedRule.isModified()) {
+						newRules.add(simplifiedRule.getRule());
+						canBePreprocessed = true;
 					} else {
 						newRules.add(rule);
 					}
@@ -128,6 +128,9 @@ public class SimplePreprocessing extends ProgramTransformation<NormalProgram, No
 	private SimpleReturn simplifyRule(NormalRule rule, List<NormalRule> rules, Set<Atom> facts) {
 		Set<Literal> redundantLiterals = new LinkedHashSet<>();
 		for (Literal literal : rule.getBody()) {
+			if (literal.toString().startsWith("&") || literal.toString().startsWith("not &")) {
+				continue;
+			}
 			if (literal.isNegated()) {
 				if (facts.contains(literal.getAtom())) {
 					return SimpleReturn.NO_FIRE;
@@ -137,9 +140,7 @@ public class SimplePreprocessing extends ProgramTransformation<NormalProgram, No
 				}
 			} else {
 				if (facts.contains(literal.getAtom())) {
-					if (literal.isGround()) {	//TODO: Safety Check
-						redundantLiterals.add(literal);
-					}
+					redundantLiterals.add(literal);
 				} else if (isNonDerivable(literal.getAtom(), rules, facts)) {
 					return SimpleReturn.NO_FIRE;
 				}
@@ -160,48 +161,21 @@ public class SimplePreprocessing extends ProgramTransformation<NormalProgram, No
 	 * @return true if the literal is not derivable, false otherwise
 	 */
 	private boolean isNonDerivable(Atom atom, List<NormalRule> rules, Set<Atom> facts) {
-		boolean unclear = false;
+		Atom tempAtom = atom.renameVariables("Prep");
 		for (NormalRule rule : rules) {
-			boolean hasSharedVariable = false;
-			Set<VariableTerm> leftOccurringVariables = atom.getOccurringVariables();
-			Set<VariableTerm> rightOccurringVariables = rule.getHeadAtom().getOccurringVariables();
-			boolean leftSmaller = leftOccurringVariables.size() < rightOccurringVariables.size();
-			Set<VariableTerm> smallerSet = leftSmaller ? leftOccurringVariables : rightOccurringVariables;
-			Set<VariableTerm> largerSet = leftSmaller ? rightOccurringVariables : leftOccurringVariables;
-			for (VariableTerm variableTerm : smallerSet) {
-				if (largerSet.contains(variableTerm)) {
-					hasSharedVariable = true;
-					unclear = true;
-					break;
-				}
-			}
-			if (!hasSharedVariable) {
-				if (Unification.instantiate(rule.getHeadAtom(), atom) != null) {
+			if (!rule.isConstraint()) {
+				if (Unification.unifyAtoms(rule.getHeadAtom(), tempAtom) != null) {
 					return false;
 				}
 			}
 		}
-		for (Atom fact : facts) {
-			boolean hasSharedVariable = false;
-			Set<VariableTerm> leftOccurringVariables = atom.getOccurringVariables();
-			Set<VariableTerm> rightOccurringVariables = fact.getOccurringVariables();
-			boolean leftSmaller = leftOccurringVariables.size() < rightOccurringVariables.size();
-			Set<VariableTerm> smallerSet = leftSmaller ? leftOccurringVariables : rightOccurringVariables;
-			Set<VariableTerm> largerSet = leftSmaller ? rightOccurringVariables : leftOccurringVariables;
-			for (VariableTerm variableTerm : smallerSet) {
-				if (largerSet.contains(variableTerm)) {
-					hasSharedVariable = true;
-					unclear = true;
-					break;
-				}
-			}
-			if (!hasSharedVariable) {
-				if (Unification.instantiate(fact, atom) != null) {
-					return false;
-				}
+		Unifier uni;
+		for (Atom fact:facts) {
+			if ((uni = Unification.instantiate(tempAtom, fact)) != null) {
+				return false;
 			}
 		}
-		return !unclear;
+		return true;
 	}
 
 	/**
@@ -216,7 +190,10 @@ public class SimplePreprocessing extends ProgramTransformation<NormalProgram, No
 				newBody.add(bodyLiteral);
 			}
 		}
-		return new SimpleReturn(new NormalRuleImpl(Heads.newNormalHead(headAtom), new LinkedList<>(newBody)),
-				!literals.isEmpty(), newBody.isEmpty());
+		NormalRuleImpl newRule = new NormalRuleImpl(headAtom != null ? Heads.newNormalHead(headAtom) : null, new LinkedList<>(newBody));
+		if (newRule.isConstraint() && newBody.isEmpty()) {
+			return SimpleReturn.NO_FIRE;
+		}
+		return new SimpleReturn(newRule, !literals.isEmpty(), newBody.isEmpty() && !newRule.isConstraint());
 	}
 }
