@@ -169,9 +169,8 @@ public class SimplePreprocessing extends ProgramTransformation<NormalProgram, No
 				}
 			}
 		}
-		Unifier uni;
 		for (Atom fact:facts) {
-			if ((uni = Unification.instantiate(tempAtom, fact)) != null) {
+			if ((Unification.instantiate(tempAtom, fact)) != null) {
 				return false;
 			}
 		}
