@@ -64,6 +64,7 @@ import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
@@ -81,9 +82,9 @@ import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 public class AlphaImplTest {
-	
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(AspStandardLibrary.class);
-	
+
 	//@formatter:off
 	private static final String STRINGSTUFF_ASP =
 			"string(\"bla\")."
@@ -113,7 +114,7 @@ public class AlphaImplTest {
 	//@formatter:on
 
 	private static int invocations;
-	
+
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static boolean isOne(int term) {
 		invocations++;
@@ -157,13 +158,13 @@ public class AlphaImplTest {
 	@Test
 	public void withExternalTypeConflict() {
 		assertThrows(IllegalArgumentException.class, () -> {
-		Alpha system = new AlphaImpl();
-		InputConfig inputCfg = InputConfig.forString("a :- &isFoo[\"adsfnfdsf\"].");
-		inputCfg.addPredicateMethod("isFoo", Externals.processPredicateMethod(this.getClass().getMethod("isFoo", Integer.class)));
-		Set<AnswerSet> actual = system.solve(system.readProgram(inputCfg)).collect(Collectors.toSet());
-		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
-		assertEquals(expected, actual);
-});
+			Alpha system = new AlphaImpl();
+			InputConfig inputCfg = InputConfig.forString("a :- &isFoo[\"adsfnfdsf\"].");
+			inputCfg.addPredicateMethod("isFoo", Externals.processPredicateMethod(this.getClass().getMethod("isFoo", Integer.class)));
+			Set<AnswerSet> actual = system.solve(system.readProgram(inputCfg)).collect(Collectors.toSet());
+			Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
+			assertEquals(expected, actual);
+		});
 	}
 
 	@Test
@@ -223,12 +224,12 @@ public class AlphaImplTest {
 	@Test
 	public void smallGraphWithWrongType() {
 		assertThrows(IllegalArgumentException.class, () -> {
-		Alpha system = new AlphaImpl();
-		InputConfig cfg = InputConfig.forString("a :- &connected[\"hello\",2].");
-		cfg.addPredicateMethod("connected", Externals.processPredicate((Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3)));
-		ASPCore2Program prog = system.readProgram(cfg);
+			Alpha system = new AlphaImpl();
+			InputConfig cfg = InputConfig.forString("a :- &connected[\"hello\",2].");
+			cfg.addPredicateMethod("connected", Externals.processPredicate((Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3)));
+			ASPCore2Program prog = system.readProgram(cfg);
 
-		system.solve(prog).collect(Collectors.toSet());
+			system.solve(prog).collect(Collectors.toSet());
 		});
 	}
 
@@ -350,10 +351,10 @@ public class AlphaImplTest {
 	@Test
 	public void errorDuplicateExternal() {
 		assertThrows(IllegalArgumentException.class, () -> {
-		InputConfig cfg = InputConfig.forString("someString.");
-		cfg.addPredicateMethods(Externals.scan(this.getClass()));
-		cfg.addPredicateMethods(Externals.scan(this.getClass()));
-});
+			InputConfig cfg = InputConfig.forString("someString.");
+			cfg.addPredicateMethods(Externals.scan(this.getClass()));
+			cfg.addPredicateMethods(Externals.scan(this.getClass()));
+		});
 	}
 
 	@Test
@@ -421,7 +422,7 @@ public class AlphaImplTest {
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
 	}
-	
+
 	@Test
 	@SuppressWarnings("unchecked")
 	public void programWithExternalStringStuff() throws IOException {
@@ -454,6 +455,27 @@ public class AlphaImplTest {
 				assertTrue(resultstring.contains("foo"));
 			}
 		}
+	}
+
+	@Test
+	public void reifyInput() {
+		String aspInput = "p(X) :- q(X), not r(X).";
+		Alpha system = new AlphaImpl();
+		ASPCore2Program input = system.readProgramString(aspInput);
+		Set<BasicAtom> reified = system.reify(input);
+
+		Set<BasicAtom> reifiedPredicates = reified.stream()
+				.filter((a) -> a.getPredicate().equals(Predicates.getPredicate("predicate", 3)))
+				.collect(Collectors.toSet());
+		Set<BasicAtom> reifiedRuleHeads = reified.stream()
+				.filter((a) -> a.getPredicate().equals(Predicates.getPredicate("rule_head", 2)))
+				.collect(Collectors.toSet());
+		Set<BasicAtom> reifiedBodyLiterals = reified.stream()
+				.filter((a) -> a.getPredicate().equals(Predicates.getPredicate("rule_bodyLiteral", 2)))
+				.collect(Collectors.toSet());
+		assertEquals(3, reifiedPredicates.size());
+		assertEquals(1, reifiedRuleHeads.size());
+		assertEquals(2, reifiedBodyLiterals.size());
 	}
 
 	@Test
@@ -499,7 +521,7 @@ public class AlphaImplTest {
 		ASPCore2Program input = system.readProgramString(progstr);
 		NormalProgram normal = system.normalizeProgram(input);
 		CompiledProgram preprocessed = system.performProgramPreprocessing(normal);
-		assertFalse(preprocessed.getFacts().contains(Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newSymbolicConstant("a"))), 
+		assertFalse(preprocessed.getFacts().contains(Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newSymbolicConstant("a"))),
 				"Preprocessed program contains fact derived from stratifiable rule, but should not!");
 	}
 
@@ -600,16 +622,17 @@ public class AlphaImplTest {
 		ASPCore2Program prog = system.readProgram(inputCfg);
 		assertFalse(system.solve(prog).limit(limit).collect(Collectors.toList()).isEmpty());
 	}
-	
+
 	// Detailed reproduction test-case for github issue #239.
 	@Test
 	public void testLearnedUnaryNoGoodCausingOutOfOrderLiteralsConflict() throws IOException {
 		final ProgramParser parser = new ProgramParserImpl();
 		InputProgram.Builder bld = InputProgram.builder();
 		bld.accumulate(parser.parse(Files.newInputStream(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp"), StandardOpenOption.READ)));
-		bld.accumulate(parser.parse(Files.newInputStream(Paths.get("src", "test", "resources", "HanoiTower_instances", "simple.asp"), StandardOpenOption.READ)));
+		bld.accumulate(
+				parser.parse(Files.newInputStream(Paths.get("src", "test", "resources", "HanoiTower_instances", "simple.asp"), StandardOpenOption.READ)));
 		InputProgram parsedProgram = bld.build();
-		
+
 		SystemConfig config = new SystemConfig();
 		config.setSolverName("default");
 		config.setNogoodStoreName("alpharoaming");
@@ -619,12 +642,11 @@ public class AlphaImplTest {
 		config.setDisableJustificationSearch(false);
 		config.setEvaluateStratifiedPart(false);
 		config.setReplayChoices(Arrays.asList(21, 26, 36, 56, 91, 96, 285, 166, 101, 290, 106, 451, 445, 439, 448,
-			433, 427, 442, 421, 415, 436, 409, 430, 397, 391, 424, 385, 379,
-			418, 373, 412, 406, 394, 388, 382, 245, 232, 208
-		));
+				433, 427, 442, 421, 415, 436, 409, 430, 397, 391, 424, 385, 379,
+				418, 373, 412, 406, 394, 388, 382, 245, 232, 208));
 		Alpha alpha = new AlphaImpl(config);
 		Optional<AnswerSet> answerSet = alpha.solve(parsedProgram).findFirst();
 		assertTrue(answerSet.isPresent());
 	}
-	
+
 }
