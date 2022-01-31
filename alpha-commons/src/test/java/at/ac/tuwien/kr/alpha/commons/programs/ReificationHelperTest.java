@@ -129,6 +129,7 @@ public class ReificationHelperTest {
 		Set<BasicAtom> reified = new ReificationHelper(idGen).reifyFunctionTerm(reifiedId, funcTerm);
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("term_type", 2), reifiedId, Terms.newSymbolicConstant("function"))));
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("functionTerm_symbol", 2), reifiedId, Terms.newConstant("f"))));
+		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("functionTerm_numArguments", 2), reifiedId, Terms.newConstant(1))));
 		assertEquals(1, reified.stream()
 				.filter((atom) -> atom.getPredicate().equals(Predicates.getPredicate("functionTerm_argumentTerm", 3)))
 				.collect(Collectors.toList()).size());
@@ -168,6 +169,7 @@ public class ReificationHelperTest {
 		ConstantTerm<?> reifiedId = idGen.get();
 		Set<BasicAtom> reified = new ReificationHelper(idGen).reifyBasicAtom(reifiedId, atom);
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("atom_type", 2), reifiedId, Terms.newSymbolicConstant("basic"))));
+		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("basicAtom_numTerms", 2), reifiedId, Terms.newConstant(2))));		
 		assertEquals(2,
 				reified.stream()
 						.filter(
@@ -208,12 +210,14 @@ public class ReificationHelperTest {
 		Supplier<ConstantTerm<?>> idGen = newIdGenerator();
 		ConstantTerm<?> reifiedId = idGen.get();
 		Set<BasicAtom> reified = new ReificationHelper(idGen).reifyAggregateElement(reifiedId, element);
+		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("aggregateElement_numTerms", 2), reifiedId, Terms.newConstant(1))));
 		assertEquals(1,
 				reified.stream()
 						.filter(
 								(a) -> a.getPredicate().equals(Predicates.getPredicate("aggregateElement_term", 3)))
 						.collect(Collectors.toList())
 						.size());
+		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("aggregateElement_numLiterals", 2), reifiedId, Terms.newConstant(1))));
 		assertEquals(1,
 				reified.stream()
 						.filter(
@@ -248,6 +252,7 @@ public class ReificationHelperTest {
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("atom_type", 2), reifiedId, Terms.newSymbolicConstant("aggregate"))));
 		assertTrue(reified
 				.contains(Atoms.newBasicAtom(Predicates.getPredicate("aggregateAtom_aggregateFunction", 2), reifiedId, Terms.newSymbolicConstant("count"))));
+		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("aggregateAtom_numAggregateElements", 2), reifiedId, Terms.newConstant(2))));				
 		assertEquals(2,
 				reified.stream()
 						.filter(
@@ -269,6 +274,8 @@ public class ReificationHelperTest {
 		Set<BasicAtom> reified = new ReificationHelper(idGen).reifyExternalAtom(reifiedId, atom);
 
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("atom_type", 2), reifiedId, Terms.newSymbolicConstant("external"))));
+		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("externalAtom_numInputTerms", 2), reifiedId, Terms.newConstant(1))));
+		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("externalAtom_numOutputTerms", 2), reifiedId, Terms.newConstant(1))));
 		assertEquals(1,
 				reified.stream()
 						.filter(
