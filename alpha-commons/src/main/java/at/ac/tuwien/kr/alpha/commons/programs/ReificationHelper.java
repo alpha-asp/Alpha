@@ -37,6 +37,7 @@ public class ReificationHelper {
 	// Predicates describing rules.
 	static final Predicate RULE = Predicates.getPredicate("rule", 1);
 	static final Predicate RULE_HEAD = Predicates.getPredicate("rule_head", 2);
+	static final Predicate RULE_NUM_BODY_LITERALS = Predicates.getPredicate("rule_numBodyLiterals", 2);
 	static final Predicate RULE_BODY_LITERAL = Predicates.getPredicate("rule_bodyLiteral", 2);
 
 	// Predicates describing facts.
@@ -51,8 +52,10 @@ public class ReificationHelper {
 	// Predicates describing choice heads.
 	static final Predicate CHOICE_HEAD_LOWER_BOUND = Predicates.getPredicate("choiceHead_lowerBound", 2);
 	static final Predicate CHOICE_HEAD_UPPER_BOUND = Predicates.getPredicate("choiceHead_upperBound", 2);
+	static final Predicate CHOICE_HEAD_NUM_ELEMENTS = Predicates.getPredicate("choiceHead_numElements", 2);
 	static final Predicate CHOICE_HEAD_ELEMENT = Predicates.getPredicate("choiceHead_element", 2);
 	static final Predicate CHOICE_ELEMENT_ATOM = Predicates.getPredicate("choiceElement_atom", 2);
+	static final Predicate CHOICE_ELEMENT_NUM_CONDITION_LITERALS = Predicates.getPredicate("choiceElement_numConditionLiterals", 2);
 	static final Predicate CHOICE_ELEMENT_CONDITION_LITERAL = Predicates.getPredicate("choiceElement_conditionLiteral", 2);
 
 	// Predicates describing literals.
@@ -67,6 +70,7 @@ public class ReificationHelper {
 
 	// Predicates describing basic atoms.
 	static final Predicate BASIC_ATOM_PREDICATE = Predicates.getPredicate("basicAtom_predicate", 2);
+	static final Predicate BASIC_ATOM_NUM_TERMS = Predicates.getPredicate("basicAtom_numTerms", 2);
 	static final Predicate BASIC_ATOM_TERM = Predicates.getPredicate("basicAtom_term", 3);
 
 	// Predicates describing comparison atoms.
@@ -76,7 +80,9 @@ public class ReificationHelper {
 
 	// Predicates describing external atoms.
 	static final Predicate EXTERNAL_ATOM_NAME = Predicates.getPredicate("externalAtom_name", 2);
+	static final Predicate EXTERNAL_ATOM_NUM_INPUT_TERMS = Predicates.getPredicate("externalAtom_numInputTerms", 2);
 	static final Predicate EXTERNAL_ATOM_INPUT_TERM = Predicates.getPredicate("externalAtom_inputTerm", 3);
+	static final Predicate EXTERNAL_ATOM_NUM_OUTPUT_TERMS = Predicates.getPredicate("externalAtom_numOutputTerms", 2);
 	static final Predicate EXTERNAL_ATOM_OUTPUT_TERM = Predicates.getPredicate("externalAtom_outputTerm", 3);
 
 	// Predicates describing aggregate atoms.
@@ -85,10 +91,13 @@ public class ReificationHelper {
 	static final Predicate AGGREGATE_ATOM_RIGHT_TERM = Predicates.getPredicate("aggregateAtom_rightHandTerm", 2);
 	static final Predicate AGGREGATE_ATOM_RIGHT_OPERATOR = Predicates.getPredicate("aggregateAtom_rightHandOperator", 2);
 	static final Predicate AGGREGATE_ATOM_AGGREGATE_FUNCTION = Predicates.getPredicate("aggregateAtom_aggregateFunction", 2);
+	static final Predicate AGGREGATE_ATOM_NUM_AGGREGATE_ELEMENTS = Predicates.getPredicate("aggregateAtom_numAggregateElements", 2);
 	static final Predicate AGGREGATE_ATOM_AGGREGATE_ELEMENT = Predicates.getPredicate("aggregateAtom_aggregateElement", 2);
 
 	// Predicates describing aggregate elements.
+	static final Predicate AGGREGATE_ELEMENT_NUM_TERMS = Predicates.getPredicate("aggregateElement_numTerms", 2);
 	static final Predicate AGGREGATE_ELEMENT_TERM = Predicates.getPredicate("aggregateElement_term", 3);
+	static final Predicate AGGREGATE_ELEMENT_NUM_LITERALS = Predicates.getPredicate("aggregateElement_numLiterals", 2);
 	static final Predicate AGGREGATE_ELEMENT_LITERAL = Predicates.getPredicate("aggregateElement_literal", 2);
 
 	// Predicates describing terms.
@@ -108,6 +117,7 @@ public class ReificationHelper {
 
 	// Predicates describing function terms.
 	static final Predicate FUNCTION_TERM_SYMBOL = Predicates.getPredicate("functionTerm_symbol", 2);
+	static final Predicate FUNCTION_TERM_NUM_ARGUMENTS = Predicates.getPredicate("functionTerm_numArguments", 2);
 	static final Predicate FUNCTION_TERM_ARGUMENT = Predicates.getPredicate("functionTerm_argumentTerm", 3);
 
 	// Constants describing head types.
@@ -196,6 +206,7 @@ public class ReificationHelper {
 		ConstantTerm<?> ruleId = idProvider.get();
 		reified.add(Atoms.newBasicAtom(RULE, ruleId));
 		reified.addAll(reifyHead(ruleId, rule.getHead()));
+		reified.add(Atoms.newBasicAtom(RULE_NUM_BODY_LITERALS, ruleId, Terms.newConstant(rule.getBody().size())));
 		for (Literal lit : rule.getBody()) {
 			ConstantTerm<?> literalId = idProvider.get();
 			reified.add(Atoms.newBasicAtom(RULE_BODY_LITERAL, ruleId, literalId));
@@ -236,6 +247,7 @@ public class ReificationHelper {
 		if (head.getUpperBound() != null) {
 			reified.add(Atoms.newBasicAtom(CHOICE_HEAD_UPPER_BOUND, headId, head.getUpperBound()));
 		}
+		reified.add(Atoms.newBasicAtom(CHOICE_HEAD_NUM_ELEMENTS, headId, Terms.newConstant(head.getChoiceElements().size())));
 		for (ChoiceElement element : head.getChoiceElements()) {
 			reified.addAll(reifyChoiceElement(headId, element));
 		}
@@ -249,6 +261,7 @@ public class ReificationHelper {
 		ConstantTerm<?> atomId = idProvider.get();
 		reified.add(Atoms.newBasicAtom(CHOICE_ELEMENT_ATOM, elementId, atomId));
 		reified.addAll(reifyAtom(atomId, element.getChoiceAtom()));
+		reified.add(Atoms.newBasicAtom(CHOICE_ELEMENT_NUM_CONDITION_LITERALS, elementId, Terms.newConstant(element.getConditionLiterals().size())));
 		for (Literal lit : element.getConditionLiterals()) {
 			ConstantTerm<?> literalId = idProvider.get();
 			reified.add(Atoms.newBasicAtom(CHOICE_ELEMENT_CONDITION_LITERAL, elementId, literalId));
@@ -291,6 +304,7 @@ public class ReificationHelper {
 			reifiedPredicates.put(atom.getPredicate(), predicateId);
 		}
 		reified.add(Atoms.newBasicAtom(BASIC_ATOM_PREDICATE, atomId, predicateId));
+		reified.add(Atoms.newBasicAtom(BASIC_ATOM_NUM_TERMS, atomId, Terms.newConstant(atom.getTerms().size())));
 		for (int i = 0; i < atom.getTerms().size(); i++) {
 			ConstantTerm<?> termId = idProvider.get();
 			reified.add(Atoms.newBasicAtom(BASIC_ATOM_TERM, atomId, Terms.newConstant(i), termId));
@@ -319,11 +333,13 @@ public class ReificationHelper {
 		Set<BasicAtom> reified = new LinkedHashSet<>();
 		reified.add(Atoms.newBasicAtom(ATOM_TYPE, atomId, ATOM_TYPE_EXTERNAL));
 		reified.add(Atoms.newBasicAtom(EXTERNAL_ATOM_NAME, atomId, Terms.newConstant(atom.getPredicate().getName())));
+		reified.add(Atoms.newBasicAtom(EXTERNAL_ATOM_NUM_INPUT_TERMS, atomId, Terms.newConstant(atom.getInput().size())));
 		for (int i = 0; i < atom.getInput().size(); i++) {
 			ConstantTerm<?> inTermId = idProvider.get();
 			reified.add(Atoms.newBasicAtom(EXTERNAL_ATOM_INPUT_TERM, atomId, Terms.newConstant(i), inTermId));
 			reified.addAll(reifyTerm(inTermId, atom.getInput().get(i)));
 		}
+		reified.add(Atoms.newBasicAtom(EXTERNAL_ATOM_NUM_OUTPUT_TERMS, atomId, Terms.newConstant(atom.getOutput().size())));
 		for (int i = 0; i < atom.getOutput().size(); i++) {
 			ConstantTerm<?> outTermId = idProvider.get();
 			reified.add(Atoms.newBasicAtom(EXTERNAL_ATOM_OUTPUT_TERM, atomId, Terms.newConstant(i), outTermId));
@@ -346,6 +362,7 @@ public class ReificationHelper {
 			ConstantTerm<?> rightTermId = idProvider.get();
 			reified.add(Atoms.newBasicAtom(AGGREGATE_ATOM_RIGHT_TERM, atomId, rightTermId));
 		}
+		reified.add(Atoms.newBasicAtom(AGGREGATE_ATOM_NUM_AGGREGATE_ELEMENTS, atomId, Terms.newConstant(atom.getAggregateElements().size())));
 		for (AggregateElement element : atom.getAggregateElements()) {
 			ConstantTerm<?> elementId = idProvider.get();
 			reified.add(Atoms.newBasicAtom(AGGREGATE_ATOM_AGGREGATE_ELEMENT, atomId, elementId));
@@ -356,11 +373,13 @@ public class ReificationHelper {
 
 	Set<BasicAtom> reifyAggregateElement(ConstantTerm<?> elementId, AggregateElement element) {
 		Set<BasicAtom> reified = new LinkedHashSet<>();
+		reified.add(Atoms.newBasicAtom(AGGREGATE_ELEMENT_NUM_TERMS, elementId, Terms.newConstant(element.getElementTerms().size())));
 		for (int i = 0; i < element.getElementTerms().size(); i++) {
 			ConstantTerm<?> termId = idProvider.get();
 			reified.add(Atoms.newBasicAtom(AGGREGATE_ELEMENT_TERM, elementId, Terms.newConstant(i), termId));
 			reified.addAll(reifyTerm(termId, element.getElementTerms().get(i)));
 		}
+		reified.add(Atoms.newBasicAtom(AGGREGATE_ELEMENT_NUM_LITERALS, elementId, Terms.newConstant(element.getElementLiterals().size())));
 		for (Literal lit : element.getElementLiterals()) {
 			ConstantTerm<?> literalId = idProvider.get();
 			reified.add(Atoms.newBasicAtom(AGGREGATE_ELEMENT_LITERAL, elementId, literalId));
@@ -421,6 +440,7 @@ public class ReificationHelper {
 		Set<BasicAtom> reified = new LinkedHashSet<>();
 		reified.add(Atoms.newBasicAtom(TERM_TYPE, termId, TERM_TYPE_FUNCTION));
 		reified.add(Atoms.newBasicAtom(FUNCTION_TERM_SYMBOL, termId, Terms.newConstant(term.getSymbol())));
+		reified.add(Atoms.newBasicAtom(FUNCTION_TERM_NUM_ARGUMENTS, termId, Terms.newConstant(term.getTerms().size())));
 		for (int i = 0; i < term.getTerms().size(); i++) {
 			ConstantTerm<?> argTermId = idProvider.get();
 			reified.add(Atoms.newBasicAtom(FUNCTION_TERM_ARGUMENT, termId, Terms.newConstant(i), argTermId));
