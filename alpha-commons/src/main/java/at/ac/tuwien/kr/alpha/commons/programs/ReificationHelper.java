@@ -187,6 +187,9 @@ public class ReificationHelper {
 		// TODO reify directives
 		Set<BasicAtom> reified = new LinkedHashSet<>();
 		for (Rule<? extends Head> rule : program.getRules()) {
+			if (rule.isConstraint()) {
+				continue;
+			}
 			reified.addAll(reifyRule(rule));
 		}
 		for (Atom fact : program.getFacts()) {
