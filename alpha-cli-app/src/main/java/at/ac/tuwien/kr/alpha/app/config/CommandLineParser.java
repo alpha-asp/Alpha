@@ -149,6 +149,9 @@ public class CommandLineParser {
 			.desc("a character (sequence) to use as separator for atoms in printed answer sets (default: "
 					+ SystemConfig.DEFAULT_ATOM_SEPARATOR + ")")
 			.build();
+	private static final Option OPT_DISABLE_PROGRAM_PREPROCESSING = Option.builder("dpp").longOpt("disableProgramPreprocessing")
+			.desc("disable preprocessing of input program")
+			.build();
 	//@formatter:on
 
 	private static final Options CLI_OPTS = new Options();
@@ -189,6 +192,7 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_ACCUMULATOR_ENABLED);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_OUTPUT_ATOM_SEPARATOR);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_DISABLE_PROGRAM_PREPROCESSING);
 	}
 
 	/*
@@ -240,12 +244,13 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), this::handleNoJustification);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_AGGREGATES_NO_SORTING_GRID.getOpt(), this::handleDisableSortingGrid);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_AGGREGATES_NO_NEGATIVE_INTEGERS.getOpt(), this::handleDisableNegativeSumElements);
-		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_EVAL_STRATIFIED.getOpt(), this::handleDisableStratifedEval);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_EVAL_STRATIFIED.getOpt(), this::handleDisableStratifiedEval);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS.getOpt(), this::handleGrounderToleranceConstraints);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES.getOpt(), this::handleGrounderToleranceRules);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_ACCUMULATOR_ENABLED.getOpt(), this::handleGrounderNoInstanceRemoval);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_OUTPUT_ATOM_SEPARATOR.getOpt(), this::handleAtomSeparator);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_DISABLE_PROGRAM_PREPROCESSING.getOpt(), this::handleDisablePreprocessing);
 	}
 
 	private void initializeInputOptionHandlers() {
@@ -441,7 +446,7 @@ public class CommandLineParser {
 		cfg.getAggregateRewritingConfig().setSupportNegativeValuesInSums(false);
 	}
 
-	private void handleDisableStratifedEval(Option opt, SystemConfig cfg) {
+	private void handleDisableStratifiedEval(Option opt, SystemConfig cfg) {
 		cfg.setEvaluateStratifiedPart(false);
 	}
 
@@ -469,6 +474,10 @@ public class CommandLineParser {
 
 	private void handleAtomSeparator(Option opt, SystemConfig cfg) {
 		cfg.setAtomSeparator(StringEscapeUtils.unescapeJava(opt.getValue(SystemConfig.DEFAULT_ATOM_SEPARATOR)));
+	}
+
+	private void handleDisablePreprocessing(Option opt, SystemConfig cfg) {
+		cfg.setPreprocessingEnabled(false);
 	}
 	
 }

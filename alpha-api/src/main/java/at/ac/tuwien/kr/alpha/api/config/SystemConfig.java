@@ -58,6 +58,7 @@ public class SystemConfig {
 	public static final boolean DEFAULT_SORT_ANSWER_SETS = false;
 	public static final List<Integer> DEFAULT_REPLAY_CHOICES = Collections.emptyList();
 	public static final boolean DEFAULT_STRATIFIED_EVALUATION = true;
+	public static final boolean DEFAULT_PREPROCESSING_ENABLED = true;
 	public static final boolean DEFAULT_DISABLE_NOGOOD_DELETION = false;
 	public static final String DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS = GrounderHeuristicsConfiguration.STRICT_STRING;
 	public static final String DEFAULT_GROUNDER_TOLERANCE_RULES = GrounderHeuristicsConfiguration.STRICT_STRING;
@@ -79,6 +80,7 @@ public class SystemConfig {
 	private boolean sortAnswerSets = DEFAULT_SORT_ANSWER_SETS;
 	private List<Integer> replayChoices = DEFAULT_REPLAY_CHOICES;
 	private boolean evaluateStratifiedPart = DEFAULT_STRATIFIED_EVALUATION;
+	private boolean enablePreprocessing = DEFAULT_PREPROCESSING_ENABLED;
 	private boolean disableNoGoodDeletion = DEFAULT_DISABLE_NOGOOD_DELETION;
 	private String grounderToleranceConstraints = DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS;
 	private String grounderToleranceRules = DEFAULT_GROUNDER_TOLERANCE_RULES;
@@ -230,6 +232,14 @@ public class SystemConfig {
 
 	public void setEvaluateStratifiedPart(boolean evaluateStratifiedPart) {
 		this.evaluateStratifiedPart = evaluateStratifiedPart;
+	}
+
+	public boolean isPreprocessingEnabled() {
+		return this.enablePreprocessing;
+	}
+
+	public void setPreprocessingEnabled(boolean enablePreprocessing) {
+		this.enablePreprocessing = enablePreprocessing;
 	}
 
 	public boolean isDisableNoGoodDeletion() {

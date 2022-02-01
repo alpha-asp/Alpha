@@ -142,10 +142,13 @@ public class AlphaImpl implements Alpha {
 
 	@VisibleForTesting
 	InternalProgram performProgramPreprocessing(NormalProgram program) {
+		InternalProgram retVal = InternalProgram.fromNormalProgram(program);
+		if (config.isPreprocessingEnabled()) {
+			SimplePreprocessing simplePreprocessing = new SimplePreprocessing();
+			NormalProgram simplePreprocessed = simplePreprocessing.apply(program);
+			retVal = InternalProgram.fromNormalProgram(simplePreprocessed);
+		}
 		LOGGER.debug("Preprocessing InternalProgram!");
-		SimplePreprocessing simplePreprocessing = new SimplePreprocessing();
-		NormalProgram simplePreprocessed = simplePreprocessing.apply(program);
-		InternalProgram retVal = InternalProgram.fromNormalProgram(simplePreprocessed);
 		if (config.isEvaluateStratifiedPart()) {
 			AnalyzedProgram analyzed = new AnalyzedProgram(retVal.getRules(), retVal.getFacts());
 			retVal = new StratifiedEvaluation().apply(analyzed);
