@@ -27,18 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.core.common.Assignment;
-import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.core.common.IntIterator;
-import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.TRUE;
@@ -47,6 +35,19 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import at.ac.tuwien.kr.alpha.core.common.Assignment;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.core.common.IntIterator;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 /**
  * Copyright (c) 2018-2020, the Alpha Team.
@@ -180,8 +181,8 @@ public class TrailAssignmentTest {
 
 		newAssignmentsIterator = assignment.getNewPositiveAssignmentsIterator();
 
-		assertEquals(1, newAssignmentsIterator.next());
-		assertEquals(2, newAssignmentsIterator.next());
+		assertEquals(1, (int)newAssignmentsIterator.next());
+		assertEquals(2, (int)newAssignmentsIterator.next());
 		assertFalse(newAssignmentsIterator.hasNext());
 
 
@@ -190,7 +191,7 @@ public class TrailAssignmentTest {
 		assignment.assign(3, FALSE);
 
 		newAssignmentsIterator = assignment.getNewPositiveAssignmentsIterator();
-		assertEquals(3, newAssignmentsIterator.next());
+		assertEquals(3, (int)newAssignmentsIterator.next());
 		assertFalse(newAssignmentsIterator.hasNext());
 	}
 
@@ -204,8 +205,8 @@ public class TrailAssignmentTest {
 		assignment.backtrack();
 
 		newAssignmentsIterator = assignment.getNewPositiveAssignmentsIterator();
-		assertEquals(1, newAssignmentsIterator.next());
-		assertEquals(3, newAssignmentsIterator.next());
+		assertEquals(1, (int)newAssignmentsIterator.next());
+		assertEquals(3, (int)newAssignmentsIterator.next());
 		assertFalse(newAssignmentsIterator.hasNext());
 	}
 

@@ -52,6 +52,7 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 
+// TODO should this be part of an AtomStoreTest??
 public class AtomCounterTests {
 
 	private AtomStore atomStore;

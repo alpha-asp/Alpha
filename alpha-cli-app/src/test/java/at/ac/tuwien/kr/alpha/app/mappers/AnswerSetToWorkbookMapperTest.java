@@ -22,6 +22,7 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
 
+// TODO This is a functional test and should not be run with standard unit tests
 public class AnswerSetToWorkbookMapperTest {
 
 	private AnswerSetToWorkbookMapper mapper = new AnswerSetToWorkbookMapper();

@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.core.rules;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -59,6 +60,10 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 
 	private final RuleGroundingInfoImpl groundingOrders;
 
+	public InternalRule(NormalHead head, Literal... body) {
+		this(head, Arrays.asList(body));
+	}
+	
 	public InternalRule(NormalHead head, List<Literal> body) {
 		super(head, body);
 		if (body.isEmpty()) {
