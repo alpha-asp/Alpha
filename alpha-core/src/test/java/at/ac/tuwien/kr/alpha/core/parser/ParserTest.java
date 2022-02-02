@@ -126,7 +126,7 @@ public class ParserTest {
 		ASPCore2Program parsedProgram = parser.parse("fact(2..5). p(X) :- q(a, 3 .. X).");
 		IntervalTerm factInterval = (IntervalTerm) parsedProgram.getFacts().get(0).getTerms().get(0);
 		assertTrue(factInterval.equals(IntervalTerm.getInstance(Terms.newConstant(2), Terms.newConstant(5))));
-		IntervalTerm bodyInterval = (IntervalTerm) ((Literal) parsedProgram.getRules().get(0).getBody().stream().findFirst().get()).getTerms().get(1);
+		IntervalTerm bodyInterval = (IntervalTerm) parsedProgram.getRules().get(0).getBody().stream().findFirst().get().getTerms().get(1);
 		assertTrue(bodyInterval.equals(IntervalTerm.getInstance(Terms.newConstant(3), Terms.newVariable("X"))));
 	}
 

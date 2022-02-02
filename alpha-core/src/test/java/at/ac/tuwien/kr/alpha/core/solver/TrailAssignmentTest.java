@@ -181,8 +181,8 @@ public class TrailAssignmentTest {
 
 		newAssignmentsIterator = assignment.getNewPositiveAssignmentsIterator();
 
-		assertEquals(1, (int)newAssignmentsIterator.next());
-		assertEquals(2, (int)newAssignmentsIterator.next());
+		assertEquals(1, newAssignmentsIterator.next());
+		assertEquals(2, newAssignmentsIterator.next());
 		assertFalse(newAssignmentsIterator.hasNext());
 
 
@@ -191,7 +191,7 @@ public class TrailAssignmentTest {
 		assignment.assign(3, FALSE);
 
 		newAssignmentsIterator = assignment.getNewPositiveAssignmentsIterator();
-		assertEquals(3, (int)newAssignmentsIterator.next());
+		assertEquals(3, newAssignmentsIterator.next());
 		assertFalse(newAssignmentsIterator.hasNext());
 	}
 
@@ -205,8 +205,8 @@ public class TrailAssignmentTest {
 		assignment.backtrack();
 
 		newAssignmentsIterator = assignment.getNewPositiveAssignmentsIterator();
-		assertEquals(1, (int)newAssignmentsIterator.next());
-		assertEquals(3, (int)newAssignmentsIterator.next());
+		assertEquals(1, newAssignmentsIterator.next());
+		assertEquals(3, newAssignmentsIterator.next());
 		assertFalse(newAssignmentsIterator.hasNext());
 	}
 
