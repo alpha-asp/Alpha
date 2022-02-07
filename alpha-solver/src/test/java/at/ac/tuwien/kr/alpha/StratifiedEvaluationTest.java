@@ -25,72 +25,57 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.programs.transformation;
+package at.ac.tuwien.kr.alpha;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import static at.ac.tuwien.kr.alpha.test.AlphaAssertions.assertAnswerSetsEqual;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
+import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.externals.Externals;
-import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
-import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
-import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.Programs;
-import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
-import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
-// TODO This is a functional test and should not be run with standard unit tests
+// TODO This is an integration test and should be run in an extra suite
 public class StratifiedEvaluationTest {
 
-	private final ProgramParser parser = new ProgramParserImpl();
-	private final NormalizeProgramTransformation normalizer = new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
-	private final StratifiedEvaluation evaluator = new StratifiedEvaluation();
-	private final Function<String, CompiledProgram> parseAndEvaluate = (str) -> {
-		return evaluator.apply(AnalyzedProgram.analyzeNormalProgram(normalizer.apply(parser.parse(str))));
-	};
+	// Alpha instance with default configuration (evolog support and stratified evaluation enabled)
+	private final Alpha alpha = AlphaFactory.newAlpha();
 
-	private final Function<CompiledProgram, Set<AnswerSet>> solveCompiledProg = (prog) -> {
-		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", prog, atomStore, false);
-		Solver solver = SolverFactory.getInstance(new SystemConfig(), atomStore, grounder);
-		return solver.collectSet();
-	};
-
+	/**
+	 * Verifies that facts are not duplicated by stratified evaluation.
+	 */
 	@Test
 	public void testDuplicateFacts() {
 		String aspStr = "p(a). p(b). q(b). q(X) :- p(X).";
-		CompiledProgram evaluated = parseAndEvaluate.apply(aspStr);
-		Instance qOfB = new Instance(TestUtils.basicAtomWithSymbolicTerms("q", "b").getTerms());
-		Set<Instance> facts = evaluated.getFactsByPredicate().get(Predicates.getPredicate("q", 1));
+		DebugSolvingContext dbgInfo = alpha.prepareDebugSolve(alpha.readProgramString(aspStr));
+		NormalProgram evaluated = dbgInfo.getPreprocessedProgram();
+		BasicAtom qOfB = Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newSymbolicConstant("b"));
 		int numQOfB = 0;
-		for (Instance at : facts) {
-			if (at.equals(qOfB)) {
+		for (Atom fact : evaluated.getFacts()) {
+			if (fact.equals(qOfB)) {
 				numQOfB++;
 			}
 		}
@@ -100,41 +85,38 @@ public class StratifiedEvaluationTest {
 	@Test
 	public void testEqualityWithConstantTerms() {
 		String aspStr = "equal :- 1 = 1.";
-		CompiledProgram evaluated = parseAndEvaluate.apply(aspStr);
-		Atom equal = TestUtils.basicAtomWithSymbolicTerms("equal");
+		DebugSolvingContext dbgInfo = alpha.prepareDebugSolve(alpha.readProgramString(aspStr));
+		NormalProgram evaluated = dbgInfo.getPreprocessedProgram();
+		Atom equal = Atoms.newBasicAtom(Predicates.getPredicate("equal", 0));
 		assertTrue(evaluated.getFacts().contains(equal));
 	}
 
 	@Test
 	public void testEqualityWithVarTerms() {
 		String aspStr = "a(1). a(2). a(3). b(X) :- a(X), X = 1. c(X) :- a(X), X = 2. d(X) :- X = 3, a(X).";
-		CompiledProgram evaluated = parseAndEvaluate.apply(aspStr);
-		Set<AnswerSet> answerSets = solveCompiledProg.apply(evaluated);
-		TestUtils.assertAnswerSetsEqual("a(1), a(2), a(3), b(1), c(2), d(3)", answerSets);
+		Set<AnswerSet> answerSets = alpha.solve(alpha.readProgramString(aspStr)).collect(Collectors.toSet());
+		assertAnswerSetsEqual("a(1), a(2), a(3), b(1), c(2), d(3)", answerSets);
 	}
 
 	@Test
 	public void testNonGroundableRule() {
 		String asp = "p(a). q(a, b). s(X, Y) :- p(X), q(X, Y), r(Y).";
-		CompiledProgram evaluated = parseAndEvaluate.apply(asp);
-		Set<AnswerSet> answerSets = solveCompiledProg.apply(evaluated);
-		TestUtils.assertAnswerSetsEqual("p(a), q(a,b)", answerSets);
+		Set<AnswerSet> answerSets = alpha.solve(alpha.readProgramString(asp)).collect(Collectors.toSet());
+		assertAnswerSetsEqual("p(a), q(a,b)", answerSets);
 	}
 
 	@Test
 	public void testCountAggregate() {
 		String asp = "a. b :- 1 <= #count { 1 : a }.";
-		CompiledProgram evaluated = parseAndEvaluate.apply(asp);
-		Set<AnswerSet> answerSets = solveCompiledProg.apply(evaluated);
-		TestUtils.assertAnswerSetsEqual("a, b", answerSets);
+		Set<AnswerSet> answerSets = alpha.solve(alpha.readProgramString(asp)).collect(Collectors.toSet());
+		assertAnswerSetsEqual("a, b", answerSets);
 	}
 
 	@Test
 	public void testIntervalFact() {
 		String asp = "a(1..3).";
-		CompiledProgram evaluated = parseAndEvaluate.apply(asp);
-		Set<AnswerSet> answerSets = solveCompiledProg.apply(evaluated);
-		TestUtils.assertAnswerSetsEqual("a(1), a(2), a(3)", answerSets);
+		Set<AnswerSet> answerSets = alpha.solve(alpha.readProgramString(asp)).collect(Collectors.toSet());
+		assertAnswerSetsEqual("a(1), a(2), a(3)", answerSets);
 	}
 
 	@Test
@@ -143,18 +125,18 @@ public class StratifiedEvaluationTest {
 				+ "{ chosenThing(X) : thing(X) }.\n" + "chosenSomething :- chosenThing(X).\n" + ":- not chosenSomething.\n"
 				+ ":- chosenThing(X), chosenThing(Y), X != Y.\n" + "allThings :- 3 <= #count{ X : thing(X)}. \n"
 				+ "chosenMaxThing :- allThings, chosenThing(3).\n" + ":- not chosenMaxThing.";
-		CompiledProgram evaluated = parseAndEvaluate.apply(asp);
-		assertTrue(evaluated.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("allThings")));
-		Set<AnswerSet> answerSets = solveCompiledProg.apply(evaluated);
-		TestUtils.assertAnswerSetsEqual("allThings, thing(1), thing(2), thing(3), chosenMaxThing, chosenSomething, chosenThing(3)", answerSets);
+		DebugSolvingContext dbgInfo = alpha.prepareDebugSolve(alpha.readProgramString(asp));
+		NormalProgram evaluated = dbgInfo.getPreprocessedProgram();
+		assertTrue(evaluated.getFacts().contains(Atoms.newBasicAtom(Predicates.getPredicate("allThings", 0))));
+		Set<AnswerSet> answerSets = dbgInfo.getSolver().collectSet();
+		assertAnswerSetsEqual("allThings, thing(1), thing(2), thing(3), chosenMaxThing, chosenSomething, chosenThing(3)", answerSets);
 	}
 
 	@Test
 	public void testNegatedFixedInterpretationLiteral() {
 		String asp = "stuff(1). stuff(2). smallStuff(X) :- stuff(X), not X > 1.";
-		CompiledProgram evaluated = parseAndEvaluate.apply(asp);
-		Set<AnswerSet> answerSets = solveCompiledProg.apply(evaluated);
-		TestUtils.assertAnswerSetsEqual("stuff(1), stuff(2), smallStuff(1)", answerSets);
+		Set<AnswerSet> answerSets = alpha.solve(alpha.readProgramString(asp)).collect(Collectors.toSet());
+		assertAnswerSetsEqual("stuff(1), stuff(2), smallStuff(1)", answerSets);
 	}
 
 	@SuppressWarnings("unused")
@@ -168,11 +150,8 @@ public class StratifiedEvaluationTest {
 		String asp = "claimedTruth(bla). truth(X) :- claimedTruth(X), &sayTrue[X]. lie(X) :- claimedTruth(X), not &sayTrue[X].";
 		Map<String, PredicateInterpretation> externals = new HashMap<>();
 		externals.put("sayTrue", Externals.processPredicateMethod(this.getClass().getMethod("sayTrue", Object.class)));
-		ProgramParser parserWithExternals = new ProgramParserImpl();
-		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalizer.apply(parserWithExternals.parse(asp, externals)));
-		CompiledProgram evaluated = new StratifiedEvaluation().apply(analyzed);
-		Set<AnswerSet> answerSets = solveCompiledProg.apply(evaluated);
-		TestUtils.assertAnswerSetsEqual("claimedTruth(bla), truth(bla)", answerSets);
+		Set<AnswerSet> answerSets = alpha.solve(alpha.readProgramString(asp, externals)).collect(Collectors.toSet());
+		assertAnswerSetsEqual("claimedTruth(bla), truth(bla)", answerSets);
 	}
 
 	/**
@@ -181,8 +160,11 @@ public class StratifiedEvaluationTest {
 	 */
 	@Test
 	public void testPartnerUnitsProblemTopologicalOrder() throws IOException {
-		ASPCore2Program prg = parser.parse(StratifiedEvaluationTest.class.getResourceAsStream("/partial-eval/pup_topological_order.asp"));
-		CompiledProgram evaluated = new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normalizer.apply(prg)));
+		InputProgram prg = Programs.fromInputStream(
+				StratifiedEvaluationTest.class.getResourceAsStream("/partial-eval/pup_topological_order.asp"),
+				new HashMap<>());
+		DebugSolvingContext dbgInfo = alpha.prepareDebugSolve(prg);
+		NormalProgram evaluated = dbgInfo.getPreprocessedProgram();
 		assertTrue(evaluated.getRules().isEmpty(), "Not all rules eliminated by stratified evaluation");
 		assertEquals(57, evaluated.getFacts().size());
 	}
@@ -202,19 +184,25 @@ public class StratifiedEvaluationTest {
 				+ "inc_value(4), inc_value(5), inc_value(6), inc_value(7), "
 				+ "inc_value(8)";
 		//@formatter:on
-		ASPCore2Program prog = Programs.fromInputStream(
+		InputProgram prog = Programs.fromInputStream(
 				StratifiedEvaluationTest.class.getResourceAsStream("/partial-eval/recursive_w_negated_condition.asp"),
 				new HashMap<>());
 
 		// Run stratified evaluation and solve
-		CompiledProgram inputStratEval = new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normalizer.apply(prog)));
-		Set<AnswerSet> asStrat = solveCompiledProg.apply(inputStratEval);
-		TestUtils.assertAnswerSetsEqual(expectedAnswerSet, asStrat);
+		SystemConfig cfgWithStratEval = new SystemConfig();
+		cfgWithStratEval.setEvaluateStratifiedPart(true);
+		Alpha alphaStratEval = AlphaFactory.newAlpha(cfgWithStratEval);
+		DebugSolvingContext dbgWithStratEval = alphaStratEval.prepareDebugSolve(prog);
+		Set<AnswerSet> asStrat = dbgWithStratEval.getSolver().collectSet();
+		assertAnswerSetsEqual(expectedAnswerSet, asStrat);
 
 		// Solve without stratified evaluation
-		CompiledProgram inputNoStratEval = InternalProgram.fromNormalProgram(normalizer.apply(prog));
-		Set<AnswerSet> as = solveCompiledProg.apply(inputNoStratEval);
-		TestUtils.assertAnswerSetsEqual(expectedAnswerSet, as);
+		SystemConfig cfgNoStratEval = new SystemConfig();
+		cfgNoStratEval.setEvaluateStratifiedPart(false);
+		Alpha alphaNoStratEval = AlphaFactory.newAlpha(cfgNoStratEval);
+		DebugSolvingContext dbgNoStratEval = alphaNoStratEval.prepareDebugSolve(prog);
+		Set<AnswerSet> as = dbgNoStratEval.getSolver().collectSet();
+		assertAnswerSetsEqual(expectedAnswerSet, as);
 	}
 
 	@Test
@@ -246,7 +234,8 @@ public class StratifiedEvaluationTest {
 				"	thing_rank(Y, K),\n" + 
 				"	R = K + 1.";
 		//@formatter:on
-		CompiledProgram evaluated = parseAndEvaluate.apply(asp);
+		DebugSolvingContext dbgInfo = alpha.prepareDebugSolve(alpha.readProgramString(asp));
+		NormalProgram evaluated = dbgInfo.getPreprocessedProgram();
 		Predicate rank = Predicates.getPredicate("thing_rank", 2);
 		BasicAtom rank1 = Atoms.newBasicAtom(rank, Terms.newSymbolicConstant("a"), Terms.newConstant(1));
 		BasicAtom rank2 = Atoms.newBasicAtom(rank, Terms.newSymbolicConstant("b"), Terms.newConstant(2));

@@ -37,7 +37,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
@@ -49,7 +49,7 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 /**
@@ -57,15 +57,15 @@ import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
  *
  * Copyright (c) 2017-2021, the Alpha Team.
  */
-public class VariableEqualityRemoval extends ProgramTransformation<ASPCore2Program, ASPCore2Program> {
+public class VariableEqualityRemoval extends ProgramTransformation<InputProgram, InputProgram> {
 
 	@Override
-	public ASPCore2Program apply(ASPCore2Program inputProgram) {
+	public InputProgram apply(InputProgram inputProgram) {
 		List<Rule<Head>> rewrittenRules = new ArrayList<>();
 		for (Rule<Head> rule : inputProgram.getRules()) {
 			rewrittenRules.add(findAndReplaceVariableEquality(rule));
 		}
-		return new InputProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+		return new InputProgramImpl(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
 	}
 
 	private Rule<Head> findAndReplaceVariableEquality(Rule<Head> rule) {

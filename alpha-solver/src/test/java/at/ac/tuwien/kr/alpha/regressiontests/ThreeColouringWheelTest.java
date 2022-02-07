@@ -23,10 +23,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.solver;
+package at.ac.tuwien.kr.alpha.regressiontests;
 
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.buildSolverForRegressionTest;
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.runWithTimeout;
+import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.runWithTimeout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +36,8 @@ import org.junit.jupiter.api.Disabled;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
@@ -44,7 +45,7 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 
 /**
  * Tests {@link AbstractSolver} using some three-coloring test cases, as described in:
@@ -59,51 +60,51 @@ public class ThreeColouringWheelTest {
 	private static final long DEBUG_TIMEOUT_FACTOR = 5;
 	
 	@RegressionTest
-	public void testN4(RegressionTestConfig cfg) {
+	public void testN4(SystemConfig cfg) {
 		long timeout = 1000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(4, cfg));
 	}
 
 	@RegressionTest
-	public void testN5(RegressionTestConfig cfg) {
+	public void testN5(SystemConfig cfg) {
 		long timeout = 1000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(5, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN6(RegressionTestConfig cfg) {
+	public void testN6(SystemConfig cfg) {
 		long timeout = 6000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(6, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN3(RegressionTestConfig cfg) {
+	public void testN3(SystemConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(3, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN7(RegressionTestConfig cfg) {
+	public void testN7(SystemConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(7, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN11(RegressionTestConfig cfg) {
+	public void testN11(SystemConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(11, cfg));
 	}
 
-	private void testThreeColouring(int n, RegressionTestConfig cfg) {
-		ASPCore2Program tmpPrg = new ProgramParserImpl().parse(
+	private void testThreeColouring(int n, SystemConfig cfg) {
+		InputProgram tmpPrg = new ProgramParserImpl().parse(
 				"col(V,C) :- v(V), c(C), not ncol(V,C)." +
 				"ncol(V,C) :- col(V,D), c(C), C != D." +
 				":- e(V,U), col(V,C), col(U,C).");
-		InputProgram.Builder prgBuilder = InputProgram.builder(tmpPrg);
+		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder(tmpPrg);
 		prgBuilder.addFacts(createColors("red", "blue", "green"));
 		prgBuilder.addFacts(createVertices(n));
 		prgBuilder.addFacts(createEdges(n));

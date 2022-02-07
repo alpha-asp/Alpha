@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.api.impl;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
@@ -10,7 +10,7 @@ public class RuleParser {
 
 	public static Rule<Head> parse(String str) {
 		ProgramParser parser = new ProgramParserImpl();
-		ASPCore2Program prog = parser.parse(str);
+		InputProgram prog = parser.parse(str);
 		if (!prog.getFacts().isEmpty()) {
 			throw new IllegalArgumentException("Expected exactly one rule and no facts!");
 		}

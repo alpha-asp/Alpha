@@ -50,8 +50,8 @@ import at.ac.tuwien.kr.alpha.api.StatisticsReportingSolver;
 import at.ac.tuwien.kr.alpha.api.config.AlphaConfig;
 import at.ac.tuwien.kr.alpha.api.config.InputConfig;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.impl.AlphaImpl;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
@@ -80,9 +80,9 @@ public class Main {
 			Main.exitWithMessage(commandLineParser.getUsageMessage(), 1);
 		}
 
-		Alpha alpha = new AlphaImpl(cfg.getSystemConfig());
+		Alpha alpha = AlphaFactory.newAlpha(cfg.getSystemConfig());
 
-		ASPCore2Program program = null;
+		InputProgram program = null;
 		try {
 			program = alpha.readProgram(cfg.getInputConfig());
 		} catch (FileNotFoundException e) {

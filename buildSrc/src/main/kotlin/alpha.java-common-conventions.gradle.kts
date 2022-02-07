@@ -6,6 +6,7 @@ plugins {
 	id("jacoco")
 	id("checkstyle")
 	id("maven-publish")
+	id("java-test-fixtures")
 }
 
 repositories {
@@ -34,6 +35,8 @@ dependencies {
 
 	// Logging for tests
 	testImplementation("org.slf4j:slf4j-simple:1.7.32")
+
+	testFixturesApi(jupiter("api"))
 }
 
 // JUnit 5

@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.solver;
+package at.ac.tuwien.kr.alpha.regressiontests;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -11,7 +11,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @ParameterizedTest
-@MethodSource("at.ac.tuwien.kr.alpha.core.solver.RegressionTestConfigProvider#provideAggregateTestConfigs")
-public @interface AggregateRegressionTest {
-
+@MethodSource("at.ac.tuwien.kr.alpha.regressiontests.RegressionTestConfigProvider#provideConfigs")
+public @interface RegressionTest {
+	
 }

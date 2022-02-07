@@ -23,10 +23,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.solver;
+package at.ac.tuwien.kr.alpha.regressiontests;
 
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.buildSolverForRegressionTest;
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.runWithTimeout;
+import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.runWithTimeout;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -38,6 +38,7 @@ import org.junit.jupiter.api.Disabled;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
 /**
@@ -51,12 +52,12 @@ public class RacksTest {
 	private static final long DEBUG_TIMEOUT_FACTOR = 5;
 
 	@RegressionTest
-	public void testRacks(RegressionTestConfig cfg) {
+	public void testRacks(SystemConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> test(cfg));
 	}
 
-	private void test(RegressionTestConfig cfg) throws IOException {
+	private void test(SystemConfig cfg) throws IOException {
 		CharStream programInputStream = CharStreams.fromPath(
 				Paths.get("benchmarks", "siemens", "racks", "racks.lp"));
 		Solver solver = buildSolverForRegressionTest(new ProgramParserImpl().parse(programInputStream), cfg);

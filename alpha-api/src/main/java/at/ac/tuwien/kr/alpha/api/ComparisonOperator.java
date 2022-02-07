@@ -1,11 +1,11 @@
 package at.ac.tuwien.kr.alpha.api;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 
 /**
- * A comparison operator that can be used in {@link ASPCore2Program}s.
+ * A comparison operator that can be used in {@link InputProgram}s.
  * 
  * Copyright (c) 2021, the Alpha Team.
  */

@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.core.rules;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -46,6 +47,10 @@ public abstract class AbstractRule<H extends Head> implements Rule<H> {
 			throw new RuntimeException("Encountered unsafe rule: " + toString() + System.lineSeparator()
 					+ "Notice: A rule is considered safe if all variables occurring in negative literals, builtin atoms, and the head of the rule also occur in some positive literal.");
 		}
+	}
+	
+	public AbstractRule(H head, Set<Literal> body) {
+		this(head, new ArrayList<>(body));
 	}
 
 	/**

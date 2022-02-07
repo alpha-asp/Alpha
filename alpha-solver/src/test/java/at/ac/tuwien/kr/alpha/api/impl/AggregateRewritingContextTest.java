@@ -11,7 +11,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
@@ -60,7 +60,7 @@ public class AggregateRewritingContextTest {
 	//@formatter:on
 
 	private static final AggregateRewritingContext rewritingContextForAspString(String asp) {
-		ASPCore2Program program = new ProgramParserImpl().parse(asp);
+		InputProgram program = new ProgramParserImpl().parse(asp);
 		AggregateRewritingContext ctx = new AggregateRewritingContext();
 		for (Rule<Head> rule : program.getRules()) {
 			ctx.registerRule(rule);

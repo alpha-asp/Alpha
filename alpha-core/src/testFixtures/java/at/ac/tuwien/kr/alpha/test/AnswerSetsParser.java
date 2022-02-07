@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.api.impl;
+package at.ac.tuwien.kr.alpha.test;
 
 import java.util.Collections;
 import java.util.Set;
@@ -16,7 +16,6 @@ import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.core.parser.ParseTreeVisitor;
 
-// TODO this is duplicated from core module, need to pull out test utils into separate testsupport module
 public class AnswerSetsParser {
 	
 	private static final ParseTreeVisitor VISITOR = new ParseTreeVisitor(Collections.emptyMap(), false);

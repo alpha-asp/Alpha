@@ -3,7 +3,7 @@ package at.ac.tuwien.kr.alpha.core.programs.transformation;
 import java.util.ArrayList;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
@@ -15,7 +15,7 @@ import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 /**
@@ -26,8 +26,8 @@ import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
  */
 public class PredicateInternalizer {
 
-	public static ASPCore2Program makePrefixedPredicatesInternal(ASPCore2Program program, String prefix) {
-		InputProgram.Builder prgBuilder = InputProgram.builder();
+	public static InputProgram makePrefixedPredicatesInternal(InputProgram program, String prefix) {
+		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder();
 		for (Atom atom : program.getFacts()) {
 			if (atom.getPredicate().getName().startsWith(prefix)) {
 				prgBuilder.addFact(PredicateInternalizer.makePredicateInternal((BasicAtom) atom));

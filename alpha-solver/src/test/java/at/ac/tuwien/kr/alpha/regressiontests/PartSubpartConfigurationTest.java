@@ -23,10 +23,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.solver;
+package at.ac.tuwien.kr.alpha.regressiontests;
 
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.collectRegressionTestAnswerSets;
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.runWithTimeout;
+import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.collectRegressionTestAnswerSets;
+import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.runWithTimeout;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.ArrayList;
@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Disabled;
+
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 
 /**
  * Tests {@link AbstractSolver} using some configuration test cases in which subparts are assigned to parts.
@@ -46,61 +48,61 @@ public class PartSubpartConfigurationTest {
 	private static final int DEBUG_TIMEOUT_FACTOR = 5;
 	
 	@RegressionTest
-	public void testN2(RegressionTestConfig cfg) {
+	public void testN2(SystemConfig cfg) {
 		long timeout = 1000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(2, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN4(RegressionTestConfig cfg) {
+	public void testN4(SystemConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(4, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN8(RegressionTestConfig cfg) {
+	public void testN8(SystemConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(8, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN16(RegressionTestConfig cfg) {
+	public void testN16(SystemConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(16, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN32(RegressionTestConfig cfg) {
+	public void testN32(SystemConfig cfg) {
 		long timeout = 61000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(32, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN60(RegressionTestConfig cfg) {
+	public void testN60(SystemConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(60, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN75(RegressionTestConfig cfg) {
+	public void testN75(SystemConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(75, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN100(RegressionTestConfig cfg) {
+	public void testN100(SystemConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testPartSubpart(100, cfg));
 	}
 
-	private void testPartSubpart(int n, RegressionTestConfig cfg) {
+	private void testPartSubpart(int n, SystemConfig cfg) {
 		List<String> rules = new ArrayList<>();
 		for (int i = 1; i <= n; i++) {
 			rules.add(String.format("n(%d).", i));

@@ -44,13 +44,11 @@ public class SystemConfig {
 	// initializing from those values in order to have the values accessible in
 	// contexts where no AlphaConfig instance exists (e.g. argument parsing from
 	// command line)
-	public static final String DEFAULT_GROUNDER_NAME = "naive";
 	public static final String DEFAULT_SOLVER_NAME = "default";
 	public static final String DEFAULT_NOGOOD_STORE_NAME = "alphaRoaming";
 	public static final Heuristic DEFAULT_BRANCHING_HEURISTIC = Heuristic.VSIDS;
 	public static final BinaryNoGoodPropagationEstimationStrategy DEFAULT_MOMS_STRATEGY = BinaryNoGoodPropagationEstimationStrategy.CountBinaryWatches;
 	public static final long DEFAULT_SEED = System.nanoTime();
-	public static final boolean DEFAULT_DETERMINISTIC = false;
 	public static final boolean DEFAULT_PRINT_STATS = false;
 	public static final boolean DEFAULT_QUIET = false;
 	public static final boolean DEFAULT_DISABLE_JUSTIFICATION_SEARCH = false;
@@ -65,10 +63,8 @@ public class SystemConfig {
 	public static final String DEFAULT_ATOM_SEPARATOR = ", ";
 	public static final AggregateRewritingConfig DEFAULT_AGGREGATE_REWRITING_CONFIG = new AggregateRewritingConfig();
 
-	private String grounderName = DEFAULT_GROUNDER_NAME;
 	private String solverName = DEFAULT_SOLVER_NAME;
 	private String nogoodStoreName = DEFAULT_NOGOOD_STORE_NAME;
-	private boolean deterministic = DEFAULT_DETERMINISTIC;
 	private long seed = DEFAULT_SEED;
 	private boolean debugInternalChecks = DEFAULT_DEBUG_INTERNAL_CHECKS;
 	private Heuristic branchingHeuristic = DEFAULT_BRANCHING_HEURISTIC;
@@ -85,17 +81,6 @@ public class SystemConfig {
 	private boolean grounderAccumulatorEnabled = DEFAULT_GROUNDER_ACCUMULATOR_ENABLED;
 	private String atomSeparator = DEFAULT_ATOM_SEPARATOR;
 	private AggregateRewritingConfig aggregateRewritingConfig = DEFAULT_AGGREGATE_REWRITING_CONFIG;
-
-	public String getGrounderName() {
-		return this.grounderName;
-	}
-
-	/**
-	 * Sets the name of the grounder implementation to use.
-	 */
-	public void setGrounderName(String grounderName) {
-		this.grounderName = grounderName;
-	}
 
 	public String getSolverName() {
 		return this.solverName;
@@ -117,18 +102,6 @@ public class SystemConfig {
 	 */
 	public void setNogoodStoreName(String nogoodStoreName) {
 		this.nogoodStoreName = nogoodStoreName;
-	}
-
-	public boolean isDeterministic() {
-		return this.deterministic;
-	}
-
-	/**
-	 * If set, 0 will be used as random seed for solver-internal branching heuristics, resulting in answer sets of the same program being found
-	 * in a fixed sequence.
-	 */
-	public void setDeterministic(boolean deterministic) {
-		this.deterministic = deterministic;
 	}
 
 	public long getSeed() {
