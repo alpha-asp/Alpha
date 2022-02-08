@@ -3,7 +3,7 @@ package at.ac.tuwien.kr.alpha.core.programs;
 import java.util.ArrayList;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -23,7 +23,7 @@ public class NormalProgramImpl extends AbstractProgram<NormalRule> implements No
 		super(rules, facts, inlineDirectives);
 	}
 
-	public static NormalProgramImpl fromInputProgram(ASPCore2Program inputProgram) {
+	public static NormalProgramImpl fromInputProgram(InputProgram inputProgram) {
 		List<NormalRule> normalRules = new ArrayList<>();
 		for (Rule<Head> r : inputProgram.getRules()) {
 			normalRules.add(NormalRuleImpl.fromBasicRule(r));

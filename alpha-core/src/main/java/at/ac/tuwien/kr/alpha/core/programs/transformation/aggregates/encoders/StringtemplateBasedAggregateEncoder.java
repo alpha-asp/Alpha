@@ -7,7 +7,7 @@ import org.apache.commons.collections4.ListUtils;
 import org.stringtemplate.v4.ST;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
@@ -19,8 +19,7 @@ import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.EnumerationRewriting;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
@@ -37,13 +36,14 @@ import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
  */
 public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggregateEncoder {
 
-	private final ProgramParser parser = new ProgramParserImpl();
+	private final ProgramParser parser;
 	private final ST encodingTemplate;
 	private final boolean needsBoundRule;
 
-	protected StringtemplateBasedAggregateEncoder(AggregateFunctionSymbol aggregateFunctionToEncode, ComparisonOperator acceptedOperator, ST encodingTemplate) {
+	protected StringtemplateBasedAggregateEncoder(ProgramParser parser, AggregateFunctionSymbol aggregateFunctionToEncode, ComparisonOperator acceptedOperator, ST encodingTemplate) {
 		super(aggregateFunctionToEncode, Collections.singleton(acceptedOperator));
 		this.encodingTemplate = encodingTemplate;
+		this.parser = parser;
 		if (acceptedOperator.equals(ComparisonOperators.EQ)) {
 			this.needsBoundRule = false;
 		} else if (acceptedOperator.equals(ComparisonOperators.LE)) {
@@ -54,7 +54,7 @@ public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggreg
 	}
 
 	@Override
-	protected ASPCore2Program encodeAggregateResult(AggregateInfo aggregateToEncode) {
+	protected InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode) {
 		String aggregateId = aggregateToEncode.getId();
 
 		/*
@@ -82,10 +82,10 @@ public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggreg
 		String coreEncodingAsp = coreEncodingTemplate.render();
 
 		// Create the basic program
-		ASPCore2Program coreEncoding = new EnumerationRewriting().apply(parser.parse(coreEncodingAsp));
+		InputProgram coreEncoding = new EnumerationRewriting().apply(parser.parse(coreEncodingAsp));
 
 		// Add the programatically created bound rule and return
-		return new InputProgram(ListUtils.union(coreEncoding.getRules(), Collections.singletonList(boundRule)), coreEncoding.getFacts(),
+		return new InputProgramImpl(ListUtils.union(coreEncoding.getRules(), Collections.singletonList(boundRule)), coreEncoding.getFacts(),
 				new InlineDirectivesImpl());
 	}
 

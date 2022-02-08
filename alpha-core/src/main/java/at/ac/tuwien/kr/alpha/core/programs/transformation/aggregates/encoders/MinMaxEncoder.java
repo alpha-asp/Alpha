@@ -7,7 +7,7 @@ import org.apache.commons.collections4.SetUtils;
 import org.stringtemplate.v4.ST;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
@@ -27,7 +27,7 @@ import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
@@ -69,7 +69,7 @@ public class MinMaxEncoder extends AbstractAggregateEncoder {
 	}
 
 	@Override
-	protected ASPCore2Program encodeAggregateResult(AggregateInfo aggregateToEncode) {
+	protected InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode) {
 		ST encodingTemplate = null;
 		if (this.getAggregateFunctionToEncode() == AggregateFunctionSymbol.MAX) {
 			encodingTemplate = new ST(MAX_LITERAL_ENCODING);
@@ -118,7 +118,7 @@ public class MinMaxEncoder extends AbstractAggregateEncoder {
 			resultRuleBody.add(aggregateResult);
 			resultRuleBody.add(aggregateValueComparison);
 			resultRuleBody.addAll(aggregateToEncode.getDependencies());
-			InputProgram.Builder bld = InputProgram.builder(parser.parse(encodingTemplate.render()));
+			InputProgramImpl.Builder bld = InputProgramImpl.builder(parser.parse(encodingTemplate.render()));
 			BasicRule resultRule = new BasicRule(resultRuleHead, resultRuleBody);
 			bld.addRule(resultRule);
 			return bld.build();

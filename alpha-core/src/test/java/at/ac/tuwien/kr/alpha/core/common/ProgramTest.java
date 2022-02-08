@@ -32,7 +32,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
@@ -41,14 +41,14 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.Rules;
 
 public class ProgramTest {
 
 	@Test
 	public void testToString() {
-		ASPCore2Program program;
+		InputProgram program;
 		// rule := q(X) :- p(X).
 		List<Literal> body = new ArrayList<>();
 		body.add(Literals.fromAtom(Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newVariable("X")), true));
@@ -59,7 +59,7 @@ public class ProgramTest {
 		facts.add(Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newSymbolicConstant("a")));
 		facts.add(Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newSymbolicConstant("b")));
 		// program := p(a). p(b). q(X) :- p(X).
-		program = InputProgram.builder().addFacts(facts).addRule(rule).build();
+		program = InputProgramImpl.builder().addFacts(facts).addRule(rule).build();
 		assertEquals(
 				"p(a)." + System.lineSeparator() +
 						"p(b)." + System.lineSeparator() +

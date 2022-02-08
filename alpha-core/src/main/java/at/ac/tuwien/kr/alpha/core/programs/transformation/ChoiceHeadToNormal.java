@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
@@ -46,19 +46,19 @@ import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 /**
  * Copyright (c) 2017-2021, the Alpha Team.
  */
 // TODO this could already give NormalProgram as result type
-public class ChoiceHeadToNormal extends ProgramTransformation<ASPCore2Program, ASPCore2Program> {
+public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, InputProgram> {
 	private final static String PREDICATE_NEGATION_PREFIX = "_n";
 
 	@Override
-	public ASPCore2Program apply(ASPCore2Program inputProgram) {
-		InputProgram.Builder programBuilder = InputProgram.builder();
+	public InputProgram apply(InputProgram inputProgram) {
+		InputProgramImpl.Builder programBuilder = InputProgramImpl.builder();
 		List<Rule<Head>> additionalRules = new ArrayList<>();
 
 		List<Rule<Head>> srcRules = new ArrayList<>(inputProgram.getRules());

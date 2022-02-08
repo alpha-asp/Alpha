@@ -1,7 +1,8 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import at.ac.tuwien.kr.alpha.api.config.AggregateRewritingConfig;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import java.util.function.Supplier;
+
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
@@ -12,23 +13,23 @@ import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRe
  * 
  * Copyright (c) 2019-2021, the Alpha Team.
  */
-public class NormalizeProgramTransformation extends ProgramTransformation<ASPCore2Program, NormalProgram> {
+public class NormalizeProgramTransformation extends ProgramTransformation<InputProgram, NormalProgram> {
 
-	private final AggregateRewritingConfig aggregateRewritingCfg;
+	private final Supplier<AggregateRewriting> aggregateRewritingFactory;
 
-	public NormalizeProgramTransformation(AggregateRewritingConfig aggregateCfg) {
-		this.aggregateRewritingCfg = aggregateCfg;
+	public NormalizeProgramTransformation(Supplier<AggregateRewriting> aggregateRewritingFactory) {
+		this.aggregateRewritingFactory = aggregateRewritingFactory;
 	}
 
 	@Override
-	public NormalProgram apply(ASPCore2Program inputProgram) {
-		ASPCore2Program tmpPrg;
+	public NormalProgram apply(InputProgram inputProgram) {
+		InputProgram tmpPrg;
 		// Remove variable equalities.
 		tmpPrg = new VariableEqualityRemoval().apply(inputProgram);
 		// Transform choice rules.
 		tmpPrg = new ChoiceHeadToNormal().apply(tmpPrg);
 		// Transform aggregates.
-		tmpPrg = new AggregateRewriting(aggregateRewritingCfg.isUseSortingGridEncoding(), aggregateRewritingCfg.isSupportNegativeValuesInSums()).apply(tmpPrg);
+		tmpPrg = aggregateRewritingFactory.get().apply(tmpPrg);
 		// Transform enumeration atoms.
 		tmpPrg = new EnumerationRewriting().apply(tmpPrg);
 		EnumerationAtom.resetEnumerations();

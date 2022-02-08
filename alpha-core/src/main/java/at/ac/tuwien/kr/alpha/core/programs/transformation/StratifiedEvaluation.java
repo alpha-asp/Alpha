@@ -52,7 +52,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 	private Map<Predicate, Set<Instance>> modifiedInLastEvaluationRun = new HashMap<>();
 
-	private List<Atom> additionalFacts = new ArrayList<>(); // The additional facts derived by stratified evaluation. Note that it may contain duplicates.
+	private Set<Atom> outputFacts = new HashSet<>(); // The additional facts derived by stratified evaluation. Note that it may contain duplicates.
 	private Set<Integer> solvedRuleIds = new HashSet<>(); // Set of rules that have been completely evaluated.
 
 	private LiteralInstantiator literalInstantiator;
@@ -82,6 +82,9 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 		workingMemory.reset();
 
+		// Set up set of facts to which we'll add everything derived during stratified evaluation.
+		outputFacts = new HashSet<>(inputProgram.getFacts());
+		
 		// Set up literal instantiator.
 		literalInstantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(workingMemory));
 
@@ -91,13 +94,12 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		}
 
 		// Build the program resulting from evaluating the stratified part.
-		additionalFacts.addAll(inputProgram.getFacts()); // Add original input facts to newly derived ones.
 		List<CompiledRule> outputRules = new ArrayList<>();
 		inputProgram.getRulesById().entrySet().stream().filter((entry) -> !solvedRuleIds.contains(entry.getKey()))
 				.forEach((entry) -> outputRules.add(entry.getValue()));
 
 		// NOTE: if InternalProgram requires solved rules, they should be added here.
-		return new InternalProgram(outputRules, additionalFacts);
+		return new InternalProgram(outputRules, new ArrayList<>(outputFacts));
 	}
 
 	private void evaluateComponent(ComponentGraph.SCComponent comp) {
@@ -114,9 +116,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			evaluateRules(evaluationInfo.nonRecursiveRules, true);
 			for (IndexedInstanceStorage instanceStorage : workingMemory.modified()) {
 				// Directly record all newly derived instances as additional facts.
-				for (Instance recentlyAddedInstance : instanceStorage.getRecentlyAddedInstances()) {
-					additionalFacts.add(Atoms.newBasicAtom(instanceStorage.getPredicate(), recentlyAddedInstance.terms));
-				}
+				recordRecentlyAddedInstances(instanceStorage);
 				instanceStorage.markRecentlyAddedInstancesDone();
 			}
 		}
@@ -134,9 +134,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 				// Since we are stratified we never have to backtrack, therefore just collect the added instances.
 				for (IndexedInstanceStorage instanceStorage : workingMemory.modified()) {
 					// Directly record all newly derived instances as additional facts.
-					for (Instance recentlyAddedInstance : instanceStorage.getRecentlyAddedInstances()) {
-						additionalFacts.add(Atoms.newBasicAtom(instanceStorage.getPredicate(), recentlyAddedInstance.terms));
-					}
+					recordRecentlyAddedInstances(instanceStorage);
 					modifiedInLastEvaluationRun.putIfAbsent(instanceStorage.getPredicate(), new LinkedHashSet<>());
 					modifiedInLastEvaluationRun.get(instanceStorage.getPredicate()).addAll(instanceStorage.getRecentlyAddedInstances());
 					instanceStorage.markRecentlyAddedInstancesDone();
@@ -147,6 +145,12 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		LOGGER.debug("Evaluation done - reached a fixed point on component {}", comp);
 		SetUtils.union(evaluationInfo.nonRecursiveRules, evaluationInfo.recursiveRules)
 				.forEach((rule) -> solvedRuleIds.add(rule.getRuleId()));
+	}
+
+	private void recordRecentlyAddedInstances(IndexedInstanceStorage instanceStorage) {
+		for (Instance recentlyAddedInstance : instanceStorage.getRecentlyAddedInstances()) {
+			outputFacts.add(Atoms.newBasicAtom(instanceStorage.getPredicate(), recentlyAddedInstance.terms));
+		}
 	}
 
 	private void evaluateRules(Set<CompiledRule> rules, boolean isInitialRun) {
