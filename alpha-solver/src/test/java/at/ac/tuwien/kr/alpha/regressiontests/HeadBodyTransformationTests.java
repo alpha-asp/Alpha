@@ -25,8 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.regressiontests;
 
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.buildSolverForRegressionTest;
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.runWithTimeout;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.runWithTimeout;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -43,6 +43,7 @@ import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 /**
  * Tests rule transformations described in the following research paper, and their effects on performance:
  * 

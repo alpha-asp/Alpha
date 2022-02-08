@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.api.impl;
+package at.ac.tuwien.kr.alpha;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;

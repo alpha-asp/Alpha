@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.regressiontests;
+package at.ac.tuwien.kr.alpha.regressiontests.util;
 
 import static at.ac.tuwien.kr.alpha.test.AlphaAssertions.assertAnswerSetsEqual;
 import static at.ac.tuwien.kr.alpha.test.AlphaAssertions.assertAnswerSetsEqualWithBase;

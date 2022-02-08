@@ -25,10 +25,10 @@
  */
 package at.ac.tuwien.kr.alpha.regressiontests;
 
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.buildSolverForRegressionTest;
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.ignoreTestForNaiveSolver;
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.ignoreTestForNonDefaultDomainIndependentHeuristics;
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.runWithTimeout;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.ignoreTestForNaiveSolver;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.ignoreTestForNonDefaultDomainIndependentHeuristics;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.runWithTimeout;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -51,6 +51,7 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 
 /**
  * Tests {@link AbstractSolver} using some hanoi tower test cases (see https://en.wikipedia.org/wiki/Tower_of_Hanoi).

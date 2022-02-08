@@ -25,9 +25,9 @@
  */
 package at.ac.tuwien.kr.alpha.regressiontests;
 
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.collectRegressionTestAnswerSets;
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.ignoreTestForNonDefaultDomainIndependentHeuristics;
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.runWithTimeout;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.collectRegressionTestAnswerSets;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.ignoreTestForNonDefaultDomainIndependentHeuristics;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.runWithTimeout;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
@@ -39,6 +39,7 @@ import org.junit.jupiter.api.Disabled;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 
 /**
  * Tests {@link AbstractSolver} using some pigeon-hole test cases (see https://en.wikipedia.org/wiki/Pigeonhole_principle).

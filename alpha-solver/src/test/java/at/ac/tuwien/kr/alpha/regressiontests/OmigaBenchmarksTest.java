@@ -25,10 +25,10 @@
  */
 package at.ac.tuwien.kr.alpha.regressiontests;
 
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.runWithTimeout;
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.buildSolverForRegressionTest;
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.ignoreTestForNaiveSolver;
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.ignoreTestForNonDefaultDomainIndependentHeuristics;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.ignoreTestForNaiveSolver;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.ignoreTestForNonDefaultDomainIndependentHeuristics;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.runWithTimeout;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 
 /**
  * Tests {@link AbstractSolver} using Omiga benchmark problems.

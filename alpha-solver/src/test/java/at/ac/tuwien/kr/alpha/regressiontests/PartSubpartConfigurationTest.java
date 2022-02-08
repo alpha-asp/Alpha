@@ -25,8 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.regressiontests;
 
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.collectRegressionTestAnswerSets;
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.runWithTimeout;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.collectRegressionTestAnswerSets;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.runWithTimeout;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.ArrayList;
@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Disabled;
 
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 
 /**
  * Tests {@link AbstractSolver} using some configuration test cases in which subparts are assigned to parts.

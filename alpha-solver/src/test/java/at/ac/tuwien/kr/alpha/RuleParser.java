@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.api.impl;
+package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;

@@ -25,8 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.regressiontests;
 
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.buildSolverForRegressionTest;
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.runWithTimeout;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.runWithTimeout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +46,7 @@ import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
+import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 
 /**
  * Tests {@link AbstractSolver} using some three-coloring test cases, as described in:

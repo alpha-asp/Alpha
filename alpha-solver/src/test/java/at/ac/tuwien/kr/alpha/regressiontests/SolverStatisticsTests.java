@@ -25,7 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.regressiontests;
 
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.buildSolverForRegressionTest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -41,6 +41,7 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.solver.DefaultSolver;
 import at.ac.tuwien.kr.alpha.core.solver.NoGoodCounter;
+import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 
 // TODO This is a functional test and should not be run with standard unit tests
 public class SolverStatisticsTests {

@@ -25,12 +25,13 @@
  */
 package at.ac.tuwien.kr.alpha.regressiontests;
 
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.assertRegressionTestAnswerSets;
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.assertRegressionTestAnswerSetsWithBase;
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.ignoreTestForNaiveSolver;
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.ignoreTestForSimplifiedSumAggregates;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.assertRegressionTestAnswerSets;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.assertRegressionTestAnswerSetsWithBase;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.ignoreTestForNaiveSolver;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.ignoreTestForSimplifiedSumAggregates;
 
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.regressiontests.util.AggregateRegressionTest;
 
 /**
  * Tests if correct answer sets for programs containing aggregates are computed.

@@ -25,8 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.regressiontests;
 
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.buildSolverForRegressionTest;
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.runWithTimeout;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.runWithTimeout;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -40,6 +40,7 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 
 /**
  * Tests {@link AbstractSolver} using a racks configuration problem.

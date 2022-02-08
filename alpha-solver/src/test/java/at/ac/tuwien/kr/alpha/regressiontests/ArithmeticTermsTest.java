@@ -1,9 +1,10 @@
 package at.ac.tuwien.kr.alpha.regressiontests;
 
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.assertRegressionTestAnswerSets;
-import static at.ac.tuwien.kr.alpha.regressiontests.RegressionTestUtils.assertRegressionTestAnswerSetsWithBase;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.assertRegressionTestAnswerSets;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.assertRegressionTestAnswerSetsWithBase;
 
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 
 /**
  * Tests ASP programs containing arithmetic terms at arbitrary positions.

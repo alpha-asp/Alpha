@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.regressiontests;
+package at.ac.tuwien.kr.alpha.regressiontests.util;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;

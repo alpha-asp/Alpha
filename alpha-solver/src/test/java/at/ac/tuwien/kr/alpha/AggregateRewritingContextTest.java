@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.api.impl;
+package at.ac.tuwien.kr.alpha;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
