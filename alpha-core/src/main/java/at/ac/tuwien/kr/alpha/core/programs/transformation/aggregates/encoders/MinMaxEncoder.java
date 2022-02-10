@@ -26,7 +26,6 @@ import at.ac.tuwien.kr.alpha.commons.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
@@ -59,13 +58,14 @@ public class MinMaxEncoder extends AbstractAggregateEncoder {
 			);
 	//@formatter:on
 
-	private final ProgramParser parser = new ProgramParserImpl();
+	private final ProgramParser parser;
 
-	public MinMaxEncoder(AggregateFunctionSymbol func) {
+	public MinMaxEncoder(ProgramParser parser, AggregateFunctionSymbol func) {
 		super(func, SetUtils.hashSet(ComparisonOperators.operators()));
 		if (!(func == AggregateFunctionSymbol.MAX || func == AggregateFunctionSymbol.MIN)) {
 			throw new IllegalArgumentException("Encoder " + this.getClass().getSimpleName() + " can only encode min/max aggregates!");
 		}
+		this.parser = parser;
 	}
 
 	@Override

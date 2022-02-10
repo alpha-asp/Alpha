@@ -110,6 +110,7 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 	 */
 	@Override
 	public InternalRule renameVariables(String newVariablePostfix) {
+		// TODO handle action heads!
 		List<VariableTerm> occurringVariables = new ArrayList<>();
 		BasicAtom headAtom = this.getHeadAtom();
 		occurringVariables.addAll(headAtom.getOccurringVariables());

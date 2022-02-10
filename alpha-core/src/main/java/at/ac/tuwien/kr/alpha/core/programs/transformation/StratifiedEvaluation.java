@@ -18,10 +18,19 @@ import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.actions.Action;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.RuleInstantiator;
+import at.ac.tuwien.kr.alpha.api.rules.heads.ActionHead;
+import at.ac.tuwien.kr.alpha.api.rules.heads.InstantiableHead;
+import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
@@ -43,7 +52,7 @@ import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
  * 
  * Copyright (c) 2019-2020, the Alpha Team.
  */
-public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram, InternalProgram> {
+public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram, InternalProgram> implements RuleInstantiator {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(StratifiedEvaluation.class);
 
@@ -301,12 +310,57 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	}
 
 	private void fireRule(CompiledRule rule, Substitution substitution) {
-		Atom newAtom = rule.getHeadAtom().substitute(substitution);
+		// BasicAtom newAtom = this.instantiate(rule.getHead(), substitution);
+		BasicAtom newAtom;
+		if (rule.getHead() instanceof ActionHead) {
+			newAtom = instantiateActionHead((ActionHead) rule.getHead(), substitution);
+		} else {
+			newAtom = instantiateNormalHead(rule.getHead(), substitution);
+		}
 		if (!newAtom.isGround()) {
 			throw new IllegalStateException("Trying to fire rule " + rule.toString() + " with incompatible substitution " + substitution.toString());
 		}
 		LOGGER.debug("Firing rule - got head atom: {}", newAtom);
 		workingMemory.addInstance(newAtom, true);
+	}
+
+	@Override
+	public BasicAtom instantiate(InstantiableHead ruleHead, Substitution substitution) {
+		return ruleHead.instantiate(this, substitution);
+	}
+
+	// FIXME should be dispatched via visitor pattern
+	public BasicAtom instantiateNormalHead(NormalHead head, Substitution substitution) {
+		return head.getAtom().substitute(substitution);
+	}
+
+	// FIXME should be dispatched via visitor pattern
+	public BasicAtom instantiateActionHead(ActionHead head, Substitution substitution) {
+		// TODO ensure unique action only gets executed once!
+		List<Term> actionInput = head.getActionInputTerms();
+		List<Term> substitutedInput = new ArrayList<>();
+		// Substitute all variables in action input so that all input terms are ground.
+		for (Term inputTerm : actionInput) {
+			// TODO handle variables nested in function terms as well!
+			if (inputTerm instanceof VariableTerm) {
+				VariableTerm inputVar = (VariableTerm) inputTerm;
+				if (!substitution.isVariableSet(inputVar)) {
+					throw new IllegalStateException(
+							"No substitute for action input variable " + inputVar.toString() + " in substitution: " + substitution.toString());
+				}
+				substitutedInput.add(inputVar.substitute(substitution));
+			} else {
+				substitutedInput.add(inputTerm);
+			}
+		}
+		// Call the actual action.
+		// TODO exception handling (translate EVERY throwable to an error term)
+		Action action = head.getAction();
+		FunctionTerm actionResult = action.execute(substitutedInput);
+		// We have an action result. Add it to the substitution as the substitute for the variable bound to the action so we're able to obtain the
+		// ground BasicAtom derived by the rule
+		substitution.put(head.getActionOutputTerm(), actionResult);
+		return head.getAtom().substitute(substitution);
 	}
 
 	private ComponentEvaluationInfo getRulesToEvaluate(ComponentGraph.SCComponent comp) {

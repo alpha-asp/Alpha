@@ -39,7 +39,7 @@ import org.junit.jupiter.api.Disabled;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.evolog.EvologProgramParser;
 import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 
 /**
@@ -61,7 +61,7 @@ public class RacksTest {
 	private void test(SystemConfig cfg) throws IOException {
 		CharStream programInputStream = CharStreams.fromPath(
 				Paths.get("benchmarks", "siemens", "racks", "racks.lp"));
-		Solver solver = buildSolverForRegressionTest(new ProgramParserImpl().parse(programInputStream), cfg);
+		Solver solver = buildSolverForRegressionTest(new EvologProgramParser().parse(programInputStream), cfg);
 		@SuppressWarnings("unused")
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		// System.out.println(answerSet);

@@ -116,7 +116,8 @@ public class VariableEqualityRemoval extends ProgramTransformation<InputProgram,
 		if (!rule.isConstraint() && rule.getHead() instanceof DisjunctiveHead) {
 			throw new UnsupportedOperationException("VariableEqualityRemoval cannot be applied to rule with DisjunctiveHead, yet.");
 		}
-		NormalHead rewrittenHead = rule.isConstraint() ? null : Heads.newNormalHead(((NormalHead)rule.getHead()).getAtom());
+		// TODO handle action heads!
+		NormalHead rewrittenHead = rule.isConstraint() ? null : Heads.newNormalHead(((NormalHead) rule.getHead()).getAtom());
 
 		// Use substitution for actual replacement.
 		Unifier replacementSubstitution = new Unifier();

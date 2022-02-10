@@ -34,11 +34,11 @@ public class AggregateEncoderFactory {
 	}
 	
 	public MinMaxEncoder newMinEncoder() {
-		return new MinMaxEncoder(AggregateFunctionSymbol.MIN);
+		return new MinMaxEncoder(parserFactory.get(), AggregateFunctionSymbol.MIN);
 	}
 	
 	public MinMaxEncoder newMaxEncoder() {
-		return new MinMaxEncoder(AggregateFunctionSymbol.MAX);
+		return new MinMaxEncoder(parserFactory.get(), AggregateFunctionSymbol.MAX);
 	}
 	
 }

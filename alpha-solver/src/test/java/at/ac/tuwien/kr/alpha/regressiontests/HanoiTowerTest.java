@@ -50,7 +50,7 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 
 /**
@@ -108,7 +108,7 @@ public class HanoiTowerTest {
 	private void testHanoiTower(String instance, SystemConfig cfg) throws IOException {
 		// TODO should be read by the Alpha instance constructed in buildSolverForRegressionTest,
 		// do not instantiate parsers "free-style"!
-		InputProgram prog = new ProgramParserImpl().parse(
+		InputProgram prog = new ASPCore2ProgramParser().parse(
 				Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp"),
 				Paths.get("src", "test", "resources", "HanoiTower_instances", instance + ".asp"));
 		Solver solver = buildSolverForRegressionTest(prog, cfg);

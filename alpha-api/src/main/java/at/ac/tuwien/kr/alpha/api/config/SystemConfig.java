@@ -44,6 +44,7 @@ public class SystemConfig {
 	// initializing from those values in order to have the values accessible in
 	// contexts where no AlphaConfig instance exists (e.g. argument parsing from
 	// command line)
+	public static final boolean DEFAULT_ACCEPT_EVOLOG = true;
 	public static final String DEFAULT_SOLVER_NAME = "default";
 	public static final String DEFAULT_NOGOOD_STORE_NAME = "alphaRoaming";
 	public static final Heuristic DEFAULT_BRANCHING_HEURISTIC = Heuristic.VSIDS;
@@ -63,6 +64,7 @@ public class SystemConfig {
 	public static final String DEFAULT_ATOM_SEPARATOR = ", ";
 	public static final AggregateRewritingConfig DEFAULT_AGGREGATE_REWRITING_CONFIG = new AggregateRewritingConfig();
 
+	private boolean acceptEvologPrograms = DEFAULT_ACCEPT_EVOLOG;
 	private String solverName = DEFAULT_SOLVER_NAME;
 	private String nogoodStoreName = DEFAULT_NOGOOD_STORE_NAME;
 	private long seed = DEFAULT_SEED;
@@ -251,6 +253,14 @@ public class SystemConfig {
 
 	public void setAggregateRewritingConfig(AggregateRewritingConfig aggregateRewritingConfig) {
 		this.aggregateRewritingConfig = aggregateRewritingConfig;
+	}
+
+	public boolean isAcceptEvologPrograms() {
+		return this.acceptEvologPrograms;
+	}
+
+	public void setAcceptEvologPrograms(boolean acceptEvologPrograms) {
+		this.acceptEvologPrograms = acceptEvologPrograms;
 	}
 
 }

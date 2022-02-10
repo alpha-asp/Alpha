@@ -16,7 +16,7 @@ import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.commons.externals.Externals;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.evolog.EvologProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 
 // TODO This is a functional test and should not be run with standard unit tests
@@ -26,7 +26,8 @@ public class ProgramTransformationTest {
 
 	private static final String TESTFILES_PATH = "/transform-test/";
 
-	private static final ProgramParser PARSER = new ProgramParserImpl();
+	// TODO should this always be an evolog parser?
+	private static final ProgramParser PARSER = new EvologProgramParser();
 
 	private ChoiceHeadToNormal choiceToNormal = new ChoiceHeadToNormal();
 	private IntervalTermToIntervalAtom intervalRewriting = new IntervalTermToIntervalAtom();

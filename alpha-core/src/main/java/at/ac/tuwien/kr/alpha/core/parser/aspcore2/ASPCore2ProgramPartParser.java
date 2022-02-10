@@ -26,7 +26,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package at.ac.tuwien.kr.alpha.core.parser;
+package at.ac.tuwien.kr.alpha.core.parser.aspcore2;
 
 import java.util.Collections;
 
@@ -41,13 +41,15 @@ import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
+import at.ac.tuwien.kr.alpha.core.parser.AbstractProgramParser;
 
 /**
- * A parser that, in contrast to {@link ProgramParserImpl}, does not parse full programs but only program parts like
+ * A parser that, in contrast to {@link AbstractProgramParser}, does not parse full programs but only program parts like
  * atoms, terms and such.
  */
-public class ProgramPartParser {
-	private final ParseTreeVisitor visitor = new ParseTreeVisitor(Collections.emptyMap(), true);
+// TODO adapt this and create evolog version
+public class ASPCore2ProgramPartParser {
+	private final ASPCore2ParseTreeVisitor visitor = new ASPCore2ParseTreeVisitor(Collections.emptyMap(), true);
 
 	public Term parseTerm(String s) {
 		final ASPCore2Parser parser = getASPCore2Parser(s);

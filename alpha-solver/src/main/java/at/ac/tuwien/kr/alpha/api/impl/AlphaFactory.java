@@ -9,7 +9,8 @@ import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
+import at.ac.tuwien.kr.alpha.core.parser.evolog.EvologProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewriting;
@@ -25,7 +26,8 @@ public final class AlphaFactory {
 	}
 
 	public static Alpha newAlpha(SystemConfig cfg) {
-		Supplier<ProgramParser> parserFactory = () -> new ProgramParserImpl();
+		// Parser factory - Supply correct parser dependent on the accepted input language.
+		Supplier<ProgramParser> parserFactory = () -> cfg.isAcceptEvologPrograms() ? new EvologProgramParser() : new ASPCore2ProgramParser();
 
 		// AggregateEncoderFactory depends on parser factory since stringtemplate-based aggregate encoders need to use the same parser that's used
 		// for input programs.

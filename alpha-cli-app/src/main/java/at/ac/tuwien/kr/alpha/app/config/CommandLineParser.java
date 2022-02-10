@@ -349,10 +349,6 @@ public class CommandLineParser {
 		cfg.setSortAnswerSets(true);
 	}
 
-	private void handleDeterministic(Option opt, SystemConfig cfg) {
-		cfg.setSeed(0);
-	}
-
 	private void handleSeed(Option opt, SystemConfig cfg) {
 		String optVal = opt.getValue();
 		long seed;
