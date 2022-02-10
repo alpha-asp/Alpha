@@ -42,6 +42,7 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.ActionHead;
 import at.ac.tuwien.kr.alpha.api.rules.heads.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
@@ -116,8 +117,16 @@ public class VariableEqualityRemoval extends ProgramTransformation<InputProgram,
 		if (!rule.isConstraint() && rule.getHead() instanceof DisjunctiveHead) {
 			throw new UnsupportedOperationException("VariableEqualityRemoval cannot be applied to rule with DisjunctiveHead, yet.");
 		}
-		// TODO handle action heads!
-		NormalHead rewrittenHead = rule.isConstraint() ? null : Heads.newNormalHead(((NormalHead) rule.getHead()).getAtom());
+
+		NormalHead head = (NormalHead) rule.getHead();
+		NormalHead rewrittenHead;
+		// TODO can this be done nicer?
+		if(rule.getHead() instanceof ActionHead) {
+			ActionHead actHead = (ActionHead) head;
+			rewrittenHead = Heads.newActionHead(actHead.getAtom(), actHead.getAction(), actHead.getActionInputTerms(), actHead.getActionOutputTerm());
+		} else {
+			rewrittenHead = rule.isConstraint() ? null : Heads.newNormalHead(((NormalHead) rule.getHead()).getAtom());
+		}
 
 		// Use substitution for actual replacement.
 		Unifier replacementSubstitution = new Unifier();

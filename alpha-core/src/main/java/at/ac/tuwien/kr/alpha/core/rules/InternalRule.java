@@ -98,7 +98,7 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 	}
 
 	public static CompiledRule fromNormalRule(Rule<NormalHead> rule) {
-		return new InternalRule(rule.isConstraint() ? null : Heads.newNormalHead(rule.getHead().getAtom()), new ArrayList<>(rule.getBody()));
+		return new InternalRule(rule.getHead(), new ArrayList<>(rule.getBody()));
 	}
 
 	/**

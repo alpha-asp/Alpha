@@ -1,6 +1,5 @@
 package at.ac.tuwien.kr.alpha.core.rules;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -10,8 +9,6 @@ import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
-import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 /**
  * A rule that has a normal head, i.e. just one head atom, no disjunction or choice heads allowed.
@@ -30,14 +27,10 @@ public class NormalRuleImpl extends AbstractRule<NormalHead> implements NormalRu
 	}
 
 	public static NormalRuleImpl fromBasicRule(Rule<Head> rule) {
-		BasicAtom headAtom = null;
-		if (!rule.isConstraint()) {
-			if (!(rule.getHead() instanceof NormalHead)) {
-				throw Util.oops("Trying to construct a NormalRule from rule with non-normal head! Head type is: " + rule.getHead().getClass().getSimpleName());
-			}
-			headAtom = ((NormalHead) rule.getHead()).getAtom();
+		if(!(rule.getHead() instanceof NormalHead)) {
+			throw new IllegalArgumentException("Cannot create normal rule for unsupported head type " + rule.getHead().getClass().getSimpleName());
 		}
-		return new NormalRuleImpl(headAtom != null ? Heads.newNormalHead(headAtom) : null, new ArrayList<>(rule.getBody()));
+		return new NormalRuleImpl((NormalHead) rule.getHead(), rule.getBody());
 	}
 
 	public boolean isGround() {

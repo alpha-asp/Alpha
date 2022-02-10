@@ -27,7 +27,7 @@ public abstract class AbstractRule<H extends Head> implements Rule<H> {
 	private final Set<Literal> bodyLiteralsPositive;
 	private final Set<Literal> bodyLiteralsNegative;
 
-	public AbstractRule(H head, List<Literal> body) {
+	public AbstractRule(H head, Set<Literal> body) {
 		this.head = head;
 		Set<Literal> positiveBody = new LinkedHashSet<>();
 		Set<Literal> negativeBody = new LinkedHashSet<>();
@@ -49,8 +49,8 @@ public abstract class AbstractRule<H extends Head> implements Rule<H> {
 		}
 	}
 	
-	public AbstractRule(H head, Set<Literal> body) {
-		this(head, new ArrayList<>(body));
+	public AbstractRule(H head, List<Literal> body) {
+		this(head, new LinkedHashSet<>(body));
 	}
 
 	/**
