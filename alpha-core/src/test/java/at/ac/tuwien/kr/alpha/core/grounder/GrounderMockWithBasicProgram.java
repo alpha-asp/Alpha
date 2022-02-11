@@ -62,9 +62,8 @@ import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.IntIterator;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
-import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRules;
 
 /**
  * Represents a small ASP program {@code { c :- a, b.  a.  b. }}.
@@ -94,8 +93,8 @@ public class GrounderMockWithBasicProgram implements Grounder {
 	private static Atom atomAA = Atoms.newBasicAtom(Predicates.getPredicate("a", 0));
 	private static Atom atomBB = Atoms.newBasicAtom(Predicates.getPredicate("b", 0));
 	private static BasicAtom atomCC = Atoms.newBasicAtom(Predicates.getPredicate("c", 0));
-	private static BasicRule ruleABC = new BasicRule(Heads.newNormalHead(atomCC), Arrays.asList(atomAA.toLiteral(), atomBB.toLiteral()));
-	private static Atom rule1 = new RuleAtom(InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(ruleABC)), new BasicSubstitution());
+	private static CompiledRule ruleABC = CompiledRules.newCompiledRule(Heads.newNormalHead(atomCC), atomAA.toLiteral(), atomBB.toLiteral());
+	private static Atom rule1 = new RuleAtom(ruleABC, new BasicSubstitution());
 	private Set<Integer> returnedNogoods = new HashSet<>();
 
 	public GrounderMockWithBasicProgram(AtomStore atomStore) {

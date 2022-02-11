@@ -4,8 +4,10 @@ import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
@@ -18,10 +20,10 @@ import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.rules.Rules;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 /**
  * Rewrites the ordinary atom whose name is given in the input program by the enumeration directive #enum_atom_is into
@@ -69,7 +71,7 @@ public class EnumerationRewriting extends ProgramTransformation<InputProgram, In
 			if (rule.getHead() != null && ((NormalHead) rule.getHead()).getAtom().getPredicate().equals(enumPredicate)) {
 				throw oops("Atom declared as enumeration atom by directive occurs in head of the rule: " + rule);
 			}
-			List<Literal> modifiedBodyLiterals = new ArrayList<>(rule.getBody());
+			Set<Literal> modifiedBodyLiterals = new LinkedHashSet<>(rule.getBody());
 			Iterator<Literal> rit = modifiedBodyLiterals.iterator();
 			LinkedList<Literal> rewrittenLiterals = new LinkedList<>();
 			while (rit.hasNext()) {
@@ -89,7 +91,7 @@ public class EnumerationRewriting extends ProgramTransformation<InputProgram, In
 				rewrittenLiterals.add(new EnumerationAtom(enumIdTerm, valueTerm, indexTerm).toLiteral());
 			}
 			modifiedBodyLiterals.addAll(rewrittenLiterals);
-			rewrittenRules.add(new BasicRule(rule.getHead(), modifiedBodyLiterals));
+			rewrittenRules.add(Rules.newRule(rule.getHead(), modifiedBodyLiterals));
 		}
 		return rewrittenRules;
 	}

@@ -1,9 +1,7 @@
-package at.ac.tuwien.kr.alpha.core.rules;
+package at.ac.tuwien.kr.alpha.commons.rules;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -21,13 +19,13 @@ import at.ac.tuwien.kr.alpha.commons.util.Util;
  * 
  *            Copyright (c) 2017-2019, the Alpha Team.
  */
-public abstract class AbstractRule<H extends Head> implements Rule<H> {
+abstract class AbstractRule<H extends Head> implements Rule<H> {
 
 	private final H head;
 	private final Set<Literal> bodyLiteralsPositive;
 	private final Set<Literal> bodyLiteralsNegative;
 
-	public AbstractRule(H head, Set<Literal> body) {
+	AbstractRule(H head, Set<Literal> body) {
 		this.head = head;
 		Set<Literal> positiveBody = new LinkedHashSet<>();
 		Set<Literal> negativeBody = new LinkedHashSet<>();
@@ -47,10 +45,6 @@ public abstract class AbstractRule<H extends Head> implements Rule<H> {
 			throw new RuntimeException("Encountered unsafe rule: " + toString() + System.lineSeparator()
 					+ "Notice: A rule is considered safe if all variables occurring in negative literals, builtin atoms, and the head of the rule also occur in some positive literal.");
 		}
-	}
-	
-	public AbstractRule(H head, List<Literal> body) {
-		this(head, new LinkedHashSet<>(body));
 	}
 
 	/**
@@ -127,13 +121,12 @@ public abstract class AbstractRule<H extends Head> implements Rule<H> {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof AbstractRule)) {
+		if (!(obj instanceof Rule)) {
 			return false;
 		}
-		AbstractRule<?> other = (AbstractRule<?>) obj;
-		return Objects.equals(this.bodyLiteralsNegative, other.bodyLiteralsNegative)
-				&& Objects.equals(this.bodyLiteralsPositive, other.bodyLiteralsPositive)
-				&& Objects.equals(this.head, other.head);
+		Rule<?> other = (Rule<?>) obj;
+		return Objects.equals(this.getBody(), other.getBody())
+				&& Objects.equals(this.head, other.getHead());
 	}
 
 }

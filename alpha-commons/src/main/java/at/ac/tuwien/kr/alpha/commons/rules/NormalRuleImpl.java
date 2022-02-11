@@ -1,13 +1,10 @@
-package at.ac.tuwien.kr.alpha.core.rules;
+package at.ac.tuwien.kr.alpha.commons.rules;
 
-import java.util.List;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 
 /**
@@ -16,23 +13,13 @@ import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
  * 
  * Copyright (c) 2019, the Alpha Team.
  */
-public class NormalRuleImpl extends AbstractRule<NormalHead> implements NormalRule {
+class NormalRuleImpl extends AbstractRule<NormalHead> implements NormalRule {
 
-	public NormalRuleImpl(NormalHead head, List<Literal> body) {
+	NormalRuleImpl(NormalHead head, Set<Literal> body) {
 		super(head, body);
 	}
 
-	public NormalRuleImpl(NormalHead head, Set<Literal> body) {
-		super(head, body);
-	}
-
-	public static NormalRuleImpl fromBasicRule(Rule<Head> rule) {
-		if(!(rule.getHead() instanceof NormalHead)) {
-			throw new IllegalArgumentException("Cannot create normal rule for unsupported head type " + rule.getHead().getClass().getSimpleName());
-		}
-		return new NormalRuleImpl((NormalHead) rule.getHead(), rule.getBody());
-	}
-
+	@Override
 	public boolean isGround() {
 		if (!isConstraint() && !this.getHead().isGround()) {
 			return false;

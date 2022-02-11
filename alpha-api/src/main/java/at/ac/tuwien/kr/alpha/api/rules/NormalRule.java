@@ -12,4 +12,6 @@ public interface NormalRule extends Rule<NormalHead> {
 
 	BasicAtom getHeadAtom();
 
+	boolean isGround();
+
 }

@@ -1,7 +1,9 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -17,12 +19,12 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
-import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 
 /**
  * Transforms rules such that arithmetic terms only occur in comparison predicates.
@@ -64,11 +66,12 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 	private NormalRule rewriteRule(NormalRule inputProgramRule) {
 		numArithmeticVariables = 0;	// Reset number of introduced variables for each rule.
 		NormalHead rewrittenHead = null;
-		List<Literal> rewrittenBodyLiterals = new ArrayList<>();
+		Set<Literal> rewrittenBodyLiterals = new LinkedHashSet<>();
 		// Rewrite head.
 		if (!inputProgramRule.isConstraint()) {
 			BasicAtom headAtom = inputProgramRule.getHeadAtom();
 			if (containsArithmeticTermsToRewrite(headAtom)) {
+				// TODO handle action heads!
 				rewrittenHead = Heads.newNormalHead((BasicAtom) rewriteAtom(headAtom, rewrittenBodyLiterals));
 			} else {
 				rewrittenHead = inputProgramRule.getHead();
@@ -83,7 +86,7 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 			}
 			rewrittenBodyLiterals.add(rewriteAtom(literal.getAtom(), rewrittenBodyLiterals).toLiteral(!literal.isNegated()));
 		}
-		return new NormalRuleImpl(rewrittenHead, rewrittenBodyLiterals);
+		return Rules.newNormalRule(rewrittenHead, rewrittenBodyLiterals);
 	}
 
 	/**
@@ -108,7 +111,7 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 		return false;
 	}
 
-	private Term rewriteArithmeticSubterms(Term term, List<Literal> bodyLiterals) {
+	private Term rewriteArithmeticSubterms(Term term, Set<Literal> bodyLiterals) {
 		// Keep term as-is if it contains no ArithmeticTerm.
 		if (!containsArithmeticTerm(term)) {
 			return term;
@@ -132,7 +135,7 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 		}
 	}
 
-	private Atom rewriteAtom(Atom atomToRewrite, List<Literal> bodyLiterals) {
+	private Atom rewriteAtom(Atom atomToRewrite, Set<Literal> bodyLiterals) {
 		if (atomToRewrite instanceof ComparisonAtom) {
 			throw Util.oops("Trying to rewrite ComparisonAtom.");
 		}

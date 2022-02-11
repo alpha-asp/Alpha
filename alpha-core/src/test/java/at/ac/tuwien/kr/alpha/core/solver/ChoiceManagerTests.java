@@ -45,7 +45,7 @@ import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRules;
 
 public class ChoiceManagerTests {
 	private Grounder grounder;
@@ -59,7 +59,7 @@ public class ChoiceManagerTests {
 		 *     h :- b1, b2, not b3, not b4.
 		 */
 		CompiledProgram program = new InternalProgram(Collections.singletonList(
-				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("h", 0))),
+			CompiledRules.newCompiledRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("h", 0))),
 						Atoms.newBasicAtom(Predicates.getPredicate("b1", 0)).toLiteral(),
 						Atoms.newBasicAtom(Predicates.getPredicate("b2", 0)).toLiteral(),
 						Atoms.newBasicAtom(Predicates.getPredicate("b3", 0)).toLiteral(false),

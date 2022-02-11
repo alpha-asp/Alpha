@@ -18,8 +18,7 @@ import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
 import at.ac.tuwien.kr.alpha.core.grounder.FactIntervalEvaluator;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
-import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRules;
 
 /**
  * A program in the internal representation needed for grounder and solver, i.e.: rules must have normal heads, all
@@ -50,7 +49,7 @@ public class InternalProgram extends AbstractProgram<CompiledRule> implements Co
 				}
 				facts.add(r.getHead().getAtom());
 			} else {
-				internalRules.add(InternalRule.fromNormalRule(r));
+				internalRules.add(CompiledRules.newCompiledRule(r.getHead(), r.getBody()));
 			}
 		}
 		return new ImmutablePair<>(internalRules, facts);
@@ -100,10 +99,7 @@ public class InternalProgram extends AbstractProgram<CompiledRule> implements Co
 	}
 
 	public NormalProgram toNormalProgram() {
-		List<NormalRule> normalRules = new ArrayList<>();
-		for (CompiledRule rule : getRules()) {
-			normalRules.add(new NormalRuleImpl(rule.getHead(), new ArrayList<>(rule.getBody())));
-		}
+		List<NormalRule> normalRules = new ArrayList<>(getRules());
 		return new NormalProgramImpl(normalRules, getFacts(), getInlineDirectives());
 	}
 

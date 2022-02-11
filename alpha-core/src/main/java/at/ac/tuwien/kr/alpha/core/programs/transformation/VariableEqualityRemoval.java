@@ -36,6 +36,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -48,10 +49,10 @@ import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 /**
  * Removes variable equalities from rules by replacing one variable with the other.
@@ -113,19 +114,21 @@ public class VariableEqualityRemoval extends ProgramTransformation<InputProgram,
 			return rule;
 		}
 
-		List<Literal> rewrittenBody = new ArrayList<>(rule.getBody());
+		Set<Literal> rewrittenBody = new LinkedHashSet<>(rule.getBody());
 		if (!rule.isConstraint() && rule.getHead() instanceof DisjunctiveHead) {
 			throw new UnsupportedOperationException("VariableEqualityRemoval cannot be applied to rule with DisjunctiveHead, yet.");
 		}
 
 		NormalHead head = (NormalHead) rule.getHead();
-		NormalHead rewrittenHead;
+		NormalHead rewrittenHead = null;
 		// TODO can this be done nicer?
-		if(rule.getHead() instanceof ActionHead) {
-			ActionHead actHead = (ActionHead) head;
-			rewrittenHead = Heads.newActionHead(actHead.getAtom(), actHead.getAction(), actHead.getActionInputTerms(), actHead.getActionOutputTerm());
-		} else {
-			rewrittenHead = rule.isConstraint() ? null : Heads.newNormalHead(((NormalHead) rule.getHead()).getAtom());
+		if (!rule.isConstraint()) {
+			if (rule.getHead() instanceof ActionHead) {
+				ActionHead actHead = (ActionHead) head;
+				rewrittenHead = Heads.newActionHead(actHead.getAtom(), actHead.getAction(), actHead.getActionInputTerms(), actHead.getActionOutputTerm());
+			} else {
+				rewrittenHead = Heads.newNormalHead(((NormalHead) rule.getHead()).getAtom());
+			}
 		}
 
 		// Use substitution for actual replacement.
@@ -159,6 +162,6 @@ public class VariableEqualityRemoval extends ProgramTransformation<InputProgram,
 				headAtom.getTerms().set(i, replaced);
 			}
 		}
-		return new BasicRule(rewrittenHead, rewrittenBody);
+		return Rules.newRule(rewrittenHead, rewrittenBody);
 	}
 }

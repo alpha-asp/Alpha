@@ -28,8 +28,9 @@
 package at.ac.tuwien.kr.alpha.core.rules;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -37,9 +38,10 @@ import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
@@ -50,27 +52,23 @@ import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingInfoImpl;
  * Represents a normal rule or a constraint for the semi-naive grounder.
  * A normal rule has no head atom if it represents a constraint, otherwise it has one atom in its head.
  */
-public class InternalRule extends NormalRuleImpl implements CompiledRule {
+public class CompiledRuleImpl implements CompiledRule {
 
 	private static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
 
+	private final NormalRule wrappedRule;
+
 	private final int ruleId;
-
 	private final List<Predicate> occurringPredicates;
-
 	private final RuleGroundingInfoImpl groundingOrders;
-
-	public InternalRule(NormalHead head, Literal... body) {
-		this(head, Arrays.asList(body));
-	}
 	
-	public InternalRule(NormalHead head, List<Literal> body) {
-		super(head, body);
+	CompiledRuleImpl(NormalHead head, Set<Literal> body) {
 		if (body.isEmpty()) {
 			throw new IllegalArgumentException(
 					"Empty bodies are not supported for InternalRule! (Head = " + (head == null ? "NULL" : head.getAtom().toString()) + ")");
 		}
-		this.ruleId = InternalRule.ID_GENERATOR.getNextId();
+		this.ruleId = CompiledRuleImpl.ID_GENERATOR.getNextId();
+		this.wrappedRule = Rules.newNormalRule(head, body);
 
 		this.occurringPredicates = new ArrayList<>();
 		if (!isConstraint()) {
@@ -84,21 +82,13 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 			this.occurringPredicates.add(literal.getPredicate());
 		}
 
-		// not needed, done in AbstractRule! Leaving it commented out for future reference since this might actually be the
-		// proper place to put it
-		// this.checkSafety();
-
 		this.groundingOrders = new RuleGroundingInfoImpl(this);
 		this.groundingOrders.computeGroundingOrders();
 	}
 
 	@VisibleForTesting
 	public static void resetIdGenerator() {
-		InternalRule.ID_GENERATOR.resetGenerator();
-	}
-
-	public static CompiledRule fromNormalRule(Rule<NormalHead> rule) {
-		return new InternalRule(rule.getHead(), new ArrayList<>(rule.getBody()));
+		CompiledRuleImpl.ID_GENERATOR.resetGenerator();
 	}
 
 	/**
@@ -109,7 +99,7 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 	 * @return
 	 */
 	@Override
-	public InternalRule renameVariables(String newVariablePostfix) {
+	public CompiledRuleImpl renameVariables(String newVariablePostfix) {
 		// TODO handle action heads!
 		List<VariableTerm> occurringVariables = new ArrayList<>();
 		BasicAtom headAtom = this.getHeadAtom();
@@ -123,11 +113,13 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 			variableReplacement.put(occurringVariable, Terms.newVariable(newVariableName));
 		}
 		BasicAtom renamedHeadAtom = headAtom.substitute(variableReplacement);
-		ArrayList<Literal> renamedBody = new ArrayList<>(this.getBody().size());
+		Set<Literal> renamedBody = new LinkedHashSet<>(this.getBody().size());
 		for (Literal literal : this.getBody()) {
 			renamedBody.add(literal.substitute(variableReplacement));
 		}
-		return new InternalRule(Heads.newNormalHead(renamedHeadAtom), renamedBody);
+		// TODO action heads!
+		// TODO we want to pull renameVariables down to atom, term, etc level
+		return new CompiledRuleImpl(Heads.newNormalHead(renamedHeadAtom), renamedBody);
 	}
 
 	/**
@@ -147,6 +139,56 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 	@Override
 	public int getRuleId() {
 		return this.ruleId;
+	}
+
+	@Override
+	public BasicAtom getHeadAtom() {
+		return wrappedRule.getHeadAtom();
+	}
+
+	@Override
+	public NormalHead getHead() {
+		return wrappedRule.getHead();
+	}
+
+	@Override
+	public Set<Literal> getBody() {
+		return wrappedRule.getBody();
+	}
+
+	@Override
+	public boolean isConstraint() {
+		return wrappedRule.isConstraint();
+	}
+
+	@Override
+	public Set<Literal> getPositiveBody() {
+		return wrappedRule.getPositiveBody();
+	}
+
+	@Override
+	public Set<Literal> getNegativeBody() {
+		return wrappedRule.getNegativeBody();
+	}
+
+	@Override
+	public boolean isGround() {
+		return wrappedRule.isGround();
+	}
+
+	@Override
+	public String toString() {
+		return wrappedRule.toString();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		return wrappedRule.equals(o);
+	}
+
+	@Override
+	public int hashCode() {
+		return wrappedRule.hashCode();
 	}
 
 }

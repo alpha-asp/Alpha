@@ -63,9 +63,8 @@ import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.IntIterator;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
-import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRules;
 
 /**
  * Represents a small ASP program with choices {@code { aa :- not bb.  bb :- not aa. }}.
@@ -116,10 +115,10 @@ public class GrounderMockWithChoice implements Grounder {
 	).collect(entriesToMap());
 	private static BasicAtom atomAA = Atoms.newBasicAtom(Predicates.getPredicate("aa", 0));
 	private static BasicAtom atomBB = Atoms.newBasicAtom(Predicates.getPredicate("bb", 0));
-	private static BasicRule ruleAA = new BasicRule(Heads.newNormalHead(atomAA), Collections.singletonList(Atoms.newBasicAtom(Predicates.getPredicate("bb", 0)).toLiteral(false)));
-	private static BasicRule ruleBB = new BasicRule(Heads.newNormalHead(atomBB), Collections.singletonList(Atoms.newBasicAtom(Predicates.getPredicate("aa", 0)).toLiteral(false)));
-	private static Atom rule1 = new RuleAtom(InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(ruleAA)), new BasicSubstitution());
-	private static Atom rule2 = new RuleAtom(InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(ruleBB)), new BasicSubstitution());
+	private static CompiledRule ruleAA = CompiledRules.newCompiledRule(Heads.newNormalHead(atomAA), Atoms.newBasicAtom(Predicates.getPredicate("bb", 0)).toLiteral(false));
+	private static CompiledRule ruleBB = CompiledRules.newCompiledRule(Heads.newNormalHead(atomBB), Atoms.newBasicAtom(Predicates.getPredicate("aa", 0)).toLiteral(false));
+	private static Atom rule1 = new RuleAtom(ruleAA, new BasicSubstitution());
+	private static Atom rule2 = new RuleAtom(ruleBB, new BasicSubstitution());
 	private static Atom atomEnBR1 = ChoiceAtom.on(1);
 	private static Atom atomEnBR2 = ChoiceAtom.on(2);
 	private static Atom atomDisBR1 = ChoiceAtom.off(3);

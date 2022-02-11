@@ -25,7 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.grounder;
+package at.ac.tuwien.kr.alpha.core.rules;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -41,8 +41,8 @@ import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
+import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingInfo;
+import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingInfoImpl;
 
 /**
  * Copyright (c) 2017-2021, the Alpha Team.
@@ -52,7 +52,7 @@ public class RuleGroundingInfoTest {
 	@Test
 	public void groundingOrder() {
 		// r1 := h(X,C) :- p(X,Y), q(A,B), r(Y,A), s(C).
-		CompiledRule r1 = new InternalRule(
+		CompiledRule r1 = CompiledRules.newCompiledRule(
 				Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("h", 2), Terms.newVariable("X"), Terms.newVariable("C"))),
 				Atoms.newBasicAtom(Predicates.getPredicate("p", 2), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral(),
 				Atoms.newBasicAtom(Predicates.getPredicate("q", 2), Terms.newVariable("A"), Terms.newVariable("B")).toLiteral(),
@@ -63,7 +63,7 @@ public class RuleGroundingInfoTest {
 		assertEquals(4, rgo1.getStartingLiterals().size());
 
 		// r2 := j(A,A,X,Y) :- r1(A,A), r1(X,Y), r1(A,X), r1(A,Y).
-		CompiledRule r2 = new InternalRule(
+		CompiledRule r2 = CompiledRules.newCompiledRule(
 				Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("j", 4), Terms.newVariable("A"), Terms.newVariable("A"), Terms.newVariable("X"),
 						Terms.newVariable("Y"))),
 				Atoms.newBasicAtom(Predicates.getPredicate("r1", 2), Terms.newVariable("A"), Terms.newVariable("A")).toLiteral(),
@@ -75,7 +75,7 @@ public class RuleGroundingInfoTest {
 		assertEquals(4, rgo2.getStartingLiterals().size());
 
 		// r3 := p(a) :- b = a.
-		CompiledRule r3 = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newSymbolicConstant("a"))),
+		CompiledRule r3 = CompiledRules.newCompiledRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newSymbolicConstant("a"))),
 				Atoms.newComparisonAtom(Terms.newSymbolicConstant("b"), Terms.newSymbolicConstant("a"), ComparisonOperators.EQ).toLiteral());
 		RuleGroundingInfo rgo3 = new RuleGroundingInfoImpl(r3);
 		rgo3.computeGroundingOrders();
@@ -90,7 +90,7 @@ public class RuleGroundingInfoTest {
 	public void groundingOrderUnsafe() {
 		assertThrows(RuntimeException.class, () -> {
 			// rule := h(X, Z) :- Y = X + 1, X = Z + 1, Z = Y - 2.
-			CompiledRule rule = new InternalRule(
+			CompiledRule rule = CompiledRules.newCompiledRule(
 					Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("h", 2), Terms.newVariable("X"), Terms.newVariable("Z"))),
 					Atoms.newComparisonAtom(
 							Terms.newVariable("Y"),
@@ -111,7 +111,7 @@ public class RuleGroundingInfoTest {
 	@Test
 	public void testPositionFromWhichAllVarsAreBound_ground() {
 		// rule := a :- b, not c.
-		CompiledRule rule = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("a", 0))),
+		CompiledRule rule = CompiledRules.newCompiledRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("a", 0))),
 				Atoms.newBasicAtom(Predicates.getPredicate("b", 0)).toLiteral(),
 				Atoms.newBasicAtom(Predicates.getPredicate("c", 0)).toLiteral(false));
 		RuleGroundingInfo rgo0 = computeGroundingOrdersForRule(rule);
@@ -121,7 +121,7 @@ public class RuleGroundingInfoTest {
 	@Test
 	public void testPositionFromWhichAllVarsAreBound_simpleNonGround() {
 		// rule := a(X) :- b(X), not c(X).
-		CompiledRule rule = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("a", 1), Terms.newVariable("X"))),
+		CompiledRule rule = CompiledRules.newCompiledRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("a", 1), Terms.newVariable("X"))),
 				Atoms.newBasicAtom(Predicates.getPredicate("b", 1), Terms.newVariable("X")).toLiteral(),
 				Atoms.newBasicAtom(Predicates.getPredicate("c", 1), Terms.newVariable("X")).toLiteral(false));
 		RuleGroundingInfo rgo0 = computeGroundingOrdersForRule(rule);
@@ -134,7 +134,7 @@ public class RuleGroundingInfoTest {
 	@Test
 	public void testPositionFromWhichAllVarsAreBound_longerSimpleNonGround() {
 		// rule := a(X) :- b(X), c(X), d(X), not e(X).
-		CompiledRule rule = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("a", 1), Terms.newVariable("X"))),
+		CompiledRule rule = CompiledRules.newCompiledRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("a", 1), Terms.newVariable("X"))),
 				Atoms.newBasicAtom(Predicates.getPredicate("b", 1), Terms.newVariable("X")).toLiteral(),
 				Atoms.newBasicAtom(Predicates.getPredicate("c", 1), Terms.newVariable("X")).toLiteral(),
 				Atoms.newBasicAtom(Predicates.getPredicate("d", 1), Terms.newVariable("X")).toLiteral(),
@@ -149,7 +149,7 @@ public class RuleGroundingInfoTest {
 	@Test
 	public void testToString_longerSimpleNonGround() {
 		// rule := a(X) :- b(X), c(X), d(X), not e(X).
-		CompiledRule rule = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("a", 1), Terms.newVariable("X"))),
+		CompiledRule rule = CompiledRules.newCompiledRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("a", 1), Terms.newVariable("X"))),
 				Atoms.newBasicAtom(Predicates.getPredicate("b", 1), Terms.newVariable("X")).toLiteral(),
 				Atoms.newBasicAtom(Predicates.getPredicate("c", 1), Terms.newVariable("X")).toLiteral(),
 				Atoms.newBasicAtom(Predicates.getPredicate("d", 1), Terms.newVariable("X")).toLiteral(),
@@ -176,7 +176,7 @@ public class RuleGroundingInfoTest {
 	@Test
 	public void testPositionFromWhichAllVarsAreBound_joinedNonGround() {
 		// rule := a(X) :- b(X), c(X, Y), d(X, Z), not e(X).
-		CompiledRule rule = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("a", 1), Terms.newVariable("X"))),
+		CompiledRule rule = CompiledRules.newCompiledRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("a", 1), Terms.newVariable("X"))),
 				Atoms.newBasicAtom(Predicates.getPredicate("b", 1), Terms.newVariable("X")).toLiteral(),
 				Atoms.newBasicAtom(Predicates.getPredicate("c", 2), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral(),
 				Atoms.newBasicAtom(Predicates.getPredicate("d", 2), Terms.newVariable("X"), Terms.newVariable("Z")).toLiteral(),

@@ -27,10 +27,9 @@
  */
 package at.ac.tuwien.kr.alpha.core.parser.aspcore2;
 
-import static java.util.Collections.emptyList;
-
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +68,7 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.literals.Literals;
+import at.ac.tuwien.kr.alpha.commons.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
@@ -77,7 +77,6 @@ import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 /**
  * Copyright (c) 2016-2021, the Alpha Team.
@@ -188,7 +187,7 @@ public class ASPCore2ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			programBuilder.addFact(((NormalHead) head).getAtom());
 		} else {
 			// Treat facts with choice or disjunction in the head like a rule.
-			programBuilder.addRule(new BasicRule(head, emptyList()));
+			programBuilder.addRule(Rules.newRule(head, Collections.emptySet()));
 		}
 		return null;
 	}
@@ -196,14 +195,14 @@ public class ASPCore2ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Object visitStatement_constraint(ASPCore2Parser.Statement_constraintContext ctx) {
 		// CONS body DOT
-		programBuilder.addRule(new BasicRule(null, visitBody(ctx.body())));
+		programBuilder.addRule(Rules.newConstraint(visitBody(ctx.body())));
 		return null;
 	}
 
 	@Override
 	public Object visitStatement_rule(ASPCore2Parser.Statement_ruleContext ctx) {
 		// head CONS body DOT
-		programBuilder.addRule(new BasicRule(visitHead(ctx.head()), visitBody(ctx.body())));
+		programBuilder.addRule(Rules.newRule(visitHead(ctx.head()), visitBody(ctx.body())));
 		return null;
 	}
 
@@ -312,13 +311,13 @@ public class ASPCore2ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public List<Literal> visitBody(ASPCore2Parser.BodyContext ctx) {
+	public Set<Literal> visitBody(ASPCore2Parser.BodyContext ctx) {
 		// body : ( naf_literal | aggregate ) (COMMA body)?;
 		if (ctx == null) {
-			return emptyList();
+			return Collections.emptySet();
 		}
 
-		final List<Literal> literals = new ArrayList<>();
+		final Set<Literal> literals = new LinkedHashSet<>();
 		do {
 			if (ctx.naf_literal() != null) {
 				literals.add(visitNaf_literal(ctx.naf_literal()));
@@ -494,7 +493,7 @@ public class ASPCore2ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	public List<Term> visitTerms(ASPCore2Parser.TermsContext ctx) {
 		// terms : term (COMMA terms)?;
 		if (ctx == null) {
-			return emptyList();
+			return Collections.emptyList();
 		}
 
 		final List<Term> terms = new ArrayList<>();

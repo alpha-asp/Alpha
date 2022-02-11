@@ -50,7 +50,7 @@ import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRules;
 import at.ac.tuwien.kr.alpha.core.test.util.SubstitutionTestUtil;
 import at.ac.tuwien.kr.alpha.core.util.Substitutions;
 
@@ -109,7 +109,7 @@ public class SubstitutionTest {
 	@Test
 	public void groundAndPrintRule() {
 		// rule := x :- p(X,Y), not q(X,Y).
-		CompiledRule rule = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("x", 0))),
+		CompiledRule rule = CompiledRules.newCompiledRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("x", 0))),
 				Atoms.newBasicAtom(Predicates.getPredicate("p", 2), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral(),
 				Atoms.newBasicAtom(Predicates.getPredicate("q", 2), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral(false));
 		Substitution substitution1 = BasicSubstitution.specializeSubstitution(PX, PA, BasicSubstitution.EMPTY_SUBSTITUTION);
@@ -166,7 +166,7 @@ public class SubstitutionTest {
 	@Test
 	public void substitutionFromString() {
 		// rule := x :- p(X,Y), not q(X,Y).
-		CompiledRule rule = new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("x", 0))),
+		CompiledRule rule = CompiledRules.newCompiledRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("x", 0))),
 				Atoms.newBasicAtom(Predicates.getPredicate("p", 2), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral(),
 				Atoms.newBasicAtom(Predicates.getPredicate("q", 2), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral(false));
 		Substitution substitution1 = BasicSubstitution.specializeSubstitution(PX, PA, BasicSubstitution.EMPTY_SUBSTITUTION);
