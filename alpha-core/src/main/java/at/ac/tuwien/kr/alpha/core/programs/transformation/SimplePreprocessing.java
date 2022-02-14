@@ -109,11 +109,14 @@ public class SimplePreprocessing extends ProgramTransformation<NormalProgram, No
 	 * @param rule the rule to be evaluated.
 	 * @param rules the rules from which literals could be derived from.
 	 * @param facts the facts from which literals could be derived from.
-	 * @return The ({@link RuleEvaluation})  contains the possibly simplified rule and indicates whether it was modified,
-	 * is a fact or will never fire.
+	 * @return The ({@link RuleEvaluation})  contains the possibly simplified rule and indicates whether it was
+	 * modified, is a fact or will never fire.
 	 */
 	private RuleEvaluation evaluateRule(NormalRule rule, List<NormalRule> rules, Set<Atom> facts) {
 		Set<Literal> redundantLiterals = new LinkedHashSet<>();
+		if (facts.contains(rule.getHeadAtom())) {
+			return RuleEvaluation.NO_FIRE;
+		}
 		for (Literal literal : rule.getBody()) {
 			if (literal instanceof BasicLiteral) {
 				if (literal.isNegated()) {
