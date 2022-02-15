@@ -54,7 +54,7 @@ public class AnalyzeUnjustified {
 
 	private Map<Predicate, List<Atom>> assignedAtoms;
 
-	public Set<Literal> analyze(int atomToJustify, Assignment assignment) {
+	public Set<Literal> analyze(int atomToJustify, Assignment currentAssignment) {
 		padDepth = 0;
 		Atom atom = atomStore.get(atomToJustify);
 		if (!(atom instanceof BasicAtom)) {
@@ -69,7 +69,7 @@ public class AnalyzeUnjustified {
 		//@formatter:on
 		assignedAtoms = new LinkedHashMap<>();
 		for (int i = 1; i <= atomStore.getMaxAtomId(); i++) {
-			ThriceTruth truth = assignment.getTruth(i);
+			ThriceTruth truth = currentAssignment.getTruth(i);
 			if (truth == null) {
 				continue;
 			}
@@ -77,11 +77,11 @@ public class AnalyzeUnjustified {
 			assignedAtoms.putIfAbsent(assignedAtom.getPredicate(), new ArrayList<>());
 			assignedAtoms.get(assignedAtom.getPredicate()).add(assignedAtom);
 		}
-		return analyze((BasicAtom) atom, assignment);
+		return analyze((BasicAtom) atom, currentAssignment);
 	}
 
-	private Set<Literal> analyze(BasicAtom atom, Assignment assignment) {
-		log(pad("Starting analyze, current assignment is: {}"), assignment);
+	private Set<Literal> analyze(BasicAtom atom, Assignment currentAssignment) {
+		log(pad("Starting analyze, current assignment is: {}"), currentAssignment);
 		LinkedHashSet<Literal> vL = new LinkedHashSet<>();
 		LinkedHashSet<LitSet> vToDo = new LinkedHashSet<>(Collections.singleton(new LitSet(atom, new LinkedHashSet<>())));
 		LinkedHashSet<LitSet> vDone = new LinkedHashSet<>();
@@ -92,7 +92,7 @@ public class AnalyzeUnjustified {
 			log("");
 			log("Treating now: {}", x);
 			vDone.add(x);
-			ReturnExplainUnjust unjustRet = explainUnjust(x, assignment);
+			ReturnExplainUnjust unjustRet = explainUnjust(x, currentAssignment);
 			log("Additional ToDo: {}", unjustRet.vToDo);
 			// Check each new LitSet if it does not already occur as done.
 			for (LitSet todoLitSet : unjustRet.vToDo) {
@@ -105,7 +105,7 @@ public class AnalyzeUnjustified {
 		return vL;
 	}
 
-	private ReturnExplainUnjust explainUnjust(LitSet x, Assignment assignment) {
+	private ReturnExplainUnjust explainUnjust(LitSet x, Assignment currentAssignment) {
 		padDepth += 2;
 		log("Begin explainUnjust(): {}", x);
 		Atom p = x.getAtom();
@@ -151,7 +151,7 @@ public class AnalyzeUnjustified {
 					log("Considering: {}", lg);
 					if (atomStore.contains(lg)) {
 						int atomId = atomStore.get(lg);
-						if (!assignment.getTruth(atomId).toBoolean()) {
+						if (!currentAssignment.getTruth(atomId).toBoolean()) {
 							log("{} is not assigned TRUE or MBT. Skipping.", lg);
 							continue;
 						}
@@ -188,14 +188,14 @@ public class AnalyzeUnjustified {
 				}
 			}
 			log("Calling UnjustCover() for positive body.");
-			ret.vToDo.addAll(unjustCover(bodyPos, Collections.singleton(sigma), vNp, assignment));
+			ret.vToDo.addAll(unjustCover(bodyPos, Collections.singleton(sigma), vNp, currentAssignment));
 		}
 		log("End explainUnjust().");
 		padDepth -= 2;
 		return ret;
 	}
 
-	private Set<LitSet> unjustCover(List<Literal> vB, Set<Unifier> vY, Set<Unifier> vN, Assignment assignment) {
+	private Set<LitSet> unjustCover(List<Literal> vB, Set<Unifier> vY, Set<Unifier> vN, Assignment currentAssignment) {
 		padDepth += 2;
 		log("Begin UnjustCoverFixed()");
 		log("Finding unjustified body literals in: {} / {} excluded {}", vB, vY, vN);
@@ -228,7 +228,7 @@ public class AnalyzeUnjustified {
 				log("Checking atom: {}", atom);
 				if (atomStore.contains(atom)) {
 					int atomId = atomStore.get(atom);
-					if (assignment.getTruth(atomId) != ThriceTruth.TRUE) {
+					if (currentAssignment.getTruth(atomId) != ThriceTruth.TRUE) {
 						log("Atom is not TRUE. Skipping.");
 						continue;
 					}
@@ -274,7 +274,7 @@ public class AnalyzeUnjustified {
 			}
 			ArrayList<Literal> newB = new ArrayList<>(vB);
 			newB.remove(chosenLiteralPos);
-			ret.addAll(unjustCover(newB, vYp, vN, assignment));
+			ret.addAll(unjustCover(newB, vYp, vN, currentAssignment));
 			log("Literal set(s) to treat: {}", ret);
 		}
 		log("End unjustCover().");

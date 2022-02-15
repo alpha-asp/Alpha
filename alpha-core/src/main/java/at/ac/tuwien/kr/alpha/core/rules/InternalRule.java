@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
@@ -140,24 +141,6 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 	@Override
 	public int getRuleId() {
 		return this.ruleId;
-	}
-
-	/**
-	 * Returns a copy of the rule with the specified literal removed, or null if the new rule would have an empty body.
-	 * @return the rule without the specified literal, null if no body remains.
-	 */
-	public InternalRule returnCopyWithoutLiteral(Literal literal) {
-		BasicAtom headAtom = this.getHeadAtom();
-		List<Literal> newBody = new ArrayList<>(this.getBody().size());
-		for (Literal bodyLiteral : this.getBody()) {
-			if (!literal.equals(bodyLiteral)) {
-				newBody.add(bodyLiteral);
-			}
-		}
-		if (newBody.isEmpty()) {
-			return null;
-		}
-		return new InternalRule(Heads.newNormalHead(headAtom), newBody);
 	}
 
 }

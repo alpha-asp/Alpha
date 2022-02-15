@@ -627,5 +627,4 @@ public class AlphaImplTest {
 		Optional<AnswerSet> answerSet = alpha.solve(parsedProgram).findFirst();
 		assertTrue(answerSet.isPresent());
 	}
-	
 }

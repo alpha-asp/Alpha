@@ -17,10 +17,8 @@ import java.util.*;
  * Simplifies the input program by deleting redundant literals and rules, as well as adding rule heads that will
  * always be true as facts. The approach is adopted from preprocessing techniques employed by traditional ground ASP
  * solvers, as seen in:
- * Gebser, M., Kaufmann, B., Neumann, A., & Schaub, T. (2008, June). Advanced Preprocessing for Answer Set Solving.
- * In ECAI (Vol. 178, pp. 15-19).
+ * @see <a href="https://doi.org/10.3233/978-1-58603-891-5-15">doi:10.3233/978-1-58603-891-5-15</a>
  */
-
 public class SimplePreprocessing extends ProgramTransformation<NormalProgram, NormalProgram> {
 
 	@Override

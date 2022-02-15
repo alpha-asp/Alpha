@@ -15,10 +15,10 @@ public interface ProgramAnalyzingGrounder extends Grounder {
 	/**
 	 * Justifies the absence of an atom, i.e., returns reasons why the atom is not TRUE given the assignment.
 	 * @param atomToJustify the atom to justify.
-	 * @param assignment the current assignment.
+	 * @param currentAssignment the current assignment.
 	 * @return a set of literals who jointly imply the atomToJustify not being TRUE.
 	 */
-	Set<Literal> justifyAtom(int atomToJustify, Assignment assignment);
+	Set<Literal> justifyAtom(int atomToJustify, Assignment currentAssignment);
 
 	/**
 	 * Returns true iff the given atom is known to the grounder as a fact (hence not occurring in any assignment).
