@@ -37,6 +37,7 @@ import at.ac.tuwien.kr.alpha.commons.util.Util;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.grounder.IndexedInstanceStorage;
+import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.core.grounder.WorkingMemory;
 import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
 
