@@ -25,57 +25,57 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-		package at.ac.tuwien.kr.alpha.core.grounder;
+package at.ac.tuwien.kr.alpha.core.grounder;
 
-		import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
-		import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
 
-		import java.util.ArrayList;
-		import java.util.Collection;
-		import java.util.HashMap;
-		import java.util.HashSet;
-		import java.util.Iterator;
-		import java.util.LinkedHashMap;
-		import java.util.LinkedHashSet;
-		import java.util.List;
-		import java.util.Map;
-		import java.util.Set;
-		import java.util.SortedSet;
-		import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
-		import org.apache.commons.lang3.tuple.ImmutablePair;
-		import org.apache.commons.lang3.tuple.Pair;
-		import org.slf4j.Logger;
-		import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-		import at.ac.tuwien.kr.alpha.api.AnswerSet;
-		import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
-		import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-		import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-		import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-		import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-		import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-		import at.ac.tuwien.kr.alpha.commons.AnswerSets;
-		import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-		import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
-		import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
-		import at.ac.tuwien.kr.alpha.commons.util.Util;
-		import at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom;
-		import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
-		import at.ac.tuwien.kr.alpha.core.common.Assignment;
-		import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-		import at.ac.tuwien.kr.alpha.core.common.IntIterator;
-		import at.ac.tuwien.kr.alpha.core.common.NoGood;
-		import at.ac.tuwien.kr.alpha.core.common.NoGoodInterface;
-		import at.ac.tuwien.kr.alpha.core.grounder.bridges.Bridge;
-		import at.ac.tuwien.kr.alpha.core.grounder.instantiation.AssignmentStatus;
-		import at.ac.tuwien.kr.alpha.core.grounder.instantiation.BindingResult;
-		import at.ac.tuwien.kr.alpha.core.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy;
-		import at.ac.tuwien.kr.alpha.core.grounder.instantiation.LiteralInstantiationResult;
-		import at.ac.tuwien.kr.alpha.core.grounder.instantiation.LiteralInstantiator;
-		import at.ac.tuwien.kr.alpha.core.grounder.structure.AnalyzeUnjustified;
-		import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
-		import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.AnswerSets;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
+import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
+import at.ac.tuwien.kr.alpha.commons.util.Util;
+import at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom;
+import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.core.common.Assignment;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.IntIterator;
+import at.ac.tuwien.kr.alpha.core.common.NoGood;
+import at.ac.tuwien.kr.alpha.core.common.NoGoodInterface;
+import at.ac.tuwien.kr.alpha.core.grounder.bridges.Bridge;
+import at.ac.tuwien.kr.alpha.core.grounder.instantiation.AssignmentStatus;
+import at.ac.tuwien.kr.alpha.core.grounder.instantiation.BindingResult;
+import at.ac.tuwien.kr.alpha.core.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy;
+import at.ac.tuwien.kr.alpha.core.grounder.instantiation.LiteralInstantiationResult;
+import at.ac.tuwien.kr.alpha.core.grounder.instantiation.LiteralInstantiator;
+import at.ac.tuwien.kr.alpha.core.grounder.structure.AnalyzeUnjustified;
+import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 
 /**
  * A semi-naive grounder.
@@ -112,13 +112,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		this(program, atomStore, new GrounderHeuristicsConfiguration(), debugInternalChecks, bridges);
 	}
 
-	private NaiveGrounder(CompiledProgram program, AtomStore atomStore, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks,
-				Bridge... bridges) {
+	private NaiveGrounder(CompiledProgram program, AtomStore atomStore, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, Bridge... bridges) {
 		this(program, atomStore, p -> true, heuristicsConfiguration, debugInternalChecks, bridges);
 	}
 
-	NaiveGrounder(CompiledProgram program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter,
-				GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, Bridge... bridges) {
+	NaiveGrounder(CompiledProgram program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, Bridge... bridges) {
 		super(filter, bridges);
 		this.atomStore = atomStore;
 		this.heuristicsConfiguration = heuristicsConfiguration;
