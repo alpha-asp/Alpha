@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2020-2021 Siemens AG
+ *  Copyright (c) 2020-2022 Siemens AG
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -26,12 +26,6 @@
 
 package at.ac.tuwien.kr.alpha.common.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.Substitutable;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,6 +34,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import at.ac.tuwien.kr.alpha.common.Substitutable;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 
@@ -71,7 +71,9 @@ public class HeuristicDirectiveBody implements Substitutable<HeuristicDirectiveB
 
 	/**
 	 * Returns relevant parts of this body as a rule body, which is used to represent heuristic directives as rules.
-	 * @return the basic atoms in the positive part of this body whose heuristic signs do not include F, without heuristic signs; and all non-basic literals in this body
+	 * @return the basic atoms in the positive part of this body whose heuristic signs do not include F, without heuristic signs;
+	 * the basic atoms in the negative part of this body whose heuristic signs are MT, without heuristic signs;
+	 * and all non-basic literals in this body
 	 */
 	public List<Literal> toReducedRuleBody() {
 		final List<Literal> relevantLiterals = new ArrayList<>();
@@ -90,6 +92,11 @@ public class HeuristicDirectiveBody implements Substitutable<HeuristicDirectiveB
 			final Literal literal = heuristicDirectiveAtom.getAtom().toLiteral(false);
 			if (literal instanceof FixedInterpretationLiteral) {
 				relevantLiterals.add(literal);
+			} else {
+				final Set<ThriceTruth> signs = heuristicDirectiveAtom.getSigns();
+				if (signs == null || HeuristicSignSetUtil.SET_TM.equals(signs)) {
+					relevantLiterals.add(literal);
+				}
 			}
 		}
 		return relevantLiterals;
