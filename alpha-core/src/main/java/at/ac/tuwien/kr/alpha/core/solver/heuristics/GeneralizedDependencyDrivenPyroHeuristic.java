@@ -45,7 +45,7 @@ import java.util.Random;
 public class GeneralizedDependencyDrivenPyroHeuristic extends GeneralizedDependencyDrivenHeuristic {
 
 	public GeneralizedDependencyDrivenPyroHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, Random random,
-													BodyActivityType bodyActivityType) {
+							BodyActivityType bodyActivityType) {
 		super(assignment, choiceManager, decayPeriod, decayFactor, random, bodyActivityType);
 	}
 

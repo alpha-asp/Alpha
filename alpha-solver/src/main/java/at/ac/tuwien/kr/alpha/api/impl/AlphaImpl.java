@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import at.ac.tuwien.kr.alpha.core.programs.transformation.SimplePreprocessing;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +71,7 @@ import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.SimplePreprocessing;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
 
 public class AlphaImpl implements Alpha {
