@@ -1,14 +1,13 @@
 package at.ac.tuwien.kr.alpha.core.actions;
 
-import java.io.OutputStream;
+import java.io.BufferedReader;
 
-// TODO change this to wrap a PrintStream
-public class OutputStreamHandle implements Comparable<OutputStreamHandle> {
+public class InputStreamHandle implements Comparable<InputStreamHandle> {
 
 	private final int id;
-	private final OutputStream stream;
+	private final BufferedReader stream;
 
-	public OutputStreamHandle(int id, OutputStream stream) {
+	public InputStreamHandle(int id, BufferedReader stream) {
 		this.id = id;
 		this.stream = stream;
 	}
@@ -17,7 +16,7 @@ public class OutputStreamHandle implements Comparable<OutputStreamHandle> {
 		return id;
 	}
 
-	public OutputStream getStream() {
+	public BufferedReader getStream() {
 		return stream;
 	}
 
@@ -27,7 +26,7 @@ public class OutputStreamHandle implements Comparable<OutputStreamHandle> {
 	}
 
 	@Override
-	public int compareTo(OutputStreamHandle other) {
+	public int compareTo(InputStreamHandle other) {
 		return this.id - other.id;
 	}
 
@@ -35,10 +34,10 @@ public class OutputStreamHandle implements Comparable<OutputStreamHandle> {
 	public boolean equals(Object o) {
 		if (o == null) {
 			return false;
-		} else if (!(o instanceof OutputStreamHandle)) {
+		} else if (!(o instanceof InputStreamHandle)) {
 			return false;
 		}
-		OutputStreamHandle other = (OutputStreamHandle) o;
+		InputStreamHandle other = (InputStreamHandle) o;
 		return this.id == other.id;
 	}
 

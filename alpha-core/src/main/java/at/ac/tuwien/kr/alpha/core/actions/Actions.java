@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
@@ -92,5 +94,70 @@ public class Actions {
 			throw new RuntimeException(ex);
 		}
 	}
-	
+
+	public static FunctionTerm fileOpenInputStream(List<Term> input) {
+		if (input.size() != 1) {
+			// TODO do properly
+			throw new IllegalArgumentException("Incorrect arity!");
+		}
+		Term inTerm = input.get(0);
+		if (!(inTerm instanceof ConstantTerm)) {
+			throw new IllegalArgumentException("Input must be a string constant!");
+		}
+		ConstantTerm<?> inConst = (ConstantTerm<?>) inTerm;
+		if (!(inConst.getObject() instanceof String) || inConst.isSymbolic()) {
+			throw new IllegalArgumentException("Input must be a string constant!");
+		}
+		String path = (String) inConst.getObject();
+		try {
+			InputStreamHandle streamHandle = new InputStreamHandle(ID_GEN.getNextId(), Files.newBufferedReader(Paths.get(path)));
+			return Terms.newFunctionTerm("stream", Terms.newConstant(streamHandle));
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public static FunctionTerm inputStreamReadLine(List<Term> input) {
+		if (input.size() != 1) {
+			// TODO do properly
+			throw new IllegalArgumentException("Incorrect arity!");
+		}
+		if (!(input.get(0) instanceof ConstantTerm) || !(((ConstantTerm<?>) input.get(0)).getObject() instanceof InputStreamHandle)) {
+			throw new IllegalArgumentException("First input term must be an input stream handle!");
+		}
+		InputStreamHandle handle = ((ConstantTerm<InputStreamHandle>) input.get(0)).getObject();
+		try {
+			String line = handle.getStream().readLine();
+			ConstantTerm<String> lineTerm;
+			if (line == null) {
+				// we reached EOF
+				lineTerm = Terms.newSymbolicConstant("eof");
+			} else {
+				lineTerm = Terms.newConstant(line);
+			}
+			return Terms.newFunctionTerm("ok", lineTerm);
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public static FunctionTerm inputStreamClose(List<Term> input) {
+		if (input.size() != 1) {
+			// TODO do properly
+			throw new IllegalArgumentException("Incorrect arity!");
+		}
+		if (!(input.get(0) instanceof ConstantTerm) || !(((ConstantTerm<?>) input.get(0)).getObject() instanceof InputStreamHandle)) {
+			throw new IllegalArgumentException("First input term must be an input stream handle!");
+		}
+		InputStreamHandle handle = ((ConstantTerm<InputStreamHandle>) input.get(0)).getObject();
+		try {
+			handle.getStream().close();
+			return Terms.newFunctionTerm("ok");
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
 }

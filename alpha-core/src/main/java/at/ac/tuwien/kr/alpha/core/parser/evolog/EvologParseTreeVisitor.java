@@ -22,9 +22,14 @@ public class EvologParseTreeVisitor extends ASPCore2ParseTreeVisitor {
 	public EvologParseTreeVisitor(Map<String, PredicateInterpretation> externals, boolean acceptVariables) {
 		super(externals, acceptVariables);
 		actionRegistry.put("printLine", Actions::printLine);
+
 		actionRegistry.put("fileOutputStream", Actions::fileOpenOutputStream);
 		actionRegistry.put("streamWrite", Actions::outputStreamWrite);
-		actionRegistry.put("streamClose", Actions::outputStreamClose);
+		actionRegistry.put("outputStreamClose", Actions::outputStreamClose);
+
+		actionRegistry.put("fileInputStream", Actions::fileOpenInputStream);
+		actionRegistry.put("streamReadLine", Actions::inputStreamReadLine);
+		actionRegistry.put("inputStreamClose", Actions::inputStreamClose);
 	}
 
 	public EvologParseTreeVisitor(Map<String, PredicateInterpretation> externals) {

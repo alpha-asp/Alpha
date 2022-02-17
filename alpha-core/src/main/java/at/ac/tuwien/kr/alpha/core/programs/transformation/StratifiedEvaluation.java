@@ -341,17 +341,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		List<Term> substitutedInput = new ArrayList<>();
 		// Substitute all variables in action input so that all input terms are ground.
 		for (Term inputTerm : actionInput) {
-			// TODO handle variables nested in function terms as well!
-			if (inputTerm instanceof VariableTerm) {
-				VariableTerm inputVar = (VariableTerm) inputTerm;
-				if (!substitution.isVariableSet(inputVar)) {
-					throw new IllegalStateException(
-							"No substitute for action input variable " + inputVar.toString() + " in substitution: " + substitution.toString());
-				}
-				substitutedInput.add(inputVar.substitute(substitution));
-			} else {
-				substitutedInput.add(inputTerm);
-			}
+			substitutedInput.add(inputTerm.substitute(substitution));
 		}
 		// Call the actual action.
 		// TODO exception handling (translate EVERY throwable to an error term)
