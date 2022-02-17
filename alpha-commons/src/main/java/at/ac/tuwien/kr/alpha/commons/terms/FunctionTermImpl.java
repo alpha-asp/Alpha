@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
@@ -147,20 +148,18 @@ class FunctionTermImpl extends AbstractTerm implements FunctionTerm {
 	}
 
 	@Override
-	public Term renameVariables(String renamePrefix) {
-		List<Term> renamedTerms = new ArrayList<>(terms.size());
-		for (Term term : terms) {
-			renamedTerms.add(term.renameVariables(renamePrefix));
-		}
-		return FunctionTermImpl.getInstance(symbol, renamedTerms);
-	}
-
-	@Override
 	public Term normalizeVariables(String renamePrefix, Term.RenameCounter counter) {
 		List<Term> normalizedTerms = new ArrayList<>(terms.size());
 		for (Term term : terms) {
 			normalizedTerms.add(term.normalizeVariables(renamePrefix, counter));
 		}
 		return FunctionTermImpl.getInstance(symbol, normalizedTerms);
+	}
+
+	@Override
+	public FunctionTerm renameVariables(Function<String, String> mapping) {
+		List<Term> renamedTerms = new ArrayList<>();
+		terms.forEach((t) -> renamedTerms.add(t.renameVariables(mapping)));
+		return new FunctionTermImpl(symbol, renamedTerms);
 	}
 }

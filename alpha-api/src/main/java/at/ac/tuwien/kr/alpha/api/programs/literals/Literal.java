@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.api.programs.literals;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
@@ -36,4 +37,7 @@ public interface Literal {
 	Set<VariableTerm> getNonBindingVariables();
 
 	Literal substitute(Substitution substitution);
+
+	Literal renameVariables(Function<String, String> mapping);
+	
 }

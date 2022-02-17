@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.commons.literals;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
@@ -106,5 +107,10 @@ class BasicLiteralImpl extends AbstractLiteral implements BasicLiteral {
 			nonbindingVariables.addAll(term.getOccurringVariables());
 		}
 		return nonbindingVariables;
+	}
+
+	@Override
+	public BasicLiteral renameVariables(Function<String, String> mapping) {
+		return new BasicLiteralImpl(getAtom().renameVariables(mapping), positive);
 	}
 }

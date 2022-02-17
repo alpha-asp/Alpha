@@ -1,6 +1,8 @@
 package at.ac.tuwien.kr.alpha.commons.rules;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
@@ -35,6 +37,13 @@ class NormalRuleImpl extends AbstractRule<NormalHead> implements NormalRule {
 	@Override
 	public BasicAtom getHeadAtom() {
 		return this.isConstraint() ? null : this.getHead().getAtom();
+	}
+
+	@Override
+	public NormalRule renameVariables(Function<String, String> mapping) {
+		Set<Literal> renamedBody = new LinkedHashSet<>();
+		getBody().forEach((lit) -> renamedBody.add(lit.renameVariables(mapping)));
+		return new NormalRuleImpl(getHead().renameVariables(mapping), renamedBody);
 	}
 
 }

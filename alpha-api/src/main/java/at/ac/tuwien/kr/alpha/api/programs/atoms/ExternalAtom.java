@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.api.programs.atoms;
 
 import java.util.List;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.programs.VariableNormalizableAtom;
@@ -20,5 +21,7 @@ public interface ExternalAtom extends Atom, VariableNormalizableAtom {
 	List<Term> getOutput();
 
 	PredicateInterpretation getInterpretation();
+
+	ExternalAtom renameVariables(Function<String, String> mapping);
 
 }

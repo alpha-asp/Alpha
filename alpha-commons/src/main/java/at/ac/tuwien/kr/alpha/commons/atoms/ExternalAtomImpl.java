@@ -27,8 +27,10 @@
  */
 package at.ac.tuwien.kr.alpha.commons.atoms;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.ListUtils;
@@ -194,6 +196,13 @@ class ExternalAtomImpl extends AbstractAtom implements ExternalAtom {
 		List<Term> renamedInput = Terms.renameTerms(this.input, prefix + "_IN_", counterStartingValue);
 		List<Term> renamedOutput = Terms.renameTerms(this.output, prefix + "_OUT_", counterStartingValue);
 		return new ExternalAtomImpl(this.predicate, this.interpretation, renamedInput, renamedOutput);
+	}
+
+	@Override
+	public ExternalAtom renameVariables(Function<String, String> mapping) {
+		List<Term> renamedTerms = new ArrayList<>();
+		getTerms().forEach((t) -> renamedTerms.add(t.renameVariables(mapping)));
+		return this.withTerms(renamedTerms);
 	}
 
 }

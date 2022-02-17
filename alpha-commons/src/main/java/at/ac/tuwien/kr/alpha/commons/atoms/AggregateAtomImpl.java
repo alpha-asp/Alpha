@@ -30,9 +30,11 @@ package at.ac.tuwien.kr.alpha.commons.atoms;
 import static at.ac.tuwien.kr.alpha.commons.util.Util.join;
 import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
@@ -118,6 +120,15 @@ class AggregateAtomImpl extends AbstractAtom implements AggregateAtom {
 	@Override
 	public AggregateAtomImpl substitute(Substitution substitution) {
 		throw new UnsupportedOperationException("Cannot substitute AggregateAtom!");
+	}
+
+	@Override
+	public AggregateAtom renameVariables(Function<String, String> mapping) {
+		Term renamedLefthandTerm = lowerBoundTerm != null ? lowerBoundTerm.renameVariables(mapping) : null;
+		Term renamedRighthandTerm = upperBoundTerm != null ? upperBoundTerm.renameVariables(mapping) : null;
+		List<AggregateElement> renamedElements = new ArrayList<>();
+		aggregateElements.forEach((elem) -> renamedElements.add(elem.renameVariables(mapping)));
+		return new AggregateAtomImpl(lowerBoundOperator, renamedLefthandTerm, upperBoundOperator, renamedRighthandTerm, aggregatefunction, renamedElements);
 	}
 
 	@Override
@@ -247,6 +258,15 @@ class AggregateAtomImpl extends AbstractAtom implements AggregateAtom {
 		}
 
 		@Override
+		public AggregateElement renameVariables(Function<String, String> mapping) {
+			List<Term> renamedTerms = new ArrayList<>();
+			List<Literal> renamedLiterals = new ArrayList<>();
+			elementTerms.forEach((t) -> renamedTerms.add(t.renameVariables(mapping)));
+			elementLiterals.forEach((lit) -> renamedLiterals.add(lit.renameVariables(mapping)));
+			return new AggregateElementImpl(renamedTerms, renamedLiterals);
+		}
+
+		@Override
 		public boolean equals(Object o) {
 			if (this == o) {
 				return true;
@@ -274,6 +294,7 @@ class AggregateAtomImpl extends AbstractAtom implements AggregateAtom {
 		public String toString() {
 			return join("", elementTerms, " : ") + join("", elementLiterals, "");
 		}
+
 	}
 
 }

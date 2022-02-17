@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.api.programs.atoms;
 
 import java.util.List;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
@@ -54,6 +55,10 @@ public interface AggregateAtom extends Atom {
 
 		boolean isGround();
 
+		AggregateElement renameVariables(Function<String, String> mapping);
+
 	}
+
+	AggregateAtom renameVariables(Function<String, String> mapping);
 
 }

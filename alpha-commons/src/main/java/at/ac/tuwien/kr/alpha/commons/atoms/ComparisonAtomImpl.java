@@ -27,14 +27,15 @@
  */
 package at.ac.tuwien.kr.alpha.commons.atoms;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
@@ -126,13 +127,20 @@ class ComparisonAtomImpl extends AbstractAtom implements ComparisonAtom {
 	}
 
 	@Override
-	public Atom withTerms(List<Term> terms) {
+	public ComparisonAtom withTerms(List<Term> terms) {
 		return new ComparisonAtomImpl(terms, operator);
 	}
 
 	@Override
 	public ComparisonOperator getOperator() {
 		return this.operator;
+	}
+
+	@Override
+	public ComparisonAtom renameVariables(Function<String, String> mapping) {
+		List<Term> renamedTerms = new ArrayList<>();
+		terms.forEach((t) -> renamedTerms.add(t.renameVariables(mapping)));
+		return this.withTerms(renamedTerms);
 	}
 
 }

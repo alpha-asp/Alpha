@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.commons.terms;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
@@ -13,6 +14,7 @@ import at.ac.tuwien.kr.alpha.commons.util.Interner;
  * Copyright (c) 2016-2017, the Alpha Team.
  */
 class VariableTermImpl extends AbstractTerm implements VariableTerm {
+	
 	private static final Interner<VariableTermImpl> INTERNER = new Interner<>();
 
 	private static final String ANONYMOUS_VARIABLE_PREFIX = "_";
@@ -77,24 +79,18 @@ class VariableTermImpl extends AbstractTerm implements VariableTerm {
 		return variableName.hashCode();
 	}
 
-	// TODO not sure if this makes sense (cast to VariableTerm interface instead?)
 	@Override
 	public int compareTo(Term o) {
 		if (this == o) {
 			return 0;
 		}
 
-		if (!(o instanceof VariableTermImpl)) {
+		if (!(o instanceof VariableTerm)) {
 			return super.compareTo(o);
 		}
 
-		VariableTermImpl other = (VariableTermImpl) o;
-		return variableName.compareTo(other.variableName);
-	}
-
-	@Override
-	public AbstractTerm renameVariables(String renamePrefix) {
-		return VariableTermImpl.getInstance(renamePrefix + variableName);
+		VariableTerm other = (VariableTerm) o;
+		return variableName.compareTo(other.getName());
 	}
 
 	@Override
@@ -107,5 +103,15 @@ class VariableTermImpl extends AbstractTerm implements VariableTerm {
 			counter.getRenamedVariables().put(this, renamedVariable);
 			return renamedVariable;
 		}
+	}
+
+	@Override
+	public VariableTerm renameVariables(Function<String, String> mapping) {
+		return new VariableTermImpl(mapping.apply(this.variableName));
+	}
+
+	@Override
+	public String getName() {
+		return variableName;
 	}
 }

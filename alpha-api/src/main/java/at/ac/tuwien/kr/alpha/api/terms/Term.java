@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.api.terms;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 
@@ -18,13 +19,7 @@ public interface Term extends Comparable<Term> {
 
 	Term substitute(Substitution substitution);
 
-	/**
-	 * Rename all variables occurring in this Term by prefixing their name.
-	 * 
-	 * @param renamePrefix the name to prefix all occurring variables.
-	 * @return the term with all variables renamed.
-	 */
-	Term renameVariables(String renamePrefix);
+	Term renameVariables(Function<String, String> mapping);
 
 	Term normalizeVariables(String renamePrefix, RenameCounter counter);
 

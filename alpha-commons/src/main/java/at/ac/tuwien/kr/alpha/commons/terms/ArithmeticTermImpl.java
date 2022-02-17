@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.commons.terms;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.ArithmeticOperator;
@@ -77,11 +78,6 @@ class ArithmeticTermImpl extends AbstractTerm implements ArithmeticTerm {
 	@Override
 	public Term substitute(Substitution substitution) {
 		return getInstance(left.substitute(substitution), arithmeticOperator, right.substitute(substitution));
-	}
-
-	@Override
-	public Term renameVariables(String renamePrefix) {
-		return getInstance(left.renameVariables(renamePrefix), arithmeticOperator, right.renameVariables(renamePrefix));
 	}
 
 	@Override
@@ -147,6 +143,11 @@ class ArithmeticTermImpl extends AbstractTerm implements ArithmeticTerm {
 		return arithmeticOperator.eval(leftInt, rightInt);
 	}
 	
+	@Override
+	public ArithmeticTerm renameVariables(Function<String, String> mapping) {
+		return new ArithmeticTermImpl(left.renameVariables(mapping), arithmeticOperator, right.renameVariables(mapping));
+	}
+
 	// Note: It doesn't seem like this class is really needed, could be handled by an if in ArithmeticTermImpl#getInstance.
 	public static class MinusTerm extends ArithmeticTermImpl {
 
@@ -181,11 +182,6 @@ class ArithmeticTermImpl extends AbstractTerm implements ArithmeticTerm {
 		@Override
 		public Term substitute(Substitution substitution) {
 			return getInstance(left.substitute(substitution));
-		}
-
-		@Override
-		public Term renameVariables(String renamePrefix) {
-			return getInstance(left.renameVariables(renamePrefix));
 		}
 
 		@Override

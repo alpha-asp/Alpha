@@ -2,9 +2,9 @@ package at.ac.tuwien.kr.alpha.commons.terms;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.util.Interner;
@@ -16,6 +16,7 @@ import at.ac.tuwien.kr.alpha.commons.util.Util;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class IntervalTerm extends AbstractTerm {
+	
 	private static final Interner<IntervalTerm> INTERNER = new Interner<>();
 	private final Term lowerBoundTerm;
 	private final Term upperBoundTerm;
@@ -30,11 +31,13 @@ public class IntervalTerm extends AbstractTerm {
 			throw new IllegalArgumentException();
 		}
 
+		// FIXME this doesn't take function terms into account!
 		this.ground = !((lowerBound instanceof VariableTerm) || (upperBound instanceof VariableTerm));
 
 		this.lowerBoundTerm = lowerBound;
 		this.upperBoundTerm = upperBound;
 
+		// FIXME this is wrong, a string consisting of an integer literal would be an integer as well according to this!
 		if (this.ground) {
 			this.upperBound = Integer.parseInt(upperBoundTerm.toString());
 			this.lowerBound = Integer.parseInt(lowerBoundTerm.toString());
@@ -129,42 +132,14 @@ public class IntervalTerm extends AbstractTerm {
 	}
 
 	@Override
-	public Term renameVariables(String renamePrefix) {
-		return new IntervalTerm(lowerBoundTerm.renameVariables(renamePrefix), upperBoundTerm.renameVariables(renamePrefix));
-	}
-
-	@Override
 	public Term normalizeVariables(String renamePrefix, Term.RenameCounter counter) {
 		return IntervalTerm.getInstance(
 			lowerBoundTerm.normalizeVariables(renamePrefix, counter),
 			upperBoundTerm.normalizeVariables(renamePrefix, counter));
 	}
 
-	/**
-	 * Returns true if the term contains (or is) some IntervalTerm.
-	 * @param term the term to test
-	 * @return true iff an IntervalTerm occurs in term.
-	 */
-	public static boolean termContainsIntervalTerm(Term term) {
-		if (term instanceof IntervalTerm) {
-			return true;
-		} else if (term instanceof FunctionTermImpl) {
-			return functionTermContainsIntervals((FunctionTermImpl) term);
-		} else {
-			return false;
-		}
-	}
-
-	public static boolean functionTermContainsIntervals(FunctionTerm functionTerm) {
-		// Test whether a function term contains an interval term (recursively).
-		for (Term term : functionTerm.getTerms()) {
-			if (term instanceof IntervalTerm) {
-				return true;
-			}
-			if (term instanceof FunctionTermImpl && functionTermContainsIntervals((FunctionTerm) term)) {
-				return true;
-			}
-		}
-		return false;
+	@Override
+	public Term renameVariables(Function<String, String> mapping) {
+		return new IntervalTerm(lowerBoundTerm.renameVariables(mapping), upperBoundTerm.renameVariables(mapping));
 	}
 }

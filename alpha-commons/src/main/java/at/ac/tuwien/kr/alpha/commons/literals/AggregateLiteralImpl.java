@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.commons.literals;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
@@ -66,6 +67,11 @@ class AggregateLiteralImpl extends AbstractLiteral implements AggregateLiteral {
 			return (VariableTerm) bound;
 		}
 		return null;
+	}
+
+	@Override
+	public AggregateLiteral renameVariables(Function<String, String> mapping) {
+		return new AggregateLiteralImpl(getAtom().renameVariables(mapping), positive);
 	}
 
 }

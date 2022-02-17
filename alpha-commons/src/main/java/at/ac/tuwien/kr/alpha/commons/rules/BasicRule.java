@@ -27,10 +27,13 @@
  */
 package at.ac.tuwien.kr.alpha.commons.rules;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 
 /**
@@ -43,6 +46,13 @@ class BasicRule extends AbstractRule<Head> {
 
 	BasicRule(Head head, Set<Literal> body) {
 		super(head, body);
+	}
+
+	@Override
+	public Rule<Head> renameVariables(Function<String, String> mapping) {
+		Set<Literal> renamedBody = new LinkedHashSet<>();
+		getBody().forEach((lit) -> renamedBody.add(lit.renameVariables(mapping)));
+		return new BasicRule(getHead().renameVariables(mapping), renamedBody);
 	}
 
 }

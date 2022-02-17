@@ -1,5 +1,7 @@
 package at.ac.tuwien.kr.alpha.api.rules;
 
+import java.util.function.Function;
+
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 
@@ -13,5 +15,7 @@ public interface NormalRule extends Rule<NormalHead> {
 	BasicAtom getHeadAtom();
 
 	boolean isGround();
+
+	NormalRule renameVariables(Function<String, String> mapping);
 
 }

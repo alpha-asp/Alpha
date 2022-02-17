@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.api.rules.heads;
 
 import java.util.List;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
@@ -31,5 +32,7 @@ public interface ChoiceHead extends Head {
 		List<Literal> getConditionLiterals();
 
 	}
+
+	ChoiceHead renameVariables(Function<String, String> mapping);
 
 }

@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.commons.rules.heads;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.actions.Action;
@@ -54,6 +55,12 @@ class ActionHeadImpl implements ActionHead {
 	@Override
 	public VariableTerm getActionOutputTerm() {
 		return actionOutputTerm;
+	}
+
+	@Override
+	public ActionHead renameVariables(Function<String, String> mapping) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

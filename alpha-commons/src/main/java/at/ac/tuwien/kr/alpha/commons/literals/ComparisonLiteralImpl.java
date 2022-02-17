@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
@@ -206,6 +207,11 @@ class ComparisonLiteralImpl extends AbstractLiteral implements ComparisonLiteral
 		} else {
 			return getAtom().getOperator().compare(x, y);
 		}
+	}
+
+	@Override
+	public ComparisonLiteral renameVariables(Function<String, String> mapping) {
+		return new ComparisonLiteralImpl(getAtom(), positive);
 	}
 
 }

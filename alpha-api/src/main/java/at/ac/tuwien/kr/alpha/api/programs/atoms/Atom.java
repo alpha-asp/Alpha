@@ -1,7 +1,9 @@
 package at.ac.tuwien.kr.alpha.api.programs.atoms;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
@@ -44,7 +46,11 @@ public interface Atom extends Comparable<Atom> {
 
 	Atom substitute(Substitution substitution); // Introduce parameterized interface Substituable<A extends Atom> to get atom types right?
 
-	Atom renameVariables(String newVariablePrefix);
+	default Atom renameVariables(Function<String, String> mapping) {
+		List<Term> renamedTerms = new ArrayList<>();
+		this.getTerms().forEach(t -> renamedTerms.add(t.renameVariables(mapping)));
+		return this.withTerms(renamedTerms);
+	}
 
 	Atom withTerms(List<Term> terms);
 

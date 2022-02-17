@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.api.terms;
 
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * A term representing an uninterpreted function
@@ -12,5 +13,7 @@ public interface FunctionTerm extends Term {
 	List<Term> getTerms();
 
 	String getSymbol();
+
+	FunctionTerm renameVariables(Function<String, String> mapping);
 
 }

@@ -23,6 +23,6 @@ public interface FixedInterpretationLiteral extends Literal {
 	 * @return a list of substitutions, in each of which this literal is true, or an
 	 *         empty list if no such substitution exists
 	 */
-	public abstract List<Substitution> getSatisfyingSubstitutions(Substitution partialSubstitution);
+	List<Substitution> getSatisfyingSubstitutions(Substitution partialSubstitution);
 
 }

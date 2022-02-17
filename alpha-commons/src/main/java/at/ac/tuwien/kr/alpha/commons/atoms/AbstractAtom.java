@@ -36,7 +36,6 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
 /**
  * An Atom is the common superclass of all representations of ASP atoms used by Alpha.
@@ -86,11 +85,6 @@ public abstract class AbstractAtom implements Atom {
 
 	@Override
 	public abstract Literal toLiteral(boolean positive);
-
-	@Override
-	public Atom renameVariables(String newVariablePrefix) {
-		return this.substitute(Terms.renameVariables(getOccurringVariables(), newVariablePrefix));
-	}
 
 	@Override
 	public abstract boolean equals(Object o);

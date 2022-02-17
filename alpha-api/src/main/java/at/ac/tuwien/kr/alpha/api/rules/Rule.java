@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.api.rules;
 
 import java.util.Set;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
@@ -22,4 +23,6 @@ public interface Rule<H extends Head> {
 	Set<Literal> getPositiveBody();
 
 	Set<Literal> getNegativeBody();
+
+	Rule<H> renameVariables(Function<String, String> mapping);
 }

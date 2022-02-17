@@ -1,5 +1,7 @@
 package at.ac.tuwien.kr.alpha.api.terms;
 
+import java.util.function.Function;
+
 /**
  * A {@link Term} that is a binary arithmetic expression.
  * 
@@ -14,5 +16,7 @@ public interface ArithmeticTerm extends Term {
 	Term getRightOperand();
 
 	Integer evaluateExpression();
+
+	ArithmeticTerm renameVariables(Function<String, String> mapping);
 
 }

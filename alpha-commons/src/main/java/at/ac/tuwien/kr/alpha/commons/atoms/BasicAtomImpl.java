@@ -27,9 +27,11 @@
  */
 package at.ac.tuwien.kr.alpha.commons.atoms;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
@@ -46,6 +48,7 @@ import at.ac.tuwien.kr.alpha.commons.util.Util;
  * Represents ordinary ASP atoms.
  */
 class BasicAtomImpl extends AbstractAtom implements BasicAtom {
+
 	private final Predicate predicate;
 	private final List<Term> terms;
 	private final boolean ground;
@@ -169,8 +172,15 @@ class BasicAtomImpl extends AbstractAtom implements BasicAtom {
 	}
 
 	@Override
-	public Atom withTerms(List<Term> terms) {
+	public BasicAtom withTerms(List<Term> terms) {
 		return new BasicAtomImpl(predicate, terms);
+	}
+
+	@Override
+	public BasicAtom renameVariables(Function<String, String> mapping) {
+		List<Term> renamedTerms = new ArrayList<>();
+		terms.forEach((t) -> renamedTerms.add(t.renameVariables(mapping)));
+		return this.withTerms(renamedTerms);
 	}
 
 }

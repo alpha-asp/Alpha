@@ -68,15 +68,6 @@ abstract class AbstractTerm implements Term {
 	@Override
 	public abstract boolean isGround();
 
-	/**
-	 * Rename all variables occurring in this Term by prefixing their name.
-	 * 
-	 * @param renamePrefix the name to prefix all occurring variables.
-	 * @return the term with all variables renamed.
-	 */
-	@Override
-	public abstract Term renameVariables(String renamePrefix);
-
 	@Override
 	public abstract Term normalizeVariables(String renamePrefix, Term.RenameCounter counter);
 

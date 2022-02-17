@@ -141,12 +141,6 @@ class ConstantTermImpl<T extends Comparable<T>> extends AbstractTerm implements 
 	}
 
 	@Override
-	public AbstractTerm renameVariables(String renamePrefix) {
-		// Constant contains no variables, hence stays the same.
-		return this;
-	}
-
-	@Override
 	public AbstractTerm normalizeVariables(String renamePrefix, Term.RenameCounter counter) {
 		return this;
 	}

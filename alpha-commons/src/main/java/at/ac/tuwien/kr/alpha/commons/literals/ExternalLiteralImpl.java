@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
@@ -215,6 +216,11 @@ class ExternalLiteralImpl extends AbstractLiteral implements ExternalLiteral {
 			}
 		}
 		return retVal;
+	}
+
+	@Override
+	public ExternalLiteral renameVariables(Function<String, String> mapping) {
+		return new ExternalLiteralImpl(getAtom(), positive);
 	}
 
 }
