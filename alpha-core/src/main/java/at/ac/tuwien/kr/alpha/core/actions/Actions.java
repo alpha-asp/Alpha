@@ -71,7 +71,7 @@ public class Actions {
 		OutputStream dst = dstHandle.getStream();
 		try {
 			dst.write(data);
-			return Terms.newFunctionTerm("ok");
+			return Terms.newFunctionTerm("writeResult", Terms.newSymbolicConstant("ok"));
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
 		}
@@ -89,7 +89,7 @@ public class Actions {
 		OutputStreamHandle handle = ((ConstantTerm<OutputStreamHandle>) input.get(0)).getObject();
 		try {
 			handle.getStream().close();
-			return Terms.newFunctionTerm("ok");
+			return Terms.newFunctionTerm("closeResult", Terms.newSymbolicConstant("ok"));
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
 		}
@@ -154,7 +154,7 @@ public class Actions {
 		InputStreamHandle handle = ((ConstantTerm<InputStreamHandle>) input.get(0)).getObject();
 		try {
 			handle.getStream().close();
-			return Terms.newFunctionTerm("ok");
+			return Terms.newFunctionTerm("closeResult", Terms.newSymbolicConstant("ok"));
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
 		}

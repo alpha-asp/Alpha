@@ -211,4 +211,35 @@ public final class AspStandardLibrary {
 		return Collections.singleton(Terms.asTermList(s1 + s2));
 	}
 
+	/**
+	 * Converts the given string to an integer
+	 */
+	@Predicate(name = "string_parse_integer")
+	public static Set<List<ConstantTerm<Integer>>> stringParseInteger(String str) {
+		return Collections.singleton(Collections.singletonList(Terms.newConstant(Integer.valueOf(str))));
+	}
+
+	@Predicate(name = "string_is_empty")
+	public static boolean isStringEmpty(String str) {
+		return str.isEmpty();
+	}
+
+	@Predicate(name = "string_substring")
+	public static Set<List<ConstantTerm<String>>> substringOfString(String str, int startIdx, int endIdx) {
+		return Collections.singleton(Collections.singletonList(Terms.newConstant(str.substring(startIdx, endIdx))));
+	}
+
+	@Predicate(name = "str_x_xs")
+	public static Set<List<ConstantTerm<String>>> stringHeadRemainder(String str) {
+		List<ConstantTerm<String>> xXs = null;
+		if (str.isEmpty()) {
+			return Collections.emptySet();
+		} else if (str.length() == 1) {
+			xXs = List.of(Terms.newConstant(str), Terms.newConstant(""));
+		} else {
+			xXs = List.of(Terms.newConstant(str.substring(0, 1)), Terms.newConstant(str.substring(1, str.length())));
+		}
+		return Collections.singleton(xXs);
+	}
+
 }

@@ -22,7 +22,7 @@ public class InputStreamHandle implements Comparable<InputStreamHandle> {
 
 	@Override
 	public String toString() {
-		return "outputStream-" + id;
+		return "inputStream-" + id;
 	}
 
 	@Override
