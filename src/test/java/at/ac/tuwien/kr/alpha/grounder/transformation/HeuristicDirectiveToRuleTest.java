@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2022 Siemens AG
+ * Copyright (c) 2018-2021 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -84,18 +84,6 @@ public class HeuristicDirectiveToRuleTest {
 		program = new HeuristicDirectiveToRule(heuristicsConfiguration).apply(program);
 		assertEquals(emptyList(), program.getInlineDirectives().getDirectives());
 		assertEquals("_h(N, 2, false, b(N), condpos(t(a(N)), t(b(M))), condneg) :- a(N), b(M), not N < M.", program.getRules().get(program.getRules().size() - 1).toString());
-	}
-
-	@Test
-	public void testNegativeLiteralsWithVariousSignSets() {
-		InputProgram program = parser.parse("a(1). a(2)."
-				+ "{ b(N) } :- a(N)."
-				+ "{ c(N) } :- a(N)."
-				+ "#heuristic b(N) : T a(N), not MT b(N), not T c(N).");
-
-		program = new HeuristicDirectiveToRule(heuristicsConfiguration).apply(program);
-		assertEquals(emptyList(), program.getInlineDirectives().getDirectives());
-		assertEquals("_h(0, 0, true, b(N), condpos(t(a(N))), condneg(tm(b(N)), t(c(N)))) :- a(N), not b(N).", program.getRules().get(program.getRules().size() - 1).toString());
 	}
 
 }
