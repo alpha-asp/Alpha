@@ -8,6 +8,8 @@ import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
+import at.ac.tuwien.kr.alpha.core.actions.ActionContext;
+import at.ac.tuwien.kr.alpha.core.actions.ActionContextImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.parser.evolog.EvologProgramParser;
@@ -66,8 +68,11 @@ public final class AlphaFactory {
 						.build());
 		SolverFactory solverFactory = new SolverFactory(cfg.getSolverName(), cfg.getNogoodStoreName(), solverCfg);
 
+		// Create an action context
+		ActionContext aCtx = new ActionContextImpl();
+
 		// Now that all dependencies are taken care of, build new Alpha instance.
-		return new AlphaImpl(parserFactory, programNormalizationFactory, grounderFactory, solverFactory, cfg.isEvaluateStratifiedPart(),
+		return new AlphaImpl(parserFactory, programNormalizationFactory, grounderFactory, solverFactory, aCtx, cfg.isEvaluateStratifiedPart(),
 				cfg.isSortAnswerSets());
 	}
 

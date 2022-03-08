@@ -54,7 +54,7 @@ public class PredicateInternalizer {
 				// TODO do this nicely (using visitor?)
 				if (head instanceof ActionHead) {
 					ActionHead actionHead = (ActionHead) head;
-					newHead = Heads.newActionHead(makePredicateInternal(actionHead.getAtom()), actionHead.getAction(), actionHead.getActionInputTerms(),
+					newHead = Heads.newActionHead(makePredicateInternal(actionHead.getAtom()), actionHead.getActionName(), actionHead.getActionInputTerms(),
 							actionHead.getActionOutputTerm());
 				} else {
 					newHead = Heads.newNormalHead(makePredicateInternal(head.getAtom()));

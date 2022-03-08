@@ -3,7 +3,6 @@ package at.ac.tuwien.kr.alpha.commons.rules.heads;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.api.programs.actions.Action;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.heads.ActionHead;
@@ -33,7 +32,7 @@ public final class Heads {
 		return new ChoiceElementImpl(choiceAtom, conditionLiterals);
 	}
 
-	public static ActionHead newActionHead(BasicAtom atom, Action action, List<Term> actionInputTerms, VariableTerm actionResult) {
-		return new ActionHeadImpl(atom, action, actionInputTerms, actionResult);
+	public static ActionHead newActionHead(BasicAtom atom, String actionName, List<Term> actionInputTerms, VariableTerm actionResult) {
+		return new ActionHeadImpl(atom, actionName, actionInputTerms, actionResult);
 	}
 }

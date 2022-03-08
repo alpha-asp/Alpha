@@ -59,6 +59,7 @@ import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
+import at.ac.tuwien.kr.alpha.core.actions.ActionContext;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
@@ -81,17 +82,21 @@ public class AlphaImpl implements Alpha {
 	private final GrounderFactory grounderFactory;
 	private final SolverFactory solverFactory;
 
+	private final ActionContext actionContext;
+
 	private final boolean enableStratifiedEvaluation;
 	private final boolean sortAnswerSets;
 
 	AlphaImpl(Supplier<ProgramParser> parserFactory, Supplier<ProgramTransformation<InputProgram, NormalProgram>> programNormalizationFactory,
 			GrounderFactory grounderFactory,
 			SolverFactory solverFactory,
+			ActionContext actionContext,
 			boolean enableStratifiedEvaluation, boolean sortAnswerSets) {
 		this.parserFactory = parserFactory;
 		this.programNormalizationFactory = programNormalizationFactory;
 		this.grounderFactory = grounderFactory;
 		this.solverFactory = solverFactory;
+		this.actionContext = actionContext;
 		this.enableStratifiedEvaluation = enableStratifiedEvaluation;
 		this.sortAnswerSets = sortAnswerSets;
 	}
@@ -158,7 +163,7 @@ public class AlphaImpl implements Alpha {
 			AnalyzedProgram analyzed = new AnalyzedProgram(retVal.getRules(), retVal.getFacts());
 			// TODO as Evolog moves further along, we want to integrate stratified evaluation with grounder and solver.
 			// Therefore, leave it as is and don't make part of factory API for now.
-			retVal = new StratifiedEvaluation().apply(analyzed);
+			retVal = new StratifiedEvaluation(actionContext).apply(analyzed);
 		}
 		return retVal;
 	}
@@ -246,7 +251,7 @@ public class AlphaImpl implements Alpha {
 		final AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(program);
 		final NormalProgram preprocessed;
 		if (enableStratifiedEvaluation) {
-			preprocessed = new StratifiedEvaluation().apply(analyzed).toNormalProgram();
+			preprocessed = new StratifiedEvaluation(actionContext).apply(analyzed).toNormalProgram();
 		} else {
 			preprocessed = program;
 		}

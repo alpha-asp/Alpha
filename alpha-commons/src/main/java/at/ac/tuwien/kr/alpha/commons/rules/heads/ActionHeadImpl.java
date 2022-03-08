@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.programs.actions.Action;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.rules.RuleInstantiator;
 import at.ac.tuwien.kr.alpha.api.rules.heads.ActionHead;
@@ -14,13 +13,13 @@ import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 class ActionHeadImpl implements ActionHead {
 
 	private final BasicAtom atom;
-	private final Action action;
+	private final String actionName;
 	private final List<Term> actionInputTerms;
 	private final VariableTerm actionOutputTerm;
 
-	ActionHeadImpl(BasicAtom atom, Action action, List<Term> actionInputTerms, VariableTerm actionOutputTerm) {
+	ActionHeadImpl(BasicAtom atom, String actionName, List<Term> actionInputTerms, VariableTerm actionOutputTerm) {
 		this.atom = atom;
-		this.action = action;
+		this.actionName = actionName;
 		this.actionInputTerms = Collections.unmodifiableList(actionInputTerms);
 		this.actionOutputTerm = actionOutputTerm;
 	}
@@ -42,8 +41,8 @@ class ActionHeadImpl implements ActionHead {
 	}
 
 	@Override
-	public Action getAction() {
-		return action;
+	public String getActionName() {
+		return actionName;
 	}
 
 	@Override

@@ -125,7 +125,7 @@ public class VariableEqualityRemoval extends ProgramTransformation<InputProgram,
 		if (!rule.isConstraint()) {
 			if (rule.getHead() instanceof ActionHead) {
 				ActionHead actHead = (ActionHead) head;
-				rewrittenHead = Heads.newActionHead(actHead.getAtom(), actHead.getAction(), actHead.getActionInputTerms(), actHead.getActionOutputTerm());
+				rewrittenHead = Heads.newActionHead(actHead.getAtom(), actHead.getActionName(), actHead.getActionInputTerms(), actHead.getActionOutputTerm());
 			} else {
 				rewrittenHead = Heads.newNormalHead(((NormalHead) rule.getHead()).getAtom());
 			}

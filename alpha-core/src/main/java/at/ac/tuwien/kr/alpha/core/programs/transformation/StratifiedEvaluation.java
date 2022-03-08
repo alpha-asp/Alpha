@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.actions.Action;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -28,11 +27,12 @@ import at.ac.tuwien.kr.alpha.api.rules.RuleInstantiator;
 import at.ac.tuwien.kr.alpha.api.rules.heads.ActionHead;
 import at.ac.tuwien.kr.alpha.api.rules.heads.InstantiableHead;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
+import at.ac.tuwien.kr.alpha.core.actions.ActionContext;
+import at.ac.tuwien.kr.alpha.core.actions.ActionWitness;
 import at.ac.tuwien.kr.alpha.core.depgraph.StratificationAlgorithm;
 import at.ac.tuwien.kr.alpha.core.grounder.IndexedInstanceStorage;
 import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingInfo;
@@ -64,6 +64,11 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	private Set<Integer> solvedRuleIds = new HashSet<>(); // Set of rules that have been completely evaluated.
 
 	private LiteralInstantiator literalInstantiator;
+	private ActionContext actionContext;
+
+	public StratifiedEvaluation(ActionContext actionContext) {
+		this.actionContext = actionContext;
+	}
 
 	@Override
 	// Note: ideally this returns a "PartiallyEvaluatedProgram" such that the grounder can directly use the working
@@ -312,7 +317,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		// BasicAtom newAtom = this.instantiate(rule.getHead(), substitution);
 		BasicAtom newAtom;
 		if (rule.getHead() instanceof ActionHead) {
-			newAtom = instantiateActionHead((ActionHead) rule.getHead(), substitution);
+			newAtom = instantiateActionHead((ActionHead) rule.getHead(), substitution, rule.getRuleId());
 		} else {
 			newAtom = instantiateNormalHead(rule.getHead(), substitution);
 		}
@@ -334,21 +339,19 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	}
 
 	// FIXME should be dispatched via visitor pattern
-	public BasicAtom instantiateActionHead(ActionHead head, Substitution substitution) {
-		// TODO ensure unique action only gets executed once!
+	public BasicAtom instantiateActionHead(ActionHead head, Substitution substitution, int ruleId) {
 		List<Term> actionInput = head.getActionInputTerms();
 		List<Term> substitutedInput = new ArrayList<>();
 		// Substitute all variables in action input so that all input terms are ground.
 		for (Term inputTerm : actionInput) {
 			substitutedInput.add(inputTerm.substitute(substitution));
 		}
-		// Call the actual action.
-		// TODO exception handling (translate EVERY throwable to an error term)
-		Action action = head.getAction();
-		FunctionTerm actionResult = action.execute(substitutedInput);
+		// Delegate action execution to respctive backend.
+		ActionWitness witness = actionContext.execute(head.getActionName(), ruleId, substitution, substitutedInput);
+		// TODO if the according debug flag is set, convert witness to atom and add to facts.		
 		// We have an action result. Add it to the substitution as the substitute for the variable bound to the action so we're able to obtain the
 		// ground BasicAtom derived by the rule
-		substitution.put(head.getActionOutputTerm(), actionResult);
+		substitution.put(head.getActionOutputTerm(), witness.getActionResult());
 		return head.getAtom().substitute(substitution);
 	}
 
