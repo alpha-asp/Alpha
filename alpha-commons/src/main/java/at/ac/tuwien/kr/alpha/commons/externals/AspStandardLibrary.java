@@ -27,6 +27,7 @@ package at.ac.tuwien.kr.alpha.commons.externals;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -231,13 +232,15 @@ public final class AspStandardLibrary {
 
 	@Predicate(name = "str_x_xs")
 	public static Set<List<ConstantTerm<String>>> stringHeadRemainder(String str) {
-		List<ConstantTerm<String>> xXs = null;
+		List<ConstantTerm<String>> xXs = new ArrayList<>();
 		if (str.isEmpty()) {
 			return Collections.emptySet();
 		} else if (str.length() == 1) {
-			xXs = List.of(Terms.newConstant(str), Terms.newConstant(""));
+			xXs.add(Terms.newConstant(str));
+			xXs.add(Terms.newConstant(""));
 		} else {
-			xXs = List.of(Terms.newConstant(str.substring(0, 1)), Terms.newConstant(str.substring(1, str.length())));
+			xXs.add(Terms.newConstant(str.substring(0, 1)));
+			xXs.add(Terms.newConstant(str.substring(1, str.length())));
 		}
 		return Collections.singleton(xXs);
 	}
