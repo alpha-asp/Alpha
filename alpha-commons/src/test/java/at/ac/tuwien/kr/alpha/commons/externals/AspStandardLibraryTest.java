@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 
@@ -102,6 +103,52 @@ public class AspStandardLibraryTest {
 		assertEquals(1, concatTerms.size());
 		ConstantTerm<String> concat = concatTerms.get(0);
 		assertEquals(Terms.newConstant("Foobar"), concat);
+	}
+
+	@Test
+	public void stringParseValidInteger() {
+		Set<List<ConstantTerm<Integer>>> result = AspStandardLibrary.stringParseInteger("123");
+		assertEquals(1, result.size());
+		List<ConstantTerm<Integer>> intTerms = result.stream().findFirst().get();
+		assertEquals(1, intTerms.size());
+		Integer value = intTerms.get(0).getObject();
+		assertEquals(123, value);
+	}
+
+	@Test
+	public void stringParseInvalidInteger() {
+		assertTrue(AspStandardLibrary.stringParseInteger("bla").isEmpty());
+	}
+
+	@Test
+	public void stringEmpty() {
+		assertTrue(AspStandardLibrary.isStringEmpty(""));
+		assertFalse(AspStandardLibrary.isStringEmpty("bla"));
+	}
+
+	@Test
+	public void substringValidRange() {
+		Set<List<ConstantTerm<String>>> result = AspStandardLibrary.substringOfString("hahaha", 1, 4);
+		assertEquals(1, result.size());
+		List<ConstantTerm<String>> terms = result.stream().findFirst().get();
+		assertEquals(1, terms.size());
+		String substr = terms.get(0).getObject();
+		assertEquals("aha", substr);
+	}
+
+	@Test
+	public void substringInvalidRange() {
+		assertTrue(AspStandardLibrary.substringOfString("foo", 1, 0).isEmpty());
+	}
+
+	@Test
+	public void stringGetHead() {
+		Function<Set<List<ConstantTerm<String>>>, String> extractString = (set) -> {
+			return set.stream().findFirst().get().get(0).getObject();
+		};
+		assertTrue(AspStandardLibrary.stringHeadRemainder("").isEmpty());
+		assertEquals("x", extractString.apply(AspStandardLibrary.stringHeadRemainder("x")));
+		assertEquals("x", extractString.apply(AspStandardLibrary.stringHeadRemainder("xy")));
 	}
 
 }

@@ -32,6 +32,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import at.ac.tuwien.kr.alpha.api.externals.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
@@ -47,6 +50,8 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
  * Copyright (c) 2020, the Alpha Team.
  */
 public final class AspStandardLibrary {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(AspStandardLibrary.class);
 
 	private AspStandardLibrary() {
 		throw new AssertionError(this.getClass().getSimpleName() + " is a non-instantiable utility class!");
@@ -217,7 +222,12 @@ public final class AspStandardLibrary {
 	 */
 	@Predicate(name = "string_parse_integer")
 	public static Set<List<ConstantTerm<Integer>>> stringParseInteger(String str) {
-		return Collections.singleton(Collections.singletonList(Terms.newConstant(Integer.valueOf(str))));
+		try {
+			return Collections.singleton(Collections.singletonList(Terms.newConstant(Integer.valueOf(str))));
+		} catch (NumberFormatException ex) {
+			LOGGER.warn("Not a valid integer value: {}", str);
+			return Collections.emptySet();
+		}
 	}
 
 	@Predicate(name = "string_is_empty")
@@ -227,7 +237,12 @@ public final class AspStandardLibrary {
 
 	@Predicate(name = "string_substring")
 	public static Set<List<ConstantTerm<String>>> substringOfString(String str, int startIdx, int endIdx) {
-		return Collections.singleton(Collections.singletonList(Terms.newConstant(str.substring(startIdx, endIdx))));
+		try {
+			return Collections.singleton(Collections.singletonList(Terms.newConstant(str.substring(startIdx, endIdx))));
+		} catch (StringIndexOutOfBoundsException ex) {
+			LOGGER.warn("Invalid range for substring: {}, start {}, end {}", str, startIdx, endIdx);
+			return Collections.emptySet();
+		}
 	}
 
 	@Predicate(name = "str_x_xs")
