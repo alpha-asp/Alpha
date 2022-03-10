@@ -12,18 +12,11 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 public class ActionContextImpl implements ActionContext {
 
 	// TODO initialize from outside
-	private final Map<String, Action> actions = new HashMap<>();
+	private final Map<String, Action> actions;
 	private final Map<ActionInput, ActionWitness> actionRecord = new HashMap<>();
 
-	public ActionContextImpl() {
-		actions.put("printLine", Actions::printLine);
-		actions.put("fileOutputStream", Actions::fileOpenOutputStream);
-		actions.put("streamWrite", Actions::outputStreamWrite);
-		actions.put("outputStreamClose", Actions::outputStreamClose);
-
-		actions.put("fileInputStream", Actions::fileOpenInputStream);
-		actions.put("streamReadLine", Actions::inputStreamReadLine);
-		actions.put("inputStreamClose", Actions::inputStreamClose);
+	public ActionContextImpl(Map<String, Action> actions) {
+		this.actions = actions;
 	}
 
 	@Override
