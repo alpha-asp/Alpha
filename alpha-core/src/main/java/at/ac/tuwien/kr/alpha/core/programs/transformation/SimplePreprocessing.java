@@ -14,19 +14,26 @@ import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 import java.util.*;
 
 /**
- * Simplifies the input program by deleting redundant literals and rules, as well as adding rule heads that will
- * always be true as facts. The approach is adopted from preprocessing techniques employed by traditional ground ASP
- * solvers, as seen in:
+ * Simplifies the input program by deleting redundant literals and rules, as well as identifying rule heads that can
+ * always be derived from facts and adding them to the known facts. The approach is adopted from preprocessing
+ * techniques employed by traditional ground ASP solvers, as seen in:
  * @see <a href="https://doi.org/10.3233/978-1-58603-891-5-15">doi:10.3233/978-1-58603-891-5-15</a>
  */
 public class SimplePreprocessing extends ProgramTransformation<NormalProgram, NormalProgram> {
 
+
+	/**
+	 * Evaluates all rules of the input program and tries to simplify them by applying a number of rule transformations.
+	 * @param inputProgram a normalized ASP program to be preprocessed.
+	 * @return the preprocessed program.
+	 */
 	@Override
 	public NormalProgram apply(NormalProgram inputProgram) {
 		List<NormalRule> srcRules = inputProgram.getRules();
 		Set<NormalRule> newRules = new LinkedHashSet<>();
 		Set<Atom> facts = new LinkedHashSet<>(inputProgram.getFacts());
-		boolean canBePreprocessed = true;
+
+		// Eliminate rules that will never fire, without regarding other rules.
 		for (NormalRule rule: srcRules) {
 			if (checkForConflictingBodyLiterals(rule.getPositiveBody(), rule.getNegativeBody())) {
 				continue;
@@ -37,6 +44,10 @@ public class SimplePreprocessing extends ProgramTransformation<NormalProgram, No
 			newRules.add(rule);
 		}
 		srcRules = new LinkedList<>(newRules);
+
+		// Analyze every rule in regard to the other rules and facts and if applicable, simplify or remove it. Repeat
+		// until a fixpoint is reached.
+		boolean canBePreprocessed = true;
 		while (canBePreprocessed) {
 			newRules = new LinkedHashSet<>();
 			canBePreprocessed = false;
@@ -111,10 +122,17 @@ public class SimplePreprocessing extends ProgramTransformation<NormalProgram, No
 	 * modified, is a fact or will never fire.
 	 */
 	private RuleEvaluation evaluateRule(NormalRule rule, List<NormalRule> rules, Set<Atom> facts) {
-		Set<Literal> redundantLiterals = new LinkedHashSet<>();
+		// Check if the rule head is already a fact, making the rule redundant.
 		if (facts.contains(rule.getHeadAtom())) {
 			return RuleEvaluation.NO_FIRE;
 		}
+
+		// Collect all literals that can be removed from the rule.
+		Set<Literal> redundantLiterals = new LinkedHashSet<>();
+
+		// Check if body literals can be derived from facts or other rules. If a body literal is not derivable, the
+		// rule can never fire. If a literal is already proven within the program context, the rule will be simplified
+		// by removing it.
 		for (Literal literal : rule.getBody()) {
 			if (literal instanceof BasicLiteral) {
 				if (literal.isNegated()) {
@@ -140,6 +158,7 @@ public class SimplePreprocessing extends ProgramTransformation<NormalProgram, No
 		}
 	}
 
+	// Checks if an atom cannot be derived from a rule or a fact.
 	private boolean isNonDerivable(Atom atom, List<NormalRule> rules, Set<Atom> facts) {
 		Atom tempAtom = atom.renameVariables("Prep");
 		for (NormalRule rule : rules) {
@@ -158,7 +177,7 @@ public class SimplePreprocessing extends ProgramTransformation<NormalProgram, No
 	}
 
 	/**
-	 * removes a set of given literals from the rule body.
+	 * Removes a set of given literals from the rule body.
 	 * @param rule the rule from which literals should be removed.
 	 * @param literals The literals to remove.
 	 * @return the resulting rule or fact.
