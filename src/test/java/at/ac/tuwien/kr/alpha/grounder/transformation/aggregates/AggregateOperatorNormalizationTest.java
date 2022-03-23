@@ -1,9 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
@@ -17,10 +13,14 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.test.util.RuleParser;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class AggregateOperatorNormalizationTest {
 
 	//@formatter:off
-	public static final String OPERATOR_NORMALIZATION_GT_POS_ASP = 
+	public static final String OPERATOR_NORMALIZATION_GT_POS_ASP =
 			"bla :- dom(X), X > #count{N : thing(N)}.";
 	public static final String OPERATOR_NORMALIZATION_LT_POS_ASP =
 			"bla :- dom(X), X < #count{N : thing(N)}.";
@@ -32,10 +32,17 @@ public class AggregateOperatorNormalizationTest {
 			"bla :- dom(X), not X < #count{N : thing(N)}.";
 	public static final String OPERATOR_NORMALIZATION_NE_NEG_ASP =
 			"bla :- dom(X), not X != #count{N : thing(N)}.";
-	public static final String OPERATOR_NORMALIZATION_GT_NEG_ASP = 
+	public static final String OPERATOR_NORMALIZATION_GT_NEG_ASP =
 			"bla :- dom(X), not X > #count{N : thing(N)}.";
 	public static final String OPERATOR_NORMALIZATION_GE_NEG_ASP =
 			"bla :- dom(X), not X >= #count{N : thing(N)}.";
+	/*
+	 * See github issue #311:
+	 * Operator normalization must also make sure that literals with only a right-hand term
+	 * are normalized to left-hand term only (and then operator-normalized if necessary)
+	 */
+	public static final String OPERATOR_NORMALIZATION_RIGHT_OP_ONLY =
+			"bla :- dom(X), #count{N : thing(N)} < X.";
 	//@formatter:on
 
 	@Test
@@ -138,7 +145,10 @@ public class AggregateOperatorNormalizationTest {
 		ArithmeticTerm incrementTerm = (ArithmeticTerm) comparisonRightHandTerm;
 		assertEquals(ArithmeticOperator.PLUS, incrementTerm.getArithmeticOperator());
 		assertEquals(ConstantTerm.getInstance(1), incrementTerm.getRight());
-		assertEquals(sourceAggregate.getAtom().getLowerBoundTerm(), incrementTerm.getLeft());
+		Term sourceBound = sourceAggregate.getAtom().getLowerBoundTerm() != null ?
+				sourceAggregate.getAtom().getLowerBoundTerm()
+				: sourceAggregate.getAtom().getUpperBoundTerm();
+		assertEquals(sourceBound, incrementTerm.getLeft());
 	}
 
 }
