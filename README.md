@@ -82,6 +82,10 @@ run into trouble feel free to file an issue.
 
 Peer-reviewed publications part of journals, conferences and workshops:
 
+#### 2021
+
+ * [Solving Configuration Problems with ASP and Declarative Domain Specific Heuristics](http://ceur-ws.org/Vol-2945/21-RT-ConfWS21_paper_4.pdf)
+
 #### 2020
 
  * [Conflict Generalisation in ASP: Learning Correct and Effective Non-Ground Constraints](https://doi.org/10.1017/S1471068420000368)
