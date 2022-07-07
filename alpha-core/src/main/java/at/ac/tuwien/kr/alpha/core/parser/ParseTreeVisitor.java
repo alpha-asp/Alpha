@@ -72,7 +72,6 @@ import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2BaseVisitor;
-import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
@@ -320,7 +319,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public AggregateLiteral visitAggregate(ASPCore2Parser.AggregateContext ctx) {
-
 		// aggregate : NAF? (lt=term lop=binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (uop=binop ut=term)?;
 		boolean isPositive = ctx.NAF() == null;
 		Term lt = null;
@@ -383,18 +381,17 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public Term visitGround_term(ASPCore2Parser.Ground_termContext ctx) {
-		// ground_term : ID | QUOTED_STRING | MINUS? NUMBER;
+		// ground_term : ID | QUOTED_STRING | numeral;
 		if (ctx.ID() != null) {
+			// ID
 			return Terms.newSymbolicConstant(ctx.ID().getText());
 		} else if (ctx.QUOTED_STRING() != null) {
+			// QUOTED_STRING
 			String quotedString = ctx.QUOTED_STRING().getText();
 			return Terms.newConstant(quotedString.substring(1, quotedString.length() - 1));
 		} else {
-			int multiplier = 1;
-			if (ctx.MINUS() != null) {
-				multiplier = -1;
-			}
-			return Terms.newConstant(multiplier * Integer.parseInt(ctx.NUMBER().getText()));
+			// numeral
+			return Terms.newConstant(visitNumeral(ctx.numeral()));
 		}
 	}
 
@@ -496,7 +493,14 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public ConstantTerm<Integer> visitTerm_number(ASPCore2Parser.Term_numberContext ctx) {
-		return Terms.newConstant(Integer.parseInt(ctx.NUMBER().getText()));
+		// term : numeral
+		return Terms.newConstant(visitNumeral(ctx.numeral()));
+	}
+
+	public Integer visitNumeral(ASPCore2Parser.NumeralContext ctx) { 
+		// numeral : MINUS? NUMBER;
+		int absValue = Integer.valueOf(ctx.NUMBER().getText());
+		return ctx.MINUS() != null ? -1 * absValue : absValue;
 	}
 
 	@Override
@@ -520,7 +524,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		if (!acceptVariables) {
 			throw notSupported(ctx);
 		}
-
 		return Terms.newAnonymousVariable();
 	}
 
@@ -529,7 +532,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		if (!acceptVariables) {
 			throw notSupported(ctx);
 		}
-
 		return Terms.newVariable(ctx.VARIABLE().getText());
 	}
 
@@ -564,13 +566,21 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public IntervalTerm visitTerm_interval(ASPCore2Parser.Term_intervalContext ctx) {
-		// interval : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE);
+		// interval : lower = interval_bound DOT DOT upper = interval_bound;
 		ASPCore2Parser.IntervalContext ictx = ctx.interval();
-		String lowerText = ictx.lower.getText();
-		String upperText = ictx.upper.getText();
-		Term lower = ictx.lower.getType() == ASPCore2Lexer.NUMBER ? Terms.newConstant(Integer.parseInt(lowerText)) : Terms.newVariable(lowerText);
-		Term upper = ictx.upper.getType() == ASPCore2Lexer.NUMBER ? Terms.newConstant(Integer.parseInt(upperText)) : Terms.newVariable(upperText);
+		Term lower = visitInterval_bound(ictx.lower);
+		Term upper = visitInterval_bound(ictx.upper);
 		return IntervalTerm.getInstance(lower, upper);
+	}
+
+	@Override 
+	public Term visitInterval_bound(ASPCore2Parser.Interval_boundContext ctx) {
+		// interval_bound : numeral | VARIABLE;
+		if (ctx.numeral() != null) {
+			return Terms.newConstant(visitNumeral(ctx.numeral()));
+		} else {
+			return Terms.newVariable(ctx.VARIABLE().getText());
+		}
 	}
 
 	@Override
