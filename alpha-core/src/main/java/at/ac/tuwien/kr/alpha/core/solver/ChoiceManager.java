@@ -30,14 +30,8 @@ package at.ac.tuwien.kr.alpha.core.solver;
 import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToLiteral;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.Stack;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -260,6 +254,27 @@ public class ChoiceManager implements Checkable {
 
 	public BinaryNoGoodPropagationEstimation getBinaryNoGoodPropagationEstimation() {
 		return bnpEstimation;
+	}
+
+	/**
+	 * Returns the current choice stack as a list of choices containing atom ids.
+	 * @return a list of the choices on the current choice stack ordered from oldest to newest.
+	 */
+	public List<Choice> getChoiceList() {
+		return new ArrayList<>(choiceStack);
+	}
+
+	/**
+	 * Clear the current assignment and choice stack. Then enforce the given choice stack as the current assignment and
+	 * choice stack.
+	 * @param newChoiceStack the new choice stack to use.
+	 */
+	public void setChoiceStack(Stack<Choice> newChoiceStack) {
+		assignment.clear();
+		choiceStack.clear();
+		for (Choice choice : newChoiceStack) {
+			choose(choice);
+		}
 	}
 
 	/**

@@ -49,10 +49,15 @@ public interface NoGoodStore {
 	void growForMaxAtomId(int maxAtomId);
 
 	/**
-	 * Tests whether a cleanup of the learned NoGoods database is appropriate and exectutes the cleaning if
+	 * Tests whether a cleanup of the learned NoGoods database is appropriate and executes the cleaning if
 	 * necessary.
 	 */
 	void cleanupLearnedNoGoods();
 
 	NoGoodCounter getNoGoodCounter();
+
+	/**
+	 * Clears all data within the nogood store.
+	 */
+	void reset();
 }

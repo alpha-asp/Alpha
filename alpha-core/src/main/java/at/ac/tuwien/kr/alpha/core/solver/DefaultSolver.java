@@ -35,15 +35,8 @@ import static at.ac.tuwien.kr.alpha.core.solver.NoGoodStore.LBD_NO_VALUE;
 import static at.ac.tuwien.kr.alpha.core.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
 import static at.ac.tuwien.kr.alpha.core.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
@@ -526,7 +519,57 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		choiceManager.choose(new Choice(literal, false));
 		return true;
 	}
-	
+
+	/**
+	 * Performs a restart of the solving process while preserving the current assignment - and thus the progress made.
+	 * Nogood store and grounder are reset. Then the {@link AtomStore} is emptied and the current assignment
+	 * is reconstructed.
+	 */
+	private void restart() {
+		LOGGER.debug("Performing solver and grounder restart.");
+		Stack<AtomizedChoice> atomizedChoiceStack = getAtomizedChoiceStack();
+
+		store.reset();
+		grounder.restart(assignment);
+		atomStore.reset();
+
+		setAtomizedChoiceStack(atomizedChoiceStack);
+		getNoGoodsFromGrounderAndIngest();
+
+		LOGGER.debug("Solver and grounder restart finished.");
+		System.out.println("Solver and grounder restart performed.");
+	}
+
+	/**
+	 * Extract the current choice stack with atom ids replaced by the respective atoms.
+	 * @return the choice stack containing atoms instead of atom ids.
+	 */
+	private Stack<AtomizedChoice> getAtomizedChoiceStack() {
+		List<Choice> choiceList = choiceManager.getChoiceList();
+		Stack<AtomizedChoice> choiceStack = new Stack<>();
+		for (Choice choice : choiceList) {
+			Atom atom = atomStore.get(choice.getAtom());
+			choiceStack.push(new AtomizedChoice(atom, choice.getTruthValue(), choice.isBacktracked()));
+		}
+		return choiceStack;
+	}
+
+	/**
+	 * Convert the given choice stack into one containing atom ids instead of atoms and replace the current
+	 * choice stack with it.
+	 * @param atomizedChoiceStack the stack of choices containing atoms.
+	 */
+	private void setAtomizedChoiceStack(Stack<AtomizedChoice> atomizedChoiceStack) {
+		Stack<Choice> choiceStack = new Stack<>();
+		for (AtomizedChoice atomizedChoice : atomizedChoiceStack) {
+			Atom atom = atomizedChoice.getAtom();
+			atomStore.putIfAbsent(atom);
+			int atomId = atomStore.get(atom);
+			choiceStack.push(new Choice(atomId, atomizedChoice.getTruthValue(), atomizedChoice.isBacktracked()));
+		}
+		choiceManager.setChoiceStack(choiceStack);
+	}
+
 	@Override
 	public int getNumberOfChoices() {
 		return choiceManager.getChoices();

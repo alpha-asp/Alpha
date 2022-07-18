@@ -116,4 +116,9 @@ public interface AtomStore {
 	}
 
 	AtomCounter getAtomCounter();
+
+	/**
+	 * Clears all data within the atom store and resets it to its initial empty state.
+	 */
+	void reset();
 }

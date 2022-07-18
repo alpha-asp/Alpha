@@ -12,6 +12,13 @@ public class NogoodRegistry {
 	private Map<NoGood, Integer> registeredIdentifiers = new LinkedHashMap<>();
 
 	/**
+	 * Clears all registered identifiers.
+	 */
+	public void reset() {
+		registeredIdentifiers = new LinkedHashMap<>();
+	}
+
+	/**
 	 * Helper methods to analyze average nogood length.
 	 * @return
 	 */

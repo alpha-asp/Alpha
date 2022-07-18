@@ -139,6 +139,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 		this.debugInternalChecks = debugInternalChecks;
 
+
 		// Initialize RuleInstantiator and instantiation strategy. Note that the instantiation strategy also
 		// needs the current assignment, which is set with every call of getGroundInstantiations.
 		this.instantiationStrategy = new DefaultLazyGroundingInstantiationStrategy(this.workingMemory, this.atomStore, this.factsFromProgram,
@@ -364,7 +365,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			modifiedWorkingMemory.markRecentlyAddedInstancesDone();
 		}
 
-		workingMemory.reset();
+		workingMemory.resetModified();
 		for (Atom removeAtom : removeAfterObtainingNewNoGoods) {
 			final IndexedInstanceStorage storage = workingMemory.get(removeAtom, true);
 			Instance instance = new Instance(removeAtom.getTerms());
@@ -410,6 +411,20 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	@Override
 	public int register(NoGood noGood) {
 		return registry.register(noGood);
+	}
+
+	@Override
+	public void restart(Assignment currentAssignment) {
+		workingMemory.reset();
+		registry.reset();
+		choiceRecorder.reset();
+		analyzeUnjustified.reset();
+		rulesUsingPredicateWorkingMemory.clear();
+		removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
+		instantiationStrategy.setStaleWorkingMemoryEntries(removeAfterObtainingNewNoGoods);
+		instantiationStrategy.setCurrentAssignment(currentAssignment);
+		fixedRules = new ArrayList<>();
+		initializeFactsAndRules();
 	}
 
 	// Ideally, this method should be private. It's only visible because NaiveGrounderTest needs to access it.

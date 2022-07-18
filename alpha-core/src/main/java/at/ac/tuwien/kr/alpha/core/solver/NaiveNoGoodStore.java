@@ -140,6 +140,11 @@ public class NaiveNoGoodStore implements NoGoodStore {
 	}
 
 	@Override
+	public void reset() {
+		clear();
+	}
+
+	@Override
 	public void cleanupLearnedNoGoods() {
 	}
 

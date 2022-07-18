@@ -80,4 +80,9 @@ public interface Grounder {
 	 * @return
 	 */
 	int register(NoGood noGood);
+
+	/**
+	 * Restarts the grounder.
+	 */
+	void restart(Assignment currentAssignment);
 }

@@ -115,6 +115,12 @@ public class ChoiceRecorder {
 		existingBodies.add(bodyId);
 	}
 
+	public void reset() {
+		ID_GENERATOR.resetGenerator();
+		newChoiceAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
+		newHeadsToBodies = new LinkedHashMap<>();
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("[enablers: ");

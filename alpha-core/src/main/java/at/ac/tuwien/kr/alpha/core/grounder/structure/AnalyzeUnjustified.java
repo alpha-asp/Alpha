@@ -80,6 +80,11 @@ public class AnalyzeUnjustified {
 		return analyze((BasicAtom) atom, currentAssignment);
 	}
 
+	public void reset() {
+		renamingCounter = 0;
+		padDepth = 0;
+	}
+
 	private Set<Literal> analyze(BasicAtom atom, Assignment currentAssignment) {
 		log(pad("Starting analyze, current assignment is: {}"), currentAssignment);
 		LinkedHashSet<Literal> vL = new LinkedHashSet<>();
