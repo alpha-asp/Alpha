@@ -61,6 +61,7 @@ import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.terms.ArithmeticOperator;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.AnswerSets;
@@ -69,7 +70,6 @@ import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
-import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
@@ -570,7 +570,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		ASPCore2Parser.IntervalContext ictx = ctx.interval();
 		Term lower = visitInterval_bound(ictx.lower);
 		Term upper = visitInterval_bound(ictx.upper);
-		return IntervalTerm.getInstance(lower, upper);
+		return Terms.newIntervalTerm(lower, upper);
 	}
 
 	@Override 

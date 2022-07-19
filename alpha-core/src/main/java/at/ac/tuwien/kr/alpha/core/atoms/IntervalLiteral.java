@@ -37,11 +37,11 @@ import com.google.common.collect.Sets;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.literals.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.literals.AbstractLiteral;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
-import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
 /**
@@ -63,15 +63,19 @@ public class IntervalLiteral extends AbstractLiteral implements FixedInterpretat
 		throw new UnsupportedOperationException("IntervalLiteral cannot be negated");
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<Substitution> getIntervalSubstitutions(Substitution partialSubstitution) {
 		List<Substitution> substitutions = new ArrayList<>();
 		List<Term> terms = getTerms();
 		Term intervalRepresentingVariable = terms.get(1);
 		IntervalTerm intervalTerm = (IntervalTerm) terms.get(0);
+		// Note: Unchecked cast is OK, assuming IntervalRewriting worked, the interval term will be ground
+		int intervalLowerBound = ((ConstantTerm<Integer>) intervalTerm.getLowerBound()).getObject();
+		int intervalUpperBound = ((ConstantTerm<Integer>) intervalTerm.getUpperBound()).getObject();
 		// Check whether intervalRepresentingVariable is bound already.
 		if (intervalRepresentingVariable instanceof VariableTerm) {
 			// Still a variable, generate all elements in the interval.
-			for (int i = intervalTerm.getLowerBound(); i <= intervalTerm.getUpperBound(); i++) {
+			for (int i = intervalLowerBound; i <= intervalUpperBound; i++) {
 				Substitution ith = new BasicSubstitution(partialSubstitution);
 				ith.put((VariableTerm) intervalRepresentingVariable, Terms.newConstant(i));
 				substitutions.add(ith);
@@ -84,10 +88,8 @@ public class IntervalLiteral extends AbstractLiteral implements FixedInterpretat
 				// Term is not bound to an integer constant, not in the interval.
 				return Collections.emptyList();
 			}
-			// TODO to avoid that type of unchecked cast, we may want interval terms to not extend AbstractTerm
-			@SuppressWarnings("unchecked")
 			Integer integer = ((ConstantTerm<Integer>) intervalRepresentingVariable).getObject();
-			if (intervalTerm.getLowerBound() <= integer && integer <= intervalTerm.getUpperBound()) {
+			if (intervalLowerBound <= integer && integer <= intervalUpperBound) {
 				return Collections.singletonList(partialSubstitution);
 			}
 			return Collections.emptyList();

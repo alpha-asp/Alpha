@@ -9,6 +9,7 @@ import at.ac.tuwien.kr.alpha.api.terms.ArithmeticOperator;
 import at.ac.tuwien.kr.alpha.api.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
@@ -65,6 +66,10 @@ public final class Terms {
 		return MinusTerm.getInstance(negatedTerm);
 	}
 
+	public static IntervalTerm newIntervalTerm(Term lowerBound, Term upperBound) {
+		return IntervalTermImpl.getInstance(lowerBound, upperBound);
+	}
+
 	@SafeVarargs
 	public static <T extends Comparable<T>> List<ConstantTerm<T>> asTermList(T... values) {
 		List<ConstantTerm<T>> retVal = new ArrayList<>();
@@ -115,6 +120,34 @@ public final class Terms {
 			// ASP Core 2 standard allows non-integer terms in arithmetic expressions, result is to simply ignore the ground instance.
 			return null;
 		}
+	}
+
+	/**
+	 * Returns true if the term contains (or is) some IntervalTerm.
+	 * @param term the term to test
+	 * @return true iff an IntervalTerm occurs in term.
+	 */
+	public static boolean termContainsIntervalTerm(Term term) {
+		if (term instanceof IntervalTermImpl) {
+			return true;
+		} else if (term instanceof FunctionTermImpl) {
+			return functionTermContainsIntervals((FunctionTermImpl) term);
+		} else {
+			return false;
+		}
+	}
+
+	public static boolean functionTermContainsIntervals(FunctionTerm functionTerm) {
+		// Test whether a function term contains an interval term (recursively).
+		for (Term term : functionTerm.getTerms()) {
+			if (term instanceof IntervalTermImpl) {
+				return true;
+			}
+			if (term instanceof FunctionTermImpl && functionTermContainsIntervals((FunctionTerm) term)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }
