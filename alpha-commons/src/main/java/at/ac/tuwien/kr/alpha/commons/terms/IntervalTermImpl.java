@@ -15,6 +15,7 @@ import at.ac.tuwien.kr.alpha.commons.util.Interner;
  * Copyright (c) 2017, the Alpha Team.
  */
 class IntervalTermImpl extends AbstractTerm implements IntervalTerm {
+	
 	private static final Interner<IntervalTermImpl> INTERNER = new Interner<>();
 	private final Term lowerBoundTerm;
 	private final Term upperBoundTerm;

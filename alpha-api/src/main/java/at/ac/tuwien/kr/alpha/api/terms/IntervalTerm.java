@@ -5,7 +5,7 @@ package at.ac.tuwien.kr.alpha.api.terms;
  * Intervals are syntactic sugar, e.g. the rule "p(X) :- X = 1..2." is a shorthand for
  * "p(X) :- X = 1. p(X) :- X = 2.".
  */
-public interface IntervalTerm extends Term{
+public interface IntervalTerm extends Term {
 
 	Term getLowerBound();
 
