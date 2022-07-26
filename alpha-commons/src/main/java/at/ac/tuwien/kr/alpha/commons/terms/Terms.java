@@ -137,8 +137,12 @@ public final class Terms {
 		}
 	}
 
+	/**
+	 * Returns true if the given {@link FunctionTerm} contains some IntervalTerm.
+	 * @param functionTerm the term to test
+	 * @return true iff an IntervalTerm occurs in functionTerm.
+	 */
 	public static boolean functionTermContainsIntervals(FunctionTerm functionTerm) {
-		// Test whether a function term contains an interval term (recursively).
 		for (Term term : functionTerm.getTerms()) {
 			if (term instanceof IntervalTermImpl) {
 				return true;
