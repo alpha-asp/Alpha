@@ -43,6 +43,7 @@ import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.literals.AbstractLiteral;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 /**
  * @see IntervalAtom
@@ -63,14 +64,20 @@ public class IntervalLiteral extends AbstractLiteral implements FixedInterpretat
 		throw new UnsupportedOperationException("IntervalLiteral cannot be negated");
 	}
 
-	@SuppressWarnings("unchecked")
 	private List<Substitution> getIntervalSubstitutions(Substitution partialSubstitution) {
 		List<Substitution> substitutions = new ArrayList<>();
 		List<Term> terms = getTerms();
 		Term intervalRepresentingVariable = terms.get(1);
 		IntervalTerm intervalTerm = (IntervalTerm) terms.get(0);
-		// Note: Unchecked cast is OK, assuming IntervalRewriting worked, the interval term will be ground
+		if (!(intervalTerm.getLowerBound() instanceof ConstantTerm)) {
+			throw Util.oops("Lower bound of interval term " + intervalTerm + " is not a constant!");
+		}
+		@SuppressWarnings("unchecked")
 		int intervalLowerBound = ((ConstantTerm<Integer>) intervalTerm.getLowerBound()).getObject();
+		if (!(intervalTerm.getUpperBound() instanceof ConstantTerm)) {
+			throw Util.oops("Upper bound of interval term " + intervalTerm + " is not a constant!");
+		}
+		@SuppressWarnings("unchecked")
 		int intervalUpperBound = ((ConstantTerm<Integer>) intervalTerm.getUpperBound()).getObject();
 		// Check whether intervalRepresentingVariable is bound already.
 		if (intervalRepresentingVariable instanceof VariableTerm) {
@@ -88,6 +95,7 @@ public class IntervalLiteral extends AbstractLiteral implements FixedInterpretat
 				// Term is not bound to an integer constant, not in the interval.
 				return Collections.emptyList();
 			}
+			@SuppressWarnings("unchecked")
 			Integer integer = ((ConstantTerm<Integer>) intervalRepresentingVariable).getObject();
 			if (intervalLowerBound <= integer && integer <= intervalUpperBound) {
 				return Collections.singletonList(partialSubstitution);
