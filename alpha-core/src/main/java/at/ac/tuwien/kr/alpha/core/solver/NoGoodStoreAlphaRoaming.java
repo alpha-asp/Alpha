@@ -158,6 +158,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	@Override
 	public void reset() {
 		clear();
+		counter.reset();
 	}
 
 	@Override

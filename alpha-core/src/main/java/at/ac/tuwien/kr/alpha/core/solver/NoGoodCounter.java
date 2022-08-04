@@ -125,5 +125,10 @@ public class NoGoodCounter {
 	public String getStatsByCardinality() {
 		return "unary: " + getNumberOfUnaryNoGoods() + " binary: " + getNumberOfBinaryNoGoods() + " larger: " + getNumberOfNAryNoGoods();
 	}
+
+	public void reset() {
+		countByType = new int[Type.values().length];
+		countByCardinality = new int[3];
+	}
 	
 }

@@ -66,4 +66,8 @@ public class AtomCounter {
 		return String.join(" ", statsList);
 	}
 
+	public void reset() {
+		countByType.clear();
+	}
+
 }

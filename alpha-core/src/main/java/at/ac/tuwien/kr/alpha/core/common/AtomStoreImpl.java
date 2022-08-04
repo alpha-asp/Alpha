@@ -141,5 +141,7 @@ public class AtomStoreImpl implements AtomStore {
 		atomIdGenerator.getNextId();
 
 		releasedAtomIds.clear();
+
+		atomCounter.reset();
 	}
 }
