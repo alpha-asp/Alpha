@@ -265,15 +265,28 @@ public class ChoiceManager implements Checkable {
 	}
 
 	/**
-	 * Clear the current assignment and choice stack. Then enforce the given choice stack as the current assignment and
-	 * choice stack.
-	 * @param newChoiceStack the new choice stack to use.
+	 * Reset the current choice influence manager. Then clear the current choice stack and mappings
+	 * between rule heads and bodies.
 	 */
-	public void setChoiceStack(Stack<Choice> newChoiceStack) {
-		assignment.clear();
+	public void reset() {
+		choicePointInfluenceManager.reset();
 		choiceStack.clear();
-		for (Choice choice : newChoiceStack) {
+		headsToBodies.clear();
+		bodiesToHeads.clear();
+	}
+
+	/**
+	 * Make the given choice if its atom is an active choice atom.
+	 *
+	 * @param choice the choice to make.
+	 * @return whether the atom of the given choice was an active choice atom.
+	 */
+	public boolean replayChoice(Choice choice) {
+		if (isActiveChoiceAtom(choice.getAtom())) {
 			choose(choice);
+			return true;
+		} else {
+			return false;
 		}
 	}
 

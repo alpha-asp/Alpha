@@ -74,6 +74,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolver.class);
 
 	private final NoGoodStore store;
+	private final AtomizedNoGoodStore enumerationNoGoodStore;
 	private final ChoiceManager choiceManager;
 	private final WritableAssignment assignment;
 	private final GroundConflictNoGoodLearner learner;
@@ -95,12 +96,13 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	private final SearchState searchState = new SearchState();
 
 	private final PerformanceLog performanceLog;
-	
+
 	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, SystemConfig config, HeuristicsConfiguration heuristicsConfiguration) {
 		super(atomStore, grounder);
 
 		this.assignment = assignment;
 		this.store = store;
+		this.enumerationNoGoodStore = new AtomizedNoGoodStore(atomStore);
 		this.choiceManager = new ChoiceManager(assignment, store);
 		this.choiceManager.setChecksEnabled(config.isDebugInternalChecks());
 		this.learner = new GroundConflictNoGoodLearner(assignment, atomStore);
@@ -186,6 +188,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		// Backjump instead of backtrackSlow, enumerationNoGood will invert last choice.
 		choiceManager.backjump(backjumpLevel - 1);
 		LOGGER.debug("Adding enumeration nogood: {}", enumerationNoGood);
+		enumerationNoGoodStore.add(enumerationNoGood);
 		if (!addAndBackjumpIfNecessary(grounder.register(enumerationNoGood), enumerationNoGood, Integer.MAX_VALUE)) {
 			searchState.isSearchSpaceCompletelyExplored = true;
 		}
@@ -530,14 +533,16 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		Stack<AtomizedChoice> atomizedChoiceStack = getAtomizedChoiceStack();
 
 		store.reset();
+		assignment.clear();
 		grounder.restart(assignment);
 		atomStore.reset();
+		choiceManager.reset();
 
-		setAtomizedChoiceStack(atomizedChoiceStack);
 		getNoGoodsFromGrounderAndIngest();
+		addEnumerationNoGoods();
+		replayAtomizedChoiceStack(atomizedChoiceStack);
 
 		LOGGER.debug("Solver and grounder restart finished.");
-		System.out.println("Solver and grounder restart performed.");
 	}
 
 	/**
@@ -555,19 +560,43 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	}
 
 	/**
-	 * Convert the given choice stack into one containing atom ids instead of atoms and replace the current
-	 * choice stack with it.
+	 * Convert the given choice stack into one containing atom ids instead of atoms and apply
+	 * the choices on the resulting stack using the choice manager.
+	 * Propagation is performed initially and after each choice.
 	 * @param atomizedChoiceStack the stack of choices containing atoms.
 	 */
-	private void setAtomizedChoiceStack(Stack<AtomizedChoice> atomizedChoiceStack) {
-		Stack<Choice> choiceStack = new Stack<>();
+	private void replayAtomizedChoiceStack(Stack<AtomizedChoice> atomizedChoiceStack) {
+		if (propagate() != null) {
+			throw oops("Conflict in replay during restart");
+		}
+
 		for (AtomizedChoice atomizedChoice : atomizedChoiceStack) {
 			Atom atom = atomizedChoice.getAtom();
 			atomStore.putIfAbsent(atom);
 			int atomId = atomStore.get(atom);
-			choiceStack.push(new Choice(atomId, atomizedChoice.getTruthValue(), atomizedChoice.isBacktracked()));
+			Choice choice = new Choice(atomId, atomizedChoice.getTruthValue(), atomizedChoice.isBacktracked());
+
+			choiceManager.addChoiceInformation(grounder.getChoiceAtoms(), grounder.getHeadsToBodies());
+			choiceManager.updateAssignments();
+			boolean activeChoice = choiceManager.replayChoice(choice);
+
+			if (activeChoice && propagate() != null) {
+				throw oops("Conflict in replay during restart");
+			}
 		}
-		choiceManager.setChoiceStack(choiceStack);
+	}
+
+	/**
+	 * Add all nogoods from the enumeration nogood store to the regular nogood store.
+	 */
+	private void addEnumerationNoGoods() {
+		Map<Integer, NoGood> newNoGoods = new LinkedHashMap<>();
+		for (NoGood noGood : enumerationNoGoodStore.getNoGoods()) {
+			newNoGoods.put(grounder.register(noGood), noGood);
+		}
+		if (!ingest(newNoGoods)) {
+			searchState.isSearchSpaceCompletelyExplored = true;
+		}
 	}
 
 	@Override

@@ -181,6 +181,15 @@ public class ChoiceInfluenceManager implements Checkable {
 		this.activityListener = listener;
 	}
 
+	/**
+	 * Clear all active choice point and influencer information.
+	 */
+	public void reset() {
+		activeChoicePoints.clear();
+		activeChoicePointsAtoms.clear();
+		influencers = new ChoicePoint[0];
+	}
+
 	private class ChoicePoint {
 		final Integer atom;
 		final int enabler;
