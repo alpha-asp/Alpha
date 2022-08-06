@@ -417,6 +417,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	public void restart(Assignment currentAssignment) {
 		workingMemory.reset();
 		registry.reset();
+		noGoodGenerator.reset();
 		choiceRecorder.reset();
 		analyzeUnjustified.reset();
 		rulesUsingPredicateWorkingMemory.clear();
