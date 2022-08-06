@@ -144,8 +144,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 				learnFromConflict(conflictCause);
 			} else if (assignment.didChange()) {
 				LOGGER.debug("Updating grounder with new assignments and (potentially) obtaining new NoGoods.");
-				grounder.updateAssignment(assignment.getNewPositiveAssignmentsIterator());
-				getNoGoodsFromGrounderAndIngest();
+				syncWithGrounder();
 			} else if (choose()) {
 				LOGGER.debug("Did choice.");
 			} else if (close()) {
@@ -164,6 +163,15 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		performanceLog.initialize();
 		getNoGoodsFromGrounderAndIngest();
 		searchState.hasBeenInitialized = true;
+	}
+
+	/**
+	 * Updates the assignment for the grounder and then gets new nogoods from the grounder
+	 * by calling {@link DefaultSolver#getNoGoodsFromGrounderAndIngest()}.
+	 */
+	private void syncWithGrounder() {
+		grounder.updateAssignment(assignment.getNewPositiveAssignmentsIterator());
+		getNoGoodsFromGrounderAndIngest();
 	}
 
 	private void prepareForSubsequentAnswerSet() {
@@ -540,7 +548,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		atomStore.reset();
 		choiceManager.reset();
 
-		getNoGoodsFromGrounderAndIngest();
+		syncWithGrounder();
 		addEnumerationNoGoods();
 		replayAtomizedChoiceStack(atomizedChoiceStack);
 
@@ -582,8 +590,14 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 			choiceManager.updateAssignments();
 			boolean activeChoice = choiceManager.replayChoice(choice);
 
-			if (activeChoice && propagate() != null) {
-				throw oops("Conflict in replay during restart");
+			if (activeChoice) {
+				if (propagate() != null) {
+					throw oops("Conflict in replay during restart");
+				}
+				syncWithGrounder();
+				if (propagate() != null) {
+					throw oops("Conflict in replay during restart");
+				}
 			}
 		}
 	}
