@@ -530,9 +530,11 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	 */
 	private void restart() {
 		LOGGER.debug("Performing solver and grounder restart.");
+
 		Stack<AtomizedChoice> atomizedChoiceStack = getAtomizedChoiceStack();
 
 		store.reset();
+		branchingHeuristic.reset();
 		assignment.clear();
 		grounder.restart(assignment);
 		atomStore.reset();

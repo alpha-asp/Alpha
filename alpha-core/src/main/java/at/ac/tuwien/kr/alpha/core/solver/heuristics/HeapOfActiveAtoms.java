@@ -281,4 +281,16 @@ public class HeapOfActiveAtoms {
 		}
 	}
 
+	/**
+	 * Reset the heap to its empty state.
+	 */
+	public void reset() {
+		incrementedActivityScores = new boolean[0];
+		activityScores = new double[0];
+		heap.clear();
+		stepsSinceLastDecay = 0;
+		currentActivityIncrement = 1.0;
+		numberOfNormalizations = 0;
+	}
+
 }
