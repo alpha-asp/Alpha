@@ -34,11 +34,11 @@ import java.util.List;
 /**
  * A store for nogoods that allows extraction of nogoods also after changes in atom ids.
  */
-public class AtomizedNoGoodStore {
+public class NoGoodBulkAtomizer {
 	private final AtomStore atomStore;
 	private final List<AtomizedNoGood> atomizedNoGoods;
 
-	public AtomizedNoGoodStore(AtomStore atomStore) {
+	public NoGoodBulkAtomizer(AtomStore atomStore) {
 		this.atomStore = atomStore;
 		this.atomizedNoGoods = new LinkedList<>();
 	}

@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -424,6 +425,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
 		instantiationStrategy.setStaleWorkingMemoryEntries(removeAfterObtainingNewNoGoods);
 		instantiationStrategy.setCurrentAssignment(currentAssignment);
+		EnumerationAtom.resetEnumerations();
 		fixedRules = new ArrayList<>();
 		initializeFactsAndRules();
 	}
