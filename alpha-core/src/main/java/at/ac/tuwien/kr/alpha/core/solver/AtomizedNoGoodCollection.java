@@ -32,21 +32,35 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * A store for nogoods that allows extraction of nogoods also after changes in atom ids.
+ * A collection for nogoods that allows extraction of nogoods also after changes in atom ids. This is done by
+ * converting nogoods to an atomized state based on a specific {@link AtomStore}.
  */
-public class NoGoodBulkAtomizer {
+public class AtomizedNoGoodCollection {
 	private final AtomStore atomStore;
 	private final List<AtomizedNoGood> atomizedNoGoods;
 
-	public NoGoodBulkAtomizer(AtomStore atomStore) {
+	/**
+	 * Initializes the {@link AtomizedNoGoodCollection} with a specific {@link AtomStore} to use for conversions.
+	 * @param atomStore the {@link AtomStore} to use.
+	 */
+	public AtomizedNoGoodCollection(AtomStore atomStore) {
 		this.atomStore = atomStore;
 		this.atomizedNoGoods = new LinkedList<>();
 	}
 
+	/**
+	 * Adds a nogood to the collection. The nogood is stored in an atomized way, meaning that it does not depend on
+	 * the atom ids of an {@link AtomStore}.
+	 * @param noGood the nogood to add.
+	 */
 	public void add(NoGood noGood) {
 		atomizedNoGoods.add(new AtomizedNoGood(noGood, atomStore));
 	}
 
+	/**
+	 * Gets all nogoods in the collection with atom ids based on the current {@link AtomStore}.
+	 * @return all nogoods in the collection converted to contain atom ids based on the current {@link AtomStore}.
+	 */
 	public List<NoGood> getNoGoods() {
 		List<NoGood> noGoods = new LinkedList<>();
 		for (AtomizedNoGood atomizedNoGood : atomizedNoGoods) {

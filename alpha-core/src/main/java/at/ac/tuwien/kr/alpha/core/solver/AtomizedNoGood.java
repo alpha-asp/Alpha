@@ -37,6 +37,12 @@ import at.ac.tuwien.kr.alpha.core.common.NoGood;
 public class AtomizedNoGood {
 	private final SimpleLiteral[] literals;
 
+	/**
+	 * Initializes an {@link AtomizedNoGood} with the same literals as the given {@link NoGood}.
+	 * Atom ids are provided by the given {@link AtomStore}.
+	 * @param noGood the {@link NoGood} to get the list of literals from.
+	 * @param atomStore the {@link AtomStore} to get atom ids from.
+	 */
 	public AtomizedNoGood(NoGood noGood, AtomStore atomStore) {
 		this.literals = new SimpleLiteral[noGood.size()];
 		for (int i = 0; i < noGood.size(); i++) {
@@ -49,6 +55,12 @@ public class AtomizedNoGood {
 		}
 	}
 
+	/**
+	 * Creates a new {@link NoGood} with the same literals as this {@link AtomizedNoGood}.
+	 * Atom ids are provided by the given {@link AtomStore}.
+	 * @param atomStore the {@link AtomStore} to get atom ids from.
+	 * @return the newly created {@link NoGood} with the same literals as this {@link AtomizedNoGood}.
+	 */
 	public NoGood deatomize(AtomStore atomStore) {
 		int[] literals = new int[this.literals.length];
 		for (int i = 0; i < this.literals.length; i++) {

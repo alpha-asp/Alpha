@@ -74,7 +74,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolver.class);
 
 	private final NoGoodStore store;
-	private final AtomizedNoGoodStore enumerationNoGoodStore;
+	private final AtomizedNoGoodCollection enumerationNoGoods;
 	private final ChoiceManager choiceManager;
 	private final WritableAssignment assignment;
 	private final GroundConflictNoGoodLearner learner;
@@ -102,7 +102,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 		this.assignment = assignment;
 		this.store = store;
-		this.enumerationNoGoodStore = new AtomizedNoGoodStore(atomStore);
+		this.enumerationNoGoods = new AtomizedNoGoodCollection(atomStore);
 		this.choiceManager = new ChoiceManager(assignment, store);
 		this.choiceManager.setChecksEnabled(config.isDebugInternalChecks());
 		this.learner = new GroundConflictNoGoodLearner(assignment, atomStore);
@@ -196,7 +196,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		// Backjump instead of backtrackSlow, enumerationNoGood will invert last choice.
 		choiceManager.backjump(backjumpLevel - 1);
 		LOGGER.debug("Adding enumeration nogood: {}", enumerationNoGood);
-		enumerationNoGoodStore.add(enumerationNoGood);
+		enumerationNoGoods.add(enumerationNoGood);
 		if (!addAndBackjumpIfNecessary(grounder.register(enumerationNoGood), enumerationNoGood, Integer.MAX_VALUE)) {
 			searchState.isSearchSpaceCompletelyExplored = true;
 		}
@@ -552,11 +552,31 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		addEnumerationNoGoods();
 		replayAtomizedChoiceStack(atomizedChoiceStack);
 
+		System.out.println("# Solver and grounder restart performed.");
+		System.out.println("# After restart, before second gc");
+		printMemoryStats();
+
+//		try {
+//			Thread.sleep(10000);
+//		} catch (InterruptedException e) {
+//			throw new RuntimeException(e);
+//		}
+
+		System.gc();
+		System.out.println("# After second gc");
+		printMemoryStats();
+
+//		try {
+//			Thread.sleep(10000);
+//		} catch (InterruptedException e) {
+//			throw new RuntimeException(e);
+//		}
+
 		LOGGER.debug("Solver and grounder restart finished.");
 	}
 
 	/**
-	 * Extract the current choice stack with atom ids replaced by the respective atoms.
+	 * Extracts the current choice stack with atom ids replaced by the respective atoms.
 	 * @return the choice stack containing atoms instead of atom ids.
 	 */
 	private Stack<AtomizedChoice> getAtomizedChoiceStack() {
@@ -570,7 +590,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	}
 
 	/**
-	 * Convert the given choice stack into one containing atom ids instead of atoms and apply
+	 * Converts the given choice stack into one containing atom ids instead of atoms and applies
 	 * the choices on the resulting stack using the choice manager.
 	 * Propagation is performed initially and after each choice.
 	 * @param atomizedChoiceStack the stack of choices containing atoms.
@@ -603,11 +623,11 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	}
 
 	/**
-	 * Add all nogoods from the enumeration nogood store to the regular nogood store.
+	 * Adds all nogoods from the enumeration nogood store to the regular nogood store.
 	 */
 	private void addEnumerationNoGoods() {
 		Map<Integer, NoGood> newNoGoods = new LinkedHashMap<>();
-		for (NoGood noGood : enumerationNoGoodStore.getNoGoods()) {
+		for (NoGood noGood : enumerationNoGoods.getNoGoods()) {
 			newNoGoods.put(grounder.register(noGood), noGood);
 		}
 		if (!ingest(newNoGoods)) {
