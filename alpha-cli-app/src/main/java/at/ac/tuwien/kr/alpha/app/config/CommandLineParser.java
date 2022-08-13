@@ -96,6 +96,10 @@ public class CommandLineParser {
 			.desc("the solver implementation to use (default: " + SystemConfig.DEFAULT_SOLVER_NAME + ")").build();
 	private static final Option OPT_NOGOOD_STORE = Option.builder("r").longOpt("store").hasArg(true).argName("store")
 			.desc("the nogood store to use (default: " + SystemConfig.DEFAULT_NOGOOD_STORE_NAME + ")").build();
+	private static final Option OPT_RESTARTS_ENABLED = Option.builder("rst").longOpt("enableRestarts")
+			.desc("enable solver restarts (default: " + SystemConfig.DEFAULT_RESTARTS_ENABLED + ")").build();
+	private static final Option OPT_RESTART_ITERATIONS = Option.builder("rit").longOpt("restartIterations").hasArg(true).argName("number").type(Integer.class)
+			.desc("the number of solver iterations between restarts (default: " + SystemConfig.DEFAULT_RESTART_ITERATIONS + ")").build();
 	private static final Option OPT_SORT = Option.builder("sort").longOpt("sort").hasArg(false)
 			.desc("sort answer sets (default: " + SystemConfig.DEFAULT_SORT_ANSWER_SETS + ")").build();
 	private static final Option OPT_DETERMINISTIC = Option.builder("d").longOpt("deterministic").hasArg(false)
@@ -170,6 +174,8 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SOLVER);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NOGOOD_STORE);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_RESTARTS_ENABLED);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_RESTART_ITERATIONS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SORT);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_DETERMINISTIC);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SEED);
@@ -228,6 +234,8 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER.getOpt(), this::handleGrounder);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_SOLVER.getOpt(), this::handleSolver);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NOGOOD_STORE.getOpt(), this::handleNogoodStore);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_RESTARTS_ENABLED.getOpt(), this::handleRestartsEnabled);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_RESTART_ITERATIONS.getOpt(), this::handleRestartIterations);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_SORT.getOpt(), this::handleSort);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_DETERMINISTIC.getOpt(), this::handleDeterministic);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_SEED.getOpt(), this::handleSeed);
@@ -345,6 +353,21 @@ public class CommandLineParser {
 
 	private void handleNogoodStore(Option opt, SystemConfig cfg) {
 		cfg.setNogoodStoreName(opt.getValue(SystemConfig.DEFAULT_NOGOOD_STORE_NAME));
+	}
+
+	private void handleRestartsEnabled(Option opt, SystemConfig cfg) {
+		cfg.setRestartsEnabled(true);
+	}
+
+	private void handleRestartIterations(Option opt, SystemConfig cfg) {
+		String optVal = opt.getValue();
+		int limit;
+		if (optVal != null) {
+			limit = Integer.parseInt(optVal);
+			cfg.setRestartIterations(limit);
+		} else {
+			cfg.setRestartIterations(SystemConfig.DEFAULT_RESTART_ITERATIONS);
+		}
 	}
 
 	private void handleFilters(Option opt, InputConfig cfg) {

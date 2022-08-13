@@ -79,6 +79,9 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	private final WritableAssignment assignment;
 	private final GroundConflictNoGoodLearner learner;
 	private final BranchingHeuristic branchingHeuristic;
+	private boolean restartsEnabled;
+	private final int restartIterationBreakpoint;
+	private int iterationCounter;
 
 	private int mbtAtFixpoint;
 	private int conflictsAfterClosing;
@@ -110,6 +113,9 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		this.disableJustifications = config.isDisableJustificationSearch();
 		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
+		this.restartsEnabled = config.isRestartsEnabled();
+		this.restartIterationBreakpoint = config.getRestartIterations();
+		this.iterationCounter = 0;
 	}
 
 	private BranchingHeuristic chainFallbackHeuristic(Grounder grounder, WritableAssignment assignment, Random random, HeuristicsConfiguration heuristicsConfiguration) {
@@ -132,6 +138,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		}
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
+			iterationCounter++;
 			performanceLog.writeIfTimeForLogging(LOGGER);
 			if (searchState.isSearchSpaceCompletelyExplored) {
 				LOGGER.debug("Search space has been fully explored, there are no more answer-sets.");
@@ -145,6 +152,10 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 			} else if (assignment.didChange()) {
 				LOGGER.debug("Updating grounder with new assignments and (potentially) obtaining new NoGoods.");
 				syncWithGrounder();
+			} else if (restartsEnabled && iterationCounter >= restartIterationBreakpoint) {
+				restart();
+				restartsEnabled = false;
+				iterationCounter = 0;
 			} else if (choose()) {
 				LOGGER.debug("Did choice.");
 			} else if (close()) {

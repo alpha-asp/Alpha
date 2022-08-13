@@ -49,6 +49,8 @@ public class SystemConfig {
 	public static final String DEFAULT_NOGOOD_STORE_NAME = "alphaRoaming";
 	public static final Heuristic DEFAULT_BRANCHING_HEURISTIC = Heuristic.VSIDS;
 	public static final BinaryNoGoodPropagationEstimationStrategy DEFAULT_MOMS_STRATEGY = BinaryNoGoodPropagationEstimationStrategy.CountBinaryWatches;
+	public static final boolean DEFAULT_RESTARTS_ENABLED = false;
+	public static final int DEFAULT_RESTART_ITERATIONS = 10000;
 	public static final long DEFAULT_SEED = System.nanoTime();
 	public static final boolean DEFAULT_DETERMINISTIC = false;
 	public static final boolean DEFAULT_PRINT_STATS = false;
@@ -73,6 +75,8 @@ public class SystemConfig {
 	private boolean debugInternalChecks = DEFAULT_DEBUG_INTERNAL_CHECKS;
 	private Heuristic branchingHeuristic = DEFAULT_BRANCHING_HEURISTIC;
 	private BinaryNoGoodPropagationEstimationStrategy momsStrategy = DEFAULT_MOMS_STRATEGY;
+	private boolean restartsEnabled = DEFAULT_RESTARTS_ENABLED;
+	private int restartIterations = DEFAULT_RESTART_ITERATIONS;
 	private boolean quiet = DEFAULT_QUIET;
 	private boolean printStats = DEFAULT_PRINT_STATS;
 	private boolean disableJustificationSearch = DEFAULT_DISABLE_JUSTIFICATION_SEARCH;
@@ -117,6 +121,22 @@ public class SystemConfig {
 	 */
 	public void setNogoodStoreName(String nogoodStoreName) {
 		this.nogoodStoreName = nogoodStoreName;
+	}
+
+	public boolean isRestartsEnabled() {
+		return restartsEnabled;
+	}
+
+	public void setRestartsEnabled(boolean restartsEnabled) {
+		this.restartsEnabled = restartsEnabled;
+	}
+
+	public int getRestartIterations() {
+		return restartIterations;
+	}
+
+	public void setRestartIterations(int restartIterations) {
+		this.restartIterations = restartIterations;
 	}
 
 	public boolean isDeterministic() {
