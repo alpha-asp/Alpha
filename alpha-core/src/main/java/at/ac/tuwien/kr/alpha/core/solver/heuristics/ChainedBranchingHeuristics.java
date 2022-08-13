@@ -122,4 +122,11 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 		return this.getClass().getSimpleName() + chain;
 	}
 
+	@Override
+	public void reset() {
+		for (BranchingHeuristic heuristic : chain) {
+			heuristic.reset();
+		}
+	}
+
 }
