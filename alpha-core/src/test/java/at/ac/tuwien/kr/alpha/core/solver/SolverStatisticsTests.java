@@ -26,6 +26,7 @@
 package at.ac.tuwien.kr.alpha.core.solver;
 
 import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.ignoreTestForRestartsEnabled;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -58,6 +59,7 @@ public class SolverStatisticsTests {
 
 	@RegressionTest
 	public void checkStatsStringOneChoice(RegressionTestConfig cfg) {
+		ignoreTestForRestartsEnabled(cfg);
 		Solver solver = buildSolverForRegressionTest("a :- not b. b :- not a.", cfg);
 		assumeTrue(solver instanceof StatisticsReportingSolver);
 		collectAnswerSetsAndCheckStats(solver, 2, 1, 1, 1, 1, 0, 0, 0);
