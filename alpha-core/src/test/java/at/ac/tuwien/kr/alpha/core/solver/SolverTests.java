@@ -27,11 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.assertRegressionTestAnswerSet;
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.assertRegressionTestAnswerSets;
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.assertRegressionTestAnswerSetsWithBase;
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.buildSolverForRegressionTest;
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.collectRegressionTestAnswerSets;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.*;
 import static java.util.Collections.singleton;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -806,12 +802,14 @@ public class SolverTests {
 
 	@RegressionTest
 	public void dummyGrounder(RegressionTestConfig cfg) {
+		ignoreTestForRestartsEnabled(cfg); // Do not run this test case with restarts enabled.
 		AtomStore atomStore = new AtomStoreImpl();
 		assertEquals(DummyGrounder.EXPECTED, buildSolverForRegressionTest(atomStore, new DummyGrounder(atomStore), cfg).collectSet());
 	}
 
 	@RegressionTest
 	public void choiceGrounder(RegressionTestConfig cfg) {
+		ignoreTestForRestartsEnabled(cfg); // Do not run this test case with restarts enabled.
 		AtomStore atomStore = new AtomStoreImpl();
 		assertEquals(ChoiceGrounder.EXPECTED, buildSolverForRegressionTest(atomStore, new ChoiceGrounder(atomStore), cfg).collectSet());
 	}

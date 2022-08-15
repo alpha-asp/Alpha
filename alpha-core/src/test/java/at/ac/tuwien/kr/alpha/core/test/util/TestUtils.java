@@ -216,4 +216,8 @@ public class TestUtils {
 		Assumptions.assumeTrue(cfg.isSupportNegativeSumElements());
 	}
 
+	public static void ignoreTestForRestartsEnabled(RegressionTestConfig cfg) {
+		Assumptions.assumeFalse(cfg.isRestartsEnabled());
+	}
+
 }

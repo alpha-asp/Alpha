@@ -13,6 +13,9 @@ public class RegressionTestConfig {
 
 	private final Heuristic branchingHeuristic;
 
+	private final boolean restartsEnabled;
+	private final int restartIterations;
+
 	private final long seed;
 
 	private final boolean debugChecks;
@@ -31,13 +34,15 @@ public class RegressionTestConfig {
 
 	public RegressionTestConfig(
 			String solverName, String grounderName, String noGoodStoreName,
-			Heuristic branchingHeuristic, long seed,
+			Heuristic branchingHeuristic, boolean restartsEnabled, int restartIterations, long seed,
 			boolean debugChecks, String grounderToleranceConstraints, String grounderToleranceRules,
 			boolean disableInstanceRemoval, boolean evaluateStratifiedPart, boolean useSortingGrid, boolean supportNegativeSumElements) {
 		this.solverName = solverName;
 		this.grounderName = grounderName;
 		this.noGoodStoreName = noGoodStoreName;
 		this.branchingHeuristic = branchingHeuristic;
+		this.restartsEnabled = restartsEnabled;
+		this.restartIterations = restartIterations;
 		this.seed = seed;
 		this.debugChecks = debugChecks;
 		this.grounderToleranceConstraints = grounderToleranceConstraints;
@@ -53,6 +58,8 @@ public class RegressionTestConfig {
 		retVal.setGrounderName(this.grounderName);
 		retVal.setSolverName(this.solverName);
 		retVal.setNogoodStoreName(this.noGoodStoreName);
+		retVal.setRestartsEnabled(this.restartsEnabled);
+		retVal.setRestartIterations(this.restartIterations);
 		retVal.setSeed(this.seed);
 		retVal.setBranchingHeuristic(this.branchingHeuristic);
 		retVal.setDebugInternalChecks(this.debugChecks);
@@ -79,6 +86,14 @@ public class RegressionTestConfig {
 
 	public Heuristic getBranchingHeuristic() {
 		return this.branchingHeuristic;
+	}
+
+	public boolean isRestartsEnabled() {
+		return restartsEnabled;
+	}
+
+	public int getRestartIterations() {
+		return restartIterations;
 	}
 
 	public long getSeed() {
@@ -121,5 +136,4 @@ public class RegressionTestConfig {
 				this.grounderToleranceConstraints, this.grounderToleranceRules, this.disableInstanceRemoval, this.evaluateStratifiedPart,
 				this.encodeAggregatesUsingSortingGrid, this.supportNegativeSumElements);
 	}
-
 }
