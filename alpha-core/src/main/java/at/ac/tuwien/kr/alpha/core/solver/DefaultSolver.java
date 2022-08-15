@@ -563,26 +563,6 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		addEnumerationNoGoods();
 		replayAtomizedChoiceStack(atomizedChoiceStack);
 
-		System.out.println("# Solver and grounder restart performed.");
-		System.out.println("# After restart, before second gc");
-		printMemoryStats();
-
-//		try {
-//			Thread.sleep(10000);
-//		} catch (InterruptedException e) {
-//			throw new RuntimeException(e);
-//		}
-
-		System.gc();
-		System.out.println("# After second gc");
-		printMemoryStats();
-
-//		try {
-//			Thread.sleep(10000);
-//		} catch (InterruptedException e) {
-//			throw new RuntimeException(e);
-//		}
-
 		LOGGER.debug("Solver and grounder restart finished.");
 	}
 
