@@ -39,6 +39,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 
+import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -475,11 +476,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	}
 
 	private boolean ingest(Map<Integer, NoGood> obtained) {
-		assignment.growForMaxAtomId();
-		int maxAtomId = atomStore.getMaxAtomId();
-		store.growForMaxAtomId(maxAtomId);
-		choiceManager.growForMaxAtomId(maxAtomId);
-		branchingHeuristic.growForMaxAtomId(maxAtomId);
+		growForMaxAtomId();
 		branchingHeuristic.newNoGoods(obtained.values());
 
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
@@ -594,6 +591,11 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		for (AtomizedChoice atomizedChoice : atomizedChoiceStack) {
 			Atom atom = atomizedChoice.getAtom();
 			atomStore.putIfAbsent(atom);
+		}
+		growForMaxAtomId();
+
+		for (AtomizedChoice atomizedChoice : atomizedChoiceStack) {
+			Atom atom = atomizedChoice.getAtom();
 			int atomId = atomStore.get(atom);
 			Choice choice = new Choice(atomId, atomizedChoice.getTruthValue(), atomizedChoice.isBacktracked());
 
@@ -611,6 +613,19 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 				}
 			}
 		}
+	}
+
+	/**
+	 * Grows the current {@link Assignment}, {@link NoGoodStore}, {@link ChoiceManager} and {@link BranchingHeuristic}
+	 * by calling {@link Assignment#growForMaxAtomId()}, {@link NoGoodStore#growForMaxAtomId(int)},
+	 * {@link ChoiceManager#growForMaxAtomId(int)} and {@link BranchingHeuristic#growForMaxAtomId(int)} respectively.
+	 */
+	private void growForMaxAtomId() {
+		assignment.growForMaxAtomId();
+		int maxAtomId = atomStore.getMaxAtomId();
+		store.growForMaxAtomId(maxAtomId);
+		choiceManager.growForMaxAtomId(maxAtomId);
+		branchingHeuristic.growForMaxAtomId(maxAtomId);
 	}
 
 	/**

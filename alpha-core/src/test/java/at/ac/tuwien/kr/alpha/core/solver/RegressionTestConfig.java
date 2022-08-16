@@ -36,7 +36,8 @@ public class RegressionTestConfig {
 			String solverName, String grounderName, String noGoodStoreName,
 			Heuristic branchingHeuristic, boolean restartsEnabled, int restartIterations, long seed,
 			boolean debugChecks, String grounderToleranceConstraints, String grounderToleranceRules,
-			boolean disableInstanceRemoval, boolean evaluateStratifiedPart, boolean useSortingGrid, boolean supportNegativeSumElements) {
+			boolean disableInstanceRemoval, boolean evaluateStratifiedPart, boolean useSortingGrid,
+			boolean supportNegativeSumElements) {
 		this.solverName = solverName;
 		this.grounderName = grounderName;
 		this.noGoodStoreName = noGoodStoreName;
@@ -131,9 +132,13 @@ public class RegressionTestConfig {
 	@Override
 	public String toString() {
 		return String.format(
-				"RegressionTestConfig [solverName=%s, grounderName=%s, noGoodStoreName=%s, branchingHeuristic=%s, seed=%s, debugChecks=%s, grounderToleranceConstraints=%s, grounderToleranceRules=%s, disableInstanceRemoval=%s, evaluateStratifiedPart=%s, useSortingGrid=%s, supportNegativeSumElements=%s]",
-				this.solverName, this.grounderName, this.noGoodStoreName, this.branchingHeuristic, this.seed, this.debugChecks,
-				this.grounderToleranceConstraints, this.grounderToleranceRules, this.disableInstanceRemoval, this.evaluateStratifiedPart,
+				"RegressionTestConfig [solverName=%s, grounderName=%s, noGoodStoreName=%s, branchingHeuristic=%s,"
+				+ " restartsEnabled=%b, restartIterations=%d, seed=%s, debugChecks=%s, grounderToleranceConstraints=%s,"
+				+ " grounderToleranceRules=%s, disableInstanceRemoval=%s, evaluateStratifiedPart=%s, useSortingGrid=%s,"
+				+ " supportNegativeSumElements=%s]",
+				this.solverName, this.grounderName, this.noGoodStoreName, this.branchingHeuristic, this.restartsEnabled,
+				this.restartIterations, this.seed, this.debugChecks, this.grounderToleranceConstraints,
+				this.grounderToleranceRules, this.disableInstanceRemoval, this.evaluateStratifiedPart,
 				this.encodeAggregatesUsingSortingGrid, this.supportNegativeSumElements);
 	}
 }
