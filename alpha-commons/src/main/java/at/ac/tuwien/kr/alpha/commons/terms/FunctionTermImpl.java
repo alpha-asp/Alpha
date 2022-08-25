@@ -18,13 +18,14 @@ import at.ac.tuwien.kr.alpha.commons.util.Util;
  * Copyright (c) 2016-2017, the Alpha Team.
  */
 class FunctionTermImpl extends AbstractTerm implements FunctionTerm {
+	
 	private static final Interner<FunctionTermImpl> INTERNER = new Interner<>();
 
 	private final String symbol;
 	private final List<Term> terms;
 	private final boolean ground;
 
-	private FunctionTermImpl(String symbol, List<Term> terms) {
+	FunctionTermImpl(String symbol, List<Term> terms) {
 		if (symbol == null) {
 			throw new IllegalArgumentException();
 		}
