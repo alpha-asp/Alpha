@@ -73,7 +73,7 @@ public final class AlphaFactory {
 		return new SolverFactory(cfg.getSolverName(), cfg.getNogoodStoreName(), solverCfg);
 	}
 
-	// TODO lifetime of one ActionContext needs to be exactly runtime ofone program!
+	// TODO lifetime of one ActionContext needs to be exactly runtime of one program!
 	@VisibleForTesting
 	public static Alpha newAlpha(SystemConfig cfg, ActionContext actionContext) {
 		// Parser factory - Supply correct parser dependent on the accepted input language.

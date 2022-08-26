@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 import at.ac.tuwien.kr.alpha.api.programs.actions.Action;
+import at.ac.tuwien.kr.alpha.api.terms.ActionResultTerm;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
@@ -35,51 +35,48 @@ public class Actions {
 	// TODO this needs to be encapsulated and made thread-safe!
 	private static final IntIdGenerator ID_GEN = new IntIdGenerator();
 
-	public static FunctionTerm printLine(List<Term> input) {
+	public static ActionResultTerm<ConstantTerm<String>> printLine(List<Term> input) {
 		if (input.size() != 1) {
-			// TODO do properly
-			throw new RuntimeException("Incorrect arity!");
+			return Terms.actionError("Incorrect input size!");
 		}
 		// TODO this should only work on ConstantTerm<String>
 		System.out.println(input.get(0).toString());
-		return Terms.newFunctionTerm("ok");
+		return Terms.actionSuccess(Terms.newSymbolicConstant("ok"));
 	}
 
-	public static FunctionTerm fileOpenOutputStream(List<Term> input) {
+	public static ActionResultTerm<?> fileOpenOutputStream(List<Term> input) {
 		if (input.size() != 1) {
-			// TODO do properly
-			throw new IllegalArgumentException("Incorrect arity!");
+			return Terms.actionError("Incorrect input size!");
 		}
 		Term inTerm = input.get(0);
 		if (!(inTerm instanceof ConstantTerm)) {
-			throw new IllegalArgumentException("Input must be a string constant!");
+			return Terms.actionError("Input must be a string constant!");
 		}
 		ConstantTerm<?> inConst = (ConstantTerm<?>) inTerm;
 		if (!(inConst.getObject() instanceof String) || inConst.isSymbolic()) {
-			throw new IllegalArgumentException("Input must be a string constant!");
+			return Terms.actionError("Input must be a string constant!");
 		}
 		String path = (String) inConst.getObject();
 		try {
 			OutputStreamHandle streamHandle = new OutputStreamHandle(ID_GEN.getNextId(), new FileOutputStream(path, true));
-			return Terms.newFunctionTerm("stream", Terms.newConstant(streamHandle));
+			return Terms.actionSuccess(Terms.newFunctionTerm("stream", Terms.newConstant(streamHandle)));
 		} catch (FileNotFoundException e) {
-			throw new RuntimeException(e);
+			return Terms.actionError("File not  found: " + path);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	public static FunctionTerm outputStreamWrite(List<Term> input) {
+	public static ActionResultTerm<ConstantTerm<String>> outputStreamWrite(List<Term> input) {
 		if (input.size() != 2) {
-			// TODO do properly
-			throw new IllegalArgumentException("Incorrect arity!");
+			return Terms.actionError("Incorrect input size!");
 		}
 		if (!(input.get(0) instanceof ConstantTerm) || !(((ConstantTerm<?>) input.get(0)).getObject() instanceof OutputStreamHandle)) {
-			throw new IllegalArgumentException("First input term must be an output stream handle!");
+			return Terms.actionError("First input term must be an output stream handle!");
 		}
 		OutputStreamHandle dstHandle = ((ConstantTerm<OutputStreamHandle>) input.get(0)).getObject();
 		if (!(input.get(1) instanceof ConstantTerm) || !(((ConstantTerm<?>) input.get(1)).getObject() instanceof String)
 				|| ((ConstantTerm<?>) input.get(1)).isSymbolic()) {
-			throw new IllegalArgumentException("Second input term must be a string constant!");
+			return Terms.actionError("Second input term must be a string constant!");
 		}
 		String str = ((ConstantTerm<String>) input.get(1)).getObject();
 		// TODO this needs some built-in conversion function
@@ -87,60 +84,57 @@ public class Actions {
 		OutputStream dst = dstHandle.getStream();
 		try {
 			dst.write(data);
-			return Terms.newFunctionTerm("writeResult", Terms.newSymbolicConstant("ok"));
+			return Terms.actionSuccess(Terms.newSymbolicConstant("ok"));
 		} catch (IOException ex) {
-			throw new RuntimeException(ex);
+			return Terms.actionError("Error writing data: " + ex.getMessage());
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	public static FunctionTerm outputStreamClose(List<Term> input) {
+	public static ActionResultTerm<ConstantTerm<String>> outputStreamClose(List<Term> input) {
 		if (input.size() != 1) {
-			// TODO do properly
-			throw new IllegalArgumentException("Incorrect arity!");
+			return Terms.actionError("Incorrect input size!");
 		}
 		if (!(input.get(0) instanceof ConstantTerm) || !(((ConstantTerm<?>) input.get(0)).getObject() instanceof OutputStreamHandle)) {
-			throw new IllegalArgumentException("First input term must be an output stream handle!");
+			return Terms.actionError("First input term must be an output stream handle!");
 		}
 		OutputStreamHandle handle = ((ConstantTerm<OutputStreamHandle>) input.get(0)).getObject();
 		try {
 			handle.getStream().close();
-			return Terms.newFunctionTerm("closeResult", Terms.newSymbolicConstant("ok"));
+			return Terms.actionSuccess(Terms.newSymbolicConstant("ok"));
 		} catch (IOException ex) {
-			throw new RuntimeException(ex);
+			return Terms.actionError("Error closing stream: " + ex.getMessage());
 		}
 	}
 
-	public static FunctionTerm fileOpenInputStream(List<Term> input) {
+	public static ActionResultTerm<?> fileOpenInputStream(List<Term> input) {
 		if (input.size() != 1) {
-			// TODO do properly
-			throw new IllegalArgumentException("Incorrect arity!");
+			return Terms.actionError("Incorrect input size!");
 		}
 		Term inTerm = input.get(0);
 		if (!(inTerm instanceof ConstantTerm)) {
-			throw new IllegalArgumentException("Input must be a string constant!");
+			return Terms.actionError("Input must be a string constant!");
 		}
 		ConstantTerm<?> inConst = (ConstantTerm<?>) inTerm;
 		if (!(inConst.getObject() instanceof String) || inConst.isSymbolic()) {
-			throw new IllegalArgumentException("Input must be a string constant!");
+			return Terms.actionError("Input must be a string constant!");
 		}
 		String path = (String) inConst.getObject();
 		try {
 			InputStreamHandle streamHandle = new InputStreamHandle(ID_GEN.getNextId(), Files.newBufferedReader(Paths.get(path)));
-			return Terms.newFunctionTerm("stream", Terms.newConstant(streamHandle));
+			return Terms.actionSuccess(Terms.newFunctionTerm("stream", Terms.newConstant(streamHandle)));
 		} catch (IOException ex) {
-			throw new RuntimeException(ex);
+			return Terms.actionError("Error opening input stream: " + ex.getMessage());
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	public static FunctionTerm inputStreamReadLine(List<Term> input) {
+	public static ActionResultTerm<?> inputStreamReadLine(List<Term> input) {
 		if (input.size() != 1) {
-			// TODO do properly
-			throw new IllegalArgumentException("Incorrect arity!");
+			return Terms.actionError("Incorrect input size!");
 		}
 		if (!(input.get(0) instanceof ConstantTerm) || !(((ConstantTerm<?>) input.get(0)).getObject() instanceof InputStreamHandle)) {
-			throw new IllegalArgumentException("First input term must be an input stream handle!");
+			return Terms.actionError("First input term must be an input stream handle!");
 		}
 		InputStreamHandle handle = ((ConstantTerm<InputStreamHandle>) input.get(0)).getObject();
 		try {
@@ -152,27 +146,26 @@ public class Actions {
 			} else {
 				lineTerm = Terms.newConstant(line);
 			}
-			return Terms.newFunctionTerm("ok", lineTerm);
+			return Terms.actionSuccess(Terms.newFunctionTerm("line", lineTerm));
 		} catch (IOException ex) {
-			throw new RuntimeException(ex);
+			return Terms.actionError("Error reading data");
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	public static FunctionTerm inputStreamClose(List<Term> input) {
+	public static ActionResultTerm<?> inputStreamClose(List<Term> input) {
 		if (input.size() != 1) {
-			// TODO do properly
-			throw new IllegalArgumentException("Incorrect arity!");
+			return Terms.actionError("Incorrect input size!");
 		}
 		if (!(input.get(0) instanceof ConstantTerm) || !(((ConstantTerm<?>) input.get(0)).getObject() instanceof InputStreamHandle)) {
-			throw new IllegalArgumentException("First input term must be an input stream handle!");
+			return Terms.actionError("First input term must be an input stream handle!");
 		}
 		InputStreamHandle handle = ((ConstantTerm<InputStreamHandle>) input.get(0)).getObject();
 		try {
 			handle.getStream().close();
-			return Terms.newFunctionTerm("closeResult", Terms.newSymbolicConstant("ok"));
+			return Terms.actionSuccess(Terms.newFunctionTerm("closeResult", Terms.newSymbolicConstant("ok")));
 		} catch (IOException ex) {
-			throw new RuntimeException(ex);
+			return Terms.actionError("Error writing data: " + ex.getMessage());
 		}
 	}
 

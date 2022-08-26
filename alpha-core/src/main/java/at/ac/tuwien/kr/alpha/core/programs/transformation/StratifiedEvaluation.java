@@ -346,7 +346,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		for (Term inputTerm : actionInput) {
 			substitutedInput.add(inputTerm.substitute(substitution));
 		}
-		// Delegate action execution to respctive backend.
+		// Delegate action execution to respective backend.
 		ActionWitness witness = actionContext.execute(head.getActionName(), ruleId, substitution, substitutedInput);
 		// TODO if the according debug flag is set, convert witness to atom and add to facts.		
 		// We have an action result. Add it to the substitution as the substitute for the variable bound to the action so we're able to obtain the
