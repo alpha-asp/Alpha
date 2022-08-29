@@ -163,7 +163,7 @@ public class AlphaImpl implements Alpha {
 			AnalyzedProgram analyzed = new AnalyzedProgram(retVal.getRules(), retVal.getFacts());
 			// TODO as Evolog moves further along, we want to integrate stratified evaluation with grounder and solver.
 			// Therefore, leave it as is and don't make part of factory API for now.
-			retVal = new StratifiedEvaluation(actionContext).apply(analyzed);
+			retVal = new StratifiedEvaluation(actionContext, true).apply(analyzed);
 		}
 		return retVal;
 	}
@@ -251,7 +251,7 @@ public class AlphaImpl implements Alpha {
 		final AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(program);
 		final NormalProgram preprocessed;
 		if (enableStratifiedEvaluation) {
-			preprocessed = new StratifiedEvaluation(actionContext).apply(analyzed).toNormalProgram();
+			preprocessed = new StratifiedEvaluation(actionContext, true).apply(analyzed).toNormalProgram();
 		} else {
 			preprocessed = program;
 		}

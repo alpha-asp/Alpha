@@ -8,14 +8,14 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 public class ActionWitness {
 
 	private final int ruleId;
-	private final Substitution groundBody;
+	private final Substitution groundSubstitution;
 	private final String actionName;
 	private final List<Term> actionInput;
 	private final Term actionResult;
 
-	public ActionWitness(int ruleId, Substitution groundBody, String actionName, List<Term> actionInput, Term actionResult) {
+	public ActionWitness(int ruleId, Substitution groundSubstitution, String actionName, List<Term> actionInput, Term actionResult) {
 		this.ruleId = ruleId;
-		this.groundBody = groundBody;
+		this.groundSubstitution = groundSubstitution;
 		this.actionName = actionName;
 		this.actionInput = actionInput;
 		this.actionResult = actionResult;
@@ -25,8 +25,8 @@ public class ActionWitness {
 		return ruleId;
 	}
 
-	public Substitution getGroundBody() {
-		return groundBody;
+	public Substitution getGroundSubstitution() {
+		return groundSubstitution;
 	}
 
 	public String getActionName() {
