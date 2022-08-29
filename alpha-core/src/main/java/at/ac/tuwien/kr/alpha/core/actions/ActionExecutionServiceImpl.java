@@ -9,25 +9,23 @@ import at.ac.tuwien.kr.alpha.api.programs.actions.Action;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 
-public class ActionContextImpl implements ActionContext {
+public class ActionExecutionServiceImpl implements ActionExecutionService {
 
-	// TODO initialize from outside
-	private final Map<String, Action> actions;
+	private final ActionImplementationProvider actionProvider;
 	private final Map<ActionInput, ActionWitness> actionRecord = new HashMap<>();
 
-	public ActionContextImpl(Map<String, Action> actions) {
-		this.actions = actions;
+	public ActionExecutionServiceImpl(ActionImplementationProvider implementationProvider) {
+		this.actionProvider = implementationProvider;
 	}
 
 	@Override
 	public ActionWitness execute(String actionName, int sourceRuleId, Substitution sourceRuleInstance, List<Term> inputTerms) {
-		// TODO maybe we want to stuff the whole action head plus substitution in here and do the whole instantiation here?
 		ActionInput actInput = new ActionInput(actionName, sourceRuleId, sourceRuleInstance, inputTerms);
 		return actionRecord.computeIfAbsent(actInput, this::execute);
 	}
 
 	private ActionWitness execute(ActionInput input) {
-		Action action = actions.get(input.name);
+		Action action = actionProvider.getSupportedActions().get(input.name);
 		FunctionTerm result = action.execute(input.inputTerms);
 		return new ActionWitness(input.sourceRule, input.instance, input.name, input.inputTerms, result);
 	}

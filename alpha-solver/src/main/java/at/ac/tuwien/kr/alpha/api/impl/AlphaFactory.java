@@ -11,9 +11,9 @@ import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
-import at.ac.tuwien.kr.alpha.core.actions.ActionContext;
-import at.ac.tuwien.kr.alpha.core.actions.ActionContextImpl;
-import at.ac.tuwien.kr.alpha.core.actions.Actions;
+import at.ac.tuwien.kr.alpha.core.actions.ActionExecutionService;
+import at.ac.tuwien.kr.alpha.core.actions.ActionExecutionServiceImpl;
+import at.ac.tuwien.kr.alpha.core.actions.DefaultActionImplementationProvider;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.parser.evolog.EvologProgramParser;
@@ -75,7 +75,7 @@ public final class AlphaFactory {
 
 	// TODO lifetime of one ActionContext needs to be exactly runtime of one program!
 	@VisibleForTesting
-	public static Alpha newAlpha(SystemConfig cfg, ActionContext actionContext) {
+	public static Alpha newAlpha(SystemConfig cfg, ActionExecutionService actionContext) {
 		// Parser factory - Supply correct parser dependent on the accepted input language.
 		Supplier<ProgramParser> parserFactory = () -> cfg.isAcceptEvologPrograms() ? new EvologProgramParser() : new ASPCore2ProgramParser();
 		Supplier<ProgramTransformation<InputProgram, NormalProgram>> programNormalizationFactory = newProgramNormalizationFactory(parserFactory,
@@ -93,7 +93,7 @@ public final class AlphaFactory {
 	}
 
 	public static Alpha newAlpha(SystemConfig cfg) {
-		return newAlpha(cfg, new ActionContextImpl(Actions.getDefaultActionBindings()));
+		return newAlpha(cfg, new ActionExecutionServiceImpl(new DefaultActionImplementationProvider()));
 	}
 
 

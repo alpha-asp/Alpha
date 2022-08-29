@@ -37,6 +37,7 @@ dependencies {
 	testImplementation("org.slf4j:slf4j-simple:1.7.32")
 
 	testFixturesApi(jupiter("api"))
+	testFixturesApi("org.slf4j:slf4j-api:1.7.32")
 }
 
 // JUnit 5

@@ -34,7 +34,7 @@ import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.actions.ActionContext;
+import at.ac.tuwien.kr.alpha.core.actions.ActionExecutionService;
 import at.ac.tuwien.kr.alpha.core.actions.ActionWitness;
 import at.ac.tuwien.kr.alpha.core.depgraph.StratificationAlgorithm;
 import at.ac.tuwien.kr.alpha.core.grounder.IndexedInstanceStorage;
@@ -67,10 +67,10 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	private Set<Integer> solvedRuleIds = new HashSet<>(); // Set of rules that have been completely evaluated.
 
 	private LiteralInstantiator literalInstantiator;
-	private ActionContext actionContext;
+	private ActionExecutionService actionContext;
 	private final boolean generateActionWitnesses;
 
-	public StratifiedEvaluation(ActionContext actionContext, boolean generateActionWitnesses) {
+	public StratifiedEvaluation(ActionExecutionService actionContext, boolean generateActionWitnesses) {
 		this.actionContext = actionContext;
 		this.generateActionWitnesses = generateActionWitnesses;
 	}

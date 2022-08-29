@@ -1,15 +1,16 @@
 package at.ac.tuwien.kr.alpha.core.actions;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.programs.actions.Action;
 import at.ac.tuwien.kr.alpha.api.terms.ActionResultTerm;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
@@ -17,34 +18,67 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 
-public class Actions {
+public abstract class AbstractActionImplementationProvider implements ActionImplementationProvider {
 
-	public static Map<String, Action> getDefaultActionBindings() {
-		Map<String, Action> actions = new HashMap<>();
-		actions.put("printLine", Actions::printLine);
-		actions.put("fileOutputStream", Actions::fileOpenOutputStream);
-		actions.put("streamWrite", Actions::outputStreamWrite);
-		actions.put("outputStreamClose", Actions::outputStreamClose);
+	private final IntIdGenerator idGenerator = new IntIdGenerator();
+	private final Map<String, Action> supportedActions = new HashMap<>();
 
-		actions.put("fileInputStream", Actions::fileOpenInputStream);
-		actions.put("streamReadLine", Actions::inputStreamReadLine);
-		actions.put("inputStreamClose", Actions::inputStreamClose);
-		return actions;
+	public AbstractActionImplementationProvider() {
+		registerAction("fileOutputStream", this::openFileOutputStreamAction);
+		registerAction("streamWrite", this::outputStreamWriteAction);
+		registerAction("outputStreamClose", this::outputStreamCloseAction);
+		registerAction("fileInputStream", this::openFileInputStreamAction);
+		registerAction("streamReadLine", this::inputStreamReadLineAction);
+		registerAction("inputStreamClose", this::inputStreamCloseAction);
 	}
 
-	// TODO this needs to be encapsulated and made thread-safe!
-	private static final IntIdGenerator ID_GEN = new IntIdGenerator();
-
-	public static ActionResultTerm<ConstantTerm<String>> printLine(List<Term> input) {
-		if (input.size() != 1) {
-			return Terms.actionError("Incorrect input size!");
-		}
-		// TODO this should only work on ConstantTerm<String>
-		System.out.println(input.get(0).toString());
-		return Terms.actionSuccess(Terms.newSymbolicConstant("ok"));
+	/**
+	 * Returns a map of all actions supported by this implementation provider.
+	 */
+	public final Map<String, Action> getSupportedActions() {
+		return supportedActions;
 	}
 
-	public static ActionResultTerm<?> fileOpenOutputStream(List<Term> input) {
+	/**
+	 * Returns a predicate interpretation specifying an external that takes no arguments
+	 * and returns a reference to the standard system output stream (stdout).
+	 */
+	// TODO we need to reuse this term! (do we?? its interned...)
+	public final PredicateInterpretation getStdoutTerm() {
+		return (trms) -> {
+			if (!trms.isEmpty()) {
+				throw new IllegalArgumentException("Invalid method call! Expected term list to be empty!");
+			}
+			return Collections.singleton(
+					Collections.singletonList(
+							Terms.newConstant(
+									new OutputStreamHandle(idGenerator.getNextId(), getStdoutStream()))));
+		};
+	}
+
+	/**
+	 * Returns a predicate interpretation specifying an external that takes no arguments
+	 * and returns a reference to the standard system input stream (stdin).
+	 */
+	// TODO we need to reuse this term! (do we?? its interned...)
+	public final PredicateInterpretation getStdinTerm() {
+		return (trms) -> {
+			if (!trms.isEmpty()) {
+				throw new IllegalArgumentException("Invalid method call! Expected term list to be empty!");
+			}
+			return Collections.singleton(
+					Collections.singletonList(
+							Terms.newConstant(
+									new InputStreamHandle(idGenerator.getNextId(),
+											new BufferedReader(new InputStreamReader(getStdinStream()))))));
+		};
+	}
+
+	protected final void registerAction(String name, Action action) {
+		supportedActions.put(name, action);
+	}
+
+	private ActionResultTerm<?> openFileOutputStreamAction(List<Term> input) {
 		if (input.size() != 1) {
 			return Terms.actionError("Incorrect input size!");
 		}
@@ -58,15 +92,15 @@ public class Actions {
 		}
 		String path = (String) inConst.getObject();
 		try {
-			OutputStreamHandle streamHandle = new OutputStreamHandle(ID_GEN.getNextId(), new FileOutputStream(path, true));
+			OutputStreamHandle streamHandle = new OutputStreamHandle(idGenerator.getNextId(), getFileOutputStream(path));
 			return Terms.actionSuccess(Terms.newFunctionTerm("stream", Terms.newConstant(streamHandle)));
-		} catch (FileNotFoundException e) {
+		} catch (IOException e) {
 			return Terms.actionError("File not  found: " + path);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	public static ActionResultTerm<ConstantTerm<String>> outputStreamWrite(List<Term> input) {
+	private ActionResultTerm<ConstantTerm<String>> outputStreamWriteAction(List<Term> input) {
 		if (input.size() != 2) {
 			return Terms.actionError("Incorrect input size!");
 		}
@@ -91,7 +125,7 @@ public class Actions {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static ActionResultTerm<ConstantTerm<String>> outputStreamClose(List<Term> input) {
+	private ActionResultTerm<ConstantTerm<String>> outputStreamCloseAction(List<Term> input) {
 		if (input.size() != 1) {
 			return Terms.actionError("Incorrect input size!");
 		}
@@ -107,7 +141,7 @@ public class Actions {
 		}
 	}
 
-	public static ActionResultTerm<?> fileOpenInputStream(List<Term> input) {
+	private ActionResultTerm<?> openFileInputStreamAction(List<Term> input) {
 		if (input.size() != 1) {
 			return Terms.actionError("Incorrect input size!");
 		}
@@ -121,7 +155,7 @@ public class Actions {
 		}
 		String path = (String) inConst.getObject();
 		try {
-			InputStreamHandle streamHandle = new InputStreamHandle(ID_GEN.getNextId(), Files.newBufferedReader(Paths.get(path)));
+			InputStreamHandle streamHandle = new InputStreamHandle(idGenerator.getNextId(), new BufferedReader(new InputStreamReader(getInputStream(path))));
 			return Terms.actionSuccess(Terms.newFunctionTerm("stream", Terms.newConstant(streamHandle)));
 		} catch (IOException ex) {
 			return Terms.actionError("Error opening input stream: " + ex.getMessage());
@@ -129,7 +163,7 @@ public class Actions {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static ActionResultTerm<?> inputStreamReadLine(List<Term> input) {
+	private ActionResultTerm<?> inputStreamReadLineAction(List<Term> input) {
 		if (input.size() != 1) {
 			return Terms.actionError("Incorrect input size!");
 		}
@@ -153,7 +187,7 @@ public class Actions {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static ActionResultTerm<?> inputStreamClose(List<Term> input) {
+	private ActionResultTerm<?> inputStreamCloseAction(List<Term> input) {
 		if (input.size() != 1) {
 			return Terms.actionError("Incorrect input size!");
 		}
@@ -168,5 +202,13 @@ public class Actions {
 			return Terms.actionError("Error writing data: " + ex.getMessage());
 		}
 	}
+
+	protected abstract OutputStream getStdoutStream();
+
+	protected abstract InputStream getStdinStream();
+
+	protected abstract OutputStream getFileOutputStream(String path) throws IOException;
+
+	protected abstract InputStream getInputStream(String path) throws IOException;
 
 }

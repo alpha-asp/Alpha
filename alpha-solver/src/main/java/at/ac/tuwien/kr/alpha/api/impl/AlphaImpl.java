@@ -59,7 +59,7 @@ import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
-import at.ac.tuwien.kr.alpha.core.actions.ActionContext;
+import at.ac.tuwien.kr.alpha.core.actions.ActionExecutionService;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
@@ -82,7 +82,7 @@ public class AlphaImpl implements Alpha {
 	private final GrounderFactory grounderFactory;
 	private final SolverFactory solverFactory;
 
-	private final ActionContext actionContext;
+	private final ActionExecutionService actionContext;
 
 	private final boolean enableStratifiedEvaluation;
 	private final boolean sortAnswerSets;
@@ -90,7 +90,7 @@ public class AlphaImpl implements Alpha {
 	AlphaImpl(Supplier<ProgramParser> parserFactory, Supplier<ProgramTransformation<InputProgram, NormalProgram>> programNormalizationFactory,
 			GrounderFactory grounderFactory,
 			SolverFactory solverFactory,
-			ActionContext actionContext,
+			ActionExecutionService actionContext,
 			boolean enableStratifiedEvaluation, boolean sortAnswerSets) {
 		this.parserFactory = parserFactory;
 		this.programNormalizationFactory = programNormalizationFactory;

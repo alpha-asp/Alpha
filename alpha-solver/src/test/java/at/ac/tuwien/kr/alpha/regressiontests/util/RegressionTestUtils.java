@@ -80,4 +80,8 @@ public final class RegressionTestUtils {
 		Assumptions.assumeTrue(cfg.getBranchingHeuristic() == Heuristic.VSIDS);
 	}
 
+	public static void ignoreTestForStratifiedEvaluationDisabled(SystemConfig cfg) {
+		Assumptions.assumeTrue(cfg.isEvaluateStratifiedPart());
+	}
+
 }
