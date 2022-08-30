@@ -42,6 +42,8 @@ $ java -jar alpha.jar -i benchmarks/omiga/omiga-testcases/3col/3col-10-18.txt -f
 
 Note that in this example the path to the input file is relative to the root of this repository. If you have not checked out the repository, you can just [download the example file from GitHub](/benchmarks/omiga/omiga-testcases/3col/3col-10-18.txt).
 
+[A coder's guide to answer set programming](https://madmike200590.github.io/asp-guide/) provides a short and high-level tutorial on Answer Set Programming.
+
 ## Building
 
 Alpha uses the [Gradle build automation system](https://gradle.org). Executing
