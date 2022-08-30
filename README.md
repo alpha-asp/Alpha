@@ -75,6 +75,10 @@ run into trouble feel free to file an issue.
 
 ## Suggested Reading
 
+### Beginners' Tutorials
+ * [A coder's guide to answer set programming](https://madmike200590.github.io/asp-guide/)
+
+### Theoretical Background and Language Specification
  * [Answer Set Programming: A Primer](http://www.kr.tuwien.ac.at/staff/tkren/pub/2009/rw2009-asp.pdf)
  * [ASP-Core-2 Input Language Format](https://www.mat.unical.it/aspcomp2013/files/ASP-CORE-2.01c.pdf)
  * [Conflict-Driven Answer Set Solving: From Theory to Practice](http://www.cs.uni-potsdam.de/wv/pdfformat/gekasc12c.pdf)
