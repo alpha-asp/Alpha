@@ -23,6 +23,12 @@ public abstract class AbstractActionImplementationProvider implements ActionImpl
 	private final IntIdGenerator idGenerator = new IntIdGenerator();
 	private final Map<String, Action> supportedActions = new HashMap<>();
 
+	private final ConstantTerm<OutputStreamHandle> stdout = Terms.newConstant(
+			new OutputStreamHandle(idGenerator.getNextId(), getStdoutStream()));
+	private final ConstantTerm<InputStreamHandle> stdin = Terms.newConstant(
+			new InputStreamHandle(idGenerator.getNextId(),
+					new BufferedReader(new InputStreamReader(getStdinStream()))));
+
 	public AbstractActionImplementationProvider() {
 		registerAction("fileOutputStream", this::openFileOutputStreamAction);
 		registerAction("streamWrite", this::outputStreamWriteAction);
@@ -49,10 +55,7 @@ public abstract class AbstractActionImplementationProvider implements ActionImpl
 			if (!trms.isEmpty()) {
 				throw new IllegalArgumentException("Invalid method call! Expected term list to be empty!");
 			}
-			return Collections.singleton(
-					Collections.singletonList(
-							Terms.newConstant(
-									new OutputStreamHandle(idGenerator.getNextId(), getStdoutStream()))));
+			return Collections.singleton(Collections.singletonList(stdout));
 		};
 	}
 
@@ -66,11 +69,7 @@ public abstract class AbstractActionImplementationProvider implements ActionImpl
 			if (!trms.isEmpty()) {
 				throw new IllegalArgumentException("Invalid method call! Expected term list to be empty!");
 			}
-			return Collections.singleton(
-					Collections.singletonList(
-							Terms.newConstant(
-									new InputStreamHandle(idGenerator.getNextId(),
-											new BufferedReader(new InputStreamReader(getStdinStream()))))));
+			return Collections.singleton(Collections.singletonList(stdin));
 		};
 	}
 

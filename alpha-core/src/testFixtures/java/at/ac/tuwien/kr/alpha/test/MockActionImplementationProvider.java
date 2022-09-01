@@ -57,7 +57,7 @@ public class MockActionImplementationProvider extends AbstractActionImplementati
 
 	@Override
 	protected OutputStream getFileOutputStream(String path) throws IOException {
-		if(mockedFileOutputs.containsKey(path)) {
+		if (mockedFileOutputs.containsKey(path)) {
 			return mockedFileOutputs.get(path);
 		}
 		throw new IOException("Path does not exist!");
@@ -65,10 +65,10 @@ public class MockActionImplementationProvider extends AbstractActionImplementati
 
 	@Override
 	protected InputStream getInputStream(String path) throws IOException {
-		if(mockedFileInputs.containsKey(path)) {
+		if (mockedFileInputs.containsKey(path)) {
 			return mockedFileInputs.get(path);
 		}
 		throw new IOException("Path does not exist!");
 	}
-	
+
 }

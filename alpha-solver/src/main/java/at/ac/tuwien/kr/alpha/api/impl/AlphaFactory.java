@@ -76,8 +76,12 @@ public final class AlphaFactory {
 	// TODO lifetime of one ActionContext needs to be exactly runtime of one program!
 	@VisibleForTesting
 	public static Alpha newAlpha(SystemConfig cfg, ActionExecutionService actionContext) {
+
 		// Parser factory - Supply correct parser dependent on the accepted input language.
 		Supplier<ProgramParser> parserFactory = () -> cfg.isAcceptEvologPrograms() ? new EvologProgramParser() : new ASPCore2ProgramParser();
+		if (cfg.isAcceptEvologPrograms()) {
+
+		}
 		Supplier<ProgramTransformation<InputProgram, NormalProgram>> programNormalizationFactory = newProgramNormalizationFactory(parserFactory,
 				cfg.getAggregateRewritingConfig());
 
@@ -86,16 +90,16 @@ public final class AlphaFactory {
 
 		// SolverFactory - Same as for GrounderFactory, we need a new Solver for each program.
 		SolverFactory solverFactory = newSolverFactory(cfg);
-		
+
 		// Now that all dependencies are taken care of, build new Alpha instance.
 		return new AlphaImpl(parserFactory, programNormalizationFactory, grounderFactory, solverFactory, actionContext, cfg.isEvaluateStratifiedPart(),
 				cfg.isSortAnswerSets());
 	}
 
+	// TODO action stuff should go into system config
 	public static Alpha newAlpha(SystemConfig cfg) {
 		return newAlpha(cfg, new ActionExecutionServiceImpl(new DefaultActionImplementationProvider()));
 	}
-
 
 	// Create Alpha instance with default config.
 	public static Alpha newAlpha() {

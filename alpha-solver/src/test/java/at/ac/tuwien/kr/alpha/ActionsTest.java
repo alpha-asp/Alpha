@@ -1,59 +1,37 @@
 package at.ac.tuwien.kr.alpha;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.actions.ActionExecutionService;
+import at.ac.tuwien.kr.alpha.core.actions.ActionExecutionServiceImpl;
+import at.ac.tuwien.kr.alpha.test.MockActionImplementationProvider;
 
-import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-
+/**
+ * End-to-end tests covering Evolog action support.
+ * Note that all tests in this suite depend on stratified evaluation being enabled.
+ */
 public class ActionsTest {
 
-	private static class MockActionBindings {
+	private static final String HELLO_WORLD = 
+		"hello_result(RES) : @streamWrite[STDOUT, \" World!\"] = RES :- &stdout(STDOUT).";
 
-		static final Logger LOGGER = LoggerFactory.getLogger(MockActionBindings.class);
-
-		Map<List<Term>, Integer> fileOpenOutputStreamInvocations = new HashMap<>();
-		Map<List<Term>, Integer> outputStreamWriteInvocations = new HashMap<>();
-		Map<List<Term>, Integer> outputStreamCloseInvocations = new HashMap<>();
-		Map<List<Term>, Integer> fileOpenInputStreamInvocations = new HashMap<>();
-		Map<List<Term>, Integer> inputStreamReadLineInvocations = new HashMap<>();
-		Map<List<Term>, Integer> inputStreamCloseInvocations = new HashMap<>();
-
-		public FunctionTerm fileOpenOutputStream(List<Term> input) {
-			if (fileOpenOutputStreamInvocations.containsKey(input)) {
-				fileOpenOutputStreamInvocations.put(input, fileOpenOutputStreamInvocations.get(input) + 1);
-			} else {
-				fileOpenOutputStreamInvocations.put(input, 1);
-			}
-			LOGGER.info("Action fileOpenOutputStream({})", StringUtils.join(input, ", "));
-			return null;
-		}
-
-		public FunctionTerm outputStreamWrite(List<Term> input) {
-			return null;
-		}
-
-		public FunctionTerm outputStreamClose(List<Term> input) {
-			return null;
-		}
-
-		public FunctionTerm fileOpenInputStream(List<Term> input) {
-			return null;
-		}
-
-		public FunctionTerm inputStreamReadLine(List<Term> input) {
-			return null;
-		}
-
-		public FunctionTerm inputStreamClose(List<Term> inputStream) {
-			return null;
-		}
-
+	/**
+	 * Simple smoke test which verifies correct behavior of an Evolog "Hello World" program.
+	 */
+	@Test
+	@Disabled // TODO we need to pass stdin/stdout externals into parser
+	public void helloWorld() {
+		MockActionImplementationProvider actionMock = new MockActionImplementationProvider();
+		ActionExecutionService actionService = new ActionExecutionServiceImpl(actionMock);
+		Alpha alpha = AlphaFactory.newAlpha(new SystemConfig(), actionService);
+		InputProgram program = alpha.readProgramString(HELLO_WORLD);
+		alpha.solve(program);
+		// TODO check mock for correct output content
 	}
 
 }
