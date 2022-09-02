@@ -1,17 +1,17 @@
 /**
  * Copyright (c) 2022, the Alpha Team.
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * <p>
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- *
+ * list of conditions and the following disclaimer.
+ * <p>
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -23,30 +23,33 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.solver;
+package at.ac.tuwien.kr.alpha.core.solver.reset;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 
-public class AtomizedChoice {
+public class AtomValuePair {
 	private final Atom atom;
 	private final boolean truthValue;
-	private final boolean backtracked;
 
-	public AtomizedChoice(Atom atom, boolean truthValue, boolean backtracked) {
+	public AtomValuePair(Atom atom, boolean truthValue) {
 		this.atom = atom;
 		this.truthValue = truthValue;
-		this.backtracked = backtracked;
 	}
 
 	public Atom getAtom() {
 		return atom;
 	}
 
-	public boolean getTruthValue() {
+	public boolean isPositive() {
 		return truthValue;
 	}
 
-	public boolean isBacktracked() {
-		return backtracked;
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof AtomValuePair)) {
+			return false;
+		}
+		AtomValuePair other = (AtomValuePair) obj;
+		return atom.compareTo(other.atom) == 0 && truthValue == other.isPositive();
 	}
 }

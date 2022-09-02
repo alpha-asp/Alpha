@@ -59,7 +59,7 @@ public class SolverStatisticsTests {
 
 	@RegressionTest
 	public void checkStatsStringOneChoice(RegressionTestConfig cfg) {
-		ignoreTestForRestartsEnabled(cfg);
+		ignoreTestForRestartsEnabled(cfg); // Do not run this test case with restarts enabled.
 		Solver solver = buildSolverForRegressionTest("a :- not b. b :- not a.", cfg);
 		assumeTrue(solver instanceof StatisticsReportingSolver);
 		collectAnswerSetsAndCheckStats(solver, 2, 1, 1, 1, 1, 0, 0, 0);

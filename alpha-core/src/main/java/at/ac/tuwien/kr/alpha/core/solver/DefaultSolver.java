@@ -541,8 +541,8 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 	/**
 	 * Performs a restart of the solving process while preserving the current assignment - and thus the progress made.
-	 * Nogood store and grounder are reset. Then the {@link AtomStore} is emptied and the current assignment
-	 * is reconstructed.
+	 * {@link NoGoodStore} and {@link Grounder} are reset. Then the {@link AtomStore} is emptied and the current
+	 * assignment is reconstructed.
 	 */
 	private void restart() {
 		LOGGER.debug("Performing solver and grounder restart.");
