@@ -43,13 +43,4 @@ public class AtomValuePair {
 	public boolean isPositive() {
 		return truthValue;
 	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (!(obj instanceof AtomValuePair)) {
-			return false;
-		}
-		AtomValuePair other = (AtomValuePair) obj;
-		return atom.compareTo(other.atom) == 0 && truthValue == other.isPositive();
-	}
 }

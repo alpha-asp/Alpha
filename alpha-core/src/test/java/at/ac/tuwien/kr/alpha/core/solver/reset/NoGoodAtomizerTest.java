@@ -66,18 +66,18 @@ class NoGoodAtomizerTest {
 	 */
 	@Test
 	void sameAtomIdsAfterAtomStoreReset() {
-		int ATOM_COUNT = 6;
+		int atomCount = 6;
 
 		List<Atom> atoms = new ArrayList<>();
 		List<Integer> atomIds = new ArrayList<>();
-		for (int i = 0; i < ATOM_COUNT; i++) {
+		for (int i = 0; i < atomCount; i++) {
 			Atom atom = atomGenerator.generateAndRegisterAtom(String.format("_TEST%d_", i), 0);
 			atoms.add(atom);
 			atomIds.add(atomStore.get(atom));
 		}
 
 		atomStore.reset();
-		for (int i = 0; i < ATOM_COUNT; i++) {
+		for (int i = 0; i < atomCount; i++) {
 			Atom atom = atoms.get(i);
 			atomStore.putIfAbsent(atom);
 			assertEquals(atomIds.get(i), atomStore.get(atom));

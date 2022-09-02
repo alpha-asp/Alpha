@@ -40,6 +40,8 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
+import at.ac.tuwien.kr.alpha.core.solver.reset.AtomizedChoice;
+import at.ac.tuwien.kr.alpha.core.solver.reset.AtomizedNoGoodCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
