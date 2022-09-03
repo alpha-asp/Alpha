@@ -54,7 +54,7 @@ import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
  * 
  * Copyright (c) 2019-2020, the Alpha Team.
  */
-public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram, InternalProgram> implements RuleInstantiator {
+public class StratifiedEvaluation extends ProgramTransformer<AnalyzedProgram, InternalProgram> implements RuleInstantiator {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(StratifiedEvaluation.class);
 
@@ -78,7 +78,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	@Override
 	// Note: ideally this returns a "PartiallyEvaluatedProgram" such that the grounder can directly use the working
 	// memories created here rather than re-initialize everything.
-	public InternalProgram apply(AnalyzedProgram inputProgram) {
+	public InternalProgram transform(AnalyzedProgram inputProgram) {
 		// Calculate a stratification and initialize the working memory.
 		ComponentGraph componentGraph = inputProgram.getComponentGraph();
 		List<ComponentGraph.SCComponent> strata = StratificationAlgorithm.calculateStratification(componentGraph);

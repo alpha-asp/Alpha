@@ -1,45 +1,53 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import java.util.function.Supplier;
-
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewriting;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateTransformer;
 
 /**
  * Encapsulates all transformations necessary to transform a given program into a @{link NormalProgram} that is understood by Alpha internally
  * 
  * Copyright (c) 2019-2021, the Alpha Team.
  */
-public class NormalizeProgramTransformation extends ProgramTransformation<InputProgram, NormalProgram> {
+public class NormalizeProgramTransformation extends ProgramTransformer<InputProgram, NormalProgram> {
 
-	private final Supplier<AggregateRewriting> aggregateRewritingFactory;
+	private final VariableEqualityTransformer equalityTransformer;
+	private final ChoiceHeadNormalizer choiceHeadNormalizer;
+	private final AggregateTransformer aggregateTransformer;
+	private final EnumerationTransformer enumerationTransformer;
+	private final IntervalTermTransformer intervalTermTransformer;
+	private final ArithmeticTermTransformer arithmeticTermTransformer;
 
-	public NormalizeProgramTransformation(Supplier<AggregateRewriting> aggregateRewritingFactory) {
-		this.aggregateRewritingFactory = aggregateRewritingFactory;
+	public NormalizeProgramTransformation(VariableEqualityTransformer equalityTransformer, ChoiceHeadNormalizer choiceHeadNormalizer, AggregateTransformer aggregateTransformer, EnumerationTransformer enumerationTransformer, IntervalTermTransformer intervalTermTransformer, ArithmeticTermTransformer arithmeticTermTransformer) {
+		this.equalityTransformer = equalityTransformer;
+		this.choiceHeadNormalizer = choiceHeadNormalizer;
+		this.aggregateTransformer = aggregateTransformer;
+		this.enumerationTransformer = enumerationTransformer;
+		this.intervalTermTransformer = intervalTermTransformer;
+		this.arithmeticTermTransformer = arithmeticTermTransformer;
 	}
 
 	@Override
-	public NormalProgram apply(InputProgram inputProgram) {
+	public NormalProgram transform(InputProgram inputProgram) {
 		InputProgram tmpPrg;
 		// Remove variable equalities.
-		tmpPrg = new VariableEqualityRemoval().apply(inputProgram);
+		tmpPrg = equalityTransformer.transform(inputProgram);
 		// Transform choice rules.
-		tmpPrg = new ChoiceHeadToNormal().apply(tmpPrg);
+		tmpPrg = choiceHeadNormalizer.transform(tmpPrg);
 		// Transform aggregates.
-		tmpPrg = aggregateRewritingFactory.get().apply(tmpPrg);
+		tmpPrg = aggregateTransformer.transform(tmpPrg);
 		// Transform enumeration atoms.
-		tmpPrg = new EnumerationRewriting().apply(tmpPrg);
+		tmpPrg = enumerationTransformer.transform(tmpPrg);
 		EnumerationAtom.resetEnumerations();
 
 		// Construct the normal program.
 		NormalProgram retVal = NormalProgramImpl.fromInputProgram(tmpPrg);
 		// Transform intervals.
-		retVal = new IntervalTermToIntervalAtom().apply(retVal);
+		retVal = intervalTermTransformer.transform(retVal);
 		// Rewrite ArithmeticTerms.
-		retVal = new ArithmeticTermsRewriting().apply(retVal);
+		retVal = arithmeticTermTransformer.transform(retVal);
 		return retVal;
 	}
 

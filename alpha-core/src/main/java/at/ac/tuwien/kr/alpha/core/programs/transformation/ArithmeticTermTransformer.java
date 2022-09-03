@@ -23,6 +23,7 @@ import at.ac.tuwien.kr.alpha.commons.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 
@@ -33,12 +34,16 @@ import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
  *
  * Copyright (c) 2020-2021, the Alpha Team.
  */
-public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgram, NormalProgram> {
-	private static final String ARITHMETIC_VARIABLES_PREFIX = "_A";
-	private int numArithmeticVariables;
+public class ArithmeticTermTransformer extends ProgramTransformer<NormalProgram, NormalProgram> {
+
+	/**
+	 * The prefix with which to begin names of internal variables created by this transformer.
+	 */
+	private final String generatedVariablesPrefix = "_A";
+	private final IntIdGenerator variableNumberGenerator = new IntIdGenerator();
 
 	@Override
-	public NormalProgram apply(NormalProgram inputProgram) {
+	public NormalProgram transform(NormalProgram inputProgram) {
 		List<NormalRule> rewrittenRules = new ArrayList<>();
 		boolean didRewrite = false;
 		for (NormalRule inputProgramRule : inputProgram.getRules()) {
@@ -64,7 +69,7 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 	 * @return the rewritten rule. Note that a new {@link NormalRule} is returned for every call of this method.
 	 */
 	private NormalRule rewriteRule(NormalRule inputProgramRule) {
-		numArithmeticVariables = 0;	// Reset number of introduced variables for each rule.
+		variableNumberGenerator.resetGenerator();	// Reset number of introduced variables for each rule.
 		NormalHead rewrittenHead = null;
 		Set<Literal> rewrittenBodyLiterals = new LinkedHashSet<>();
 		// Rewrite head.
@@ -118,7 +123,7 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 		}
 		// Switch on term type.
 		if (term instanceof ArithmeticTerm) {
-			VariableTerm replacementVariable = Terms.newVariable(ARITHMETIC_VARIABLES_PREFIX + numArithmeticVariables++);
+			VariableTerm replacementVariable = Terms.newVariable(generatedVariablesPrefix + variableNumberGenerator.getNextId());
 			bodyLiterals.add(Atoms.newComparisonAtom(replacementVariable, term, ComparisonOperators.EQ).toLiteral());
 			return replacementVariable;
 		} else if (term instanceof VariableTerm || term instanceof ConstantTerm) {
@@ -179,4 +184,5 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 			throw Util.oops("Unexpected term type: " + term.getClass());
 		}
 	}
+
 }

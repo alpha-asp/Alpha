@@ -55,11 +55,11 @@ import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
  * Copyright (c) 2017-2021, the Alpha Team.
  */
 // TODO this could already give NormalProgram as result type
-public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, InputProgram> {
+public class ChoiceHeadNormalizer extends ProgramTransformer<InputProgram, InputProgram> {
 	private final static String PREDICATE_NEGATION_PREFIX = "_n";
 
 	@Override
-	public InputProgram apply(InputProgram inputProgram) {
+	public InputProgram transform(InputProgram inputProgram) {
 		InputProgramImpl.Builder programBuilder = InputProgramImpl.builder();
 		List<Rule<Head>> additionalRules = new ArrayList<>();
 

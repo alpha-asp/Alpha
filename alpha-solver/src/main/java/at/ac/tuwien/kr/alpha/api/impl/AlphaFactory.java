@@ -18,8 +18,8 @@ import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.parser.evolog.EvologProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewriting;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformer;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateTransformer;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.AggregateEncoderFactory;
 import at.ac.tuwien.kr.alpha.core.solver.SolverConfig;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
@@ -31,7 +31,7 @@ public final class AlphaFactory {
 		throw new AssertionError("Cannot instantiate utility class!");
 	}
 
-	static Supplier<ProgramTransformation<InputProgram, NormalProgram>> newProgramNormalizationFactory(Supplier<ProgramParser> parserFactory,
+	static Supplier<ProgramTransformer<InputProgram, NormalProgram>> newProgramNormalizationFactory(Supplier<ProgramParser> parserFactory,
 			AggregateRewritingConfig aggregateCfg) {
 		// AggregateEncoderFactory depends on parser factory since stringtemplate-based aggregate encoders need to use the same parser that's used
 		// for input programs.
@@ -39,7 +39,7 @@ public final class AlphaFactory {
 				aggregateCfg.isUseSortingGridEncoding(), aggregateCfg.isSupportNegativeValuesInSums());
 
 		// Factory for aggregate rewriting (depends on encoders provided by above factory).
-		Supplier<AggregateRewriting> aggregateRewritingFactory = () -> new AggregateRewriting(aggregateEncoderFactory.newCountEqualsEncoder(),
+		Supplier<AggregateTransformer> aggregateRewritingFactory = () -> new AggregateTransformer(aggregateEncoderFactory.newCountEqualsEncoder(),
 				aggregateEncoderFactory.newCountLessOrEqualEncoder(), aggregateEncoderFactory.newSumEqualsEncoder(),
 				aggregateEncoderFactory.newSumLessOrEqualEncoder(), aggregateEncoderFactory.newMinEncoder(), aggregateEncoderFactory.newMaxEncoder());
 
@@ -82,7 +82,7 @@ public final class AlphaFactory {
 		// if (cfg.isAcceptEvologPrograms()) {
 
 		// }
-		Supplier<ProgramTransformation<InputProgram, NormalProgram>> programNormalizationFactory = newProgramNormalizationFactory(parserFactory,
+		Supplier<ProgramTransformer<InputProgram, NormalProgram>> programNormalizationFactory = newProgramNormalizationFactory(parserFactory,
 				cfg.getAggregateRewritingConfig());
 
 		// GrounderFactory - Since every grounder instance is only good for one program instance, we need a factory.

@@ -68,7 +68,7 @@ import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformer;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
 
@@ -77,7 +77,7 @@ public class AlphaImpl implements Alpha {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlphaImpl.class);
 
 	private final Supplier<ProgramParser> parserFactory;
-	private final Supplier<ProgramTransformation<InputProgram, NormalProgram>> programNormalizationFactory;
+	private final Supplier<ProgramTransformer<InputProgram, NormalProgram>> programNormalizationFactory;
 
 	private final GrounderFactory grounderFactory;
 	private final SolverFactory solverFactory;
@@ -85,7 +85,7 @@ public class AlphaImpl implements Alpha {
 
 	private final boolean sortAnswerSets;
 
-	AlphaImpl(Supplier<ProgramParser> parserFactory, Supplier<ProgramTransformation<InputProgram, NormalProgram>> programNormalizationFactory,
+	AlphaImpl(Supplier<ProgramParser> parserFactory, Supplier<ProgramTransformer<InputProgram, NormalProgram>> programNormalizationFactory,
 			GrounderFactory grounderFactory,
 			SolverFactory solverFactory,
 			boolean enableStratifiedEvaluation, boolean sortAnswerSets) {
@@ -147,7 +147,7 @@ public class AlphaImpl implements Alpha {
 
 	@Override
 	public NormalProgram normalizeProgram(InputProgram program) {
-		return programNormalizationFactory.get().apply(program);
+		return programNormalizationFactory.get().transform(program);
 	}
 
 	@VisibleForTesting
@@ -156,7 +156,7 @@ public class AlphaImpl implements Alpha {
 		InternalProgram retVal = InternalProgram.fromNormalProgram(program);
 		// TODO get the StratifiedEvaluation from factory
 		AnalyzedProgram analyzed = new AnalyzedProgram(retVal.getRules(), retVal.getFacts());
-		retVal = new StratifiedEvaluation(actionContext, true).apply(analyzed);
+		retVal = new StratifiedEvaluation(actionContext, true).transform(analyzed);
 		return retVal;
 	}
 
@@ -243,7 +243,7 @@ public class AlphaImpl implements Alpha {
 		final AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(program);
 		final NormalProgram preprocessed;
 		// TODO get the StratifiedEvaluation from factory
-		preprocessed = new StratifiedEvaluation(actionContext, true).apply(analyzed).toNormalProgram();
+		preprocessed = new StratifiedEvaluation(actionContext, true).transform(analyzed).toNormalProgram();
 		depGraph = analyzed.getDependencyGraph();
 		compGraph = analyzed.getComponentGraph();
 		final Solver solver = prepareSolverFor(analyzed, filter);

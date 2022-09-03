@@ -58,7 +58,8 @@ import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
  *
  * Copyright (c) 2017-2021, the Alpha Team.
  */
-public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProgram, NormalProgram> {
+public class IntervalTermTransformer extends ProgramTransformer<NormalProgram, NormalProgram> {
+
 	private static final String INTERVAL_VARIABLE_PREFIX = "_Interval";
 
 	/**
@@ -169,7 +170,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 	}
 
 	@Override
-	public NormalProgram apply(NormalProgram inputProgram) {
+	public NormalProgram transform(NormalProgram inputProgram) {
 		boolean didChange = false;
 		List<NormalRule> rewrittenRules = new ArrayList<>();
 		for (NormalRule rule : inputProgram.getRules()) {

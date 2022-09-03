@@ -32,10 +32,10 @@ import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
  * Copyright (c) 2017-2020, the Alpha Team.
  */
 // TODO this should happen during/after internalization
-public class EnumerationRewriting extends ProgramTransformation<InputProgram, InputProgram> {
+public class EnumerationTransformer extends ProgramTransformer<InputProgram, InputProgram> {
 
 	@Override
-	public InputProgram apply(InputProgram inputProgram) {
+	public InputProgram transform(InputProgram inputProgram) {
 		// Read enumeration predicate from directive.
 		String enumDirective = inputProgram.getInlineDirectives().getDirectiveValue(InlineDirectivesImpl.DIRECTIVE.enum_predicate_is);
 		if (enumDirective == null) {

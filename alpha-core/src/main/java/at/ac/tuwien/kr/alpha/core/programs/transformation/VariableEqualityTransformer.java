@@ -59,10 +59,10 @@ import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
  *
  * Copyright (c) 2017-2021, the Alpha Team.
  */
-public class VariableEqualityRemoval extends ProgramTransformation<InputProgram, InputProgram> {
+public class VariableEqualityTransformer extends ProgramTransformer<InputProgram, InputProgram> {
 
 	@Override
-	public InputProgram apply(InputProgram inputProgram) {
+	public InputProgram transform(InputProgram inputProgram) {
 		List<Rule<Head>> rewrittenRules = new ArrayList<>();
 		for (Rule<Head> rule : inputProgram.getRules()) {
 			rewrittenRules.add(findAndReplaceVariableEquality(rule));

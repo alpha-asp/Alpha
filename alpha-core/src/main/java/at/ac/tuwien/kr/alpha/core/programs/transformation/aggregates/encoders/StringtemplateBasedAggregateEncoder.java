@@ -20,7 +20,7 @@ import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.EnumerationRewriting;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.EnumerationTransformer;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 
 /**
@@ -81,7 +81,7 @@ public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggreg
 		String coreEncodingAsp = coreEncodingTemplate.render();
 
 		// Create the basic program
-		InputProgram coreEncoding = new EnumerationRewriting().apply(parser.parse(coreEncodingAsp));
+		InputProgram coreEncoding = new EnumerationTransformer().transform(parser.parse(coreEncodingAsp));
 
 		// Add the programatically created bound rule and return
 		return new InputProgramImpl(ListUtils.union(coreEncoding.getRules(), Collections.singletonList(boundRule)), coreEncoding.getFacts(),

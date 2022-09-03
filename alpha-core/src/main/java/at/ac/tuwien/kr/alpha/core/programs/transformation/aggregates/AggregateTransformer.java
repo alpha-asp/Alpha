@@ -19,7 +19,7 @@ import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.rules.Rules;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformer;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.AbstractAggregateEncoder;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.CountEncoder;
@@ -31,7 +31,7 @@ import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.Su
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
-public class AggregateRewriting extends ProgramTransformation<InputProgram, InputProgram> {
+public class AggregateTransformer extends ProgramTransformer<InputProgram, InputProgram> {
 
 	private final AbstractAggregateEncoder countEqualsEncoder;
 	private final AbstractAggregateEncoder countLessOrEqualEncoder;
@@ -41,7 +41,7 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	private final AbstractAggregateEncoder maxEncoder;
 
 	/**
-	 * Creates a new {@link AggregateRewriting} transformation.
+	 * Creates a new {@link AggregateTransformer} transformation.
 	 * 
 	 * @param useSortingCircuit       if true, literals of form "X <= #count{...}" will be rewritten using a sorting
 	 *                                grid-based
@@ -50,7 +50,7 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	 *                                (including negative) integers. Note that these encodings are less performant than
 	 *                                their simpler counterparts that only support positive integers (eused when flag set to false)
 	 */
-	public AggregateRewriting(CountEncoder countEqualsEncoder, CountEncoder countLessOrEqualEncoder, SumEncoder sumEqualsEncoder,
+	public AggregateTransformer(CountEncoder countEqualsEncoder, CountEncoder countLessOrEqualEncoder, SumEncoder sumEqualsEncoder,
 			SumEncoder sumLessOrEqualEncoder, MinMaxEncoder minEncoder, MinMaxEncoder maxEncoder) {
 		this.countLessOrEqualEncoder = countLessOrEqualEncoder;
 		this.sumLessOrEqualEncoder = sumLessOrEqualEncoder;
@@ -73,7 +73,7 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	 * deriving the result literal is added that is semantically equivalent to the replaced aggregate literal.
 	 */
 	@Override
-	public InputProgram apply(InputProgram inputProgram) {
+	public InputProgram transform(InputProgram inputProgram) {
 		AggregateRewritingContext ctx = new AggregateRewritingContext();
 		List<Rule<Head>> outputRules = new ArrayList<>();
 		for (Rule<Head> inputRule : inputProgram.getRules()) {
