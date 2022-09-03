@@ -82,22 +82,17 @@ public class AlphaImpl implements Alpha {
 	private final GrounderFactory grounderFactory;
 	private final SolverFactory solverFactory;
 
-	private final ActionExecutionService actionContext;
 
-	private final boolean enableStratifiedEvaluation;
 	private final boolean sortAnswerSets;
 
 	AlphaImpl(Supplier<ProgramParser> parserFactory, Supplier<ProgramTransformation<InputProgram, NormalProgram>> programNormalizationFactory,
 			GrounderFactory grounderFactory,
 			SolverFactory solverFactory,
-			ActionExecutionService actionContext,
 			boolean enableStratifiedEvaluation, boolean sortAnswerSets) {
 		this.parserFactory = parserFactory;
 		this.programNormalizationFactory = programNormalizationFactory;
 		this.grounderFactory = grounderFactory;
 		this.solverFactory = solverFactory;
-		this.actionContext = actionContext;
-		this.enableStratifiedEvaluation = enableStratifiedEvaluation;
 		this.sortAnswerSets = sortAnswerSets;
 	}
 
@@ -159,12 +154,9 @@ public class AlphaImpl implements Alpha {
 	InternalProgram performProgramPreprocessing(NormalProgram program) {
 		LOGGER.debug("Preprocessing InternalProgram!");
 		InternalProgram retVal = InternalProgram.fromNormalProgram(program);
-		if (enableStratifiedEvaluation) {
-			AnalyzedProgram analyzed = new AnalyzedProgram(retVal.getRules(), retVal.getFacts());
-			// TODO as Evolog moves further along, we want to integrate stratified evaluation with grounder and solver.
-			// Therefore, leave it as is and don't make part of factory API for now.
-			retVal = new StratifiedEvaluation(actionContext, true).apply(analyzed);
-		}
+		// TODO get the StratifiedEvaluation from factory
+		AnalyzedProgram analyzed = new AnalyzedProgram(retVal.getRules(), retVal.getFacts());
+		retVal = new StratifiedEvaluation(actionContext, true).apply(analyzed);
 		return retVal;
 	}
 
@@ -250,11 +242,8 @@ public class AlphaImpl implements Alpha {
 		final ComponentGraph compGraph;
 		final AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(program);
 		final NormalProgram preprocessed;
-		if (enableStratifiedEvaluation) {
-			preprocessed = new StratifiedEvaluation(actionContext, true).apply(analyzed).toNormalProgram();
-		} else {
-			preprocessed = program;
-		}
+		// TODO get the StratifiedEvaluation from factory
+		preprocessed = new StratifiedEvaluation(actionContext, true).apply(analyzed).toNormalProgram();
 		depGraph = analyzed.getDependencyGraph();
 		compGraph = analyzed.getComponentGraph();
 		final Solver solver = prepareSolverFor(analyzed, filter);

@@ -79,9 +79,9 @@ public final class AlphaFactory {
 
 		// Parser factory - Supply correct parser dependent on the accepted input language.
 		Supplier<ProgramParser> parserFactory = () -> cfg.isAcceptEvologPrograms() ? new EvologProgramParser() : new ASPCore2ProgramParser();
-		if (cfg.isAcceptEvologPrograms()) {
+		// if (cfg.isAcceptEvologPrograms()) {
 
-		}
+		// }
 		Supplier<ProgramTransformation<InputProgram, NormalProgram>> programNormalizationFactory = newProgramNormalizationFactory(parserFactory,
 				cfg.getAggregateRewritingConfig());
 
