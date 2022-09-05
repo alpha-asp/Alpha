@@ -38,6 +38,7 @@ dependencies {
 
 	testFixturesApi(jupiter("api"))
 	testFixturesApi("org.slf4j:slf4j-api:1.7.32")
+	testFixturesImplementation("commons-io:commons-io:2.11.0")
 }
 
 // JUnit 5

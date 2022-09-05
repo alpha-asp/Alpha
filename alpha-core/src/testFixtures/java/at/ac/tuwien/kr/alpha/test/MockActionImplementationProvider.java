@@ -1,12 +1,12 @@
 package at.ac.tuwien.kr.alpha.test;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,12 +17,13 @@ public class MockActionImplementationProvider extends AbstractActionImplementati
 	@SuppressWarnings("unused")
 	private static final Logger LOGGER = LoggerFactory.getLogger(MockActionImplementationProvider.class);
 
-	private ByteArrayOutputStream stdoutMock = new ByteArrayOutputStream();
-	private ByteArrayInputStream stdinMock;
+	private final ByteArrayOutputStream stdoutMock = new ByteArrayOutputStream();
+	private final InputStream stdinMock;
 	private Map<String, OutputStream> mockedFileOutputs;
 	private Map<String, InputStream> mockedFileInputs;
 
-	public MockActionImplementationProvider() {
+	public MockActionImplementationProvider(String inputBuffer) {
+		stdinMock = IOUtils.toInputStream(inputBuffer, "UTF-8");
 	}
 
 	@Override
@@ -36,10 +37,6 @@ public class MockActionImplementationProvider extends AbstractActionImplementati
 
 	public void resetStdoutContent() {
 		stdoutMock.reset();
-	}
-
-	public void setMockInput(String input) {
-		stdinMock = new ByteArrayInputStream(input.getBytes());
 	}
 
 	public void setMockedFileOutputs(Map<String, OutputStream> mockedFileOutputs) {

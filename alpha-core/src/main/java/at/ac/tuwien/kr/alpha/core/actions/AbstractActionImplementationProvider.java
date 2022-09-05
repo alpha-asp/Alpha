@@ -23,11 +23,8 @@ public abstract class AbstractActionImplementationProvider implements ActionImpl
 	private final IntIdGenerator idGenerator = new IntIdGenerator();
 	private final Map<String, Action> supportedActions = new HashMap<>();
 
-	private final ConstantTerm<OutputStreamHandle> stdout = Terms.newConstant(
-			new OutputStreamHandle(idGenerator.getNextId(), getStdoutStream()));
-	private final ConstantTerm<InputStreamHandle> stdin = Terms.newConstant(
-			new InputStreamHandle(idGenerator.getNextId(),
-					new BufferedReader(new InputStreamReader(getStdinStream()))));
+	private ConstantTerm<OutputStreamHandle> stdoutHandle;
+	private ConstantTerm<InputStreamHandle> stdinHandle;
 
 	public AbstractActionImplementationProvider() {
 		registerAction("fileOutputStream", this::openFileOutputStreamAction);
@@ -49,13 +46,15 @@ public abstract class AbstractActionImplementationProvider implements ActionImpl
 	 * Returns a predicate interpretation specifying an external that takes no arguments
 	 * and returns a reference to the standard system output stream (stdout).
 	 */
-	// TODO we need to reuse this term! (do we?? its interned...)
 	public final PredicateInterpretation getStdoutTerm() {
+		if (stdoutHandle == null) {
+			stdoutHandle = Terms.newConstant(new OutputStreamHandle(idGenerator.getNextId(), getStdoutStream()));
+		}
 		return (trms) -> {
 			if (!trms.isEmpty()) {
 				throw new IllegalArgumentException("Invalid method call! Expected term list to be empty!");
 			}
-			return Collections.singleton(Collections.singletonList(stdout));
+			return Collections.singleton(Collections.singletonList(stdoutHandle));
 		};
 	}
 
@@ -63,13 +62,16 @@ public abstract class AbstractActionImplementationProvider implements ActionImpl
 	 * Returns a predicate interpretation specifying an external that takes no arguments
 	 * and returns a reference to the standard system input stream (stdin).
 	 */
-	// TODO we need to reuse this term! (do we?? its interned...)
 	public final PredicateInterpretation getStdinTerm() {
+		if (stdinHandle == null) {
+			stdinHandle = Terms.newConstant(new InputStreamHandle(idGenerator.getNextId(),
+					new BufferedReader(new InputStreamReader(getStdinStream()))));
+		}
 		return (trms) -> {
 			if (!trms.isEmpty()) {
 				throw new IllegalArgumentException("Invalid method call! Expected term list to be empty!");
 			}
-			return Collections.singleton(Collections.singletonList(stdin));
+			return Collections.singleton(Collections.singletonList(stdinHandle));
 		};
 	}
 
