@@ -28,7 +28,7 @@ public class ActionsTest {
 	public void helloWorld() {
 		MockActionImplementationProvider actionMock = new MockActionImplementationProvider();
 		ActionExecutionService actionService = new ActionExecutionServiceImpl(actionMock);
-		Alpha alpha = AlphaFactory.newAlpha(new SystemConfig(), actionService);
+		Alpha alpha = new AlphaFactory().newAlpha(new SystemConfig());
 		InputProgram program = alpha.readProgramString(HELLO_WORLD);
 		alpha.solve(program);
 		// TODO check mock for correct output content

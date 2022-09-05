@@ -36,6 +36,10 @@ public abstract class AbstractProgramParser implements ProgramParser {
 		this.preloadedExternals.putAll(externals);
 	}
 	
+	protected void registerExternal(String name, PredicateInterpretation interpretation) {
+		this.preloadedExternals.put(name, interpretation);
+	}
+
 	@Override
 	public InputProgram parse(String s) {
 		return parse(s, Collections.emptyMap());

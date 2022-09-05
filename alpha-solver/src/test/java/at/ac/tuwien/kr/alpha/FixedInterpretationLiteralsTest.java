@@ -81,7 +81,7 @@ public class FixedInterpretationLiteralsTest {
 	private Map<String, PredicateInterpretation> externals;
 
 	public FixedInterpretationLiteralsTest() {
-		this.alpha = AlphaFactory.newAlpha();
+		this.alpha = new AlphaFactory().newAlpha();
 		this.externals = new HashMap<>();
 		this.externals.putAll(Externals.scan(AspStandardLibrary.class));
 		this.externals.putAll(Externals.scan(FixedInterpretationLiteralsTest.class));

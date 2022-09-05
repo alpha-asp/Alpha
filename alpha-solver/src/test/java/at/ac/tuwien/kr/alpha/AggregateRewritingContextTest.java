@@ -18,7 +18,7 @@ import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.evolog.EvologProgramParser;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 
@@ -60,7 +60,7 @@ public class AggregateRewritingContextTest {
 	//@formatter:on
 
 	private static final AggregateRewritingContext rewritingContextForAspString(String asp) {
-		InputProgram program = new EvologProgramParser().parse(asp);
+		InputProgram program = new ASPCore2ProgramParser().parse(asp);
 		AggregateRewritingContext ctx = new AggregateRewritingContext();
 		for (Rule<Head> rule : program.getRules()) {
 			ctx.registerRule(rule);

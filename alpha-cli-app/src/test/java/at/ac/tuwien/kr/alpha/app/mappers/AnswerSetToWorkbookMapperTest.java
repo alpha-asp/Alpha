@@ -47,7 +47,7 @@ public class AnswerSetToWorkbookMapperTest {
 				+ "p(N) :- p(I), N = I + 1, N <= MX, maxP(MX)."
 				+ "q(A, B) :- p(A), p(B).";
 		//@formatter:on
-		Alpha alpha = AlphaFactory.newAlpha();
+		Alpha alpha = new AlphaFactory().newAlpha();
 		List<AnswerSet> answerSets = alpha.solve(alpha.readProgramString(progstr)).collect(Collectors.toList());
 		assertEquals(1, answerSets.size());
 		AnswerSet as = answerSets.get(0);

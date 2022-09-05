@@ -113,7 +113,7 @@ public class StratifiedEvaluationRegressionTest {
 		LOGGER.debug("Testing ASP String {}", aspString);
 		// Parse and pre-evaluate program
 		// Alpha instance with default config, stratified evaluation enabled
-		Alpha alpha = AlphaFactory.newAlpha();
+		Alpha alpha = new AlphaFactory().newAlpha();
 		InputProgram input = alpha.readProgramString(aspString);
 		DebugSolvingContext dbgInfo = alpha.prepareDebugSolve(input);
 		NormalProgram evaluated = dbgInfo.getPreprocessedProgram();

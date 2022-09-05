@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.core.parser.evolog.EvologProgramParser;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 
 /**
@@ -112,7 +112,7 @@ public class OmigaBenchmarksTest {
 	private void test(String folder, String aspFileName, SystemConfig cfg) throws IOException {
 		@SuppressWarnings("unused")
 		Optional<AnswerSet> answerSet = buildSolverForRegressionTest(
-				new EvologProgramParser().parse(Files.newInputStream(Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName))), cfg)
+				new ASPCore2ProgramParser().parse(Files.newInputStream(Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName))), cfg)
 						.stream().findFirst();
 		// System.out.println(answerSet);
 		// TODO: check correctness of answer set

@@ -36,7 +36,7 @@ import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.core.parser.evolog.EvologProgramParser;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRuleImpl;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRules;
@@ -45,7 +45,7 @@ import at.ac.tuwien.kr.alpha.core.rules.CompiledRules;
  * Tests {@link BasicRule#toString()} and {@link CompiledRuleImpl#toString()}.
  */
 public class RuleToStringTest {
-	private final ProgramParser parser = new EvologProgramParser();
+	private final ProgramParser parser = new ASPCore2ProgramParser();
 	
 	@Test
 	public void positiveRuleToString() {

@@ -16,7 +16,7 @@ import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.commons.externals.Externals;
-import at.ac.tuwien.kr.alpha.core.parser.evolog.EvologProgramParser;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 
 // TODO This is a functional test and should not be run with standard unit tests
@@ -26,8 +26,8 @@ public class ProgramTransformationTest {
 
 	private static final String TESTFILES_PATH = "/transform-test/";
 
-	// TODO should this always be an evolog parser?
-	private static final ProgramParser PARSER = new EvologProgramParser();
+	// TODO should this always be an asp core2 parser?
+	private static final ProgramParser PARSER = new ASPCore2ProgramParser();
 
 	private ChoiceHeadNormalizer choiceToNormal = new ChoiceHeadNormalizer();
 	private IntervalTermTransformer intervalRewriting = new IntervalTermTransformer();

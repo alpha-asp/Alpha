@@ -67,11 +67,11 @@ public class StratifiedEvaluation extends ProgramTransformer<AnalyzedProgram, In
 	private Set<Integer> solvedRuleIds = new HashSet<>(); // Set of rules that have been completely evaluated.
 
 	private LiteralInstantiator literalInstantiator;
-	private ActionExecutionService actionContext;
+	private ActionExecutionService actionExecutionService;
 	private final boolean generateActionWitnesses;
 
-	public StratifiedEvaluation(ActionExecutionService actionContext, boolean generateActionWitnesses) {
-		this.actionContext = actionContext;
+	public StratifiedEvaluation(ActionExecutionService actionExecutionService, boolean generateActionWitnesses) {
+		this.actionExecutionService = actionExecutionService;
 		this.generateActionWitnesses = generateActionWitnesses;
 	}
 
@@ -352,7 +352,7 @@ public class StratifiedEvaluation extends ProgramTransformer<AnalyzedProgram, In
 			substitutedInput.add(inputTerm.substitute(substitution));
 		}
 		// Delegate action execution to respective backend.
-		ActionWitness witness = actionContext.execute(head.getActionName(), rule.getRuleId(), substitution, substitutedInput);
+		ActionWitness witness = actionExecutionService.execute(head.getActionName(), rule.getRuleId(), substitution, substitutedInput);
 		// If the according debug flag is set, convert witness to atom and add to facts.
 		if (generateActionWitnesses) {
 			BasicAtom witnessAtom = buildActionWitnessAtom(witness, rule);

@@ -62,7 +62,7 @@ public class MinMaxEncoder extends AbstractAggregateEncoder {
 
 	private final ProgramParser parser;
 
-	public MinMaxEncoder(ProgramParser parser, AggregateFunctionSymbol func) {
+	MinMaxEncoder(ProgramParser parser, AggregateFunctionSymbol func) {
 		super(func, SetUtils.hashSet(ComparisonOperators.operators()));
 		if (!(func == AggregateFunctionSymbol.MAX || func == AggregateFunctionSymbol.MIN)) {
 			throw new IllegalArgumentException("Encoder " + this.getClass().getSimpleName() + " can only encode min/max aggregates!");

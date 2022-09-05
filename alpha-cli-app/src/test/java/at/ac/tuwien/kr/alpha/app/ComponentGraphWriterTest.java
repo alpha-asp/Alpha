@@ -54,7 +54,7 @@ public class ComponentGraphWriterTest {
 				"n1 -> n5 [xlabel=\"-\" labeldistance=0.1]" + LS +
 				"n2 -> n5 [xlabel=\"+\" labeldistance=0.1]" + LS +
 				"}" + LS;
-		Alpha alpha = AlphaFactory.newAlpha();
+		Alpha alpha = new AlphaFactory().newAlpha();
 		DebugSolvingContext dbgResult = alpha.prepareDebugSolve(alpha.readProgramString(asp));
 		ComponentGraph compgraph = dbgResult.getComponentGraph();
 		ComponentGraphWriter writer = new ComponentGraphWriter();

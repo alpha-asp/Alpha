@@ -11,7 +11,7 @@ import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateTr
  * 
  * Copyright (c) 2019-2021, the Alpha Team.
  */
-public class NormalizeProgramTransformation extends ProgramTransformer<InputProgram, NormalProgram> {
+public class ProgramNormalizer extends ProgramTransformer<InputProgram, NormalProgram> {
 
 	private final VariableEqualityTransformer equalityTransformer;
 	private final ChoiceHeadNormalizer choiceHeadNormalizer;
@@ -20,7 +20,7 @@ public class NormalizeProgramTransformation extends ProgramTransformer<InputProg
 	private final IntervalTermTransformer intervalTermTransformer;
 	private final ArithmeticTermTransformer arithmeticTermTransformer;
 
-	public NormalizeProgramTransformation(VariableEqualityTransformer equalityTransformer, ChoiceHeadNormalizer choiceHeadNormalizer, AggregateTransformer aggregateTransformer, EnumerationTransformer enumerationTransformer, IntervalTermTransformer intervalTermTransformer, ArithmeticTermTransformer arithmeticTermTransformer) {
+	public ProgramNormalizer(VariableEqualityTransformer equalityTransformer, ChoiceHeadNormalizer choiceHeadNormalizer, AggregateTransformer aggregateTransformer, EnumerationTransformer enumerationTransformer, IntervalTermTransformer intervalTermTransformer, ArithmeticTermTransformer arithmeticTermTransformer) {
 		this.equalityTransformer = equalityTransformer;
 		this.choiceHeadNormalizer = choiceHeadNormalizer;
 		this.aggregateTransformer = aggregateTransformer;
