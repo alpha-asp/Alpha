@@ -41,20 +41,15 @@ import java.util.stream.IntStream;
 /**
  * Provides utility methods to generate atoms and register them at an {@link AtomStore}.
  */
-public class TestAtomGenerator {
-	private final AtomStore atomStore;
-
-	public TestAtomGenerator(AtomStore atomStore) {
-		this.atomStore = atomStore;
-	}
-
+public class AtomGeneratorForTests {
 	/**
-	 * Maps a given list of literals to literal ids based on the current {@link AtomStore}.
+	 * Maps a given list of literals to literal ids based on a given {@link AtomStore}.
 	 *
-	 * @param literals the list of literals where each literal is represented by a pair of atom and truth value.
+	 * @param literals  the list of literals where each literal is represented by a pair of atom and truth value.
+	 * @param atomStore the {@link AtomStore} to use for converting atom ids.
 	 * @return the list of ids for the given literals based on the current {@link AtomStore}.
 	 */
-	public int[] getLiteralIds(List<AtomValuePair> literals) {
+	public static int[] getLiteralIds(List<AtomValuePair> literals, AtomStore atomStore) {
 		int[] literalIds = new int[literals.size()];
 
 		int position = 0;
@@ -69,22 +64,24 @@ public class TestAtomGenerator {
 	/**
 	 * Generates a given number of new filler atoms and registers them at the current {@link AtomStore}.
 	 *
-	 * @param count the number of filler atoms to generate and register.
+	 * @param count     the number of filler atoms to generate and register.
+	 * @param atomStore the {@link AtomStore} to use for converting atom ids.
 	 */
-	public void generateAndRegisterFillerAtoms(int count) {
-		generateAndRegisterFillerAtoms(count, 0);
+	public static void generateAndRegisterFillerAtoms(int count, AtomStore atomStore) {
+		generateAndRegisterFillerAtoms(count, 0, atomStore);
 	}
 
 	/**
 	 * Generates a given number of new filler atoms and registers them at the current {@link AtomStore}.
 	 * Filler atoms are generated under the assumption that a given number of filler atoms were already generated.
 	 *
-	 * @param count    the number of filler atoms to generate and register.
-	 * @param existing the number of filler atoms already generated before.
+	 * @param count     the number of filler atoms to generate and register.
+	 * @param existing  the number of filler atoms already generated before.
+	 * @param atomStore the {@link AtomStore} to use for converting atom ids.
 	 */
-	public void generateAndRegisterFillerAtoms(int count, int existing) {
+	public static void generateAndRegisterFillerAtoms(int count, int existing, AtomStore atomStore) {
 		for (int i = existing; i < existing + count; i++) {
-			generateAndRegisterAtom(String.format("_FILL%d_", i), 0);
+			generateAndRegisterAtom(String.format("_FILL%d_", i), 0, atomStore);
 		}
 	}
 
@@ -93,11 +90,12 @@ public class TestAtomGenerator {
 	 * The generated {@link Atom} is then registered at the current {@link AtomStore}.
 	 * Constant terms starting from 1 up to the arity are used.
 	 *
-	 * @param symbol the predicate symbol of the {@link Atom} to generate.
-	 * @param arity  the arity of the atom to generate.
+	 * @param symbol    the predicate symbol of the {@link Atom} to generate.
+	 * @param arity     the arity of the atom to generate.
+	 * @param atomStore the {@link AtomStore} to use for converting atom ids.
 	 * @return the generated {@link Atom}.
 	 */
-	public Atom generateAndRegisterAtom(String symbol, int arity) {
+	public static Atom generateAndRegisterAtom(String symbol, int arity, AtomStore atomStore) {
 		Predicate predicate = Predicates.getPredicate(symbol, arity);
 
 		Atom atom;

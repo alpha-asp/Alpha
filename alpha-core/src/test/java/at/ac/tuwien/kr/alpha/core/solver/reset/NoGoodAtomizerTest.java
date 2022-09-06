@@ -46,17 +46,14 @@ import java.util.List;
  */
 class NoGoodAtomizerTest {
 	AtomStore atomStore;
-	TestAtomGenerator atomGenerator;
 
 	public NoGoodAtomizerTest() {
 		atomStore = new AtomStoreImpl();
-		atomGenerator = new TestAtomGenerator(atomStore);
 	}
 
 	@BeforeEach
 	public void setUp() {
 		atomStore = new AtomStoreImpl();
-		atomGenerator = new TestAtomGenerator(atomStore);
 	}
 
 	/**
@@ -65,13 +62,13 @@ class NoGoodAtomizerTest {
 	 * the same id as before.
 	 */
 	@Test
-	void sameAtomIdsAfterAtomStoreReset() {
+	void testSameAtomIdsAfterAtomStoreReset() {
 		int atomCount = 6;
 
 		List<Atom> atoms = new ArrayList<>();
 		List<Integer> atomIds = new ArrayList<>();
 		for (int i = 0; i < atomCount; i++) {
-			Atom atom = atomGenerator.generateAndRegisterAtom(String.format("_TEST%d_", i), 0);
+			Atom atom = AtomGeneratorForTests.generateAndRegisterAtom(String.format("_TEST%d_", i), 0, atomStore);
 			atoms.add(atom);
 			atomIds.add(atomStore.get(atom));
 		}
@@ -89,15 +86,15 @@ class NoGoodAtomizerTest {
 	 * and tests conversion correctness after change in atom id.
 	 */
 	@Test
-	void singleLiteralNoGood() {
+	void testSingleLiteralNoGood() {
 		List<AtomValuePair> literals = Collections.singletonList(
-				new AtomValuePair(atomGenerator.generateAndRegisterAtom("_TEST_", 0), false)
+				new AtomValuePair(AtomGeneratorForTests.generateAndRegisterAtom("_TEST_", 0, atomStore), false)
 		);
-		int[] literalIds = atomGenerator.getLiteralIds(literals);
+		int[] literalIds = AtomGeneratorForTests.getLiteralIds(literals, atomStore);
 		NoGoodAtomizer noGoodAtomizer = new NoGoodAtomizer(new NoGood(literalIds), atomStore);
 
 		atomStore.reset();
-		atomGenerator.generateAndRegisterFillerAtoms(1);
+		AtomGeneratorForTests.generateAndRegisterFillerAtoms(1, atomStore);
 		atomStore.putIfAbsent(literals.get(0).getAtom());
 		extractAndCheckLiterals(literals, noGoodAtomizer);
 	}
@@ -107,12 +104,12 @@ class NoGoodAtomizerTest {
 	 * and tests conversion correctness after change in atom id.
 	 */
 	@Test
-	void singleTwoTermLiteralNoGood() {
-		atomGenerator.generateAndRegisterFillerAtoms(1);
+	void testSingleTwoTermLiteralNoGood() {
+		AtomGeneratorForTests.generateAndRegisterFillerAtoms(1, atomStore);
 		List<AtomValuePair> literals = Collections.singletonList(
-				new AtomValuePair(atomGenerator.generateAndRegisterAtom("_TEST_", 2), true)
+				new AtomValuePair(AtomGeneratorForTests.generateAndRegisterAtom("_TEST_", 2, atomStore), true)
 		);
-		int[] literalIds = atomGenerator.getLiteralIds(literals);
+		int[] literalIds = AtomGeneratorForTests.getLiteralIds(literals, atomStore);
 		NoGoodAtomizer noGoodAtomizer = new NoGoodAtomizer(new NoGood(literalIds), atomStore);
 
 		atomStore.reset();
@@ -125,19 +122,19 @@ class NoGoodAtomizerTest {
 	 * and tests conversion correctness after change in a single atom id.
 	 */
 	@Test
-	void multiLiteralNoGoodChangeSingleId() {
-		atomGenerator.generateAndRegisterFillerAtoms(2);
+	void testMultiLiteralNoGoodChangeSingleId() {
+		AtomGeneratorForTests.generateAndRegisterFillerAtoms(2, atomStore);
 		List<AtomValuePair> literals = Arrays.asList(
-				new AtomValuePair(atomGenerator.generateAndRegisterAtom("_TEST1_", 0), true),
-				new AtomValuePair(atomGenerator.generateAndRegisterAtom("_TEST2_", 0), false)
+				new AtomValuePair(AtomGeneratorForTests.generateAndRegisterAtom("_TEST2_", 0, atomStore), false),
+				new AtomValuePair(AtomGeneratorForTests.generateAndRegisterAtom("_TEST1_", 0, atomStore), true)
 		);
-		int[] literalIds = atomGenerator.getLiteralIds(literals);
+		int[] literalIds = AtomGeneratorForTests.getLiteralIds(literals, atomStore);
 		NoGoodAtomizer noGoodAtomizer = new NoGoodAtomizer(new NoGood(literalIds), atomStore);
 
 		atomStore.reset();
-		atomGenerator.generateAndRegisterFillerAtoms(2);
+		AtomGeneratorForTests.generateAndRegisterFillerAtoms(2, atomStore);
 		atomStore.putIfAbsent(literals.get(0).getAtom());
-		atomGenerator.generateAndRegisterFillerAtoms(2, 2);
+		AtomGeneratorForTests.generateAndRegisterFillerAtoms(2, 2, atomStore);
 		atomStore.putIfAbsent(literals.get(1).getAtom());
 		extractAndCheckLiterals(literals, noGoodAtomizer);
 	}
@@ -147,13 +144,13 @@ class NoGoodAtomizerTest {
 	 * and tests conversion correctness after change in all atom ids.
 	 */
 	@Test
-	void multiLiteralNoGoodChangeAllIds() {
-		atomGenerator.generateAndRegisterFillerAtoms(2);
+	void testMultiLiteralNoGoodChangeAllIds() {
+		AtomGeneratorForTests.generateAndRegisterFillerAtoms(2, atomStore);
 		List<AtomValuePair> literals = Arrays.asList(
-				new AtomValuePair(atomGenerator.generateAndRegisterAtom("_TEST1_", 0), true),
-				new AtomValuePair(atomGenerator.generateAndRegisterAtom("_TEST2_", 0), false)
+				new AtomValuePair(AtomGeneratorForTests.generateAndRegisterAtom("_TEST1_", 0, atomStore), true),
+				new AtomValuePair(AtomGeneratorForTests.generateAndRegisterAtom("_TEST2_", 0, atomStore), false)
 		);
-		int[] literalIds = atomGenerator.getLiteralIds(literals);
+		int[] literalIds = AtomGeneratorForTests.getLiteralIds(literals, atomStore);
 		NoGoodAtomizer noGoodAtomizer = new NoGoodAtomizer(new NoGood(literalIds), atomStore);
 
 		atomStore.reset();

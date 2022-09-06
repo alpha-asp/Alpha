@@ -45,17 +45,17 @@ import java.util.List;
  */
 class AtomizedNoGoodCollectionTest {
 	AtomStore atomStore;
-	TestAtomGenerator atomGenerator;
+	AtomGeneratorForTests atomGenerator;
 
 	public AtomizedNoGoodCollectionTest() {
 		atomStore = new AtomStoreImpl();
-		atomGenerator = new TestAtomGenerator(atomStore);
+		atomGenerator = new AtomGeneratorForTests();
 	}
 
 	@BeforeEach
 	public void setUp() {
 		atomStore = new AtomStoreImpl();
-		atomGenerator = new TestAtomGenerator(atomStore);
+		atomGenerator = new AtomGeneratorForTests();
 	}
 
 
@@ -64,12 +64,12 @@ class AtomizedNoGoodCollectionTest {
 	 * and tests conversion correctness after change in the single atom id.
 	 */
 	@Test
-	void oneSingleLiteralNoGood() {
-		atomGenerator.generateAndRegisterFillerAtoms(1);
+	void testOneSingleLiteralNoGood() {
+		AtomGeneratorForTests.generateAndRegisterFillerAtoms(1, atomStore);
 		List<AtomValuePair> literals = Collections.singletonList(
-				new AtomValuePair(atomGenerator.generateAndRegisterAtom("_TEST_", 0), true)
+				new AtomValuePair(AtomGeneratorForTests.generateAndRegisterAtom("_TEST_", 0, atomStore), true)
 		);
-		int[] literalIds = atomGenerator.getLiteralIds(literals);
+		int[] literalIds = AtomGeneratorForTests.getLiteralIds(literals, atomStore);
 		NoGood noGood = new NoGood(literalIds);
 
 		AtomizedNoGoodCollection atomizedCollection = new AtomizedNoGoodCollection(atomStore);
@@ -77,7 +77,7 @@ class AtomizedNoGoodCollectionTest {
 
 		atomStore.reset();
 		atomStore.putIfAbsent(literals.get(0).getAtom());
-		extractAndCheckNoGoods(Collections.singletonList(literals), atomizedCollection);
+		extractAndCheckNoGoods(Collections.singletonList(literals), atomizedCollection, atomStore);
 	}
 
 	/**
@@ -85,25 +85,25 @@ class AtomizedNoGoodCollectionTest {
 	 * and tests conversion correctness after change in an atom id of one of them.
 	 */
 	@Test
-	void twoSingleLiteralNoGoodsChangeIdForOne() {
-		atomGenerator.generateAndRegisterFillerAtoms(2);
+	void testTwoSingleLiteralNoGoodsChangeIdForOne() {
+		AtomGeneratorForTests.generateAndRegisterFillerAtoms(2, atomStore);
 		List<AtomValuePair> noGood1 = Collections.singletonList(
-				new AtomValuePair(atomGenerator.generateAndRegisterAtom("_TEST1_", 0), false)
+				new AtomValuePair(AtomGeneratorForTests.generateAndRegisterAtom("_TEST1_", 0, atomStore), false)
 		);
 		List<AtomValuePair> noGood2 = Collections.singletonList(
-				new AtomValuePair(atomGenerator.generateAndRegisterAtom("_TEST2_", 2), true)
+				new AtomValuePair(AtomGeneratorForTests.generateAndRegisterAtom("_TEST2_", 2, atomStore), true)
 		);
 
 		AtomizedNoGoodCollection atomizedCollection = new AtomizedNoGoodCollection(atomStore);
 		List<List<AtomValuePair>> noGoods = Arrays.asList(noGood1, noGood2);
-		addAtomizedNoGoods(atomizedCollection, noGoods);
+		addAtomizedNoGoods(atomizedCollection, noGoods, atomStore);
 
 		atomStore.reset();
-		atomGenerator.generateAndRegisterFillerAtoms(2);
+		AtomGeneratorForTests.generateAndRegisterFillerAtoms(2, atomStore);
 		atomStore.putIfAbsent(noGood1.get(0).getAtom());
-		atomGenerator.generateAndRegisterFillerAtoms(2, 2);
+		AtomGeneratorForTests.generateAndRegisterFillerAtoms(2, 2, atomStore);
 		atomStore.putIfAbsent(noGood2.get(0).getAtom());
-		extractAndCheckNoGoods(noGoods, atomizedCollection);
+		extractAndCheckNoGoods(noGoods, atomizedCollection, atomStore);
 	}
 
 
@@ -112,7 +112,7 @@ class AtomizedNoGoodCollectionTest {
 	 * and tests conversion correctness after change in all atom ids.
 	 */
 	@Test
-	void oneMultiLiteralNoGoodChangeAllIds() {
+	void testOneMultiLiteralNoGoodChangeAllIds() {
 
 	}
 
@@ -121,21 +121,21 @@ class AtomizedNoGoodCollectionTest {
 	 * and tests conversion correctness after change in a single atom id.
 	 */
 	@Test
-	void oneMultiLiteralNoGoodChangeSingleId() {
-		atomGenerator.generateAndRegisterFillerAtoms(1);
+	void testOneMultiLiteralNoGoodChangeSingleId() {
+		AtomGeneratorForTests.generateAndRegisterFillerAtoms(1, atomStore);
 		List<AtomValuePair> noGood = Arrays.asList(
-				new AtomValuePair(atomGenerator.generateAndRegisterAtom("_TEST1_", 0), true),
-				new AtomValuePair(atomGenerator.generateAndRegisterAtom("_TEST2_", 2), false)
+				new AtomValuePair(AtomGeneratorForTests.generateAndRegisterAtom("_TEST1_", 0, atomStore), true),
+				new AtomValuePair(AtomGeneratorForTests.generateAndRegisterAtom("_TEST2_", 2, atomStore), false)
 		);
 
 		AtomizedNoGoodCollection atomizedCollection = new AtomizedNoGoodCollection(atomStore);
 		List<List<AtomValuePair>> noGoods = Collections.singletonList(noGood);
-		addAtomizedNoGoods(atomizedCollection, noGoods);
+		addAtomizedNoGoods(atomizedCollection, noGoods, atomStore);
 
 		atomStore.reset();
 		atomStore.putIfAbsent(noGood.get(0).getAtom());
 		atomStore.putIfAbsent(noGood.get(1).getAtom());
-		extractAndCheckNoGoods(noGoods, atomizedCollection);
+		extractAndCheckNoGoods(noGoods, atomizedCollection, atomStore);
 	}
 
 	/**
@@ -143,29 +143,29 @@ class AtomizedNoGoodCollectionTest {
 	 * and tests conversion correctness after change in a single atom id.
 	 */
 	@Test
-	void twoMultiLiteralNoGoodsChangeSingleId() {
-		atomGenerator.generateAndRegisterFillerAtoms(2);
+	void testTwoMultiLiteralNoGoodsChangeSingleId() {
+		AtomGeneratorForTests.generateAndRegisterFillerAtoms(2, atomStore);
 		List<AtomValuePair> noGood1 = Arrays.asList(
-				new AtomValuePair(atomGenerator.generateAndRegisterAtom("_TEST1_", 0), false),
-				new AtomValuePair(atomGenerator.generateAndRegisterAtom("_TEST2_", 0), false)
+				new AtomValuePair(AtomGeneratorForTests.generateAndRegisterAtom("_TEST1_", 0, atomStore), false),
+				new AtomValuePair(AtomGeneratorForTests.generateAndRegisterAtom("_TEST2_", 0, atomStore), false)
 		);
 		List<AtomValuePair> noGood2 = Arrays.asList(
-				new AtomValuePair(atomGenerator.generateAndRegisterAtom("_TEST3_", 2), true),
-				new AtomValuePair(atomGenerator.generateAndRegisterAtom("_TEST4_", 1), false)
+				new AtomValuePair(AtomGeneratorForTests.generateAndRegisterAtom("_TEST3_", 2, atomStore), true),
+				new AtomValuePair(AtomGeneratorForTests.generateAndRegisterAtom("_TEST4_", 1, atomStore), false)
 		);
 
 		AtomizedNoGoodCollection atomizedCollection = new AtomizedNoGoodCollection(atomStore);
 		List<List<AtomValuePair>> noGoods = Arrays.asList(noGood1, noGood2);
-		addAtomizedNoGoods(atomizedCollection, noGoods);
+		addAtomizedNoGoods(atomizedCollection, noGoods, atomStore);
 
 		atomStore.reset();
-		atomGenerator.generateAndRegisterFillerAtoms(2);
+		AtomGeneratorForTests.generateAndRegisterFillerAtoms(2, atomStore);
 		atomStore.putIfAbsent(noGood1.get(0).getAtom());
 		atomStore.putIfAbsent(noGood1.get(1).getAtom());
 		atomStore.putIfAbsent(noGood2.get(0).getAtom());
-		atomGenerator.generateAndRegisterFillerAtoms(2, 2);
+		AtomGeneratorForTests.generateAndRegisterFillerAtoms(2, 2, atomStore);
 		atomStore.putIfAbsent(noGood2.get(1).getAtom());
-		extractAndCheckNoGoods(noGoods, atomizedCollection);
+		extractAndCheckNoGoods(noGoods, atomizedCollection, atomStore);
 	}
 
 	/**
@@ -173,27 +173,27 @@ class AtomizedNoGoodCollectionTest {
 	 * and tests conversion correctness after change in all atom ids.
 	 */
 	@Test
-	void twoMultiLiteralNoGoodsChangeAllIds() {
-		atomGenerator.generateAndRegisterFillerAtoms(2);
+	void testTwoMultiLiteralNoGoodsChangeAllIds() {
+		AtomGeneratorForTests.generateAndRegisterFillerAtoms(2, atomStore);
 		List<AtomValuePair> noGood1 = Arrays.asList(
-				new AtomValuePair(atomGenerator.generateAndRegisterAtom("_TEST1_", 0), false),
-				new AtomValuePair(atomGenerator.generateAndRegisterAtom("_TEST2_", 0), true)
+				new AtomValuePair(AtomGeneratorForTests.generateAndRegisterAtom("_TEST1_", 0, atomStore), false),
+				new AtomValuePair(AtomGeneratorForTests.generateAndRegisterAtom("_TEST2_", 0, atomStore), true)
 		);
 		List<AtomValuePair> noGood2 = Arrays.asList(
-				new AtomValuePair(atomGenerator.generateAndRegisterAtom("_TEST3_", 2), true),
-				new AtomValuePair(atomGenerator.generateAndRegisterAtom("_TEST4_", 1), true)
+				new AtomValuePair(AtomGeneratorForTests.generateAndRegisterAtom("_TEST3_", 2, atomStore), true),
+				new AtomValuePair(AtomGeneratorForTests.generateAndRegisterAtom("_TEST4_", 1, atomStore), true)
 		);
 
 		AtomizedNoGoodCollection atomizedCollection = new AtomizedNoGoodCollection(atomStore);
 		List<List<AtomValuePair>> noGoods = Arrays.asList(noGood1, noGood2);
-		addAtomizedNoGoods(atomizedCollection, noGoods);
+		addAtomizedNoGoods(atomizedCollection, noGoods, atomStore);
 
 		atomStore.reset();
 		atomStore.putIfAbsent(noGood1.get(0).getAtom());
 		atomStore.putIfAbsent(noGood1.get(1).getAtom());
 		atomStore.putIfAbsent(noGood2.get(0).getAtom());
 		atomStore.putIfAbsent(noGood2.get(1).getAtom());
-		extractAndCheckNoGoods(noGoods, atomizedCollection);
+		extractAndCheckNoGoods(noGoods, atomizedCollection, atomStore);
 	}
 
 	/**
@@ -204,15 +204,15 @@ class AtomizedNoGoodCollectionTest {
 	 *                           of atom and truth value.
 	 * @param atomizedCollection the {@link AtomizedNoGoodCollection} to extract the {@link NoGood}s from.
 	 */
-	private void extractAndCheckNoGoods(List<List<AtomValuePair>> noGoods,
-										AtomizedNoGoodCollection atomizedCollection) {
+	private void extractAndCheckNoGoods(List<List<AtomValuePair>> noGoods, AtomizedNoGoodCollection atomizedCollection,
+										AtomStore atomStore) {
 		List<NoGood> noGoodsExtracted = atomizedCollection.getNoGoods();
 		assertEquals(noGoods.size(), noGoodsExtracted.size());
 
 		for (int i = 0; i < noGoods.size(); i++) {
 			List<AtomValuePair> literals = noGoods.get(i);
 			NoGood noGoodExtracted = noGoodsExtracted.get(i);
-			checkNoGood(literals, noGoodExtracted);
+			checkNoGood(literals, noGoodExtracted, atomStore);
 		}
 	}
 
@@ -222,7 +222,7 @@ class AtomizedNoGoodCollectionTest {
 	 * @param literals the literals to compare to represented as pairs of atom and truth value.
 	 * @param noGood   the given {@link NoGood} to check the literals of.
 	 */
-	private void checkNoGood(List<AtomValuePair> literals, NoGood noGood) {
+	private void checkNoGood(List<AtomValuePair> literals, NoGood noGood, AtomStore atomStore) {
 		assertEquals(literals.size(), noGood.size());
 
 		for (int i = 0; i < literals.size(); i++) {
@@ -245,9 +245,9 @@ class AtomizedNoGoodCollectionTest {
 	 *                           of atom and truth value.
 	 */
 	private void addAtomizedNoGoods(AtomizedNoGoodCollection atomizedCollection,
-									List<List<AtomValuePair>> noGoods) {
+									List<List<AtomValuePair>> noGoods, AtomStore atomStore) {
 		for (List<AtomValuePair> literals : noGoods) {
-			int[] literalIds = atomGenerator.getLiteralIds(literals);
+			int[] literalIds = AtomGeneratorForTests.getLiteralIds(literals, atomStore);
 			NoGood noGood = new NoGood(literalIds);
 			atomizedCollection.add(noGood);
 		}
