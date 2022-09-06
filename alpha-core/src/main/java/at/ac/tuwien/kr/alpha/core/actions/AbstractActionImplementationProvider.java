@@ -38,6 +38,7 @@ public abstract class AbstractActionImplementationProvider implements ActionImpl
 	/**
 	 * Returns a map of all actions supported by this implementation provider.
 	 */
+	@Override
 	public final Map<String, Action> getSupportedActions() {
 		return supportedActions;
 	}
@@ -46,6 +47,7 @@ public abstract class AbstractActionImplementationProvider implements ActionImpl
 	 * Returns a predicate interpretation specifying an external that takes no arguments
 	 * and returns a reference to the standard system output stream (stdout).
 	 */
+	@Override
 	public final PredicateInterpretation getStdoutTerm() {
 		if (stdoutHandle == null) {
 			stdoutHandle = Terms.newConstant(new OutputStreamHandle(idGenerator.getNextId(), getStdoutStream()));
@@ -62,6 +64,7 @@ public abstract class AbstractActionImplementationProvider implements ActionImpl
 	 * Returns a predicate interpretation specifying an external that takes no arguments
 	 * and returns a reference to the standard system input stream (stdin).
 	 */
+	@Override
 	public final PredicateInterpretation getStdinTerm() {
 		if (stdinHandle == null) {
 			stdinHandle = Terms.newConstant(new InputStreamHandle(idGenerator.getNextId(),
