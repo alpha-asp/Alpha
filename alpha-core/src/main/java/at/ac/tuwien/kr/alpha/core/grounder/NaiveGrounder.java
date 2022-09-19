@@ -76,11 +76,12 @@ import at.ac.tuwien.kr.alpha.core.grounder.instantiation.LiteralInstantiator;
 import at.ac.tuwien.kr.alpha.core.grounder.structure.AnalyzeUnjustified;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.grounder.structure.AtomChoiceRelation;
 
 /**
  * A semi-naive grounder.
  *
- * Copyright (c) 2016-2020, the Alpha Team.
+ * Copyright (c) 2016-2021, the Alpha Team.
  */
 public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGrounder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
@@ -96,6 +97,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private final Map<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
 	private final Map<Integer, CompiledRule> knownNonGroundRules;
+	private final AtomChoiceRelation atomChoiceRelation = new AtomChoiceRelation();
 
 	private ArrayList<CompiledRule> fixedRules = new ArrayList<>();
 	private LinkedHashSet<Atom> removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
@@ -135,7 +137,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 		final Set<CompiledRule> uniqueGroundRulePerGroundHead = getRulesWithUniqueHead();
 		choiceRecorder = new ChoiceRecorder(atomStore);
-		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, this.program, uniqueGroundRulePerGroundHead);
+		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, this.program, uniqueGroundRulePerGroundHead, atomChoiceRelation);
 
 		this.debugInternalChecks = debugInternalChecks;
 
@@ -145,6 +147,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				this.heuristicsConfiguration.isAccumulatorEnabled());
 		this.instantiationStrategy.setStaleWorkingMemoryEntries(this.removeAfterObtainingNewNoGoods);
 		this.ruleInstantiator = new LiteralInstantiator(this.instantiationStrategy);
+	}
+
+	@Override
+	public AtomChoiceRelation getAtomChoiceRelation() {
+		return atomChoiceRelation;
 	}
 
 	private void initializeFactsAndRules() {
@@ -221,7 +228,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	/**
 	 * Registers a starting literal of a NonGroundRule at its corresponding working memory.
-	 * 
+	 *
 	 * @param nonGroundRule the rule in which the literal occurs.
 	 */
 	private void registerLiteralAtWorkingMemory(Literal literal, CompiledRule nonGroundRule) {
@@ -291,7 +298,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	/**
 	 * Prepares facts of the input program for joining and derives all NoGoods representing ground rules. May only be called once.
-	 * 
+	 *
 	 * @return
 	 */
 	protected HashMap<Integer, NoGood> bootstrap() {
@@ -497,9 +504,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 * Computes ground substitutions for a literal based on a {@link RuleGroundingOrderImpl} and a {@link BasicSubstitution}.
 	 *
 	 * Computes ground substitutions for the literal at position <code>orderPosition</code> of <code>groundingOrder</code>
-	 * Actual substitutions are computed by this grounder's {@link LiteralInstantiator}. 
+	 * Actual substitutions are computed by this grounder's {@link LiteralInstantiator}.
 	 *
-	 * @param groundingOrder a {@link RuleGroundingOrderImpl} representing the body literals of a rule in the 
+	 * @param groundingOrder a {@link RuleGroundingOrderImpl} representing the body literals of a rule in the
 	 * 						 sequence in which the should be bound during grounding.
 	 * @param orderPosition the current position within <code>groundingOrder</code>, indicates which literal should be bound
 	 * @param originalTolerance the original tolerance of the used grounding heuristic

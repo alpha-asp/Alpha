@@ -52,6 +52,7 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.grounder.structure.AtomChoiceRelation;
 
 /**
  * Class to generate ground NoGoods out of non-ground rules and grounding substitutions.
@@ -63,13 +64,15 @@ public class NoGoodGenerator {
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private final CompiledProgram programAnalysis;
 	private final Set<CompiledRule> uniqueGroundRulePerGroundHead;
+	private final AtomChoiceRelation atomChoiceRelation;
 
-	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, CompiledProgram programAnalysis, Set<CompiledRule> uniqueGroundRulePerGroundHead) {
+	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, CompiledProgram programAnalysis, Set<CompiledRule> uniqueGroundRulePerGroundHead, AtomChoiceRelation atomChoiceRelation) {
 		this.atomStore = atomStore;
 		this.choiceRecorder = recorder;
 		this.factsFromProgram = factsFromProgram;
 		this.programAnalysis = programAnalysis;
 		this.uniqueGroundRulePerGroundHead = uniqueGroundRulePerGroundHead;
+		this.atomChoiceRelation = atomChoiceRelation;
 	}
 
 	/**
@@ -135,6 +138,13 @@ public class NoGoodGenerator {
 		// If the body of the rule contains negation, add choices.
 		if (!negLiterals.isEmpty()) {
 			result.addAll(choiceRecorder.generateChoiceNoGoods(posLiterals, negLiterals, bodyRepresentingLiteral));
+
+			// Record atom-choiceAtom relationships for rules that are choice points.
+			atomChoiceRelation.growForMaxAtomId(atomStore.getMaxAtomId());
+			atomChoiceRelation.addRelation(headId, atomOf(bodyRepresentingLiteral));
+			for (Integer negLiteral : negLiterals) {
+				atomChoiceRelation.addRelation(atomOf(negLiteral), atomOf(bodyRepresentingLiteral));
+			}
 		}
 
 		return result;

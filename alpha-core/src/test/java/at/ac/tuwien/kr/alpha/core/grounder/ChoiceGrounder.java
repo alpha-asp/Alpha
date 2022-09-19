@@ -66,6 +66,7 @@ import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
+import at.ac.tuwien.kr.alpha.core.grounder.structure.AtomChoiceRelation;
 
 /**
  * Represents a small ASP program with choices {@code { aa :- not bb.  bb :- not aa. }}.
@@ -124,6 +125,7 @@ public class ChoiceGrounder implements Grounder {
 	private static Atom atomEnBR2 = ChoiceAtom.on(2);
 	private static Atom atomDisBR1 = ChoiceAtom.off(3);
 	private static Atom atomDisBR2 = ChoiceAtom.off(4);
+	private static AtomChoiceRelation atomChoiceRelation = new AtomChoiceRelation();
 	private final AtomStore atomStore;
 	private boolean returnedAllNogoods;
 
@@ -137,6 +139,11 @@ public class ChoiceGrounder implements Grounder {
 		this.atomStore = atomStore;
 		this.filter = filter;
 		Arrays.asList(atomAA, atomBB, rule1, rule2, atomEnBR1, atomEnBR2, atomDisBR1, atomDisBR2).forEach(atomStore::putIfAbsent);
+		atomChoiceRelation.growForMaxAtomId(atomStore.getMaxAtomId());
+		atomChoiceRelation.addRelation(atomStore.get(atomAA), atomStore.get(rule1));
+		atomChoiceRelation.addRelation(atomStore.get(atomBB), atomStore.get(rule1));
+		atomChoiceRelation.addRelation(atomStore.get(atomBB), atomStore.get(rule2));
+		atomChoiceRelation.addRelation(atomStore.get(atomAA), atomStore.get(rule2));
 	}
 
 	@Override
@@ -199,6 +206,11 @@ public class ChoiceGrounder implements Grounder {
 
 	@Override
 	public void forgetAssignment(int[] atomIds) {
+	}
+
+	@Override
+	public AtomChoiceRelation getAtomChoiceRelation() {
+		return atomChoiceRelation;
 	}
 
 	private int solverDerivedNoGoodIdCounter = 20;

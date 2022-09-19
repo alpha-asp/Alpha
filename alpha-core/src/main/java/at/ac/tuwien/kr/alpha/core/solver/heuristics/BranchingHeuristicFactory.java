@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Random;
 
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.core.grounder.structure.AtomChoiceRelation;
 import at.ac.tuwien.kr.alpha.core.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.core.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
@@ -86,6 +87,9 @@ public final class BranchingHeuristicFactory {
 			return new VSIDS(assignment, choiceManager, heuristicsConfiguration.getMomsStrategy());
 		case GDD_VSIDS:
 			return new DependencyDrivenVSIDS(assignment, choiceManager, random, heuristicsConfiguration.getMomsStrategy());
+		case VSIDS_PHASE_SAVING:
+			AtomChoiceRelation atomChoiceRelation = grounder.getAtomChoiceRelation();
+			return new VSIDSWithPhaseSaving(assignment, choiceManager, atomChoiceRelation, heuristicsConfiguration.getMomsStrategy());
 		}
 		throw new IllegalArgumentException("Unknown branching heuristic requested.");
 	}

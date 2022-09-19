@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2019, the Alpha Team.
+/*
+ * Copyright (c) 2019-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -27,16 +27,16 @@
  */
 package at.ac.tuwien.kr.alpha.api.config;
 
+import at.ac.tuwien.kr.alpha.api.Alpha;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import at.ac.tuwien.kr.alpha.api.Alpha;
-
 /**
  * Config structure for {@link Alpha} instances.
- * 
+ *
  * Copyright (c) 2021, the Alpha Team.
  */
 public class SystemConfig {
@@ -64,6 +64,8 @@ public class SystemConfig {
 	public static final boolean DEFAULT_GROUNDER_ACCUMULATOR_ENABLED = false;
 	public static final String DEFAULT_ATOM_SEPARATOR = ", ";
 	public static final AggregateRewritingConfig DEFAULT_AGGREGATE_REWRITING_CONFIG = new AggregateRewritingConfig();
+	public static final boolean DEFAULT_ENABLE_RESTARTS = false;
+	public static final InitialAtomPhase DEFAULT_PHASE_INITIALIZER = InitialAtomPhase.RULESTRUEATOMSFALSE;
 
 	private String grounderName = DEFAULT_GROUNDER_NAME;
 	private String solverName = DEFAULT_SOLVER_NAME;
@@ -85,6 +87,8 @@ public class SystemConfig {
 	private boolean grounderAccumulatorEnabled = DEFAULT_GROUNDER_ACCUMULATOR_ENABLED;
 	private String atomSeparator = DEFAULT_ATOM_SEPARATOR;
 	private AggregateRewritingConfig aggregateRewritingConfig = DEFAULT_AGGREGATE_REWRITING_CONFIG;
+	private boolean areRestartsEnabled = SystemConfig.DEFAULT_ENABLE_RESTARTS;
+	private InitialAtomPhase phaseInitializer = SystemConfig.DEFAULT_PHASE_INITIALIZER;
 
 	public String getGrounderName() {
 		return this.grounderName;
@@ -280,4 +284,23 @@ public class SystemConfig {
 		this.aggregateRewritingConfig = aggregateRewritingConfig;
 	}
 
+	public boolean areRestartsEnabled() {
+		return areRestartsEnabled;
+	}
+
+	public void setRestartsEnabled(boolean areRestartsEnabled) {
+		this.areRestartsEnabled = areRestartsEnabled;
+	}
+
+	public InitialAtomPhase getPhaseInitializer() {
+		return phaseInitializer;
+	}
+
+	public void setPhaseInitializer(InitialAtomPhase phaseInitializer) {
+		this.phaseInitializer = phaseInitializer;
+	}
+
+	public void setPhaseInitializerName(String phaseInitializerName) {
+		this.phaseInitializer = InitialAtomPhase.valueOf(phaseInitializerName.toUpperCase());
+	}
 }

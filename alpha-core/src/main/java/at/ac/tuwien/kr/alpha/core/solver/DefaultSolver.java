@@ -84,6 +84,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	private final ChoiceManager choiceManager;
 	private final WritableAssignment assignment;
 	private final GroundConflictNoGoodLearner learner;
+	private final MixedRestartStrategy restartStrategy;
 	private final BranchingHeuristic branchingHeuristic;
 
 	private int mbtAtFixpoint;
@@ -111,10 +112,16 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		this.choiceManager = new ChoiceManager(assignment, store);
 		this.choiceManager.setChecksEnabled(config.isDebugInternalChecks());
 		this.learner = new GroundConflictNoGoodLearner(assignment, atomStore);
+		LearnedNoGoodDeletion learnedNoGoodDeletion = this.store instanceof NoGoodStoreAlphaRoaming ? ((NoGoodStoreAlphaRoaming)store).getLearnedNoGoodDeletion() : null;
+		if (config.areRestartsEnabled() && this.store instanceof NoGoodStoreAlphaRoaming) {
+			this.restartStrategy = new MixedRestartStrategy(learnedNoGoodDeletion);
+		} else {
+			this.restartStrategy = null;
+		}
 		this.branchingHeuristic = chainFallbackHeuristic(grounder, assignment, random, heuristicsConfiguration);
 		this.disableJustifications = config.isDisableJustificationSearch();
 		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();
-		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
+		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, restartStrategy, learnedNoGoodDeletion, branchingHeuristic, 1000);
 	}
 
 	private BranchingHeuristic chainFallbackHeuristic(Grounder grounder, WritableAssignment assignment, Random random, HeuristicsConfiguration heuristicsConfiguration) {
@@ -144,6 +151,10 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 				return false;
 			}
 			ConflictCause conflictCause = propagate();
+			deleteLearnedNoGoodsIfPossible(conflictCause);
+			if (executeRestart(conflictCause)) {
+				continue;
+			}
 			if (conflictCause != null) {
 				LOGGER.debug("Conflict encountered, analyzing conflict.");
 				learnFromConflict(conflictCause);
@@ -169,6 +180,24 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		performanceLog.initialize();
 		getNoGoodsFromGrounderAndIngest();
 		searchState.hasBeenInitialized = true;
+	}
+
+	private void deleteLearnedNoGoodsIfPossible(ConflictCause conflictCause) {
+		// Run learned NoGood deletion strategy if no conflict occured.
+		if (conflictCause == null && !disableNoGoodDeletion) {
+			store.cleanupLearnedNoGoods();
+		}
+	}
+
+	private boolean executeRestart(ConflictCause conflictCause) {
+		if (conflictCause == null && restartStrategy != null && restartStrategy.shouldRestart()) {
+			// Restart if necessary.
+			LOGGER.trace("Restarting search.");
+			choiceManager.backjump(0);
+			restartStrategy.onRestart();
+			return true;
+		}
+		return false;
 	}
 
 	private void prepareForSubsequentAnswerSet() {
@@ -229,10 +258,6 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		LOGGER.trace("Doing propagation step.");
 		ConflictCause conflictCause = store.propagate();
 		LOGGER.trace("Assignment after propagation is: {}", assignment);
-		if (!disableNoGoodDeletion && conflictCause == null) {
-			// Run learned-NoGood deletion-strategy.
-			store.cleanupLearnedNoGoods();
-		}
 		return conflictCause;
 	}
 
@@ -288,6 +313,9 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		}
 
 		branchingHeuristic.analyzedConflict(analysisResult);
+		if (restartStrategy != null) {
+			restartStrategy.newConflictWithLbd(analysisResult.lbd);
+		}
 
 		if (analysisResult.learnedNoGood == null) {
 			throw oops("Did not learn new NoGood from conflict.");
@@ -465,6 +493,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		store.growForMaxAtomId(maxAtomId);
 		choiceManager.growForMaxAtomId(maxAtomId);
 		branchingHeuristic.growForMaxAtomId(maxAtomId);
+		choiceManager.addChoiceInformation(grounder.getChoiceAtoms(), grounder.getHeadsToBodies());
 		branchingHeuristic.newNoGoods(obtained.values());
 
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
@@ -511,7 +540,6 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	}
 
 	private boolean choose() {
-		choiceManager.addChoiceInformation(grounder.getChoiceAtoms(), grounder.getHeadsToBodies());
 		choiceManager.updateAssignments();
 
 		// Hint: for custom heuristics, evaluate them here and pick a value if the heuristics suggests one.

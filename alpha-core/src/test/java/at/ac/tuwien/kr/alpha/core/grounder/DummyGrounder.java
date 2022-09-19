@@ -65,6 +65,7 @@ import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
+import at.ac.tuwien.kr.alpha.core.grounder.structure.AtomChoiceRelation;
 
 /**
  * Represents a small ASP program {@code { c :- a, b.  a.  b. }}.
@@ -96,6 +97,7 @@ public class DummyGrounder implements Grounder {
 	private static BasicAtom atomCC = Atoms.newBasicAtom(Predicates.getPredicate("c", 0));
 	private static BasicRule ruleABC = new BasicRule(Heads.newNormalHead(atomCC), Arrays.asList(atomAA.toLiteral(), atomBB.toLiteral()));
 	private static Atom rule1 = new RuleAtom(InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(ruleABC)), new BasicSubstitution());
+	private static AtomChoiceRelation atomChoiceRelation = new AtomChoiceRelation();
 	private Set<Integer> returnedNogoods = new HashSet<>();
 
 	public DummyGrounder(AtomStore atomStore) {
@@ -124,6 +126,11 @@ public class DummyGrounder implements Grounder {
 			solverDerivedNoGoods.put(noGood, solverDerivedNoGoodIdCounter++);
 		}
 		return solverDerivedNoGoods.get(noGood);
+	}
+
+	@Override
+	public AtomChoiceRelation getAtomChoiceRelation() {
+		return atomChoiceRelation;
 	}
 
 	@Override

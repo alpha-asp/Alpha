@@ -98,6 +98,10 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 		}
 	}
 
+	public BranchingHeuristic getFirstElement() {
+		return chain.get(0);
+	}
+
 	public BranchingHeuristic getLastElement() {
 		return chain.get(chain.size() - 1);
 	}

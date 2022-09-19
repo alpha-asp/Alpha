@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2019, the Alpha Team.
+/*
+ * Copyright (c) 2019-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -27,18 +27,18 @@
  */
 package at.ac.tuwien.kr.alpha.app.config;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import at.ac.tuwien.kr.alpha.api.config.AlphaConfig;
+import at.ac.tuwien.kr.alpha.api.config.InitialAtomPhase;
+import org.apache.commons.cli.ParseException;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-import org.apache.commons.cli.ParseException;
-import org.junit.jupiter.api.Test;
-
-import at.ac.tuwien.kr.alpha.api.config.AlphaConfig;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CommandLineParserTest {
 
@@ -179,6 +179,34 @@ public class CommandLineParserTest {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
 		AlphaConfig cfg = parser.parseCommandLine(new String[]{"-str", "aString.", "-sep", "some-string"});
 		assertEquals("some-string", cfg.getSystemConfig().getAtomSeparator());
+	}
+
+	@Test
+	public void initialPhase_alltrue() throws ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-ph", "allTrue"});
+		assertEquals(InitialAtomPhase.ALLTRUE, alphaConfig.getSystemConfig().getPhaseInitializer());
+	}
+
+	@Test
+	public void initialPhase_allfalse() throws ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-ph", "AllFalse"});
+		assertEquals(InitialAtomPhase.ALLFALSE, alphaConfig.getSystemConfig().getPhaseInitializer());
+	}
+
+	@Test
+	public void initialPhase_random() throws ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-ph", "Random"});
+		assertEquals(InitialAtomPhase.RANDOM, alphaConfig.getSystemConfig().getPhaseInitializer());
+	}
+
+	@Test
+	public void initialPhase_rulesTrueAtomsFalse() throws ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-ph", "RulesTrueAtomsFalse"});
+		assertEquals(InitialAtomPhase.RULESTRUEATOMSFALSE, alphaConfig.getSystemConfig().getPhaseInitializer());
 	}
 
 }

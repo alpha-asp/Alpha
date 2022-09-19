@@ -37,6 +37,7 @@ import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.IntIterator;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
+import at.ac.tuwien.kr.alpha.core.grounder.structure.AtomChoiceRelation;
 
 public interface Grounder {
 	/**
@@ -80,4 +81,11 @@ public interface Grounder {
 	 * @return
 	 */
 	int register(NoGood noGood);
+
+
+	/**
+	 * Returns the relation between atoms and choices in form of an {@link AtomChoiceRelation} object.
+	 * @return the {@link AtomChoiceRelation} of the grounded program parts.
+	 */
+	AtomChoiceRelation getAtomChoiceRelation();
 }

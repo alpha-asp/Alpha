@@ -41,7 +41,8 @@ public enum Heuristic {
 	@Deprecated
 	ALPHA_HEAD_MBT,
 	VSIDS,
-	GDD_VSIDS;
+	GDD_VSIDS,
+	VSIDS_PHASE_SAVING;
 
 	/**
 	 * @return a comma-separated list of names of known heuristics
