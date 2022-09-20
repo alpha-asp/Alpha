@@ -157,7 +157,6 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 				syncWithGrounder();
 			} else if (restartsEnabled && iterationCounter >= restartIterationBreakpoint) {
 				restart();
-				restartsEnabled = false;
 				iterationCounter = 0;
 			} else if (choose()) {
 				LOGGER.debug("Did choice.");
@@ -313,6 +312,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 		choiceManager.backjump(analysisResult.backjumpLevel);
 		final NoGood learnedNoGood = analysisResult.learnedNoGood;
+		enumerationNoGoods.add(learnedNoGood);
 		int noGoodId = grounder.register(learnedNoGood);
 		return addAndBackjumpIfNecessary(noGoodId, learnedNoGood, analysisResult.lbd);
 	}
