@@ -30,12 +30,14 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.core.atoms.Literals;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
+import at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type;
 
 /**
  * A nogood independent of atom ids provided by an {@link AtomStore}.
  */
 public class NoGoodAtomizer {
 	private final AtomValuePair[] literals;
+	private final Type type;
 
 	/**
 	 * Initializes a {@link NoGoodAtomizer} with the same literals as the given {@link NoGood}.
@@ -46,6 +48,7 @@ public class NoGoodAtomizer {
 	 */
 	public NoGoodAtomizer(NoGood noGood, AtomStore atomStore) {
 		this.literals = new AtomValuePair[noGood.size()];
+		this.type = noGood.getType();
 		for (int i = 0; i < noGood.size(); i++) {
 			int literalId = noGood.getLiteral(i);
 			int atomId = Literals.atomOf(literalId);
@@ -74,6 +77,6 @@ public class NoGoodAtomizer {
 			literals[i] = Literals.atomToLiteral(atomId, truthValue);
 		}
 
-		return new NoGood(literals);
+		return new NoGood(type, literals);
 	}
 }
