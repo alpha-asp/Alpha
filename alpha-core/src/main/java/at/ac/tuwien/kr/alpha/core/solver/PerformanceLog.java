@@ -1,17 +1,17 @@
 /**
  * Copyright (c) 2019 Siemens AG
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -34,8 +34,9 @@ public class PerformanceLog {
 
 	private final ChoiceManager choiceManager;
 	private final TrailAssignment assignment;
+	private final NoGoodCounter noGoodCounter;
 	private final long msBetweenOutputs;
-	
+
 	private Long timeFirstEntry;
 	private Long timeLastPerformanceLog;
 	private int numberOfChoicesLastPerformanceLog;
@@ -43,10 +44,12 @@ public class PerformanceLog {
 	/**
 	 * @param msBetweenOutputs minimum number of milliseconds that have to pass between writing of performance logs.
 	 */
-	public PerformanceLog(ChoiceManager choiceManager, TrailAssignment assignment, long msBetweenOutputs) {
+	public PerformanceLog(ChoiceManager choiceManager, TrailAssignment assignment,
+						  NoGoodCounter noGoodCounter, long msBetweenOutputs) {
 		super();
 		this.choiceManager = choiceManager;
 		this.assignment = assignment;
+		this.noGoodCounter = noGoodCounter;
 		this.msBetweenOutputs = msBetweenOutputs;
 	}
 
@@ -69,6 +72,7 @@ public class PerformanceLog {
 			float overallTime = (currentTime - timeFirstEntry) / 1000.0f;
 			float decisionsPerSec = currentNumberOfChoices / overallTime;
 			logger.info("Overall performance: {} decisions in {}s or {} decisions per sec. Overall replayed assignments: {}.", currentNumberOfChoices, overallTime, decisionsPerSec, assignment.replayCounter);
+			logger.info("Current nogood counts: {}", noGoodCounter.getStatsByType());
 		}
 	}
 }

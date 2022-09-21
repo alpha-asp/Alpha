@@ -165,6 +165,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	public void cleanupLearnedNoGoods() {
 		if (learnedNoGoodDeletion.needToRunNoGoodDeletion()) {
 			learnedNoGoodDeletion.runNoGoodDeletion();
+			LOGGER.info("Nogood deletion performed.");
 		}
 	}
 

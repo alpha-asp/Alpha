@@ -103,6 +103,9 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 	private final PerformanceLog performanceLog;
 
+	private final CumulativeStopWatch solverStopWatch;
+	private final CumulativeStopWatch grounderStopWatch;
+
 	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, SystemConfig config, HeuristicsConfiguration heuristicsConfiguration) {
 		super(atomStore, grounder);
 
@@ -115,10 +118,13 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		this.branchingHeuristic = chainFallbackHeuristic(grounder, assignment, random, heuristicsConfiguration);
 		this.disableJustifications = config.isDisableJustificationSearch();
 		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();
-		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
+		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment,
+				store.getNoGoodCounter(), 1000);
 		this.restartsEnabled = config.isRestartsEnabled();
 		this.restartIterationBreakpoint = config.getRestartIterations();
 		this.iterationCounter = 0;
+		solverStopWatch = new CumulativeStopWatch();
+		grounderStopWatch = new CumulativeStopWatch();
 	}
 
 	private BranchingHeuristic chainFallbackHeuristic(Grounder grounder, WritableAssignment assignment, Random random, HeuristicsConfiguration heuristicsConfiguration) {
@@ -134,6 +140,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 	@Override
 	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
+		solverStopWatch.start();
 		if (!searchState.hasBeenInitialized) {
 			initializeSearch();
 		} else {
@@ -146,6 +153,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 			if (searchState.isSearchSpaceCompletelyExplored) {
 				LOGGER.debug("Search space has been fully explored, there are no more answer-sets.");
 				logStats();
+				stopSolverWatchAndLogRuntimes();
 				return false;
 			}
 			ConflictCause conflictCause = propagate();
@@ -164,6 +172,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 				LOGGER.debug("Closed unassigned known atoms (assigning FALSE).");
 			} else if (assignment.getMBTCount() == 0) {
 				provideAnswerSet(action);
+				stopSolverWatchAndLogRuntimes();
 				return true;
 			} else {
 				backtrackFromMBTsRemaining();
@@ -216,7 +225,9 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	}
 
 	private void getNoGoodsFromGrounderAndIngest() {
+		grounderStopWatch.start();
 		Map<Integer, NoGood> obtained = grounder.getNoGoods(assignment);
+		grounderStopWatch.stop();
 		if (!ingest(obtained)) {
 			searchState.isSearchSpaceCompletelyExplored = true;
 		}
@@ -547,7 +558,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	 * assignment is reconstructed.
 	 */
 	private void restart() {
-		LOGGER.debug("Performing solver and grounder restart.");
+		LOGGER.info("Performing solver and grounder restart.");
 
 		Stack<AtomizedChoice> atomizedChoiceStack = getAtomizedChoiceStack();
 
@@ -562,7 +573,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		addEnumerationNoGoods();
 		replayAtomizedChoiceStack(atomizedChoiceStack);
 
-		LOGGER.debug("Solver and grounder restart finished.");
+		LOGGER.info("Solver and grounder restart finished.");
 	}
 
 	/**
@@ -641,6 +652,16 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		if (!ingest(newNoGoods)) {
 			searchState.isSearchSpaceCompletelyExplored = true;
 		}
+	}
+
+	/**
+	 * Stops the {@link DefaultSolver#solverStopWatch} and logs the current runtime
+	 * of {@link DefaultSolver#solverStopWatch} and {@link DefaultSolver#grounderStopWatch}.
+	 */
+	private void stopSolverWatchAndLogRuntimes() {
+		solverStopWatch.stop();
+		LOGGER.info("Solver runtime: {}", solverStopWatch.getRuntime());
+		LOGGER.info("Grounder runtime: {}", grounderStopWatch.getRuntime());
 	}
 
 	@Override
