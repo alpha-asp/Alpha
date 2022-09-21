@@ -82,8 +82,9 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	private final WritableAssignment assignment;
 	private final GroundConflictNoGoodLearner learner;
 	private final BranchingHeuristic branchingHeuristic;
-	private boolean restartsEnabled;
-	private final int restartIterationBreakpoint;
+	private boolean rebootEnabled;
+	private final int rebootIterationBreakpoint;
+	private final boolean disableRebootRepeat;
 	private int iterationCounter;
 
 	private int mbtAtFixpoint;
@@ -103,8 +104,8 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 	private final PerformanceLog performanceLog;
 
-	private final CumulativeStopWatch solverStopWatch;
-	private final CumulativeStopWatch grounderStopWatch;
+	private final StopWatch solverStopWatch;
+	private final StopWatch grounderStopWatch;
 
 	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, SystemConfig config, HeuristicsConfiguration heuristicsConfiguration) {
 		super(atomStore, grounder);
@@ -120,11 +121,12 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment,
 				store.getNoGoodCounter(), 1000);
-		this.restartsEnabled = config.isRestartsEnabled();
-		this.restartIterationBreakpoint = config.getRestartIterations();
+		this.rebootEnabled = config.isRebootEnabled();
+		this.rebootIterationBreakpoint = config.getRebootIterations();
+		this.disableRebootRepeat = config.isDisableRebootRepeat();
 		this.iterationCounter = 0;
-		solverStopWatch = new CumulativeStopWatch();
-		grounderStopWatch = new CumulativeStopWatch();
+		solverStopWatch = new StopWatch();
+		grounderStopWatch = new StopWatch();
 	}
 
 	private BranchingHeuristic chainFallbackHeuristic(Grounder grounder, WritableAssignment assignment, Random random, HeuristicsConfiguration heuristicsConfiguration) {
@@ -163,9 +165,12 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 			} else if (assignment.didChange()) {
 				LOGGER.debug("Updating grounder with new assignments and (potentially) obtaining new NoGoods.");
 				syncWithGrounder();
-			} else if (restartsEnabled && iterationCounter >= restartIterationBreakpoint) {
-				restart();
+			} else if (rebootEnabled && iterationCounter >= rebootIterationBreakpoint) {
+				reboot();
 				iterationCounter = 0;
+				if (disableRebootRepeat) {
+					rebootEnabled = false;
+				}
 			} else if (choose()) {
 				LOGGER.debug("Did choice.");
 			} else if (close()) {
@@ -553,19 +558,19 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	}
 
 	/**
-	 * Performs a restart of the solving process while preserving the current assignment - and thus the progress made.
+	 * Performs a reboot of the solving process while preserving the current assignment - and thus the progress made.
 	 * {@link NoGoodStore} and {@link Grounder} are reset. Then the {@link AtomStore} is emptied and the current
 	 * assignment is reconstructed.
 	 */
-	private void restart() {
-		LOGGER.info("Performing solver and grounder restart.");
+	private void reboot() {
+		LOGGER.info("Performing solver and grounder reboot.");
 
 		Stack<AtomizedChoice> atomizedChoiceStack = getAtomizedChoiceStack();
 
 		store.reset();
 		branchingHeuristic.reset();
 		assignment.clear();
-		grounder.restart(assignment);
+		grounder.reboot(assignment);
 		atomStore.reset();
 		choiceManager.reset();
 
@@ -573,7 +578,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		addEnumerationNoGoods();
 		replayAtomizedChoiceStack(atomizedChoiceStack);
 
-		LOGGER.info("Solver and grounder restart finished.");
+		LOGGER.info("Solver and grounder reboot finished.");
 	}
 
 	/**
@@ -598,7 +603,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	 */
 	private void replayAtomizedChoiceStack(Stack<AtomizedChoice> atomizedChoiceStack) {
 		if (propagate() != null) {
-			throw oops("Conflict in replay during restart");
+			throw oops("Conflict in replay during reboot.");
 		}
 
 		for (AtomizedChoice atomizedChoice : atomizedChoiceStack) {
@@ -618,11 +623,11 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 			if (activeChoice) {
 				if (propagate() != null) {
-					throw oops("Conflict in replay during restart");
+					throw oops("Conflict in replay during reboot.");
 				}
 				syncWithGrounder();
 				if (propagate() != null) {
-					throw oops("Conflict in replay during restart");
+					throw oops("Conflict in replay during reboot.");
 				}
 			}
 		}
@@ -660,8 +665,8 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	 */
 	private void stopSolverWatchAndLogRuntimes() {
 		solverStopWatch.stop();
-		LOGGER.info("Solver runtime: {}", solverStopWatch.getRuntime());
-		LOGGER.info("Grounder runtime: {}", grounderStopWatch.getRuntime());
+		LOGGER.info("Solver runtime: {}", solverStopWatch.getNanoTime());
+		LOGGER.info("Grounder runtime: {}", grounderStopWatch.getNanoTime());
 	}
 
 	@Override

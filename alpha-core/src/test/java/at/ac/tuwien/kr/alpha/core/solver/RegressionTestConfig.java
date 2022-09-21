@@ -13,8 +13,9 @@ public class RegressionTestConfig {
 
 	private final Heuristic branchingHeuristic;
 
-	private final boolean restartsEnabled;
-	private final int restartIterations;
+	private final boolean rebootEnabled;
+	private final int rebootIterations;
+	private final boolean disableRebootRepeat;
 
 	private final long seed;
 
@@ -34,16 +35,17 @@ public class RegressionTestConfig {
 
 	public RegressionTestConfig(
 			String solverName, String grounderName, String noGoodStoreName,
-			Heuristic branchingHeuristic, boolean restartsEnabled, int restartIterations, long seed,
-			boolean debugChecks, String grounderToleranceConstraints, String grounderToleranceRules,
+			Heuristic branchingHeuristic, boolean rebootEnabled, int rebootIterations, boolean disableRebootRepeat,
+			long seed, boolean debugChecks, String grounderToleranceConstraints, String grounderToleranceRules,
 			boolean disableInstanceRemoval, boolean evaluateStratifiedPart, boolean useSortingGrid,
 			boolean supportNegativeSumElements) {
 		this.solverName = solverName;
 		this.grounderName = grounderName;
 		this.noGoodStoreName = noGoodStoreName;
 		this.branchingHeuristic = branchingHeuristic;
-		this.restartsEnabled = restartsEnabled;
-		this.restartIterations = restartIterations;
+		this.rebootEnabled = rebootEnabled;
+		this.rebootIterations = rebootIterations;
+		this.disableRebootRepeat = disableRebootRepeat;
 		this.seed = seed;
 		this.debugChecks = debugChecks;
 		this.grounderToleranceConstraints = grounderToleranceConstraints;
@@ -59,8 +61,9 @@ public class RegressionTestConfig {
 		retVal.setGrounderName(this.grounderName);
 		retVal.setSolverName(this.solverName);
 		retVal.setNogoodStoreName(this.noGoodStoreName);
-		retVal.setRestartsEnabled(this.restartsEnabled);
-		retVal.setRestartIterations(this.restartIterations);
+		retVal.setRebootEnabled(this.rebootEnabled);
+		retVal.setRebootIterations(this.rebootIterations);
+		retVal.setDisableRebootRepeat(this.disableRebootRepeat);
 		retVal.setSeed(this.seed);
 		retVal.setBranchingHeuristic(this.branchingHeuristic);
 		retVal.setDebugInternalChecks(this.debugChecks);
@@ -89,12 +92,12 @@ public class RegressionTestConfig {
 		return this.branchingHeuristic;
 	}
 
-	public boolean isRestartsEnabled() {
-		return restartsEnabled;
+	public boolean isRebootEnabled() {
+		return rebootEnabled;
 	}
 
-	public int getRestartIterations() {
-		return restartIterations;
+	public int getRebootIterations() {
+		return rebootIterations;
 	}
 
 	public long getSeed() {
@@ -133,12 +136,12 @@ public class RegressionTestConfig {
 	public String toString() {
 		return String.format(
 				"RegressionTestConfig [solverName=%s, grounderName=%s, noGoodStoreName=%s, branchingHeuristic=%s,"
-				+ " restartsEnabled=%b, restartIterations=%d, seed=%s, debugChecks=%s, grounderToleranceConstraints=%s,"
-				+ " grounderToleranceRules=%s, disableInstanceRemoval=%s, evaluateStratifiedPart=%s, useSortingGrid=%s,"
-				+ " supportNegativeSumElements=%s]",
-				this.solverName, this.grounderName, this.noGoodStoreName, this.branchingHeuristic, this.restartsEnabled,
-				this.restartIterations, this.seed, this.debugChecks, this.grounderToleranceConstraints,
-				this.grounderToleranceRules, this.disableInstanceRemoval, this.evaluateStratifiedPart,
-				this.encodeAggregatesUsingSortingGrid, this.supportNegativeSumElements);
+				+ " rebootEnabled=%b, rebootIterations=%d, disableRebootRepeat=%b, seed=%s, debugChecks=%s,"
+				+ " grounderToleranceConstraints=%s, grounderToleranceRules=%s, disableInstanceRemoval=%s,"
+				+ " evaluateStratifiedPart=%s, useSortingGrid=%s, supportNegativeSumElements=%s]",
+				this.solverName, this.grounderName, this.noGoodStoreName, this.branchingHeuristic, this.rebootEnabled,
+				this.rebootIterations, this.disableRebootRepeat, this.seed, this.debugChecks,
+				this.grounderToleranceConstraints, this.grounderToleranceRules, this.disableInstanceRemoval,
+				this.evaluateStratifiedPart, this.encodeAggregatesUsingSortingGrid, this.supportNegativeSumElements);
 	}
 }

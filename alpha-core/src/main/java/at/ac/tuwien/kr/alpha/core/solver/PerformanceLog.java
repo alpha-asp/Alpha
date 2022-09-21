@@ -44,8 +44,7 @@ public class PerformanceLog {
 	/**
 	 * @param msBetweenOutputs minimum number of milliseconds that have to pass between writing of performance logs.
 	 */
-	public PerformanceLog(ChoiceManager choiceManager, TrailAssignment assignment,
-						  NoGoodCounter noGoodCounter, long msBetweenOutputs) {
+	public PerformanceLog(ChoiceManager choiceManager, TrailAssignment assignment, NoGoodCounter noGoodCounter, long msBetweenOutputs) {
 		super();
 		this.choiceManager = choiceManager;
 		this.assignment = assignment;

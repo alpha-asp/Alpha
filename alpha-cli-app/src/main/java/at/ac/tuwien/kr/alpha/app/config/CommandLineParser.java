@@ -96,10 +96,12 @@ public class CommandLineParser {
 			.desc("the solver implementation to use (default: " + SystemConfig.DEFAULT_SOLVER_NAME + ")").build();
 	private static final Option OPT_NOGOOD_STORE = Option.builder("r").longOpt("store").hasArg(true).argName("store")
 			.desc("the nogood store to use (default: " + SystemConfig.DEFAULT_NOGOOD_STORE_NAME + ")").build();
-	private static final Option OPT_RESTARTS_ENABLED = Option.builder("rst").longOpt("enableRestarts")
-			.desc("enable solver restarts (default: " + SystemConfig.DEFAULT_RESTARTS_ENABLED + ")").build();
-	private static final Option OPT_RESTART_ITERATIONS = Option.builder("rit").longOpt("restartIterations").hasArg(true).argName("number").type(Integer.class)
-			.desc("the number of solver iterations between restarts (default: " + SystemConfig.DEFAULT_RESTART_ITERATIONS + ")").build();
+	private static final Option OPT_REBOOT_ENABLED = Option.builder("rbt").longOpt("enableReboot")
+			.desc("enable solver reboots (default: " + SystemConfig.DEFAULT_REBOOT_ENABLED + ")").build();
+	private static final Option OPT_REBOOT_ITERATIONS = Option.builder("rit").longOpt("rebootIterations").hasArg(true).argName("number").type(Integer.class)
+			.desc("the number of solver iterations between reboots (default: " + SystemConfig.DEFAULT_REBOOT_ITERATIONS + ")").build();
+	private static final Option OPT_NO_REBOOT_REPEAT = Option.builder("drr").longOpt("disableRebootRepeat")
+			.desc("disables repeated reboots resulting in at most one reboot during solving, only effective if reboot is enabled (default: " + SystemConfig.DEFAULT_REBOOT_ENABLED + ")").build();
 	private static final Option OPT_SORT = Option.builder("sort").longOpt("sort").hasArg(false)
 			.desc("sort answer sets (default: " + SystemConfig.DEFAULT_SORT_ANSWER_SETS + ")").build();
 	private static final Option OPT_DETERMINISTIC = Option.builder("d").longOpt("deterministic").hasArg(false)
@@ -174,8 +176,8 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SOLVER);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NOGOOD_STORE);
-		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_RESTARTS_ENABLED);
-		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_RESTART_ITERATIONS);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_REBOOT_ENABLED);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_REBOOT_ITERATIONS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SORT);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_DETERMINISTIC);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SEED);
@@ -234,8 +236,9 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER.getOpt(), this::handleGrounder);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_SOLVER.getOpt(), this::handleSolver);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NOGOOD_STORE.getOpt(), this::handleNogoodStore);
-		this.globalOptionHandlers.put(CommandLineParser.OPT_RESTARTS_ENABLED.getOpt(), this::handleRestartsEnabled);
-		this.globalOptionHandlers.put(CommandLineParser.OPT_RESTART_ITERATIONS.getOpt(), this::handleRestartIterations);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_REBOOT_ENABLED.getOpt(), this::handleRebootEnabled);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_REBOOT_ITERATIONS.getOpt(), this::handleRebootIterations);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_REBOOT_REPEAT.getOpt(), this::handleDisableRebootRepeat);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_SORT.getOpt(), this::handleSort);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_DETERMINISTIC.getOpt(), this::handleDeterministic);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_SEED.getOpt(), this::handleSeed);
@@ -355,18 +358,22 @@ public class CommandLineParser {
 		cfg.setNogoodStoreName(opt.getValue(SystemConfig.DEFAULT_NOGOOD_STORE_NAME));
 	}
 
-	private void handleRestartsEnabled(Option opt, SystemConfig cfg) {
-		cfg.setRestartsEnabled(true);
+	private void handleRebootEnabled(Option opt, SystemConfig cfg) {
+		cfg.setRebootEnabled(true);
 	}
 
-	private void handleRestartIterations(Option opt, SystemConfig cfg) {
+	private void handleDisableRebootRepeat(Option opt, SystemConfig cfg) {
+		cfg.setDisableRebootRepeat(true);
+	}
+
+	private void handleRebootIterations(Option opt, SystemConfig cfg) {
 		String optVal = opt.getValue();
 		int limit;
 		if (optVal != null) {
 			limit = Integer.parseInt(optVal);
-			cfg.setRestartIterations(limit);
+			cfg.setRebootIterations(limit);
 		} else {
-			cfg.setRestartIterations(SystemConfig.DEFAULT_RESTART_ITERATIONS);
+			cfg.setRebootIterations(SystemConfig.DEFAULT_REBOOT_ITERATIONS);
 		}
 	}
 

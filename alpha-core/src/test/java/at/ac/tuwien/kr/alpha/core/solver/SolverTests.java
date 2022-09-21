@@ -802,14 +802,14 @@ public class SolverTests {
 
 	@RegressionTest
 	public void dummyGrounder(RegressionTestConfig cfg) {
-		ignoreTestForRestartsEnabled(cfg); // Do not run this test case with restarts enabled.
+		ignoreTestForRebootEnabled(cfg); // Do not run this test case with reboot enabled.
 		AtomStore atomStore = new AtomStoreImpl();
 		assertEquals(DummyGrounder.EXPECTED, buildSolverForRegressionTest(atomStore, new DummyGrounder(atomStore), cfg).collectSet());
 	}
 
 	@RegressionTest
 	public void choiceGrounder(RegressionTestConfig cfg) {
-		ignoreTestForRestartsEnabled(cfg); // Do not run this test case with restarts enabled.
+		ignoreTestForRebootEnabled(cfg); // Do not run this test case with reboot enabled.
 		AtomStore atomStore = new AtomStoreImpl();
 		assertEquals(ChoiceGrounder.EXPECTED, buildSolverForRegressionTest(atomStore, new ChoiceGrounder(atomStore), cfg).collectSet());
 	}

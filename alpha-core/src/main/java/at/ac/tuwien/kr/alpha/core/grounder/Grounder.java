@@ -82,7 +82,7 @@ public interface Grounder {
 	int register(NoGood noGood);
 
 	/**
-	 * Restarts the grounder.
+	 * Reboots the grounder, returning it to its initial state.
 	 */
-	void restart(Assignment currentAssignment);
+	void reboot(Assignment currentAssignment);
 }

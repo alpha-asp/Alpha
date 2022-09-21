@@ -130,7 +130,7 @@ public class DummyGrounder implements Grounder {
 	 * Empty interface implementation.
 	 */
 	@Override
-	public void restart(Assignment currentAssignment) {
+	public void reboot(Assignment currentAssignment) {
 	}
 
 	@Override

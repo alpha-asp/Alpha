@@ -415,7 +415,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	@Override
-	public void restart(Assignment currentAssignment) {
+	public void reboot(Assignment currentAssignment) {
 		workingMemory.reset();
 		registry.reset();
 		noGoodGenerator.reset();

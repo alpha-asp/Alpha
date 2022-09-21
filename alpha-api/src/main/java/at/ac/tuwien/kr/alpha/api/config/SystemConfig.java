@@ -49,8 +49,9 @@ public class SystemConfig {
 	public static final String DEFAULT_NOGOOD_STORE_NAME = "alphaRoaming";
 	public static final Heuristic DEFAULT_BRANCHING_HEURISTIC = Heuristic.VSIDS;
 	public static final BinaryNoGoodPropagationEstimationStrategy DEFAULT_MOMS_STRATEGY = BinaryNoGoodPropagationEstimationStrategy.CountBinaryWatches;
-	public static final boolean DEFAULT_RESTARTS_ENABLED = false;
-	public static final int DEFAULT_RESTART_ITERATIONS = 10000;
+	public static final boolean DEFAULT_REBOOT_ENABLED = false;
+	public static final int DEFAULT_REBOOT_ITERATIONS = 10000;
+	public static final boolean DEFAULT_DISABLE_REBOOT_REPEAT = false;
 	public static final long DEFAULT_SEED = System.nanoTime();
 	public static final boolean DEFAULT_DETERMINISTIC = false;
 	public static final boolean DEFAULT_PRINT_STATS = false;
@@ -75,8 +76,9 @@ public class SystemConfig {
 	private boolean debugInternalChecks = DEFAULT_DEBUG_INTERNAL_CHECKS;
 	private Heuristic branchingHeuristic = DEFAULT_BRANCHING_HEURISTIC;
 	private BinaryNoGoodPropagationEstimationStrategy momsStrategy = DEFAULT_MOMS_STRATEGY;
-	private boolean restartsEnabled = DEFAULT_RESTARTS_ENABLED;
-	private int restartIterations = DEFAULT_RESTART_ITERATIONS;
+	private boolean rebootEnabled = DEFAULT_REBOOT_ENABLED;
+	private int rebootIterations = DEFAULT_REBOOT_ITERATIONS;
+	private boolean disableRebootRepeat = DEFAULT_DISABLE_REBOOT_REPEAT;
 	private boolean quiet = DEFAULT_QUIET;
 	private boolean printStats = DEFAULT_PRINT_STATS;
 	private boolean disableJustificationSearch = DEFAULT_DISABLE_JUSTIFICATION_SEARCH;
@@ -123,20 +125,28 @@ public class SystemConfig {
 		this.nogoodStoreName = nogoodStoreName;
 	}
 
-	public boolean isRestartsEnabled() {
-		return restartsEnabled;
+	public boolean isRebootEnabled() {
+		return rebootEnabled;
 	}
 
-	public void setRestartsEnabled(boolean restartsEnabled) {
-		this.restartsEnabled = restartsEnabled;
+	public void setRebootEnabled(boolean rebootEnabled) {
+		this.rebootEnabled = rebootEnabled;
 	}
 
-	public int getRestartIterations() {
-		return restartIterations;
+	public int getRebootIterations() {
+		return rebootIterations;
 	}
 
-	public void setRestartIterations(int restartIterations) {
-		this.restartIterations = restartIterations;
+	public void setRebootIterations(int rebootIterations) {
+		this.rebootIterations = rebootIterations;
+	}
+
+	public boolean isDisableRebootRepeat() {
+		return disableRebootRepeat;
+	}
+
+	public void setDisableRebootRepeat(boolean disableRebootRepeat) {
+		this.disableRebootRepeat = disableRebootRepeat;
 	}
 
 	public boolean isDeterministic() {
