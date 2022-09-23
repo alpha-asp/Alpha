@@ -23,24 +23,30 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.solver.reset;
+package at.ac.tuwien.kr.alpha.core.solver.reboot;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 
-public class AtomValuePair {
+public class AtomizedChoice {
 	private final Atom atom;
 	private final boolean truthValue;
+	private final boolean backtracked;
 
-	public AtomValuePair(Atom atom, boolean truthValue) {
+	public AtomizedChoice(Atom atom, boolean truthValue, boolean backtracked) {
 		this.atom = atom;
 		this.truthValue = truthValue;
+		this.backtracked = backtracked;
 	}
 
 	public Atom getAtom() {
 		return atom;
 	}
 
-	public boolean isPositive() {
+	public boolean getTruthValue() {
 		return truthValue;
+	}
+
+	public boolean isBacktracked() {
+		return backtracked;
 	}
 }

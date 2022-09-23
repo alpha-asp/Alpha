@@ -130,7 +130,7 @@ public class HeapOfActiveAtoms {
 	public void newNoGoods(Collection<NoGood> newNoGoods) {
 		for (NoGood newNoGood : newNoGoods) {
 			Type type = newNoGood.getType();
-			if (type != Type.LEARNT && type != Type.INTERNAL) {
+			if (type != Type.INTERNAL) {
 				analyzeNewNoGood(newNoGood);
 				initActivity(newNoGood);
 			}

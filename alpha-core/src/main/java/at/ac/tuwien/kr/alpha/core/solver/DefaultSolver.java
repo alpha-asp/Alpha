@@ -40,8 +40,8 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
-import at.ac.tuwien.kr.alpha.core.solver.reset.AtomizedChoice;
-import at.ac.tuwien.kr.alpha.core.solver.reset.AtomizedNoGoodCollection;
+import at.ac.tuwien.kr.alpha.core.solver.reboot.AtomizedChoice;
+import at.ac.tuwien.kr.alpha.core.solver.reboot.AtomizedNoGoodCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -660,7 +660,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	}
 
 	/**
-	 * Stops the {@link DefaultSolver#solverStopWatch} and logs the current runtime
+	 * Stops the {@link DefaultSolver#solverStopWatch} and logs the current total time
 	 * of {@link DefaultSolver#solverStopWatch} and {@link DefaultSolver#grounderStopWatch}.
 	 */
 	private void stopSolverWatchAndLogRuntimes() {
