@@ -47,6 +47,14 @@ public class MockActionImplementationProvider extends AbstractActionImplementati
 		this.mockedFileInputs = mockedFileInputs;
 	}
 
+	public Map<String, OutputStream> getMockedFileOutputs() {
+		return mockedFileOutputs;
+	}
+
+	public Map<String, InputStream> getMockedFileInputs() {
+		return mockedFileInputs;
+	}
+
 	@Override
 	protected InputStream getStdinStream() {
 		return stdinMock;
