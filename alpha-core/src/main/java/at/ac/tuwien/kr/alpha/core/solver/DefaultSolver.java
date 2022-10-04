@@ -42,6 +42,9 @@ import java.util.function.Consumer;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.solver.reboot.AtomizedChoice;
 import at.ac.tuwien.kr.alpha.core.solver.reboot.AtomizedNoGoodCollection;
+import at.ac.tuwien.kr.alpha.core.solver.reboot.strategies.FixedRebootStrategy;
+import at.ac.tuwien.kr.alpha.core.solver.reboot.strategies.RebootStrategy;
+import at.ac.tuwien.kr.alpha.core.util.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,14 +81,14 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 	private final NoGoodStore store;
 	private final AtomizedNoGoodCollection enumerationNoGoods;
+	private final AtomizedNoGoodCollection learnedNoGoods;
 	private final ChoiceManager choiceManager;
 	private final WritableAssignment assignment;
 	private final GroundConflictNoGoodLearner learner;
 	private final BranchingHeuristic branchingHeuristic;
+	private final RebootStrategy rebootStrategy;
 	private boolean rebootEnabled;
-	private final int rebootIterationBreakpoint;
 	private final boolean disableRebootRepeat;
-	private int iterationCounter;
 
 	private int mbtAtFixpoint;
 	private int conflictsAfterClosing;
@@ -106,6 +109,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 	private final StopWatch solverStopWatch;
 	private final StopWatch grounderStopWatch;
+	private final StopWatch propagationStopWatch;
 
 	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, SystemConfig config, HeuristicsConfiguration heuristicsConfiguration) {
 		super(atomStore, grounder);
@@ -113,6 +117,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		this.assignment = assignment;
 		this.store = store;
 		this.enumerationNoGoods = new AtomizedNoGoodCollection(atomStore);
+		this.learnedNoGoods = new AtomizedNoGoodCollection(atomStore);
 		this.choiceManager = new ChoiceManager(assignment, store);
 		this.choiceManager.setChecksEnabled(config.isDebugInternalChecks());
 		this.learner = new GroundConflictNoGoodLearner(assignment, atomStore);
@@ -121,12 +126,14 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment,
 				store.getNoGoodCounter(), 1000);
+
 		this.rebootEnabled = config.isRebootEnabled();
-		this.rebootIterationBreakpoint = config.getRebootIterations();
 		this.disableRebootRepeat = config.isDisableRebootRepeat();
-		this.iterationCounter = 0;
-		solverStopWatch = new StopWatch();
-		grounderStopWatch = new StopWatch();
+		this.rebootStrategy = new FixedRebootStrategy(config.getRebootIterations());
+
+		this.solverStopWatch = new StopWatch();
+		this.grounderStopWatch = new StopWatch();
+		this.propagationStopWatch = new StopWatch();
 	}
 
 	private BranchingHeuristic chainFallbackHeuristic(Grounder grounder, WritableAssignment assignment, Random random, HeuristicsConfiguration heuristicsConfiguration) {
@@ -150,7 +157,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		}
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
-			iterationCounter++;
+			rebootStrategy.stepPerformed();
 			performanceLog.writeIfTimeForLogging(LOGGER);
 			if (searchState.isSearchSpaceCompletelyExplored) {
 				LOGGER.debug("Search space has been fully explored, there are no more answer-sets.");
@@ -165,9 +172,10 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 			} else if (assignment.didChange()) {
 				LOGGER.debug("Updating grounder with new assignments and (potentially) obtaining new NoGoods.");
 				syncWithGrounder();
-			} else if (rebootEnabled && iterationCounter >= rebootIterationBreakpoint) {
+//			} else if (rebootEnabled && iterationCounter >= rebootIterationBreakpoint) {
+			} else if (rebootEnabled && rebootStrategy.isRebootScheduled()) {
 				reboot();
-				iterationCounter = 0;
+				rebootStrategy.rebootPerformed();
 				if (disableRebootRepeat) {
 					rebootEnabled = false;
 				}
@@ -260,7 +268,9 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 	private ConflictCause propagate() {
 		LOGGER.trace("Doing propagation step.");
+		propagationStopWatch.start();
 		ConflictCause conflictCause = store.propagate();
+		propagationStopWatch.stop();
 		LOGGER.trace("Assignment after propagation is: {}", assignment);
 		if (!disableNoGoodDeletion && conflictCause == null) {
 			// Run learned-NoGood deletion-strategy.
@@ -299,9 +309,11 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 				return false;
 			}
 			choiceManager.backjump(backjumpLevel);
+			propagationStopWatch.start();
 			if (store.propagate() != null) {
 				throw  oops("Violated NoGood after backtracking.");
 			}
+			propagationStopWatch.stop();
 		}
 		return true;
 	}
@@ -328,7 +340,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 		choiceManager.backjump(analysisResult.backjumpLevel);
 		final NoGood learnedNoGood = analysisResult.learnedNoGood;
-		enumerationNoGoods.add(learnedNoGood);
+		learnedNoGoods.add(learnedNoGood);
 		int noGoodId = grounder.register(learnedNoGood);
 		return addAndBackjumpIfNecessary(noGoodId, learnedNoGood, analysisResult.lbd);
 	}
@@ -575,7 +587,8 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		choiceManager.reset();
 
 		syncWithGrounder();
-		addEnumerationNoGoods();
+		ingestNoGoodCollection(enumerationNoGoods);
+		ingestNoGoodCollection(learnedNoGoods);
 		replayAtomizedChoiceStack(atomizedChoiceStack);
 
 		LOGGER.info("Solver and grounder reboot finished.");
@@ -647,15 +660,27 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	}
 
 	/**
-	 * Adds all nogoods from the enumeration nogood store to the regular nogood store.
+	 * Adds all nogoods from the given {@link AtomizedNoGoodCollection} to the regular nogood store.
 	 */
-	private void addEnumerationNoGoods() {
+	private void ingestNoGoodCollection(AtomizedNoGoodCollection noGoodCollection) {
 		Map<Integer, NoGood> newNoGoods = new LinkedHashMap<>();
-		for (NoGood noGood : enumerationNoGoods.getNoGoods()) {
+		for (NoGood noGood : noGoodCollection.getNoGoods()) {
 			newNoGoods.put(grounder.register(noGood), noGood);
 		}
 		if (!ingest(newNoGoods)) {
 			searchState.isSearchSpaceCompletelyExplored = true;
+		}
+	}
+
+	/**
+	 * Updates the branching heuristic as if all the nogoods in {@link DefaultSolver#learnedNoGoods}
+	 * were learned from conflicts in the order they are stored in {@link DefaultSolver#learnedNoGoods}.
+	 */
+	private void simulateOldConflicts() {
+		for (NoGood noGood : learnedNoGoods.getNoGoods()) {
+			GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult =
+					new GroundConflictNoGoodLearner.ConflictAnalysisResult(noGood, 0, Collections.emptyList());
+			branchingHeuristic.analyzedConflict(analysisResult);
 		}
 	}
 
@@ -667,6 +692,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		solverStopWatch.stop();
 		LOGGER.info("Solver runtime: {}", solverStopWatch.getNanoTime());
 		LOGGER.info("Grounder runtime: {}", grounderStopWatch.getNanoTime());
+		LOGGER.info("Propagation runtime: {}", propagationStopWatch.getNanoTime());
 	}
 
 	@Override

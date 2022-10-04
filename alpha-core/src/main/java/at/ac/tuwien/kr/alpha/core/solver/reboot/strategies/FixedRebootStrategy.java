@@ -23,40 +23,29 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.solver;
+package at.ac.tuwien.kr.alpha.core.solver.reboot.strategies;
 
-public class StopWatch {
-	private long startTime;
-	private long nanoTime;
-	private boolean running;
+public class FixedRebootStrategy implements RebootStrategy {
+	private final int breakpoint;
+	private int stepCount;
 
-	/**
-	 * Starts the {@link StopWatch}. If it is already running, this function does nothing.
-	 */
-	public void start() {
-		if (!running) {
-			startTime = System.nanoTime();
-			running = true;
-		}
+	public FixedRebootStrategy(int breakpoint) {
+		this.breakpoint = breakpoint;
+		this.stepCount = 0;
 	}
 
-	/**
-	 * Stops the {@link StopWatch}. If it is not running, this function does nothing.
-	 */
-	public void stop() {
-		if (running) {
-			long currentTime = System.nanoTime();
-			nanoTime += currentTime - startTime;
-			running = false;
-		}
+	@Override
+	public void stepPerformed() {
+		stepCount++;
 	}
 
-	/**
-	 * Returns the time in nanoseconds the {@link StopWatch} has been running in total.
-	 * @return the total running time of the {@link StopWatch} in nanoseconds.
-	 */
-	public long getNanoTime() {
-		long currentNanos = running ? System.nanoTime() - startTime : 0;
-		return nanoTime + currentNanos;
+	@Override
+	public boolean isRebootScheduled() {
+		return stepCount >= breakpoint;
+	}
+
+	@Override
+	public void rebootPerformed() {
+		stepCount = 0;
 	}
 }
