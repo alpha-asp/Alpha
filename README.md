@@ -42,6 +42,8 @@ $ java -jar alpha.jar -i benchmarks/omiga/omiga-testcases/3col/3col-10-18.txt -f
 
 Note that in this example the path to the input file is relative to the root of this repository. If you have not checked out the repository, you can just [download the example file from GitHub](/benchmarks/omiga/omiga-testcases/3col/3col-10-18.txt).
 
+[A coder's guide to answer set programming](https://madmike200590.github.io/asp-guide/) provides a short and high-level tutorial on Answer Set Programming.
+
 ## Building
 
 Alpha uses the [Gradle build automation system](https://gradle.org). Executing
@@ -73,6 +75,10 @@ run into trouble feel free to file an issue.
 
 ## Suggested Reading
 
+### Beginners' Tutorials
+ * [A coder's guide to answer set programming](https://madmike200590.github.io/asp-guide/)
+
+### Theoretical Background and Language Specification
  * [Answer Set Programming: A Primer](http://www.kr.tuwien.ac.at/staff/tkren/pub/2009/rw2009-asp.pdf)
  * [ASP-Core-2 Input Language Format](https://www.mat.unical.it/aspcomp2013/files/ASP-CORE-2.01c.pdf)
  * [Conflict-Driven Answer Set Solving: From Theory to Practice](http://www.cs.uni-potsdam.de/wv/pdfformat/gekasc12c.pdf)
@@ -81,6 +87,10 @@ run into trouble feel free to file an issue.
 ### Research Papers on Alpha
 
 Peer-reviewed publications part of journals, conferences and workshops:
+
+#### 2021
+
+ * [Solving Configuration Problems with ASP and Declarative Domain-Specific Heuristics](http://ceur-ws.org/Vol-2945/21-RT-ConfWS21_paper_4.pdf)
 
 #### 2020
 

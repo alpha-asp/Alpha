@@ -59,7 +59,7 @@ terms : term (COMMA terms)?;
 
 term : ID                                   # term_const
      | ID (PAREN_OPEN terms? PAREN_CLOSE)   # term_func
-     | NUMBER                               # term_number
+     | numeral                              # term_number
      | QUOTED_STRING                        # term_string
      | VARIABLE                             # term_variable
      | ANONYMOUS_VARIABLE                   # term_anonymousVariable
@@ -72,7 +72,11 @@ term : ID                                   # term_const
      | term BITXOR term                     # term_bitxorArithTerm
      ;
 
-interval : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE); // NOT Core2 syntax, but widespread
+numeral : MINUS? NUMBER;
+
+interval : lower = interval_bound DOT DOT upper = interval_bound; // NOT Core2 syntax, but widespread
+
+interval_bound : numeral | VARIABLE;
 
 external_atom : MINUS? AMPERSAND ID (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?; // NOT Core2 syntax.
 
@@ -84,7 +88,7 @@ basic_terms : basic_term (COMMA basic_terms)? ;
 
 basic_term : ground_term | variable_term;
 
-ground_term : /*SYMBOLIC_CONSTANT*/ ID | QUOTED_STRING | MINUS? NUMBER;
+ground_term : /*SYMBOLIC_CONSTANT*/ ID | QUOTED_STRING | numeral;
 
 variable_term : VARIABLE | ANONYMOUS_VARIABLE;
 

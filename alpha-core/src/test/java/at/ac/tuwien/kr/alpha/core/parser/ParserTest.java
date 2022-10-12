@@ -52,12 +52,12 @@ import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
-import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 
@@ -130,9 +130,9 @@ public abstract class ParserTest {
 	public void parseInterval() {
 		InputProgram parsedProgram = parser.parse("fact(2..5). p(X) :- q(a, 3 .. X).");
 		IntervalTerm factInterval = (IntervalTerm) parsedProgram.getFacts().get(0).getTerms().get(0);
-		assertTrue(factInterval.equals(IntervalTerm.getInstance(Terms.newConstant(2), Terms.newConstant(5))));
+		assertTrue(factInterval.equals(Terms.newIntervalTerm(Terms.newConstant(2), Terms.newConstant(5))));
 		IntervalTerm bodyInterval = (IntervalTerm) parsedProgram.getRules().get(0).getBody().stream().findFirst().get().getTerms().get(1);
-		assertTrue(bodyInterval.equals(IntervalTerm.getInstance(Terms.newConstant(3), Terms.newVariable("X"))));
+		assertTrue(bodyInterval.equals(Terms.newIntervalTerm(Terms.newConstant(3), Terms.newVariable("X"))));
 	}
 
 	@Test
@@ -198,7 +198,7 @@ public abstract class ParserTest {
 
 	@Test
 	public void parseEnumerationDirective() {
-		InputProgram parsedProgram = parser.parse("p(a,1)." +
+		ASPCore2Program parsedProgram = parser.parse("p(a,1)." +
 				"# enumeration_predicate_is mune." +
 				"r(X) :- p(X), mune(X)." +
 				"p(b,2).");

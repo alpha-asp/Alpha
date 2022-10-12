@@ -12,9 +12,14 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.terms.ArithmeticOperator;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 
 /**
  * Copyright (c) 2016-2021, the Alpha Team.
@@ -27,10 +32,13 @@ public class TermTest {
 		// Terms must have a unique representation so that reference comparison is
 		// sufficient to check
 		// whether two terms are equal.
+
+		// Test for constant terms.
 		ConstantTerm<?> ta1 = Terms.newConstant("a");
 		ConstantTerm<?> ta2 = Terms.newConstant("a");
 		assertTrue(ta1 == ta2, "Two instances of ConstantTerms for the same term symbol must be the same object");
 
+		// Test for function terms.
 		List<Term> termList = new LinkedList<>();
 		termList.add(ta1);
 		termList.add(ta2);
@@ -40,6 +48,21 @@ public class TermTest {
 		termList2.add(ta2);
 		FunctionTermImpl ft2 = FunctionTermImpl.getInstance("f", termList2);
 		assertTrue(ft1 == ft2, "Two instances of FunctionTerms for the same term symbol and equal term lists must be the same object");
+	
+		// Test for arithmetic terms.
+		Term tArith1 = ArithmeticTermImpl.getInstance(Terms.newConstant(2), ArithmeticOperator.PLUS, Terms.newConstant(2));
+		Term tArith2 = ArithmeticTermImpl.getInstance(Terms.newConstant(2), ArithmeticOperator.PLUS, Terms.newConstant(2));
+		assertTrue(tArith1 == tArith2, "Two instances of ArithmeticTerms for the same operator symbol and equal term lists must be the same object");
+	
+		// Test for interval terms.
+		IntervalTerm tInt1 = IntervalTermImpl.getInstance(Terms.newConstant(-3), Terms.newVariable("X"));
+		IntervalTerm tInt2 = IntervalTermImpl.getInstance(Terms.newConstant(-3), Terms.newVariable("X"));
+		assertTrue(tInt1 == tInt2, "Two instances of IntervalTerms for the same bounds must be the same object");
+
+		// Test for variables.
+		VariableTerm tVar1 = VariableTermImpl.getInstance("X");
+		VariableTerm tVar2 = VariableTermImpl.getInstance("X");
+		assertTrue(tVar1 == tVar2, "Two instances of VariableTerms for the same name must be the same object");
 	}
 
 	@Test
@@ -89,5 +112,31 @@ public class TermTest {
 		// This also applies to compareTo - it must behave in sync with equals and
 		// hashCode, i.e. return a non-zero result for non-equal objects
 		assertNotEquals(0, stringConstant.compareTo(constantSymbol));
+	}
+
+	@Test
+	public void testVariableSubstitution() {
+		Substitution substitution = new BasicSubstitution();
+		substitution.put(Terms.newVariable("X"), Terms.newConstant(1));
+
+		// Test variable term (trivial case, substituting results in constant).
+		VariableTerm var = VariableTermImpl.getInstance("X");
+		Term substitutedVar = var.substitute(substitution);
+		assertEquals(Terms.newConstant(1), substitutedVar);
+
+		// Test function term.
+		FunctionTerm func = FunctionTermImpl.getInstance("f", VariableTermImpl.getInstance("X"));
+		Term substitutedFunc = func.substitute(substitution);
+		assertTrue(substitutedFunc.isGround());
+
+		// Test arithmetic term (note that arithmetic term with ground operands gets evaluated, result is therefore "2" rather than "1 + 1" ).
+		Term arith  = ArithmeticTermImpl.getInstance(VariableTermImpl.getInstance("X"), ArithmeticOperator.PLUS, ConstantTermImpl.getInstance(1));
+		Term substitutedArith = arith.substitute(substitution);
+		assertEquals(Terms.newConstant(2), substitutedArith);
+
+		// Test interval term.
+		IntervalTerm interval = IntervalTermImpl.getInstance(VariableTermImpl.getInstance("X"), Terms.newConstant(3));
+		Term substitutedInterval = interval.substitute(substitution);
+		assertEquals(Terms.newIntervalTerm(Terms.newConstant(1), Terms.newConstant(3)), substitutedInterval);
 	}
 }
