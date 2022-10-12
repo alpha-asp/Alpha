@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,7 @@ public class ActionsTest {
 	}
 
 	@Test
+	@Disabled
 	public void writeToFile() {
 		Map<String, OutputStream> mockedFileOutputs = new HashMap<>();
 		ByteArrayOutputStream dummyFileContent = new ByteArrayOutputStream();
@@ -59,7 +61,7 @@ public class ActionsTest {
 		LOGGER.debug("Got answer sets: {}", answerSets);
 		assertAnswerSetsEqual(
 				"outfile(\"dummy.file\"), outfile_open_result(\"dummy.file\", success(stream(outputStream_2))),"
-				 + " outfile_write_result(\"dummy.file\", success(ok)), outfile_close_result(\"dummy.file\", success(ok))",
+						+ " outfile_write_result(\"dummy.file\", success(ok)), outfile_close_result(\"dummy.file\", success(ok))",
 				answerSets);
 		assertEquals("Foo bar!", dummyFileContent.toString());
 	}
