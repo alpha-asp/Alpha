@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
@@ -34,28 +33,21 @@ import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.util.IdGenerator;
 import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 
 public class ReifierTest {
 
-	private Supplier<ConstantTerm<?>> newIdGenerator() {
-		return new Supplier<ConstantTerm<?>>() {
-
-			IntIdGenerator idGen = new IntIdGenerator(0);
-
-			@Override
-			public ConstantTerm<?> get() {
-				return Terms.newConstant(idGen.getNextId());
-			}
-
-		};
+	private IdGenerator<ConstantTerm<?>> newIdGenerator() {
+		final IntIdGenerator idGen = new IntIdGenerator(0);
+		return () -> Terms.newConstant(idGen.getNextId());
 	}
 
 	@Test
 	public void reifySymbolicConstant() {
 		ConstantTerm<String> constant = Terms.newSymbolicConstant("someConstant");
-		Supplier<ConstantTerm<?>> idGen = newIdGenerator();
-		ConstantTerm<?> reifiedId = idGen.get();
+		IdGenerator<ConstantTerm<?>> idGen = newIdGenerator();
+		ConstantTerm<?> reifiedId = idGen.getNextId();
 		Set<BasicAtom> reified = new Reifier(idGen).reifyConstantTerm(reifiedId, constant);
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("term_type", 2), reifiedId, Terms.newSymbolicConstant("constant"))));
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("constantTerm_type", 2), reifiedId, Terms.newConstant("symbol"))));
@@ -65,8 +57,8 @@ public class ReifierTest {
 	@Test
 	public void reifyStringConstant() {
 		ConstantTerm<String> constant = Terms.newConstant("someString");
-		Supplier<ConstantTerm<?>> idGen = newIdGenerator();
-		ConstantTerm<?> reifiedId = idGen.get();
+		IdGenerator<ConstantTerm<?>> idGen = newIdGenerator();
+		ConstantTerm<?> reifiedId = idGen.getNextId();
 		Set<BasicAtom> reified = new Reifier(idGen).reifyConstantTerm(reifiedId, constant);
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("term_type", 2), reifiedId, Terms.newSymbolicConstant("constant"))));
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("constantTerm_type", 2), reifiedId, Terms.newConstant("string"))));
@@ -76,8 +68,8 @@ public class ReifierTest {
 	@Test
 	public void reifyStringWithQuotes() {
 		ConstantTerm<String> constant = Terms.newConstant("someStringWith\"Quotes\"");
-		Supplier<ConstantTerm<?>> idGen = newIdGenerator();
-		ConstantTerm<?> reifiedId = idGen.get();
+		IdGenerator<ConstantTerm<?>> idGen = newIdGenerator();
+		ConstantTerm<?> reifiedId = idGen.getNextId();
 		Set<BasicAtom> reified = new Reifier(idGen).reifyConstantTerm(reifiedId, constant);
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("term_type", 2), reifiedId, Terms.newSymbolicConstant("constant"))));
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("constantTerm_type", 2), reifiedId, Terms.newConstant("string"))));
@@ -88,8 +80,8 @@ public class ReifierTest {
 	@Test
 	public void reifyIntegerConstant() {
 		ConstantTerm<Integer> constant = Terms.newConstant(666);
-		Supplier<ConstantTerm<?>> idGen = newIdGenerator();
-		ConstantTerm<?> reifiedId = idGen.get();
+		IdGenerator<ConstantTerm<?>> idGen = newIdGenerator();
+		ConstantTerm<?> reifiedId = idGen.getNextId();
 		Set<BasicAtom> reified = new Reifier(idGen).reifyConstantTerm(reifiedId, constant);
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("term_type", 2), reifiedId, Terms.newSymbolicConstant("constant"))));
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("constantTerm_type", 2), reifiedId, Terms.newConstant("integer"))));
@@ -99,8 +91,8 @@ public class ReifierTest {
 	@Test
 	public void reifyVariable() {
 		VariableTerm var = Terms.newVariable("SOME_VAR");
-		Supplier<ConstantTerm<?>> idGen = newIdGenerator();
-		ConstantTerm<?> reifiedId = idGen.get();
+		IdGenerator<ConstantTerm<?>> idGen = newIdGenerator();
+		ConstantTerm<?> reifiedId = idGen.getNextId();
 		Set<BasicAtom> reified = new Reifier(idGen).reifyVariableTerm(reifiedId, var);
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("term_type", 2), reifiedId, Terms.newSymbolicConstant("variable"))));
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("variableTerm_symbol", 2), reifiedId, Terms.newConstant("SOME_VAR"))));
@@ -109,8 +101,8 @@ public class ReifierTest {
 	@Test
 	public void reifyArithmeticTerm() {
 		Term arithmeticTerm = Terms.newArithmeticTerm(Terms.newVariable("VAR"), ArithmeticOperator.PLUS, Terms.newConstant(2));
-		Supplier<ConstantTerm<?>> idGen = newIdGenerator();
-		ConstantTerm<?> reifiedId = idGen.get();
+		IdGenerator<ConstantTerm<?>> idGen = newIdGenerator();
+		ConstantTerm<?> reifiedId = idGen.getNextId();
 		Set<BasicAtom> reified = new Reifier(idGen).reifyArithmeticTerm(reifiedId, (ArithmeticTerm) arithmeticTerm);
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("term_type", 2), reifiedId, Terms.newSymbolicConstant("arithmetic"))));
 		assertTrue(reified.contains(
@@ -128,8 +120,8 @@ public class ReifierTest {
 	@Test
 	public void reifyFunctionTerm() {
 		FunctionTerm funcTerm = Terms.newFunctionTerm("f", Terms.newConstant(1));
-		Supplier<ConstantTerm<?>> idGen = newIdGenerator();
-		ConstantTerm<?> reifiedId = idGen.get();
+		IdGenerator<ConstantTerm<?>> idGen = newIdGenerator();
+		ConstantTerm<?> reifiedId = idGen.getNextId();
 		Set<BasicAtom> reified = new Reifier(idGen).reifyFunctionTerm(reifiedId, funcTerm);
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("term_type", 2), reifiedId, Terms.newSymbolicConstant("function"))));
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("functionTerm_symbol", 2), reifiedId, Terms.newConstant("f"))));
@@ -146,22 +138,22 @@ public class ReifierTest {
 		Term arithmeticTerm = Terms.newArithmeticTerm(Terms.newVariable("VAR"), ArithmeticOperator.PLUS, Terms.newConstant(2));
 		Term funcTerm = Terms.newFunctionTerm("f", Terms.newConstant(1));
 
-		Supplier<ConstantTerm<?>> idGen = newIdGenerator();
+		IdGenerator<ConstantTerm<?>> idGen = newIdGenerator();
 		Reifier reificationHelper = new Reifier(idGen);
 
-		ConstantTerm<?> constId = idGen.get();
+		ConstantTerm<?> constId = idGen.getNextId();
 		Set<BasicAtom> reifiedConst = reificationHelper.reifyTerm(constId, constTerm);
 		assertTrue(reifiedConst.contains(Atoms.newBasicAtom(Predicates.getPredicate("term_type", 2), constId, Terms.newSymbolicConstant("constant"))));
 
-		ConstantTerm<?> varId = idGen.get();
+		ConstantTerm<?> varId = idGen.getNextId();
 		Set<BasicAtom> reifiedVar = reificationHelper.reifyTerm(varId, varTerm);
 		assertTrue(reifiedVar.contains(Atoms.newBasicAtom(Predicates.getPredicate("term_type", 2), varId, Terms.newSymbolicConstant("variable"))));
 
-		ConstantTerm<?> calcId = idGen.get();
+		ConstantTerm<?> calcId = idGen.getNextId();
 		Set<BasicAtom> reifiedCalc = reificationHelper.reifyTerm(calcId, arithmeticTerm);
 		assertTrue(reifiedCalc.contains(Atoms.newBasicAtom(Predicates.getPredicate("term_type", 2), calcId, Terms.newSymbolicConstant("arithmetic"))));
 
-		ConstantTerm<?> funcId = idGen.get();
+		ConstantTerm<?> funcId = idGen.getNextId();
 		Set<BasicAtom> reifiedFunc = reificationHelper.reifyTerm(funcId, funcTerm);
 		assertTrue(reifiedFunc.contains(Atoms.newBasicAtom(Predicates.getPredicate("term_type", 2), funcId, Terms.newSymbolicConstant("function"))));
 	}
@@ -169,8 +161,8 @@ public class ReifierTest {
 	@Test
 	public void reifyBasicAtom() {
 		BasicAtom atom = Atoms.newBasicAtom(Predicates.getPredicate("p", 2), Terms.newVariable("X"), Terms.newVariable("Y"));
-		Supplier<ConstantTerm<?>> idGen = newIdGenerator();
-		ConstantTerm<?> reifiedId = idGen.get();
+		IdGenerator<ConstantTerm<?>> idGen = newIdGenerator();
+		ConstantTerm<?> reifiedId = idGen.getNextId();
 		Set<BasicAtom> reified = new Reifier(idGen).reifyBasicAtom(reifiedId, atom);
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("atom_type", 2), reifiedId, Terms.newSymbolicConstant("basic"))));
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("basicAtom_numTerms", 2), reifiedId, Terms.newConstant(2))));		
@@ -185,8 +177,8 @@ public class ReifierTest {
 	@Test
 	public void reifyComparisonAtom() {
 		ComparisonAtom atom = Atoms.newComparisonAtom(Terms.newConstant(5), Terms.newVariable("X"), ComparisonOperators.LE);
-		Supplier<ConstantTerm<?>> idGen = newIdGenerator();
-		ConstantTerm<?> reifiedId = idGen.get();
+		IdGenerator<ConstantTerm<?>> idGen = newIdGenerator();
+		ConstantTerm<?> reifiedId = idGen.getNextId();
 		Set<BasicAtom> reified = new Reifier(idGen).reifyComparisonAtom(reifiedId, atom);
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("atom_type", 2), reifiedId, Terms.newSymbolicConstant("comparison"))));
 		assertEquals(1,
@@ -211,8 +203,8 @@ public class ReifierTest {
 		List<Literal> elementLiterals = new ArrayList<>();
 		elementLiterals.add(Atoms.newBasicAtom(Predicates.getPredicate("dom", 1), Terms.newVariable("X")).toLiteral());
 		AggregateElement element = Atoms.newAggregateElement(elementTerms, elementLiterals);
-		Supplier<ConstantTerm<?>> idGen = newIdGenerator();
-		ConstantTerm<?> reifiedId = idGen.get();
+		IdGenerator<ConstantTerm<?>> idGen = newIdGenerator();
+		ConstantTerm<?> reifiedId = idGen.getNextId();
 		Set<BasicAtom> reified = new Reifier(idGen).reifyAggregateElement(reifiedId, element);
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("aggregateElement_numTerms", 2), reifiedId, Terms.newConstant(1))));
 		assertEquals(1,
@@ -249,8 +241,8 @@ public class ReifierTest {
 		elements.add(element2);
 		AggregateAtom atom = Atoms.newAggregateAtom(ComparisonOperators.EQ, Terms.newVariable("X"), AggregateFunctionSymbol.COUNT, elements);
 
-		Supplier<ConstantTerm<?>> idGen = newIdGenerator();
-		ConstantTerm<?> reifiedId = idGen.get();
+		IdGenerator<ConstantTerm<?>> idGen = newIdGenerator();
+		ConstantTerm<?> reifiedId = idGen.getNextId();
 		Set<BasicAtom> reified = new Reifier(idGen).reifyAggregateAtom(reifiedId, atom);
 
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("atom_type", 2), reifiedId, Terms.newSymbolicConstant("aggregate"))));
@@ -273,8 +265,8 @@ public class ReifierTest {
 		extOutput.add(Terms.newVariable("O"));
 		ExternalAtom atom = Atoms.newExternalAtom(Predicates.getPredicate("ext", 2), (trms) -> Collections.emptySet(), extInput, extOutput);
 
-		Supplier<ConstantTerm<?>> idGen = newIdGenerator();
-		ConstantTerm<?> reifiedId = idGen.get();
+		IdGenerator<ConstantTerm<?>> idGen = newIdGenerator();
+		ConstantTerm<?> reifiedId = idGen.getNextId();
 		Set<BasicAtom> reified = new Reifier(idGen).reifyExternalAtom(reifiedId, atom);
 
 		assertTrue(reified.contains(Atoms.newBasicAtom(Predicates.getPredicate("atom_type", 2), reifiedId, Terms.newSymbolicConstant("external"))));
@@ -327,21 +319,21 @@ public class ReifierTest {
 		extOutput.add(Terms.newVariable("O"));
 		ExternalAtom extAtom = Atoms.newExternalAtom(Predicates.getPredicate("ext", 2), (trms) -> Collections.emptySet(), extInput, extOutput);
 
-		Supplier<ConstantTerm<?>> idGen = newIdGenerator();
+		IdGenerator<ConstantTerm<?>> idGen = newIdGenerator();
 		
-		ConstantTerm<?> reifiedBasicAtomId = idGen.get();
+		ConstantTerm<?> reifiedBasicAtomId = idGen.getNextId();
 		Set<BasicAtom> reifiedBasicAtom = new Reifier(idGen).reifyAtom(reifiedBasicAtomId, basicAtom);
 		assertTrue(reifiedBasicAtom.contains(Atoms.newBasicAtom(Predicates.getPredicate("atom_type", 2), reifiedBasicAtomId, Terms.newSymbolicConstant("basic"))));
 
-		ConstantTerm<?> reifiedCmpAtomId = idGen.get();
+		ConstantTerm<?> reifiedCmpAtomId = idGen.getNextId();
 		Set<BasicAtom> reifiedCmpAtom = new Reifier(idGen).reifyAtom(reifiedCmpAtomId, cmpAtom);
 		assertTrue(reifiedCmpAtom.contains(Atoms.newBasicAtom(Predicates.getPredicate("atom_type", 2), reifiedCmpAtomId, Terms.newSymbolicConstant("comparison"))));
 
-		ConstantTerm<?> reifiedAggAtomId = idGen.get();
+		ConstantTerm<?> reifiedAggAtomId = idGen.getNextId();
 		Set<BasicAtom> reifiedAggAtom = new Reifier(idGen).reifyAtom(reifiedAggAtomId, aggAtom);
 		assertTrue(reifiedAggAtom.contains(Atoms.newBasicAtom(Predicates.getPredicate("atom_type", 2), reifiedAggAtomId, Terms.newSymbolicConstant("aggregate"))));
 
-		ConstantTerm<?> reifiedExtAtomId = idGen.get();
+		ConstantTerm<?> reifiedExtAtomId = idGen.getNextId();
 		Set<BasicAtom> reifiedExtAtom = new Reifier(idGen).reifyAtom(reifiedExtAtomId, extAtom);
 		assertTrue(reifiedExtAtom.contains(Atoms.newBasicAtom(Predicates.getPredicate("atom_type", 2), reifiedExtAtomId, Terms.newSymbolicConstant("external"))));
 	}

@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
@@ -20,9 +19,9 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead.ChoiceElement;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead.ChoiceElement;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
@@ -32,6 +31,7 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.util.IdGenerator;
 
 public class Reifier {
 
@@ -179,11 +179,11 @@ public class Reifier {
 		TERM_TYPES.put(Integer.class, "integer");
 	}
 
-	private final Supplier<ConstantTerm<?>> idProvider;
+	private final IdGenerator<ConstantTerm<?>> idProvider;
 
 	private final Map<Predicate, ConstantTerm<?>> reifiedPredicates = new HashMap<>();
 
-	public Reifier(Supplier<ConstantTerm<?>> idProvider) {
+	public Reifier(IdGenerator<ConstantTerm<?>> idProvider) {
 		this.idProvider = idProvider;
 	}
 
@@ -191,7 +191,7 @@ public class Reifier {
 		Set<BasicAtom> reified = new LinkedHashSet<>();
 		reified.addAll(reifyDirectives(program.getInlineDirectives()));
 		for (Atom fact : program.getFacts()) {
-			ConstantTerm<?> factId = idProvider.get();
+			ConstantTerm<?> factId = idProvider.getNextId();
 			reified.add(Atoms.newBasicAtom(FACT, factId));
 			reified.addAll(reifyAtom(factId, fact));
 		}
@@ -221,12 +221,12 @@ public class Reifier {
 
 	Set<BasicAtom> reifyRule(Rule<? extends Head> rule) {
 		Set<BasicAtom> reified = new LinkedHashSet<>();
-		ConstantTerm<?> ruleId = idProvider.get();
+		ConstantTerm<?> ruleId = idProvider.getNextId();
 		reified.add(Atoms.newBasicAtom(RULE, ruleId));
 		reified.addAll(reifyHead(ruleId, rule.getHead()));
 		reified.add(Atoms.newBasicAtom(RULE_NUM_BODY_LITERALS, ruleId, Terms.newConstant(rule.getBody().size())));
 		for (Literal lit : rule.getBody()) {
-			ConstantTerm<?> literalId = idProvider.get();
+			ConstantTerm<?> literalId = idProvider.getNextId();
 			reified.add(Atoms.newBasicAtom(RULE_BODY_LITERAL, ruleId, literalId));
 			reified.addAll(reifyLiteral(literalId, lit));
 		}
@@ -235,7 +235,7 @@ public class Reifier {
 
 	Set<BasicAtom> reifyHead(ConstantTerm<?> ruleId, Head head) {
 		Set<BasicAtom> reified = new LinkedHashSet<>();
-		ConstantTerm<?> headId = idProvider.get();
+		ConstantTerm<?> headId = idProvider.getNextId();
 		reified.add(Atoms.newBasicAtom(RULE_HEAD, ruleId, headId));
 		if (head instanceof NormalHead) {
 			reified.addAll(reifyNormalHead(headId, (NormalHead) head));
@@ -250,7 +250,7 @@ public class Reifier {
 	Set<BasicAtom> reifyNormalHead(ConstantTerm<?> headId, NormalHead head) {
 		Set<BasicAtom> reified = new LinkedHashSet<>();
 		reified.add(Atoms.newBasicAtom(HEAD_TYPE, headId, HEAD_TYPE_NORMAL));
-		ConstantTerm<?> atomId = idProvider.get();
+		ConstantTerm<?> atomId = idProvider.getNextId();
 		reified.add(Atoms.newBasicAtom(NORMAL_HEAD_ATOM, headId, atomId));
 		reified.addAll(reifyAtom(atomId, head.getAtom()));
 		return reified;
@@ -274,14 +274,14 @@ public class Reifier {
 
 	Set<BasicAtom> reifyChoiceElement(ConstantTerm<?> headId, ChoiceElement element) {
 		Set<BasicAtom> reified = new LinkedHashSet<>();
-		ConstantTerm<?> elementId = idProvider.get();
+		ConstantTerm<?> elementId = idProvider.getNextId();
 		reified.add(Atoms.newBasicAtom(CHOICE_HEAD_ELEMENT, headId, elementId));
-		ConstantTerm<?> atomId = idProvider.get();
+		ConstantTerm<?> atomId = idProvider.getNextId();
 		reified.add(Atoms.newBasicAtom(CHOICE_ELEMENT_ATOM, elementId, atomId));
 		reified.addAll(reifyAtom(atomId, element.getChoiceAtom()));
 		reified.add(Atoms.newBasicAtom(CHOICE_ELEMENT_NUM_CONDITION_LITERALS, elementId, Terms.newConstant(element.getConditionLiterals().size())));
 		for (Literal lit : element.getConditionLiterals()) {
-			ConstantTerm<?> literalId = idProvider.get();
+			ConstantTerm<?> literalId = idProvider.getNextId();
 			reified.add(Atoms.newBasicAtom(CHOICE_ELEMENT_CONDITION_LITERAL, elementId, literalId));
 			reified.addAll(reifyLiteral(literalId, lit));
 		}
@@ -291,7 +291,7 @@ public class Reifier {
 	Set<BasicAtom> reifyLiteral(ConstantTerm<?> literalId, Literal lit) {
 		Set<BasicAtom> reified = new LinkedHashSet<>();
 		reified.add(Atoms.newBasicAtom(LITERAL_POLARITY, literalId, lit.isNegated() ? LITERAL_POLARITY_NEGATIVE : LITERAL_POLARITY_POSITIVE));
-		ConstantTerm<?> atomId = idProvider.get();
+		ConstantTerm<?> atomId = idProvider.getNextId();
 		reified.add(Atoms.newBasicAtom(LITERAL_ATOM, literalId, atomId));
 		reified.addAll(reifyAtom(atomId, lit.getAtom()));
 		return reified;
@@ -318,13 +318,13 @@ public class Reifier {
 		if (reifiedPredicates.containsKey(atom.getPredicate())) {
 			predicateId = reifiedPredicates.get(atom.getPredicate());
 		} else {
-			predicateId = idProvider.get();
+			predicateId = idProvider.getNextId();
 			reifiedPredicates.put(atom.getPredicate(), predicateId);
 		}
 		reified.add(Atoms.newBasicAtom(BASIC_ATOM_PREDICATE, atomId, predicateId));
 		reified.add(Atoms.newBasicAtom(BASIC_ATOM_NUM_TERMS, atomId, Terms.newConstant(atom.getTerms().size())));
 		for (int i = 0; i < atom.getTerms().size(); i++) {
-			ConstantTerm<?> termId = idProvider.get();
+			ConstantTerm<?> termId = idProvider.getNextId();
 			reified.add(Atoms.newBasicAtom(BASIC_ATOM_TERM, atomId, Terms.newConstant(i), termId));
 			reified.addAll(reifyTerm(termId, atom.getTerms().get(i)));
 		}
@@ -334,8 +334,8 @@ public class Reifier {
 	Set<BasicAtom> reifyComparisonAtom(ConstantTerm<?> atomId, ComparisonAtom atom) {
 		Set<BasicAtom> reified = new LinkedHashSet<>();
 		reified.add(Atoms.newBasicAtom(ATOM_TYPE, atomId, ATOM_TYPE_COMPARISON));
-		ConstantTerm<?> leftTermId = idProvider.get();
-		ConstantTerm<?> rightTermId = idProvider.get();
+		ConstantTerm<?> leftTermId = idProvider.getNextId();
+		ConstantTerm<?> rightTermId = idProvider.getNextId();
 		reified.add(Atoms.newBasicAtom(COMPARISON_ATOM_LEFT, atomId, leftTermId));
 		reified.add(Atoms.newBasicAtom(COMPARISON_ATOM_RIGHT, atomId, rightTermId));
 		if (!CMP_OPS.containsKey(atom.getOperator())) {
@@ -353,13 +353,13 @@ public class Reifier {
 		reified.add(Atoms.newBasicAtom(EXTERNAL_ATOM_NAME, atomId, Terms.newConstant(atom.getPredicate().getName())));
 		reified.add(Atoms.newBasicAtom(EXTERNAL_ATOM_NUM_INPUT_TERMS, atomId, Terms.newConstant(atom.getInput().size())));
 		for (int i = 0; i < atom.getInput().size(); i++) {
-			ConstantTerm<?> inTermId = idProvider.get();
+			ConstantTerm<?> inTermId = idProvider.getNextId();
 			reified.add(Atoms.newBasicAtom(EXTERNAL_ATOM_INPUT_TERM, atomId, Terms.newConstant(i), inTermId));
 			reified.addAll(reifyTerm(inTermId, atom.getInput().get(i)));
 		}
 		reified.add(Atoms.newBasicAtom(EXTERNAL_ATOM_NUM_OUTPUT_TERMS, atomId, Terms.newConstant(atom.getOutput().size())));
 		for (int i = 0; i < atom.getOutput().size(); i++) {
-			ConstantTerm<?> outTermId = idProvider.get();
+			ConstantTerm<?> outTermId = idProvider.getNextId();
 			reified.add(Atoms.newBasicAtom(EXTERNAL_ATOM_OUTPUT_TERM, atomId, Terms.newConstant(i), outTermId));
 			reified.addAll(reifyTerm(outTermId, atom.getOutput().get(i)));
 		}
@@ -372,17 +372,17 @@ public class Reifier {
 		reified.add(Atoms.newBasicAtom(AGGREGATE_ATOM_AGGREGATE_FUNCTION, atomId, AGG_FUNCS.get(atom.getAggregateFunction())));
 		if (atom.getLowerBoundOperator() != null) {
 			reified.add(Atoms.newBasicAtom(AGGREGATE_ATOM_LEFT_OPERATOR, atomId, CMP_OPS.get(atom.getLowerBoundOperator())));
-			ConstantTerm<?> leftTermId = idProvider.get();
+			ConstantTerm<?> leftTermId = idProvider.getNextId();
 			reified.add(Atoms.newBasicAtom(AGGREGATE_ATOM_LEFT_TERM, atomId, leftTermId));
 		}
 		if (atom.getUpperBoundOperator() != null) {
 			reified.add(Atoms.newBasicAtom(AGGREGATE_ATOM_RIGHT_OPERATOR, atomId, CMP_OPS.get(atom.getUpperBoundOperator())));
-			ConstantTerm<?> rightTermId = idProvider.get();
+			ConstantTerm<?> rightTermId = idProvider.getNextId();
 			reified.add(Atoms.newBasicAtom(AGGREGATE_ATOM_RIGHT_TERM, atomId, rightTermId));
 		}
 		reified.add(Atoms.newBasicAtom(AGGREGATE_ATOM_NUM_AGGREGATE_ELEMENTS, atomId, Terms.newConstant(atom.getAggregateElements().size())));
 		for (AggregateElement element : atom.getAggregateElements()) {
-			ConstantTerm<?> elementId = idProvider.get();
+			ConstantTerm<?> elementId = idProvider.getNextId();
 			reified.add(Atoms.newBasicAtom(AGGREGATE_ATOM_AGGREGATE_ELEMENT, atomId, elementId));
 			reified.addAll(reifyAggregateElement(elementId, element));
 		}
@@ -393,13 +393,13 @@ public class Reifier {
 		Set<BasicAtom> reified = new LinkedHashSet<>();
 		reified.add(Atoms.newBasicAtom(AGGREGATE_ELEMENT_NUM_TERMS, elementId, Terms.newConstant(element.getElementTerms().size())));
 		for (int i = 0; i < element.getElementTerms().size(); i++) {
-			ConstantTerm<?> termId = idProvider.get();
+			ConstantTerm<?> termId = idProvider.getNextId();
 			reified.add(Atoms.newBasicAtom(AGGREGATE_ELEMENT_TERM, elementId, Terms.newConstant(i), termId));
 			reified.addAll(reifyTerm(termId, element.getElementTerms().get(i)));
 		}
 		reified.add(Atoms.newBasicAtom(AGGREGATE_ELEMENT_NUM_LITERALS, elementId, Terms.newConstant(element.getElementLiterals().size())));
 		for (Literal lit : element.getElementLiterals()) {
-			ConstantTerm<?> literalId = idProvider.get();
+			ConstantTerm<?> literalId = idProvider.getNextId();
 			reified.add(Atoms.newBasicAtom(AGGREGATE_ELEMENT_LITERAL, elementId, literalId));
 			reified.addAll(reifyLiteral(literalId, lit));
 		}
@@ -444,10 +444,10 @@ public class Reifier {
 	Set<BasicAtom> reifyArithmeticTerm(ConstantTerm<?> termId, ArithmeticTerm term) {
 		Set<BasicAtom> reified = new LinkedHashSet<>();
 		reified.add(Atoms.newBasicAtom(TERM_TYPE, termId, TERM_TYPE_ARITHMETIC));
-		ConstantTerm<?> leftTermId = idProvider.get();
+		ConstantTerm<?> leftTermId = idProvider.getNextId();
 		reified.add(Atoms.newBasicAtom(ARITHMETIC_TERM_LEFT, termId, leftTermId));
 		reified.addAll(reifyTerm(leftTermId, term.getLeftOperand()));
-		ConstantTerm<?> rightTermId = idProvider.get();
+		ConstantTerm<?> rightTermId = idProvider.getNextId();
 		reified.add(Atoms.newBasicAtom(ARITHMETIC_TERM_RIGHT, termId, rightTermId));
 		reified.addAll(reifyTerm(rightTermId, term.getRightOperand()));
 		reified.add(Atoms.newBasicAtom(ARITHMETIC_TERM_OPERATOR, termId, Terms.newConstant(term.getOperator().toString())));
@@ -460,7 +460,7 @@ public class Reifier {
 		reified.add(Atoms.newBasicAtom(FUNCTION_TERM_SYMBOL, termId, Terms.newConstant(term.getSymbol())));
 		reified.add(Atoms.newBasicAtom(FUNCTION_TERM_NUM_ARGUMENTS, termId, Terms.newConstant(term.getTerms().size())));
 		for (int i = 0; i < term.getTerms().size(); i++) {
-			ConstantTerm<?> argTermId = idProvider.get();
+			ConstantTerm<?> argTermId = idProvider.getNextId();
 			reified.add(Atoms.newBasicAtom(FUNCTION_TERM_ARGUMENT, termId, Terms.newConstant(i), argTermId));
 			reified.addAll(reifyTerm(argTermId, term.getTerms().get(i)));
 		}
