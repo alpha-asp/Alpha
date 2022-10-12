@@ -25,6 +25,7 @@ import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
@@ -121,6 +122,10 @@ public class Reifier {
 	static final Predicate FUNCTION_TERM_NUM_ARGUMENTS = Predicates.getPredicate("functionTerm_numArguments", 2);
 	static final Predicate FUNCTION_TERM_ARGUMENT = Predicates.getPredicate("functionTerm_argumentTerm", 3);
 
+	// Predicates describing interval terms
+	static final Predicate INTERVAL_TERM_LOWER = Predicates.getPredicate("intervalTerm_lower", 2);
+	static final Predicate INTERVAL_TERM_UPPER = Predicates.getPredicate("intervalTerm_Upper", 2);
+
 	// Predicates describing InlineDirectives
 	static final Predicate INLINE_DIRECTIVE = Predicates.getPredicate("inlineDirective", 2);
 
@@ -157,6 +162,7 @@ public class Reifier {
 	static final ConstantTerm<String> TERM_TYPE_VARIABLE = Terms.newSymbolicConstant("variable");
 	static final ConstantTerm<String> TERM_TYPE_ARITHMETIC = Terms.newSymbolicConstant("arithmetic");
 	static final ConstantTerm<String> TERM_TYPE_FUNCTION = Terms.newSymbolicConstant("function");
+	static final ConstantTerm<String> TERM_TYPE_INTERVAL = Terms.newSymbolicConstant("interval");
 
 	private static final Map<ComparisonOperator, ConstantTerm<String>> CMP_OPS = new HashMap<>();
 	private static final Map<AggregateFunctionSymbol, ConstantTerm<String>> AGG_FUNCS = new HashMap<>();
@@ -415,6 +421,8 @@ public class Reifier {
 			return reifyArithmeticTerm(termId, (ArithmeticTerm) term);
 		} else if (term instanceof FunctionTerm) {
 			return reifyFunctionTerm(termId, (FunctionTerm) term);
+		} else if (term instanceof IntervalTerm) {
+			return reifyIntervalTerm(termId, (IntervalTerm) term);
 		} else {
 			throw new IllegalArgumentException("Cannot reify term of type " + term.getClass().getSimpleName());
 		}
@@ -464,6 +472,18 @@ public class Reifier {
 			reified.add(Atoms.newBasicAtom(FUNCTION_TERM_ARGUMENT, termId, Terms.newConstant(i), argTermId));
 			reified.addAll(reifyTerm(argTermId, term.getTerms().get(i)));
 		}
+		return reified;
+	}
+
+	Set<BasicAtom> reifyIntervalTerm(ConstantTerm<?> termId, IntervalTerm term) {
+		Set<BasicAtom> reified = new LinkedHashSet<>();
+		reified.add(Atoms.newBasicAtom(TERM_TYPE, termId, TERM_TYPE_INTERVAL));
+		ConstantTerm<?> lowerTermId = idProvider.getNextId();
+		reified.add(Atoms.newBasicAtom(INTERVAL_TERM_LOWER, termId, lowerTermId));
+		reified.addAll(reifyTerm(lowerTermId, term.getLowerBound()));
+		ConstantTerm<?> upperTermId = idProvider.getNextId();
+		reified.add(Atoms.newBasicAtom(INTERVAL_TERM_UPPER, termId, upperTermId));
+		reified.addAll(reifyTerm(upperTermId, term.getUpperBound()));
 		return reified;
 	}
 
