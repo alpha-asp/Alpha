@@ -38,15 +38,16 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead;
-import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead.ChoiceElement;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
 /**
  * Copyright (c) 2017-2021, the Alpha Team.
@@ -57,7 +58,7 @@ public class ChoiceHeadToNormal extends ProgramTransformation<ASPCore2Program, A
 
 	@Override
 	public ASPCore2Program apply(ASPCore2Program inputProgram) {
-		InputProgram.Builder programBuilder = InputProgram.builder();
+		ASPCore2ProgramBuilder programBuilder = Programs.builder();
 		List<Rule<Head>> additionalRules = new ArrayList<>();
 
 		List<Rule<Head>> srcRules = new ArrayList<>(inputProgram.getRules());

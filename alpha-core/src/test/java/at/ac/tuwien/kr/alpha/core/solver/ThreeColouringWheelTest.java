@@ -41,10 +41,11 @@ import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
 /**
  * Tests {@link AbstractSolver} using some three-coloring test cases, as described in:
@@ -102,11 +103,11 @@ public class ThreeColouringWheelTest {
 				"col(V,C) :- v(V), c(C), not ncol(V,C)." +
 				"ncol(V,C) :- col(V,D), c(C), C != D." +
 				":- e(V,U), col(V,C), col(U,C).");
-		InputProgram.Builder prgBuilder = InputProgram.builder(tmpPrg);
+		ASPCore2ProgramBuilder prgBuilder = Programs.builder(tmpPrg);
 		prgBuilder.addFacts(createColors("red", "blue", "green"));
 		prgBuilder.addFacts(createVertices(n));
 		prgBuilder.addFacts(createEdges(n));
-		InputProgram program = prgBuilder.build();
+		ASPCore2Program program = prgBuilder.build();
 
 		maybeShuffle(program);
 
@@ -120,7 +121,7 @@ public class ThreeColouringWheelTest {
 	}
 
 	@SuppressWarnings("unused")
-	private void maybeShuffle(InputProgram program) {
+	private void maybeShuffle(ASPCore2Program program) {
 		// FIXME since InputProgram is immutable this needs to be reworked a bit if used
 		// No shuffling here.
 	}

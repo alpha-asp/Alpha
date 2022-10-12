@@ -17,12 +17,12 @@ import at.ac.tuwien.kr.alpha.api.programs.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.programs.NormalProgramImpl;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
-import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 
 /**
  * Transforms rules such that arithmetic terms only occur in comparison predicates.

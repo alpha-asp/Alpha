@@ -61,7 +61,6 @@ import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.programs.Programs;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
@@ -201,7 +200,7 @@ public class StratifiedEvaluationTest {
 				+ "inc_value(4), inc_value(5), inc_value(6), inc_value(7), "
 				+ "inc_value(8)";
 		//@formatter:on
-		ASPCore2Program prog = Programs.fromInputStream(
+		ASPCore2Program prog = new ProgramParserImpl().parse(
 				StratifiedEvaluationTest.class.getResourceAsStream("/partial-eval/recursive_w_negated_condition.asp"),
 				new HashMap<>());
 

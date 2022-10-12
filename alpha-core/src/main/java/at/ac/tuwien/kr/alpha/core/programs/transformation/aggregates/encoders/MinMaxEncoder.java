@@ -23,6 +23,8 @@ import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
@@ -30,7 +32,6 @@ import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 
 public class MinMaxEncoder extends AbstractAggregateEncoder {
@@ -120,7 +121,7 @@ public class MinMaxEncoder extends AbstractAggregateEncoder {
 			resultRuleBody.add(aggregateResult);
 			resultRuleBody.add(aggregateValueComparison);
 			resultRuleBody.addAll(aggregateToEncode.getDependencies());
-			InputProgram.Builder bld = InputProgram.builder(parser.parse(encodingTemplate.render()));
+			ASPCore2ProgramBuilder bld = Programs.builder(parser.parse(encodingTemplate.render()));
 			Rule<Head> resultRule = Rules.newRule(resultRuleHead, resultRuleBody);
 			bld.addRule(resultRule);
 			return bld.build();

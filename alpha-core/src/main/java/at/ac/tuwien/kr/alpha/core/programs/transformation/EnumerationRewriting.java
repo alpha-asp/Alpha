@@ -18,9 +18,10 @@ import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.programs.InlineDirectivesImpl;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
-import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.programs.atoms.EnumerationAtom;
 
 /**
@@ -42,7 +43,7 @@ public class EnumerationRewriting extends ProgramTransformation<ASPCore2Program,
 		}
 		Predicate enumPredicate = Predicates.getPredicate(enumDirective, 3);
 
-		InputProgram.Builder programBuilder = InputProgram.builder().addInlineDirectives(inputProgram.getInlineDirectives());
+		ASPCore2ProgramBuilder programBuilder = Programs.builder().addInlineDirectives(inputProgram.getInlineDirectives());
 
 		checkFactsAreEnumerationFree(inputProgram.getFacts(), enumPredicate);
 		programBuilder.addFacts(inputProgram.getFacts());

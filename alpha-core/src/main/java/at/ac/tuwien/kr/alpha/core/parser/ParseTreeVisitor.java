@@ -43,6 +43,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
@@ -53,9 +54,9 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead.ChoiceElement;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead.ChoiceElement;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ArithmeticOperator;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
@@ -65,6 +66,9 @@ import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.AnswerSets;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.programs.InlineDirectivesImpl;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
@@ -72,7 +76,6 @@ import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
 /**
  * Copyright (c) 2016-2018, the Alpha Team.
@@ -81,7 +84,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	private final Map<String, PredicateInterpretation> externals;
 	private final boolean acceptVariables;
 
-	private InputProgram.Builder programBuilder;
+	private ASPCore2ProgramBuilder programBuilder;
 	private InlineDirectives inlineDirectives;
 
 	public ParseTreeVisitor(Map<String, PredicateInterpretation> externals) {
@@ -100,7 +103,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	/**
 	 * Translates a program context (referring to a node in an ATN specific to ANTLR) to the internal representation of Alpha.
 	 */
-	public InputProgram translate(ASPCore2Parser.ProgramContext input) {
+	public ASPCore2Program translate(ASPCore2Parser.ProgramContext input) {
 		return visitProgram(input);
 	}
 
@@ -150,17 +153,17 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public InputProgram visitProgram(ASPCore2Parser.ProgramContext ctx) {
+	public ASPCore2Program visitProgram(ASPCore2Parser.ProgramContext ctx) {
 		// program : statements? query?;
 		if (ctx.query() != null) {
 			throw notSupported(ctx.query());
 		}
 
 		if (ctx.statements() == null) {
-			return InputProgram.EMPTY;
+			return Programs.emptyProgram();
 		}
 		inlineDirectives = new InlineDirectivesImpl();
-		programBuilder = InputProgram.builder();
+		programBuilder = Programs.builder();
 		visitStatements(ctx.statements());
 		programBuilder.addInlineDirectives(inlineDirectives);
 		return programBuilder.build();

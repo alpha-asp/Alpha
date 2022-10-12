@@ -18,12 +18,13 @@ import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.programs.InlineDirectivesImpl;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.PredicateInternalizer;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 
@@ -49,10 +50,10 @@ public abstract class AbstractAggregateEncoder {
 	 * Encodes all aggregate literals in the given set of aggregate referenced by the given {@link AggregateInfo}.
 	 * 
 	 * @param aggregatesToEncode the aggregates to encode.
-	 * @return all rules encoding the given aggregates as an {@link InputProgram}.
+	 * @return all rules encoding the given aggregates as an {@link AspCore2ProgramImpl}.
 	 */
 	public ASPCore2Program encodeAggregateLiterals(Set<AggregateInfo> aggregatesToEncode) {
-		InputProgram.Builder programBuilder = InputProgram.builder();
+		ASPCore2ProgramBuilder programBuilder = Programs.builder();
 		for (AggregateInfo aggregateInfo : aggregatesToEncode) {
 			programBuilder.accumulate(encodeAggregateLiteral(aggregateInfo));
 		}
@@ -82,7 +83,7 @@ public abstract class AbstractAggregateEncoder {
 			Rule<Head> elementRule = encodeAggregateElement(aggregateToEncode, elementToEncode);
 			elementEncodingRules.add(PredicateInternalizer.makePrefixedPredicatesInternal(elementRule, aggregateId));
 		}
-		return new InputProgram(ListUtils.union(literalEncoding.getRules(), elementEncodingRules), literalEncoding.getFacts(), new InlineDirectivesImpl());
+		return Programs.newASPCore2Program(ListUtils.union(literalEncoding.getRules(), elementEncodingRules), literalEncoding.getFacts(), new InlineDirectivesImpl());
 	}
 
 	/**

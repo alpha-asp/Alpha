@@ -15,6 +15,8 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.commons.programs.AbstractProgram;
+import at.ac.tuwien.kr.alpha.commons.programs.NormalProgramImpl;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
 import at.ac.tuwien.kr.alpha.core.grounder.FactIntervalEvaluator;

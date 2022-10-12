@@ -15,9 +15,10 @@ import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.AbstractAggregateEncoder;
@@ -88,7 +89,7 @@ public class AggregateRewriting extends ProgramTransformation<ASPCore2Program, A
 		}
 		// Substitute AggregateLiterals with generated result literals.
 		outputRules.addAll(rewriteRulesWithAggregates(ctx));
-		InputProgram.Builder resultBuilder = InputProgram.builder().addRules(outputRules).addFacts(inputProgram.getFacts())
+		ASPCore2ProgramBuilder resultBuilder = Programs.builder().addRules(outputRules).addFacts(inputProgram.getFacts())
 				.addInlineDirectives(inputProgram.getInlineDirectives());
 		// Add sub-programs deriving respective aggregate literals.
 		for (Map.Entry<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateInfo>> aggToRewrite : ctx.getAggregateFunctionsToRewrite()

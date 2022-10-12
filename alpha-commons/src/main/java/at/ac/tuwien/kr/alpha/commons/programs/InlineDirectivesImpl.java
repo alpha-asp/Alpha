@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.parser;
+package at.ac.tuwien.kr.alpha.commons.programs;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

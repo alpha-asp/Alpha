@@ -40,10 +40,11 @@ import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
 public class ThreeColouringRandomGraphTest {
 	
@@ -105,10 +106,10 @@ public class ThreeColouringRandomGraphTest {
 				":- e(N1,N2), blue(N1), blue(N2)." +
 				":- e(N1,N2), red(N1), red(N2)." +
 				":- e(N1,N2), green(N1), green(N2).");
-		InputProgram.Builder prgBuilder = InputProgram.builder(tmpPrg);
+		ASPCore2ProgramBuilder prgBuilder = Programs.builder(tmpPrg);
 		prgBuilder.addFacts(createVertices(nVertices));
 		prgBuilder.addFacts(createEdges(nVertices, nEdges));
-		InputProgram program = prgBuilder.build();
+		ASPCore2Program program = prgBuilder.build();
 		maybeShuffle(program);
 
 		@SuppressWarnings("unused")
@@ -119,7 +120,7 @@ public class ThreeColouringRandomGraphTest {
 	}
 
 	@SuppressWarnings("unused")
-	private void maybeShuffle(InputProgram program) {
+	private void maybeShuffle(ASPCore2Program program) {
 
 		// TODO: switch on if different rule orderings in the encoding are desired (e.g. for benchmarking purposes)
 		// FIXME since InputProgram is immutable this needs to be reworked a bit if used

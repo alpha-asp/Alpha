@@ -70,6 +70,9 @@ import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.programs.InlineDirectivesImpl;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
@@ -78,10 +81,8 @@ import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.MethodPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.core.externals.AspStandardLibrary;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
-import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
 public class AlphaImplTest {
 
@@ -151,7 +152,7 @@ public class AlphaImplTest {
 		Thingy a = new Thingy();
 		Thingy b = new Thingy();
 		List<Thingy> things = asList(a, b);
-		InputProgram program = InputProgram.builder().addFacts(Externals.asFacts(Thingy.class, things)).build();
+		ASPCore2Program program = Programs.builder().addFacts(Externals.asFacts(Thingy.class, things)).build();
 		Set<AnswerSet> actual = system.solve(program).collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("thingy").instance(a).instance(b).build()));
 		assertEquals(expected, actual);
@@ -326,7 +327,7 @@ public class AlphaImplTest {
 
 		Alpha system = new AlphaImpl();
 
-		InputProgram prog = new InputProgram(singletonList(rule), emptyList(), new InlineDirectivesImpl());
+		ASPCore2Program prog = Programs.newASPCore2Program(singletonList(rule), emptyList(), new InlineDirectivesImpl());
 
 		Set<AnswerSet> actual = system.solve(prog).collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("p").instance("x").build()));
@@ -629,11 +630,11 @@ public class AlphaImplTest {
 	@Test
 	public void testLearnedUnaryNoGoodCausingOutOfOrderLiteralsConflict() throws IOException {
 		final ProgramParser parser = new ProgramParserImpl();
-		InputProgram.Builder bld = InputProgram.builder();
+		ASPCore2ProgramBuilder bld = Programs.builder();
 		bld.accumulate(parser.parse(Files.newInputStream(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp"), StandardOpenOption.READ)));
 		bld.accumulate(
 				parser.parse(Files.newInputStream(Paths.get("src", "test", "resources", "HanoiTower_instances", "simple.asp"), StandardOpenOption.READ)));
-		InputProgram parsedProgram = bld.build();
+		ASPCore2Program parsedProgram = bld.build();
 
 		SystemConfig config = new SystemConfig();
 		config.setSolverName("default");

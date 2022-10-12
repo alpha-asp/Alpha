@@ -13,10 +13,11 @@ import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
 /**
  *
@@ -27,7 +28,7 @@ import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 public class PredicateInternalizer {
 
 	public static ASPCore2Program makePrefixedPredicatesInternal(ASPCore2Program program, String prefix) {
-		InputProgram.Builder prgBuilder = InputProgram.builder();
+		ASPCore2ProgramBuilder prgBuilder = Programs.builder();
 		for (Atom atom : program.getFacts()) {
 			if (atom.getPredicate().getName().startsWith(prefix)) {
 				prgBuilder.addFact(PredicateInternalizer.makePredicateInternal((BasicAtom) atom));

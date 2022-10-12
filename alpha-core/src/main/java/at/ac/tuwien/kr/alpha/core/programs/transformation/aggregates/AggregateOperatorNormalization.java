@@ -20,10 +20,9 @@ import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
 /**
- * Transforms an {@link InputProgram} such that, for all aggregate (body-)literals, only the comparison operators "="
+ * Transforms an {@link AspCore2ProgramImpl} such that, for all aggregate (body-)literals, only the comparison operators "="
  * and "<=" are used.
  * 
  * Rewriting of "#count" and "#sum" aggregates is done using the following equivalences:
