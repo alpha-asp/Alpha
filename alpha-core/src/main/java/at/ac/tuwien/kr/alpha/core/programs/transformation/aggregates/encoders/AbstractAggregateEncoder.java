@@ -18,7 +18,6 @@ import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.programs.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
@@ -83,7 +82,7 @@ public abstract class AbstractAggregateEncoder {
 			Rule<Head> elementRule = encodeAggregateElement(aggregateToEncode, elementToEncode);
 			elementEncodingRules.add(PredicateInternalizer.makePrefixedPredicatesInternal(elementRule, aggregateId));
 		}
-		return Programs.newASPCore2Program(ListUtils.union(literalEncoding.getRules(), elementEncodingRules), literalEncoding.getFacts(), new InlineDirectivesImpl());
+		return Programs.newASPCore2Program(ListUtils.union(literalEncoding.getRules(), elementEncodingRules), literalEncoding.getFacts(), Programs.newInlineDirectives());
 	}
 
 	/**

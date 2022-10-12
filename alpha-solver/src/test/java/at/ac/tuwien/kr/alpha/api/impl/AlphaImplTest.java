@@ -70,7 +70,6 @@ import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.programs.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
@@ -327,7 +326,7 @@ public class AlphaImplTest {
 
 		Alpha system = new AlphaImpl();
 
-		ASPCore2Program prog = Programs.newASPCore2Program(singletonList(rule), emptyList(), new InlineDirectivesImpl());
+		ASPCore2Program prog = Programs.newASPCore2Program(singletonList(rule), emptyList(), Programs.newInlineDirectives());
 
 		Set<AnswerSet> actual = system.solve(prog).collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("p").instance("x").build()));

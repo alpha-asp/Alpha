@@ -66,7 +66,6 @@ import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.AnswerSets;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
-import at.ac.tuwien.kr.alpha.commons.programs.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
@@ -162,7 +161,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		if (ctx.statements() == null) {
 			return Programs.emptyProgram();
 		}
-		inlineDirectives = new InlineDirectivesImpl();
+		inlineDirectives = Programs.newInlineDirectives();
 		programBuilder = Programs.builder();
 		visitStatements(ctx.statements());
 		programBuilder.addInlineDirectives(inlineDirectives);

@@ -15,7 +15,6 @@ import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
-import at.ac.tuwien.kr.alpha.commons.programs.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
@@ -86,7 +85,7 @@ public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggreg
 
 		// Add the programatically created bound rule and return
 		return Programs.newASPCore2Program(ListUtils.union(coreEncoding.getRules(), Collections.singletonList(boundRule)), coreEncoding.getFacts(),
-				new InlineDirectivesImpl());
+				Programs.newInlineDirectives());
 	}
 
 	private String getBoundPredicateName(String aggregateId) {

@@ -17,7 +17,7 @@ import at.ac.tuwien.kr.alpha.api.programs.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
-import at.ac.tuwien.kr.alpha.commons.programs.NormalProgramImpl;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
@@ -52,7 +52,7 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 			return inputProgram;
 		}
 		// Create new program with rewritten rules.
-		return new NormalProgramImpl(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+		return Programs.newNormalProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
 	}
 
 	/**

@@ -50,7 +50,6 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.programs.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
@@ -83,7 +82,7 @@ public class SolverTests {
 		final ASPCore2Program program = Programs.newASPCore2Program(
 			Collections.emptyList(),
 			Collections.singletonList(fact),
-			new InlineDirectivesImpl()
+			Programs.newInlineDirectives()
 		);
 
 		assertEquals(singleton(new AnswerSetBuilder()

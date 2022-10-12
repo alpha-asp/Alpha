@@ -5,9 +5,12 @@ import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
+import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 
 public final class Programs {
 	
@@ -29,6 +32,22 @@ public final class Programs {
 
 	public static ASPCore2ProgramBuilder builder(ASPCore2Program program) {
 		return new ASPCore2ProgramBuilder(program);
+	}
+
+	public static NormalProgram newNormalProgram(List<NormalRule> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
+		return new NormalProgramImpl(rules, facts, inlineDirectives);
+	}
+
+	public static NormalProgram toNormalProgram(ASPCore2Program inputProgram) {
+		List<NormalRule> normalRules = new ArrayList<>();
+		for (Rule<Head> r : inputProgram.getRules()) {
+			normalRules.add(Rules.toNormalRule(r));
+		}
+		return new NormalProgramImpl(normalRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+	}
+
+	public static InlineDirectives newInlineDirectives() {
+		return new InlineDirectivesImpl();
 	}
 
 	/**
@@ -82,6 +101,7 @@ public final class Programs {
 		public ASPCore2Program build() {
 			return Programs.newASPCore2Program(this.rules, this.facts, this.inlineDirectives);
 		}
+
 	}
 
 }

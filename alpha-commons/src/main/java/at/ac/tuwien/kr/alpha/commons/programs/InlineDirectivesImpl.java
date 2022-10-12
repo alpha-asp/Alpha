@@ -9,7 +9,7 @@ import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
  * Stores directives appearing in the ASP program. Each directive starts with # and ends with .
  * Copyright (c) 2017 - 2021, the Alpha Team.
  */
-public class InlineDirectivesImpl implements InlineDirectives {
+class InlineDirectivesImpl implements InlineDirectives {
 
 	private final LinkedHashMap<DIRECTIVE, String> directives = new LinkedHashMap<>();
 
