@@ -3,7 +3,7 @@ package at.ac.tuwien.kr.alpha.api;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 
 /**
  * A {@link java.util.function.Predicate} testing {@link Atom}s in order to query {@link AnswerSet}s for {@link Atom}s satisfying a specific

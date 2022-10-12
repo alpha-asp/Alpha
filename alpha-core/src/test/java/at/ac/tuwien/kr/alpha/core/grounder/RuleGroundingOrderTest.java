@@ -43,8 +43,8 @@ import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramPartParser;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
+import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 
 /**
  * Copyright (c) 2017-2019, the Alpha Team.

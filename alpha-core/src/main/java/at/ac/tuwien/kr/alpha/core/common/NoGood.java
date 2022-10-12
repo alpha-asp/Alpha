@@ -27,15 +27,15 @@
  */
 package at.ac.tuwien.kr.alpha.core.common;
 
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isNegated;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isPositive;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.negateLiteral;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.positiveLiteral;
 import static at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type.INTERNAL;
 import static at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type.LEARNT;
 import static at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type.STATIC;
 import static at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type.SUPPORT;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.negateLiteral;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.positiveLiteral;
 
 import java.util.Arrays;
 import java.util.Iterator;

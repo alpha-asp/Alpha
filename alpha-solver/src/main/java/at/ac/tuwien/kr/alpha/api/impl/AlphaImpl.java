@@ -62,7 +62,7 @@ import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.commons.programs.Reifier;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;

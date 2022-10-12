@@ -50,22 +50,22 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.commons.AnswerSets;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.rules.Rules;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
-import at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.IntIterator;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.ChoiceAtom;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.core.programs.rules.InternalRule;
 
 /**
  * Represents a small ASP program with choices {@code { aa :- not bb. bb :- not aa. }}.

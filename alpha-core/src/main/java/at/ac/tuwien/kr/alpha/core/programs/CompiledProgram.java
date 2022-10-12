@@ -6,7 +6,7 @@ import java.util.Map;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.Program;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
 
 public interface CompiledProgram extends Program<CompiledRule> {
 	

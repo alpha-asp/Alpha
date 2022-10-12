@@ -1,10 +1,10 @@
 package at.ac.tuwien.kr.alpha.core.util;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramPartParser;
 
 public final class Substitutions {

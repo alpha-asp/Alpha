@@ -12,14 +12,14 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.commons.rules.Rules;
+import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
 import at.ac.tuwien.kr.alpha.core.grounder.FactIntervalEvaluator;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
+import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.programs.rules.InternalRule;
 
 /**
  * A program in the internal representation needed for grounder and solver, i.e.: rules must have normal heads, all

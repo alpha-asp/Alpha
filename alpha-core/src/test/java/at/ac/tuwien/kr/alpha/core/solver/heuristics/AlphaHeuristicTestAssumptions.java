@@ -25,7 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
