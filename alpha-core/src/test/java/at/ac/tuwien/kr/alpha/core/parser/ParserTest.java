@@ -193,7 +193,7 @@ public class ParserTest {
 
 	@Test
 	public void parseEnumerationDirective() {
-		ASPCore2Program parsedProgram = parser.parse("p(a,1)." +
+		InputProgram parsedProgram = parser.parse("p(a,1)." +
 				"# enumeration_predicate_is mune." +
 				"r(X) :- p(X), mune(X)." +
 				"p(b,2).");
