@@ -1,0 +1,11 @@
+{
+  "resources": {
+    "includes": [
+      {
+        "pattern": "alpha-core:/stringtemplates/aggregate-encodings.stg",
+        "pattern": ".*"
+      }
+    ]
+  },
+  "bundles": []
+}

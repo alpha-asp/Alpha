@@ -1,5 +1,7 @@
 plugins {
 	id("alpha.java-application-conventions")
+	id("com.github.johnrengelman.shadow") version "7.1.1"
+	id("org.mikeneck.graalvm-native-image") version "1.4.1"
 }
 
 dependencies {
@@ -70,4 +72,21 @@ tasks.create<Jar>("bundledJar") {
 
 tasks.test {
 	useJUnitPlatform()
+}
+
+tasks.shadowJar {
+	archiveClassifier.set("shadow")
+}
+
+tasks.nativeImage {
+	mainClass = main
+	//mainClass.set(main)
+	executableName = "alpha"
+	arguments(
+		"--no-fallback",
+		"-H:Log=registerResource",
+		"-H:+ReportExceptionStackTraces",
+		//"-H:ResourceConfigurationFiles=src/main/resources/native-image/resource-config.json",
+		"--report-unsupported-elements-at-runtime"
+	)
 }
