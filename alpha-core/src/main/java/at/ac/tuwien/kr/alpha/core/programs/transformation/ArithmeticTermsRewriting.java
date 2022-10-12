@@ -13,12 +13,12 @@ import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
-import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
@@ -171,7 +171,7 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 			}
 			return false;
 		} else if (term instanceof IntervalTerm) {
-			return containsArithmeticTerm(((IntervalTerm) term).getLowerBoundTerm()) || containsArithmeticTerm(((IntervalTerm) term).getUpperBoundTerm());
+			return containsArithmeticTerm(((IntervalTerm) term).getLowerBound()) || containsArithmeticTerm(((IntervalTerm) term).getUpperBound());
 		} else {
 			throw Util.oops("Unexpected term type: " + term.getClass());
 		}

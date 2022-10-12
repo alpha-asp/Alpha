@@ -107,3 +107,4 @@ gradle-app.setting
 /.dbeaver
 /Scripts
 /.vscode/
+workspace.code-workspace
