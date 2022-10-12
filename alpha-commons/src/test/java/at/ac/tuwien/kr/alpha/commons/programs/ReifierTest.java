@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
@@ -29,6 +31,8 @@ import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 
@@ -344,7 +348,15 @@ public class ReifierTest {
 
 	@Test
 	public void reifyDirectives() {
-		// TODO
+		InlineDirectives directives = Programs.newInlineDirectives();
+		directives.addDirective(InlineDirectives.DIRECTIVE.enum_predicate_is, "bla");
+		ASPCore2Program program = Programs.builder()
+			.addRule(Rules.newRule(
+				Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("a", 0))), 
+				Atoms.newBasicAtom(Predicates.getPredicate("b", 0)).toLiteral()))
+			.addInlineDirectives(directives)
+			.build();
+		Set<BasicAtom> reified = new Reifier(newIdGenerator()).reifyProgram(program);
+		assertTrue(reified.contains(Atoms.newBasicAtom(Reifier.INLINE_DIRECTIVE, Terms.newConstant("enum_predicate_is"), Terms.newConstant("bla"))));
 	}
-
 }
