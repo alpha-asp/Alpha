@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.rules;
+package at.ac.tuwien.kr.alpha.commons.rules;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,19 +12,37 @@ import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 
-/**
- * A rule that has a normal head, i.e. just one head atom, no disjunction or choice heads allowed.
- * Currently, any constructs such as aggregates, intervals, etc. in the rule body are allowed.
- * 
- * Copyright (c) 2019, the Alpha Team.
- */
-public class NormalRuleImpl extends AbstractRule<NormalHead> implements NormalRule {
+public final class Rules {
 
-	public NormalRuleImpl(NormalHead head, List<Literal> body) {
-		super(head, body);
+	private Rules() {
+		throw new AssertionError("Cannot instantiate utility class!");
 	}
 
-	public static NormalRuleImpl fromBasicRule(Rule<Head> rule) {
+	public static Rule<Head> newRule(Head head, List<Literal> body) {
+		return new BasicRule(head, body);
+	}
+
+	public static Rule<Head> newRule(Head head, Literal... body) {
+		List<Literal> bodyLst = new ArrayList<>();
+		for (Literal lit : body) {
+			bodyLst.add(lit);
+		}
+		return new BasicRule(head, bodyLst);
+	}
+
+	public static NormalRule newNormalRule(NormalHead head, List<Literal> body) {
+		return new NormalRuleImpl(head, body);
+	}
+
+	public static NormalRule newNormalRule(NormalHead head, Literal... body) {
+		List<Literal> bodyLst = new ArrayList<>();
+		for (Literal lit : body) {
+			bodyLst.add(lit);
+		}
+		return new NormalRuleImpl(head, bodyLst);
+	}
+
+	public static NormalRule toNormalRule(Rule<Head> rule) {
 		BasicAtom headAtom = null;
 		if (!rule.isConstraint()) {
 			if (!(rule.getHead() instanceof NormalHead)) {
@@ -33,23 +51,6 @@ public class NormalRuleImpl extends AbstractRule<NormalHead> implements NormalRu
 			headAtom = ((NormalHead) rule.getHead()).getAtom();
 		}
 		return new NormalRuleImpl(headAtom != null ? Heads.newNormalHead(headAtom) : null, new ArrayList<>(rule.getBody()));
-	}
-
-	public boolean isGround() {
-		if (!isConstraint() && !this.getHead().isGround()) {
-			return false;
-		}
-		for (Literal bodyElement : this.getBody()) {
-			if (!bodyElement.isGround()) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	@Override
-	public BasicAtom getHeadAtom() {
-		return this.isConstraint() ? null : this.getHead().getAtom();
 	}
 
 }

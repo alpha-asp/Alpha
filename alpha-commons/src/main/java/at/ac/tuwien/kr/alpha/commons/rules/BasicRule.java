@@ -25,23 +25,20 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.rules;
+package at.ac.tuwien.kr.alpha.commons.rules;
 
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 
 /**
  * Represents a non-ground rule or a constraint. A {@link BasicRule} has a general {@link Head}, meaning both choice heads and disjunctive
  * heads are permissible.
- * This implementation represents a rule after being parsed from a given ASP program, but before being transformed into a
- * {@link NormalRuleImpl}.
  */
-public class BasicRule extends AbstractRule<Head> implements Rule<Head> {
+class BasicRule extends AbstractRule<Head> {
 
-	public BasicRule(Head head, List<Literal> body) {
+	BasicRule(Head head, List<Literal> body) {
 		super(head, body);
 	}
 

@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.rules;
+package at.ac.tuwien.kr.alpha.commons.rules;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -55,7 +55,7 @@ public abstract class AbstractRule<H extends Head> implements Rule<H> {
 	 * 
 	 * @return true if this rule is safe.
 	 */
-	private boolean isSafe() {
+	boolean isSafe() {
 		// TODO: do the real check.
 		// Note that - once a proper safety check is implemented - that check should probably be specific for each rule
 		// implementation, therefore this method should be "protected abstract" here and implemented in each subclass.

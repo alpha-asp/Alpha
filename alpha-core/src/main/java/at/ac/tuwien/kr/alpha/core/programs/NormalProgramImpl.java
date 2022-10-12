@@ -10,7 +10,7 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
+import at.ac.tuwien.kr.alpha.commons.rules.Rules;
 
 /**
  * A program that only contains NormalRules.
@@ -26,7 +26,7 @@ public class NormalProgramImpl extends AbstractProgram<NormalRule> implements No
 	public static NormalProgramImpl fromInputProgram(ASPCore2Program inputProgram) {
 		List<NormalRule> normalRules = new ArrayList<>();
 		for (Rule<Head> r : inputProgram.getRules()) {
-			normalRules.add(NormalRuleImpl.fromBasicRule(r));
+			normalRules.add(Rules.toNormalRule(r));
 		}
 		return new NormalProgramImpl(normalRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
 	}

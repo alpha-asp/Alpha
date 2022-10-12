@@ -14,7 +14,7 @@ import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
+import at.ac.tuwien.kr.alpha.commons.rules.Rules;
 
 /**
  * Splits aggregate literals with both "lower" and "upper" bound operators into literals with only one operator each.
@@ -86,7 +86,7 @@ public final class AggregateLiteralSplitting {
 		// Third, turn computed bodies into rules again.
 		List<Rule<Head>> rewrittenRules = new ArrayList<>();
 		for (List<Literal> rewrittenBody : rewrittenBodies) {
-			rewrittenRules.add(new BasicRule(sourceRule.getHead(), rewrittenBody));
+			rewrittenRules.add(Rules.newRule(sourceRule.getHead(), rewrittenBody));
 		}
 		return rewrittenRules;
 	}

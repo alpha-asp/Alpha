@@ -47,6 +47,7 @@ import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.literals.Literals;
+import at.ac.tuwien.kr.alpha.commons.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
@@ -54,7 +55,6 @@ import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
-import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 import at.ac.tuwien.kr.alpha.core.test.util.SubstitutionTestUtil;
 import at.ac.tuwien.kr.alpha.core.util.Substitutions;
 
@@ -114,7 +114,7 @@ public class SubstitutionTest {
 	@Test
 	public void groundAndPrintRule() {
 		Rule<Head> rule = PARSER.parse("x :- p(X,Y), not q(X,Y).").getRules().get(0);
-		CompiledRule nonGroundRule = InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(rule));
+		CompiledRule nonGroundRule = InternalRule.fromNormalRule(Rules.toNormalRule(rule));
 		Substitution substitution1 = BasicSubstitution.specializeSubstitution(PX, PA, BasicSubstitution.EMPTY_SUBSTITUTION);
 		Substitution substitution2 = BasicSubstitution.specializeSubstitution(PY, PB, substitution1);
 		String printedString = SubstitutionTestUtil.groundAndPrintRule(nonGroundRule, substitution2);
@@ -169,7 +169,7 @@ public class SubstitutionTest {
 	@Test
 	public void substitutionFromString() {
 		Rule<Head> rule = PARSER.parse("x :- p(X,Y), not q(X,Y).").getRules().get(0);
-		CompiledRule nonGroundRule = InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(rule));
+		CompiledRule nonGroundRule = InternalRule.fromNormalRule(Rules.toNormalRule(rule));
 		Substitution substitution1 = BasicSubstitution.specializeSubstitution(PX, PA, BasicSubstitution.EMPTY_SUBSTITUTION);
 		Substitution substitution = BasicSubstitution.specializeSubstitution(PY, PB, substitution1);
 		RuleAtom ruleAtom = new RuleAtom(nonGroundRule, substitution);

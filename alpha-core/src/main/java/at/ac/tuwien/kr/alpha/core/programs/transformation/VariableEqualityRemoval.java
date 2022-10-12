@@ -47,10 +47,10 @@ import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 /**
  * Removes variable equalities from rules by replacing one variable with the other.
@@ -149,6 +149,6 @@ public class VariableEqualityRemoval extends ProgramTransformation<ASPCore2Progr
 				headAtom.getTerms().set(i, replaced);
 			}
 		}
-		return new BasicRule(rewrittenHead, rewrittenBody);
+		return Rules.newRule(rewrittenHead, rewrittenBody);
 	}
 }

@@ -16,6 +16,8 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionS
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
@@ -23,13 +25,13 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.literals.Literals;
+import at.ac.tuwien.kr.alpha.commons.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 public class MinMaxEncoder extends AbstractAggregateEncoder {
 
@@ -119,7 +121,7 @@ public class MinMaxEncoder extends AbstractAggregateEncoder {
 			resultRuleBody.add(aggregateValueComparison);
 			resultRuleBody.addAll(aggregateToEncode.getDependencies());
 			InputProgram.Builder bld = InputProgram.builder(parser.parse(encodingTemplate.render()));
-			BasicRule resultRule = new BasicRule(resultRuleHead, resultRuleBody);
+			Rule<Head> resultRule = Rules.newRule(resultRuleHead, resultRuleBody);
 			bld.addRule(resultRule);
 			return bld.build();
 		}

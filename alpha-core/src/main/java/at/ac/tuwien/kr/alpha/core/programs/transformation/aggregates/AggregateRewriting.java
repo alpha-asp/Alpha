@@ -16,6 +16,7 @@ import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.literals.Literals;
+import at.ac.tuwien.kr.alpha.commons.rules.Rules;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
@@ -23,7 +24,6 @@ import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.Ab
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.CountEncoder;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.MinMaxEncoder;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.SumEncoder;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 /**
  * Rewrites {@link AggregateLiteral}s in programs to semantically equivalent, aggregate-free sub-programs.
@@ -146,7 +146,7 @@ public class AggregateRewriting extends ProgramTransformation<ASPCore2Program, A
 					rewrittenBody.add(lit);
 				}
 			}
-			rewrittenRules.add(new BasicRule(rule.getHead(), rewrittenBody));
+			rewrittenRules.add(Rules.newRule(rule.getHead(), rewrittenBody));
 		}
 		return rewrittenRules;
 	}

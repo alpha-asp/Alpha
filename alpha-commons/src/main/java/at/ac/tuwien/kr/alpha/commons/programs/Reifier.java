@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateElement;
@@ -32,7 +33,7 @@ import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
-public class ReificationHelper {
+public class Reifier {
 
 	// Predicates describing rules.
 	static final Predicate RULE = Predicates.getPredicate("rule", 1);
@@ -120,6 +121,9 @@ public class ReificationHelper {
 	static final Predicate FUNCTION_TERM_NUM_ARGUMENTS = Predicates.getPredicate("functionTerm_numArguments", 2);
 	static final Predicate FUNCTION_TERM_ARGUMENT = Predicates.getPredicate("functionTerm_argumentTerm", 3);
 
+	// Predicates describing InlineDirectives
+	static final Predicate INLINE_DIRECTIVE = Predicates.getPredicate("inlineDirective", 2);
+
 	// Constants describing head types.
 	static final ConstantTerm<String> HEAD_TYPE_NORMAL = Terms.newSymbolicConstant("normal");
 	static final ConstantTerm<String> HEAD_TYPE_CHOICE = Terms.newSymbolicConstant("choice");
@@ -179,27 +183,38 @@ public class ReificationHelper {
 
 	private final Map<Predicate, ConstantTerm<?>> reifiedPredicates = new HashMap<>();
 
-	public ReificationHelper(Supplier<ConstantTerm<?>> idProvider) {
+	public Reifier(Supplier<ConstantTerm<?>> idProvider) {
 		this.idProvider = idProvider;
 	}
 
 	public Set<BasicAtom> reifyProgram(ASPCore2Program program) {
-		// TODO reify directives
 		Set<BasicAtom> reified = new LinkedHashSet<>();
+		reified.addAll(reifyDirectives(program.getInlineDirectives()));
+		for (Atom fact : program.getFacts()) {
+			ConstantTerm<?> factId = idProvider.get();
+			reified.add(Atoms.newBasicAtom(FACT, factId));
+			reified.addAll(reifyAtom(factId, fact));
+		}
 		for (Rule<? extends Head> rule : program.getRules()) {
 			if (rule.isConstraint()) {
 				continue;
 			}
 			reified.addAll(reifyRule(rule));
 		}
-		for (Atom fact : program.getFacts()) {
-			ConstantTerm<?> factId = idProvider.get();
-			reified.add(Atoms.newBasicAtom(FACT, factId));
-			reified.addAll(reifyAtom(factId, fact));
-		}
 		for (Map.Entry<Predicate, ConstantTerm<?>> entry : reifiedPredicates.entrySet()) {
 			reified.add(Atoms.newBasicAtom(PREDICATE, entry.getValue(), Terms.newConstant(entry.getKey().getName()),
 					Terms.newConstant(entry.getKey().getArity())));
+		}
+		return reified;
+	}
+
+	/**
+	 * Generates atoms of form inlineDirective("<DIRECTIVE_NAME>", "<DIRECTIVE_VALUE>").
+	 */
+	Set<BasicAtom> reifyDirectives(InlineDirectives directives) {
+		Set<BasicAtom> reified = new LinkedHashSet<>();
+		for (Map.Entry<InlineDirectives.DIRECTIVE, String> entry : directives.getDirectives().entrySet()) {
+			reified.add(Atoms.newBasicAtom(INLINE_DIRECTIVE, Terms.newConstant(entry.getKey().name()), Terms.newConstant(entry.getValue())));
 		}
 		return reified;
 	}

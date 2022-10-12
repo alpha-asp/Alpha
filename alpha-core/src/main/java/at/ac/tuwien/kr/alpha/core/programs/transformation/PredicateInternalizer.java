@@ -14,9 +14,9 @@ import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 /**
  *
@@ -69,7 +69,7 @@ public class PredicateInternalizer {
 				newBody.add(bodyElement);
 			}
 		}
-		return new BasicRule(newHead, newBody);
+		return Rules.newRule(newHead, newBody);
 	}
 
 	private static BasicAtom makePredicateInternal(BasicAtom atom) {

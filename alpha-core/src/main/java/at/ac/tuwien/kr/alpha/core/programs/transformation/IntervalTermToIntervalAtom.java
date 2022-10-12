@@ -44,11 +44,11 @@ import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
-import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 
 /**
  * Rewrites all interval terms in a rule into a new variable and an IntervalAtom.
@@ -90,7 +90,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		for (Map.Entry<VariableTerm, IntervalTerm> interval : intervalReplacements.entrySet()) {
 			rewrittenBody.add(new IntervalAtom(interval.getValue(), interval.getKey()).toLiteral());
 		}
-		return new NormalRuleImpl(rewrittenHead, rewrittenBody);
+		return Rules.newNormalRule(rewrittenHead, rewrittenBody);
 	}
 
 	/**

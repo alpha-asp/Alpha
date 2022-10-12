@@ -18,10 +18,10 @@ import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.rules.Rules;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 /**
  * Rewrites the ordinary atom whose name is given in the input program by the enumeration directive #enum_atom_is into
@@ -89,7 +89,7 @@ public class EnumerationRewriting extends ProgramTransformation<ASPCore2Program,
 				rewrittenLiterals.add(new EnumerationAtom(enumIdTerm, valueTerm, indexTerm).toLiteral());
 			}
 			modifiedBodyLiterals.addAll(rewrittenLiterals);
-			rewrittenRules.add(new BasicRule(rule.getHead(), modifiedBodyLiterals));
+			rewrittenRules.add(Rules.newRule(rule.getHead(), modifiedBodyLiterals));
 		}
 		return rewrittenRules;
 	}

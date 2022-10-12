@@ -18,9 +18,9 @@ import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.literals.Literals;
+import at.ac.tuwien.kr.alpha.commons.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 /**
  * Transforms an {@link InputProgram} such that, for all aggregate (body-)literals, only the comparison operators "="
@@ -57,7 +57,7 @@ public final class AggregateOperatorNormalization {
 		for (Literal lit : rule.getBody()) {
 			rewrittenBody.addAll(rewriteLiteral(lit));
 		}
-		return new BasicRule(rule.getHead(), rewrittenBody);
+		return Rules.newRule(rule.getHead(), rewrittenBody);
 	}
 
 	private static List<Literal> rewriteLiteral(Literal lit) {

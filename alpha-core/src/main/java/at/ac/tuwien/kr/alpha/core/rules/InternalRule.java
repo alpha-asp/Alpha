@@ -39,6 +39,7 @@ import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.rules.AbstractRule;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
@@ -49,7 +50,7 @@ import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingInfoImpl;
  * Represents a normal rule or a constraint for the semi-naive grounder.
  * A normal rule has no head atom if it represents a constraint, otherwise it has one atom in its head.
  */
-public class InternalRule extends NormalRuleImpl implements CompiledRule {
+public class InternalRule extends AbstractRule<NormalHead> implements CompiledRule {
 
 	private static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
 
@@ -141,6 +142,19 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 	@Override
 	public int getRuleId() {
 		return this.ruleId;
+	}
+
+	@Override
+	public boolean isGround() {
+		if (!isConstraint() && !getHead().isGround()) {
+			return false;
+		}
+		for (Literal bodyElement : getBody()) {
+			if (!bodyElement.isGround()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 }

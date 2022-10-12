@@ -10,6 +10,8 @@ import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
  */
 public interface NormalRule extends Rule<NormalHead> {
 
-	BasicAtom getHeadAtom();
+	default BasicAtom getHeadAtom() {
+		return this.isConstraint() ? null : this.getHead().getAtom();
+	}
 
 }

@@ -18,11 +18,11 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
-import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 
 /**
  * Transforms rules such that arithmetic terms only occur in comparison predicates.
@@ -56,13 +56,14 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 	}
 
 	/**
-	 * Takes a normal rule and rewrites it such that {@link ArithmeticTerm}s only appear inside {@link at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral}s.
+	 * Takes a normal rule and rewrites it such that {@link ArithmeticTerm}s only appear inside
+	 * {@link at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral}s.
 	 *
 	 * @param inputProgramRule the rule to rewrite.
 	 * @return the rewritten rule. Note that a new {@link NormalRule} is returned for every call of this method.
 	 */
 	private NormalRule rewriteRule(NormalRule inputProgramRule) {
-		numArithmeticVariables = 0;	// Reset number of introduced variables for each rule.
+		numArithmeticVariables = 0; // Reset number of introduced variables for each rule.
 		NormalHead rewrittenHead = null;
 		List<Literal> rewrittenBodyLiterals = new ArrayList<>();
 		// Rewrite head.
@@ -83,14 +84,16 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 			}
 			rewrittenBodyLiterals.add(rewriteAtom(literal.getAtom(), rewrittenBodyLiterals).toLiteral(!literal.isNegated()));
 		}
-		return new NormalRuleImpl(rewrittenHead, rewrittenBodyLiterals);
+		return Rules.newNormalRule(rewrittenHead, rewrittenBodyLiterals);
 	}
 
 	/**
-	 * Checks whether a normal rule contains an {@link ArithmeticTerm} outside of a {@link at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral}.
+	 * Checks whether a normal rule contains an {@link ArithmeticTerm} outside of a
+	 * {@link at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral}.
 	 *
 	 * @param inputProgramRule the rule to check for presence of arithmetic terms outside comparison literals.
-	 * @return true if the inputProgramRule contains an {@link ArithmeticTerm} outside of a {@link at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral}.
+	 * @return true if the inputProgramRule contains an {@link ArithmeticTerm} outside of a
+	 *         {@link at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral}.
 	 */
 	private boolean containsArithmeticTermsToRewrite(NormalRule inputProgramRule) {
 		if (!inputProgramRule.isConstraint()) {

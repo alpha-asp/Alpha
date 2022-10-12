@@ -61,7 +61,7 @@ import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.commons.programs.ReificationHelper;
+import at.ac.tuwien.kr.alpha.commons.programs.Reifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
@@ -299,7 +299,7 @@ public class AlphaImpl implements Alpha {
 	@Override
 	public Set<BasicAtom> reify(ASPCore2Program program) {
 		final IntIdGenerator intIdGen = new IntIdGenerator(0);
-		return new ReificationHelper(() -> {
+		return new Reifier(() -> {
 			return Terms.newConstant(intIdGen.getNextId());
 		}).reifyProgram(program);
 	}
