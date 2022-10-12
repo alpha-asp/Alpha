@@ -33,6 +33,7 @@ import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.IdGenerator;
+import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 public class Reifier {
 
@@ -248,7 +249,7 @@ public class Reifier {
 		} else if (head instanceof ChoiceHead) {
 			reified.addAll(reifyChoiceHead(headId, (ChoiceHead) head));
 		} else {
-			throw new IllegalArgumentException("Head type " + head.getClass().getSimpleName() + " cannot be reified!");
+			throw Util.oops("Head type " + head.getClass().getSimpleName() + " cannot be reified!");
 		}
 		return reified;
 	}
@@ -313,7 +314,7 @@ public class Reifier {
 		} else if (atom instanceof AggregateAtom) {
 			return reifyAggregateAtom(atomId, (AggregateAtom) atom);
 		} else {
-			throw new IllegalArgumentException("Atom type " + atom.getClass().getSimpleName() + " cannot be reified!");
+			throw Util.oops("Atom type " + atom.getClass().getSimpleName() + " cannot be reified!");
 		}
 	}
 
@@ -345,7 +346,7 @@ public class Reifier {
 		reified.add(Atoms.newBasicAtom(COMPARISON_ATOM_LEFT, atomId, leftTermId));
 		reified.add(Atoms.newBasicAtom(COMPARISON_ATOM_RIGHT, atomId, rightTermId));
 		if (!CMP_OPS.containsKey(atom.getOperator())) {
-			throw new IllegalArgumentException("Cannot reifiy comparison operator " + atom.getOperator());
+			throw Util.oops("Cannot reifiy comparison operator " + atom.getOperator());
 		}
 		reified.add(Atoms.newBasicAtom(COMPARISON_ATOM_OPERATOR, atomId, CMP_OPS.get(atom.getOperator())));
 		reified.addAll(reifyTerm(leftTermId, atom.getTerms().get(0)));
@@ -424,7 +425,7 @@ public class Reifier {
 		} else if (term instanceof IntervalTerm) {
 			return reifyIntervalTerm(termId, (IntervalTerm) term);
 		} else {
-			throw new IllegalArgumentException("Cannot reify term of type " + term.getClass().getSimpleName());
+			throw Util.oops("Cannot reify term of type " + term.getClass().getSimpleName());
 		}
 	}
 
