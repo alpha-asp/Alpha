@@ -101,7 +101,7 @@ public class CommandLineParser {
 	private static final Option OPT_REBOOT_ITERATIONS = Option.builder("rit").longOpt("rebootIterations").hasArg(true).argName("number").type(Integer.class)
 			.desc("the number of solver iterations between reboots (default: " + SystemConfig.DEFAULT_REBOOT_ITERATIONS + ")").build();
 	private static final Option OPT_NO_REBOOT_REPEAT = Option.builder("drr").longOpt("disableRebootRepeat")
-			.desc("disables repeated reboots resulting in at most one reboot during solving, only effective if reboot is enabled (default: " + SystemConfig.DEFAULT_REBOOT_ENABLED + ")").build();
+			.desc("disables repeated reboots resulting in at most one reboot during solving, only effective if reboot is enabled (default: " + SystemConfig.DEFAULT_DISABLE_REBOOT_REPEAT + ")").build();
 	private static final Option OPT_SORT = Option.builder("sort").longOpt("sort").hasArg(false)
 			.desc("sort answer sets (default: " + SystemConfig.DEFAULT_SORT_ANSWER_SETS + ")").build();
 	private static final Option OPT_DETERMINISTIC = Option.builder("d").longOpt("deterministic").hasArg(false)
@@ -178,6 +178,7 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NOGOOD_STORE);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_REBOOT_ENABLED);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_REBOOT_ITERATIONS);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_REBOOT_REPEAT);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SORT);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_DETERMINISTIC);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SEED);

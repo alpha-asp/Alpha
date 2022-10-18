@@ -126,7 +126,7 @@ public class SystemConfig {
 	}
 
 	public boolean isRebootEnabled() {
-		return rebootEnabled;
+		return this.rebootEnabled;
 	}
 
 	public void setRebootEnabled(boolean rebootEnabled) {
@@ -134,7 +134,7 @@ public class SystemConfig {
 	}
 
 	public int getRebootIterations() {
-		return rebootIterations;
+		return this.rebootIterations;
 	}
 
 	public void setRebootIterations(int rebootIterations) {
@@ -142,7 +142,7 @@ public class SystemConfig {
 	}
 
 	public boolean isDisableRebootRepeat() {
-		return disableRebootRepeat;
+		return this.disableRebootRepeat;
 	}
 
 	public void setDisableRebootRepeat(boolean disableRebootRepeat) {
