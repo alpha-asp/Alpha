@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
+import at.ac.tuwien.kr.alpha.core.solver.reboot.stats.SimpleCountingTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,6 +144,26 @@ public class NaiveNoGoodStore implements NoGoodStore {
 	public void reset() {
 		clear();
 		counter.reset();
+	}
+
+	@Override
+	public void setPropagationTracker(SimpleCountingTracker tracker) {
+
+	}
+
+	@Override
+	public void setPropagationConflictTracker(SimpleCountingTracker tracker) {
+
+	}
+
+	@Override
+	public void setNonbinPropagationTracker(SimpleCountingTracker tracker) {
+
+	}
+
+	@Override
+	public void setNonbinPropagationConflictTracker(SimpleCountingTracker tracker) {
+
 	}
 
 	@Override

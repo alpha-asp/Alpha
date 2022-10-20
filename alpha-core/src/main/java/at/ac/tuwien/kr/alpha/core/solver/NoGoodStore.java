@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.core.solver;
 
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
+import at.ac.tuwien.kr.alpha.core.solver.reboot.stats.SimpleCountingTracker;
 
 /**
  * An interface defining the use of a NoGood store.
@@ -60,4 +61,12 @@ public interface NoGoodStore {
 	 * Clears all data within the nogood store.
 	 */
 	void reset();
+
+	void setPropagationTracker(SimpleCountingTracker tracker);
+
+	void setPropagationConflictTracker(SimpleCountingTracker tracker);
+
+	void setNonbinPropagationTracker(SimpleCountingTracker tracker);
+
+	void setNonbinPropagationConflictTracker(SimpleCountingTracker tracker);
 }

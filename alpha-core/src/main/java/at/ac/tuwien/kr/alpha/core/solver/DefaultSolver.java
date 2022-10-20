@@ -42,6 +42,7 @@ import java.util.function.Consumer;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.solver.reboot.AtomizedChoice;
 import at.ac.tuwien.kr.alpha.core.solver.reboot.AtomizedNoGoodCollection;
+import at.ac.tuwien.kr.alpha.core.solver.reboot.stats.*;
 import at.ac.tuwien.kr.alpha.core.solver.reboot.strategies.FixedRebootStrategy;
 import at.ac.tuwien.kr.alpha.core.solver.reboot.strategies.RebootStrategy;
 import at.ac.tuwien.kr.alpha.core.util.StopWatch;
@@ -110,6 +111,9 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	private final StopWatch solverStopWatch;
 	private final StopWatch grounderStopWatch;
 	private final StopWatch propagationStopWatch;
+	private final SimpleCountingTracker iterationTracker;
+	private final SimpleCountingTracker conflictTracker;
+	private final SimpleCountingTracker decisionTracker;
 
 	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, SystemConfig config, HeuristicsConfiguration heuristicsConfiguration) {
 		super(atomStore, grounder);
@@ -124,8 +128,6 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		this.branchingHeuristic = chainFallbackHeuristic(grounder, assignment, random, heuristicsConfiguration);
 		this.disableJustifications = config.isDisableJustificationSearch();
 		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();
-		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment,
-				store.getNoGoodCounter(), 1000);
 
 		this.rebootEnabled = config.isRebootEnabled();
 		this.disableRebootRepeat = config.isDisableRebootRepeat();
@@ -134,6 +136,36 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		this.solverStopWatch = new StopWatch();
 		this.grounderStopWatch = new StopWatch();
 		this.propagationStopWatch = new StopWatch();
+
+		this.iterationTracker = new SimpleCountingTracker("iterations");
+		this.conflictTracker = new SimpleCountingTracker("conflicts");
+		this.decisionTracker = new SimpleCountingTracker("decisions");
+		SimpleCountingTracker propagationTracker = new SimpleCountingTracker("prop_count");
+		SimpleCountingTracker propagationConflictTracker = new SimpleCountingTracker("prop_conflicts");
+		SimpleCountingTracker nonbinPropagationTracker = new SimpleCountingTracker("nonbin_prop_count");
+		SimpleCountingTracker nonbinPropagationConflictTracker = new SimpleCountingTracker("nonbin_prop_conflicts");
+		StaticNoGoodTracker staticNoGoodTracker = new StaticNoGoodTracker(getNoGoodCounter());
+		TotalNoGoodTracker totalNoGoodTracker = new TotalNoGoodTracker(getNoGoodCounter());
+
+		List<StatTracker> statTrackers = new LinkedList<>();
+		statTrackers.add(iterationTracker);
+		statTrackers.add(conflictTracker);
+		statTrackers.add(decisionTracker);
+		statTrackers.add(propagationTracker);
+		statTrackers.add(propagationConflictTracker);
+		statTrackers.add(nonbinPropagationTracker);
+		statTrackers.add(nonbinPropagationConflictTracker);
+		statTrackers.add(new QuotientTracker("conflict_quot", conflictTracker, iterationTracker));
+		statTrackers.add(new QuotientTracker("nogood_quot", staticNoGoodTracker, totalNoGoodTracker));
+		statTrackers.add(new QuotientTracker("prop_quot", propagationConflictTracker, propagationTracker));
+		statTrackers.add(new QuotientTracker("prop_quot_nonbin", nonbinPropagationConflictTracker, nonbinPropagationTracker));
+
+		this.store.setPropagationTracker(propagationTracker);
+		this.store.setPropagationConflictTracker(propagationConflictTracker);
+		this.store.setNonbinPropagationTracker(nonbinPropagationTracker);
+		this.store.setNonbinPropagationConflictTracker(nonbinPropagationConflictTracker);
+		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment,
+				store.getNoGoodCounter(), statTrackers, 1000);
 	}
 
 	private BranchingHeuristic chainFallbackHeuristic(Grounder grounder, WritableAssignment assignment, Random random, HeuristicsConfiguration heuristicsConfiguration) {
@@ -158,6 +190,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
 			rebootStrategy.stepPerformed();
+			iterationTracker.increment();
 			performanceLog.writeIfTimeForLogging(LOGGER);
 			if (searchState.isSearchSpaceCompletelyExplored) {
 				LOGGER.debug("Search space has been fully explored, there are no more answer-sets.");
@@ -169,6 +202,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 			if (conflictCause != null) {
 				LOGGER.debug("Conflict encountered, analyzing conflict.");
 				learnFromConflict(conflictCause);
+				conflictTracker.increment();
 			} else if (assignment.didChange()) {
 				LOGGER.debug("Updating grounder with new assignments and (potentially) obtaining new NoGoods.");
 				syncWithGrounder();
@@ -570,6 +604,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		}
 
 		choiceManager.choose(new Choice(literal, false));
+		decisionTracker.increment();
 		return true;
 	}
 
