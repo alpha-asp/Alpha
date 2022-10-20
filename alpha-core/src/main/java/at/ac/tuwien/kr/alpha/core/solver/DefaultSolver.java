@@ -460,7 +460,11 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 			return false;
 		}
 		// Add newly obtained noGoods.
-		if (!ingest(obtained)) {
+		boolean success = ingest(obtained);
+		for (NoGood noGood : obtained.values()) {
+			learnedNoGoods.add(noGood);
+		}
+		if (!success) {
 			logStats();
 			return false;
 		}
