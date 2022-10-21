@@ -27,7 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.core.solver.reboot.stats.SimpleCountingTracker;
+import at.ac.tuwien.kr.alpha.core.solver.reboot.stats.PropagationStatManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,16 +87,13 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	private boolean hasBinaryNoGoods;
 
 	private final NoGoodCounter counter = new NoGoodCounter();
-
-	private SimpleCountingTracker propagationTracker;
-	private SimpleCountingTracker propagationConflictTracker;
-	private SimpleCountingTracker nonbinPropagationTracker;
-	private SimpleCountingTracker nonbinPropagationConflictTracker;
+	private final PropagationStatManager propagationStatManager;
 
 	public NoGoodStoreAlphaRoaming(WritableAssignment assignment, boolean checksEnabled) {
 		this.assignment = assignment;
 		this.checksEnabled = checksEnabled;
 		this.learnedNoGoodDeletion = new LearnedNoGoodDeletion(this, assignment);
+		this.propagationStatManager = new PropagationStatManager();
 	}
 
 	public NoGoodStoreAlphaRoaming(WritableAssignment assignment) {
@@ -165,31 +162,14 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	public void reset() {
 		clear();
 		counter.reset();
-		propagationTracker.reset();
-		propagationConflictTracker.reset();
-		nonbinPropagationTracker.reset();
-		nonbinPropagationConflictTracker.reset();
+		propagationStatManager.reset();
 	}
 
 	@Override
-	public void setPropagationTracker(SimpleCountingTracker tracker) {
-		this.propagationTracker = tracker;
+	public PropagationStatManager getPropagationStatManager() {
+		return propagationStatManager;
 	}
 
-	@Override
-	public void setPropagationConflictTracker(SimpleCountingTracker tracker) {
-		this.propagationConflictTracker = tracker;
-	}
-
-	@Override
-	public void setNonbinPropagationTracker(SimpleCountingTracker tracker) {
-		this.nonbinPropagationTracker = tracker;
-	}
-
-	@Override
-	public void setNonbinPropagationConflictTracker(SimpleCountingTracker tracker) {
-		this.nonbinPropagationConflictTracker = tracker;
-	}
 
 	@Override
 	public void cleanupLearnedNoGoods() {
@@ -488,14 +468,12 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	 * @param literal the literal that triggers the propagation.
 	 */
 	private ConflictCause propagateWeakly(int literal, int currentDecisionLevel, boolean restrictToBinaryNoGoods) {
-		incrementPropagationTracker();
-		incrementNonbinPropagationTracker();
 		final ArrayList<WatchedNoGood> watchesOfAssignedAtom = watches(literal);
 
 		// Propagate binary watches.
 		ConflictCause conflictCause = binaryWatches[literal].propagateWeakly();
 		if (conflictCause != null || restrictToBinaryNoGoods) {
-			handleTrackersForBinaryConflict();
+			propagationStatManager.handleBinaryConflict();
 			return conflictCause;
 		}
 
@@ -512,11 +490,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 				while (watchIterator.hasNext()) {
 					watchlist.add(watchIterator.next());
 				}
-				handleTrackersForNonBinaryConflict();
+				propagationStatManager.handleNonBinaryConflict();
 				return conflictCause;
 			}
 		}
-		handleTrackersForNoConflict();
+		propagationStatManager.handleNoConflict();
 		return null;
 	}
 
@@ -588,7 +566,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		// Propagate binary watches.
 		ConflictCause conflictCause = binaryWatches[literal].propagateStrongly();
 		if (conflictCause != null || restrictToBinaryNoGoods) {
-			handleTrackersForBinaryConflict();
+			propagationStatManager.handleBinaryConflict();
 			return conflictCause;
 		}
 
@@ -608,11 +586,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 				while (watchIterator.hasNext()) {
 					watchlist.add(watchIterator.next());
 				}
-				handleTrackersForNonBinaryConflict();
+				propagationStatManager.handleNonBinaryConflict();
 				return conflictCause;
 			}
 		}
-		handleTrackersForNoConflict();
+		propagationStatManager.handleNoConflict();
 		return null;
 	}
 
@@ -716,48 +694,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	@Override
 	public void setChecksEnabled(boolean checksEnabled) {
 		this.checksEnabled = checksEnabled;
-	}
-
-
-	private void incrementPropagationTracker() {
-		if (propagationTracker != null) {
-			propagationTracker.increment();
-		}
-	}
-
-	private void incrementPropagationConflictTracker() {
-		if (propagationTracker != null) {
-			propagationTracker.increment();
-		}
-	}
-
-	private void incrementNonbinPropagationTracker() {
-		if (nonbinPropagationTracker != null) {
-			nonbinPropagationTracker.increment();
-		}
-	}
-
-	private void incrementNonbinPropagationConflictTracker() {
-		if (nonbinPropagationConflictTracker != null) {
-			nonbinPropagationConflictTracker.increment();
-		}
-	}
-
-	private void handleTrackersForBinaryConflict() {
-		incrementPropagationTracker();
-		incrementPropagationConflictTracker();
-	}
-
-	private void handleTrackersForNonBinaryConflict() {
-		incrementPropagationTracker();
-		incrementNonbinPropagationTracker();
-		incrementPropagationConflictTracker();
-		incrementNonbinPropagationConflictTracker();
-	}
-
-	private void handleTrackersForNoConflict() {
-		incrementPropagationTracker();
-		incrementNonbinPropagationTracker();
 	}
 
 	class BinaryWatchList implements ShallowAntecedent {

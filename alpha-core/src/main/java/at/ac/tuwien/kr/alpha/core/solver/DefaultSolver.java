@@ -140,10 +140,6 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		this.iterationTracker = new SimpleCountingTracker("iterations");
 		this.conflictTracker = new SimpleCountingTracker("conflicts");
 		this.decisionTracker = new SimpleCountingTracker("decisions");
-		SimpleCountingTracker propagationTracker = new SimpleCountingTracker("prop_count");
-		SimpleCountingTracker propagationConflictTracker = new SimpleCountingTracker("prop_conflicts");
-		SimpleCountingTracker nonbinPropagationTracker = new SimpleCountingTracker("nonbin_prop_count");
-		SimpleCountingTracker nonbinPropagationConflictTracker = new SimpleCountingTracker("nonbin_prop_conflicts");
 		StaticNoGoodTracker staticNoGoodTracker = new StaticNoGoodTracker(getNoGoodCounter());
 		TotalNoGoodTracker totalNoGoodTracker = new TotalNoGoodTracker(getNoGoodCounter());
 
@@ -151,19 +147,23 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		statTrackers.add(iterationTracker);
 		statTrackers.add(conflictTracker);
 		statTrackers.add(decisionTracker);
-		statTrackers.add(propagationTracker);
-		statTrackers.add(propagationConflictTracker);
-		statTrackers.add(nonbinPropagationTracker);
-		statTrackers.add(nonbinPropagationConflictTracker);
+
+		PropagationStatManager propagationStatManager = this.store.getPropagationStatManager();
+		if (propagationStatManager != null) {
+			List<StatTracker> propagationTrackers = propagationStatManager.getStatTrackerList();
+			statTrackers.addAll(propagationTrackers);
+
+			StatTracker propagationTracker = propagationStatManager.getPropagationTracker();
+			StatTracker propagationConflictTracker = propagationStatManager.getPropagationConflictTracker();
+			StatTracker nonbinPropagationTracker = propagationStatManager.getNonbinPropagationTracker();
+			StatTracker nonbinPropagationConflictTracker = propagationStatManager.getNonbinPropagationConflictTracker();
+			statTrackers.add(new QuotientTracker("prop_quot", propagationConflictTracker, propagationTracker));
+			statTrackers.add(new QuotientTracker("prop_quot_nonbin", nonbinPropagationConflictTracker, nonbinPropagationTracker));
+		}
+
 		statTrackers.add(new QuotientTracker("conflict_quot", conflictTracker, iterationTracker));
 		statTrackers.add(new QuotientTracker("nogood_quot", staticNoGoodTracker, totalNoGoodTracker));
-		statTrackers.add(new QuotientTracker("prop_quot", propagationConflictTracker, propagationTracker));
-		statTrackers.add(new QuotientTracker("prop_quot_nonbin", nonbinPropagationConflictTracker, nonbinPropagationTracker));
 
-		this.store.setPropagationTracker(propagationTracker);
-		this.store.setPropagationConflictTracker(propagationConflictTracker);
-		this.store.setNonbinPropagationTracker(nonbinPropagationTracker);
-		this.store.setNonbinPropagationConflictTracker(nonbinPropagationConflictTracker);
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment,
 				store.getNoGoodCounter(), statTrackers, 1000);
 	}
