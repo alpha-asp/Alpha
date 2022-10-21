@@ -25,26 +25,59 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.reboot.strategies;
 
-public class GeometricRebootStrategy implements RebootStrategy {
-	private static final double BASE = 1.5;
-	private static final double SCALING_FACTOR = 2;
+import at.ac.tuwien.kr.alpha.core.common.NoGood;
+
+public class LubyConflictRebootStrategy implements RebootStrategy {
+	private static final double SCALING_FACTOR = 10;
 
 	private int rebootCount;
-	private int stepCount;
+	private int conflictCount;
 
 	@Override
-	public void stepPerformed() {
-		stepCount++;
+	public void nextIteration() {
+
+	}
+
+	@Override
+	public void decisionMade() {
+
+	}
+
+	@Override
+	public void conflictEncountered() {
+		conflictCount++;
+	}
+
+	@Override
+	public void newNoGood(NoGood noGood) {
+
+	}
+
+	@Override
+	public void newLearnedNoGood(NoGood noGood) {
+
 	}
 
 	@Override
 	public boolean isRebootScheduled() {
-		return stepCount >= SCALING_FACTOR * Math.pow(BASE, rebootCount);
+		return conflictCount >= SCALING_FACTOR * luby(rebootCount + 1);
 	}
 
 	@Override
 	public void rebootPerformed() {
 		rebootCount++;
-		stepCount = 0;
+	}
+
+	private double luby(double i) {
+		for (int k = 1; k < 31; k++) {
+			if (i == (Math.pow(2, k)) - 1) {
+				return Math.pow(2, k - 1);
+			}
+		}
+		for (int k = 1;; k++) {
+			if (Math.pow(2, k - 1) <= i && i < Math.pow(2, k) - 1) {
+				return luby(i - Math.pow(2, k - 1) + 1);
+			}
+		}
 	}
 }

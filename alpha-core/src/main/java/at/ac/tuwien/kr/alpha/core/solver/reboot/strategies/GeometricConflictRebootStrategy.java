@@ -25,27 +25,48 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.reboot.strategies;
 
-public class FixedRebootStrategy implements RebootStrategy {
-	private final int breakpoint;
-	private int stepCount;
+import at.ac.tuwien.kr.alpha.core.common.NoGood;
 
-	public FixedRebootStrategy(int breakpoint) {
-		this.breakpoint = breakpoint;
-		this.stepCount = 0;
+public class GeometricConflictRebootStrategy implements RebootStrategy {
+	private static final double BASE = 1.5;
+	private static final double SCALING_FACTOR = 2;
+
+	private int rebootCount;
+	private int conflictCount;
+
+	@Override
+	public void nextIteration() {
+
 	}
 
 	@Override
-	public void stepPerformed() {
-		stepCount++;
+	public void decisionMade() {
+
+	}
+
+	@Override
+	public void conflictEncountered() {
+		conflictCount++;
+	}
+
+	@Override
+	public void newNoGood(NoGood noGood) {
+
+	}
+
+	@Override
+	public void newLearnedNoGood(NoGood noGood) {
+
 	}
 
 	@Override
 	public boolean isRebootScheduled() {
-		return stepCount >= breakpoint;
+		return conflictCount >= SCALING_FACTOR * Math.pow(BASE, rebootCount);
 	}
 
 	@Override
 	public void rebootPerformed() {
-		stepCount = 0;
+		rebootCount++;
+		conflictCount = 0;
 	}
 }

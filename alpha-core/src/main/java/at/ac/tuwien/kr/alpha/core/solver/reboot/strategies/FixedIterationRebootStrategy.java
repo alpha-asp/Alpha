@@ -27,20 +27,47 @@ package at.ac.tuwien.kr.alpha.core.solver.reboot.strategies;
 
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 
-import java.util.Collection;
+public class FixedIterationRebootStrategy implements RebootStrategy {
+	private final int breakpoint;
+	private int iterationCount;
 
-public interface RebootStrategy {
-	void nextIteration();
-	void decisionMade();
-	void conflictEncountered();
-	void newNoGood(NoGood noGood);
-	default void newNoGoods(Collection<NoGood> newNoGoods) {
-		newNoGoods.forEach(this::newNoGood);
+	public FixedIterationRebootStrategy(int breakpoint) {
+		this.breakpoint = breakpoint;
+		this.iterationCount = 0;
 	}
-	void newLearnedNoGood(NoGood noGood);
-	default void newLearnedNoGoods(Collection<NoGood> newNoGoods) {
-		newNoGoods.forEach(this::newLearnedNoGood);
+
+	@Override
+	public void nextIteration() {
+		iterationCount++;
 	}
-	boolean isRebootScheduled();
-	void rebootPerformed();
+
+	@Override
+	public void decisionMade() {
+
+	}
+
+	@Override
+	public void conflictEncountered() {
+
+	}
+
+	@Override
+	public void newNoGood(NoGood noGood) {
+
+	}
+
+	@Override
+	public void newLearnedNoGood(NoGood noGood) {
+
+	}
+
+	@Override
+	public boolean isRebootScheduled() {
+		return iterationCount >= breakpoint;
+	}
+
+	@Override
+	public void rebootPerformed() {
+		iterationCount = 0;
+	}
 }

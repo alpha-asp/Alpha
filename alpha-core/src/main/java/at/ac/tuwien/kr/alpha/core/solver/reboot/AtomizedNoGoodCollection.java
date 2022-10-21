@@ -28,6 +28,7 @@ package at.ac.tuwien.kr.alpha.core.solver.reboot;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -57,6 +58,15 @@ public class AtomizedNoGoodCollection {
 	 */
 	public void add(NoGood noGood) {
 		atomizedNoGoods.add(new NoGoodAtomizer(noGood, atomStore));
+	}
+
+	/**
+	 * see {@link AtomizedNoGoodCollection#add(NoGood)}
+	 *
+	 * @param noGoods the nogoods to add
+	 */
+	public void addAll(Collection<NoGood> noGoods) {
+		noGoods.forEach(this::add);
 	}
 
 	/**

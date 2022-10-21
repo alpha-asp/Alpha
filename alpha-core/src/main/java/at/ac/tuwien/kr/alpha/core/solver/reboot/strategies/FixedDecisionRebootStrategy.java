@@ -25,37 +25,48 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.reboot.strategies;
 
-public class LubyRebootStrategy implements RebootStrategy {
-	private static final double SCALING_FACTOR = 10;
+import at.ac.tuwien.kr.alpha.core.common.NoGood;
 
-	private int rebootCount;
-	private int stepCount;
+public class FixedDecisionRebootStrategy implements RebootStrategy {
+	private final int breakpoint;
+	private int decisionCount;
+
+	public FixedDecisionRebootStrategy(int breakpoint) {
+		this.breakpoint = breakpoint;
+		this.decisionCount = 0;
+	}
 
 	@Override
-	public void stepPerformed() {
-		stepCount++;
+	public void nextIteration() {
+	}
+
+	@Override
+	public void decisionMade() {
+		decisionCount++;
+	}
+
+	@Override
+	public void conflictEncountered() {
+
+	}
+
+	@Override
+	public void newNoGood(NoGood noGood) {
+
+	}
+
+	@Override
+	public void newLearnedNoGood(NoGood noGood) {
+
 	}
 
 	@Override
 	public boolean isRebootScheduled() {
-		return stepCount >= SCALING_FACTOR * luby(rebootCount + 1);
+		return decisionCount >= breakpoint;
 	}
 
 	@Override
 	public void rebootPerformed() {
-		rebootCount++;
-	}
-
-	private double luby(double i) {
-		for (int k = 1; k < 31; k++) {
-			if (i == (Math.pow(2, k)) - 1) {
-				return Math.pow(2, k - 1);
-			}
-		}
-		for (int k = 1;; k++) {
-			if (Math.pow(2, k - 1) <= i && i < Math.pow(2, k) - 1) {
-				return luby(i - Math.pow(2, k - 1) + 1);
-			}
-		}
+		decisionCount = 0;
 	}
 }
