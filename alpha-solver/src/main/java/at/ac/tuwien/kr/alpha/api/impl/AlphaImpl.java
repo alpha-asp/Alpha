@@ -63,8 +63,9 @@ import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
-import at.ac.tuwien.kr.alpha.commons.programs.Reifier;
+import at.ac.tuwien.kr.alpha.commons.programs.reification.Reifier;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.util.IdGenerator;
 import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
@@ -83,14 +84,20 @@ public class AlphaImpl implements Alpha {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlphaImpl.class);
 
-	private SystemConfig config = new SystemConfig(); // Config is initialized with default values.
-	private ProgramParser parser = new ProgramParserImpl();
+	private final SystemConfig config; // Config is initialized with default values.
+	private final ProgramParser parser = new ProgramParserImpl();
+	private final Reifier reifier = new Reifier(() -> {
+		IdGenerator<Integer> idGen = new IntIdGenerator(0);
+		return () -> Terms.newConstant(idGen.getNextId());
+	});
+
 
 	public AlphaImpl(SystemConfig cfg) {
 		this.config = cfg;
 	}
 
 	public AlphaImpl() {
+		this.config = new SystemConfig();
 	}
 
 	@Override
@@ -225,10 +232,6 @@ public class AlphaImpl implements Alpha {
 		return SolverFactory.getInstance(config, atomStore, grounder);
 	}
 
-	public void setConfig(SystemConfig config) {
-		this.config = config;
-	}
-
 	@Override
 	public DebugSolvingContext prepareDebugSolve(ASPCore2Program program) {
 		return prepareDebugSolve(program, InputConfig.DEFAULT_FILTER);
@@ -299,10 +302,7 @@ public class AlphaImpl implements Alpha {
 
 	@Override
 	public Set<BasicAtom> reify(ASPCore2Program program) {
-		final IntIdGenerator intIdGen = new IntIdGenerator(0);
-		return new Reifier(() -> {
-			return Terms.newConstant(intIdGen.getNextId());
-		}).reifyProgram(program);
+		return reifier.reifyProgram(program);
 	}
 
 }

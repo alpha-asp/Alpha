@@ -10,6 +10,7 @@ import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AtomQuery;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
@@ -60,6 +61,14 @@ public final class Atoms {
 
 	public static ExternalAtom newExternalAtom(Predicate predicate, PredicateInterpretation interpretation, List<Term> input, List<Term> output) {
 		return new ExternalAtomImpl(predicate, interpretation, input, output);
+	}
+
+	public static AtomQuery query(Predicate predicate) {
+		return AtomQueryImpl.forPredicate(predicate);
+	}
+
+	public static AtomQuery query(String predicateName, int predicateArity) {
+		return AtomQueryImpl.forPredicate(predicateName, predicateArity);
 	}
 
 }

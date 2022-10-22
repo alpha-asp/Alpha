@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AtomQuery;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
@@ -22,7 +23,7 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 
-public class AnswerSetQueryTest {
+public class AtomQueryTest {
 
 	@Test
 	public void matchPredicate() {
@@ -35,7 +36,7 @@ public class AnswerSetQueryTest {
 				.symbolicInstance("x");
 		//@formatter:on
 		AnswerSet as = bld.build();
-		List<Atom> queryResult = as.query(AnswerSetQueryImpl.forPredicate(Predicates.getPredicate("p", 1)));
+		List<Atom> queryResult = as.query(Atoms.query(Predicates.getPredicate("p", 1)));
 		assertEquals(2, queryResult.size());
 		for (Atom a : queryResult) {
 			assertTrue(a.getPredicate().equals(Predicates.getPredicate("p", 1)));
@@ -49,8 +50,7 @@ public class AnswerSetQueryTest {
 				.symbolicInstance("a")
 				.instance("a");
 		AnswerSet as = bld.build();
-		AnswerSetQueryImpl constantQuery = AnswerSetQueryImpl
-				.forPredicate(Predicates.getPredicate("p", 1))
+		AtomQuery constantQuery = Atoms.query(Predicates.getPredicate("p", 1))
 				.withConstantEquals(0, "a");
 		List<Atom> queryResult = as.query(constantQuery);
 		assertEquals(1, queryResult.size());
@@ -63,8 +63,7 @@ public class AnswerSetQueryTest {
 				.symbolicInstance("a")
 				.instance("a");
 		AnswerSet as = bld.build();
-		AnswerSetQueryImpl stringQuery = AnswerSetQueryImpl
-				.forPredicate(Predicates.getPredicate("p", 1))
+		AtomQuery stringQuery = Atoms.query(Predicates.getPredicate("p", 1))
 				.withStringEquals(0, "a");
 		List<Atom> queryResult = as.query(stringQuery);
 		assertEquals(1, queryResult.size());
@@ -84,7 +83,7 @@ public class AnswerSetQueryTest {
 			String strValue = ((ConstantTerm<?>) term).getObject().toString();
 			return strValue.matches("[0-9]+");
 		};
-		AnswerSetQueryImpl evenIntegers = AnswerSetQueryImpl.forPredicate(Predicates.getPredicate("p", 1))
+		AtomQuery evenIntegers = Atoms.query(Predicates.getPredicate("p", 1))
 				.withFilter(0, isInteger.and(
 						(term) -> Integer.valueOf(((ConstantTerm<?>) term).getObject().toString()) % 2 == 0));
 		List<Atom> queryResult = as.query(evenIntegers);
@@ -114,11 +113,11 @@ public class AnswerSetQueryTest {
 		ps.add(a5);
 		instances.put(p, ps);
 		AnswerSet as = AnswerSets.newAnswerSet(predicates, instances);
-		AnswerSetQueryImpl query = AnswerSetQueryImpl.forPredicate(Predicates.getPredicate("p", 2)).withConstantEquals(0, "x").withFunctionTerm(1, "f", 1);
+		AtomQuery query = Atoms.query(Predicates.getPredicate("p", 2)).withConstantEquals(0, "x").withFunctionTerm(1, "f", 1);
 		List<Atom> queryResult = as.query(query);
 		assertEquals(2, queryResult.size());
 	}
-	
+
 	@Test
 	public void matchTerm() {
 		AnswerSetBuilder bld = new AnswerSetBuilder();
@@ -126,8 +125,8 @@ public class AnswerSetQueryTest {
 				.instance(1).instance(2).instance(3).instance(4).instance(5)
 				.instance("bla").symbolicInstance("blubb");
 		AnswerSet as = bld.build();
-		
-		AnswerSetQueryImpl equalTerm = AnswerSetQueryImpl.forPredicate(Predicates.getPredicate("p", 1)).withTermEquals(0, Terms.newConstant(1));
+
+		AtomQuery equalTerm = Atoms.query(Predicates.getPredicate("p", 1)).withTermEquals(0, Terms.newConstant(1));
 		List<Atom> queryResult = as.query(equalTerm);
 		assertEquals(1, queryResult.size());
 		Atom retrievedAtom = queryResult.get(0);

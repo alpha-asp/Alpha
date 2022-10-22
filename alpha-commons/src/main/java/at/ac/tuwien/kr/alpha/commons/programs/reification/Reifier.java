@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.commons.programs;
+package at.ac.tuwien.kr.alpha.commons.programs.reification;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -207,12 +207,7 @@ public class Reifier {
 			}
 			reifyRule(ctx, rule);
 		}
-		// TODO do this in context!
-		for (Map.Entry<Predicate, ConstantTerm<?>> entry : reifiedPredicates.entrySet()) {
-			ctx.addAtom(Atoms.newBasicAtom(PREDICATE, entry.getValue(), Terms.newConstant(entry.getKey().getName()),
-					Terms.newConstant(entry.getKey().getArity())));
-		}
-		return ctx.reifiedProgram();
+		return ctx.computeReifiedProgram();
 	}
 
 	/**
@@ -406,7 +401,6 @@ public class Reifier {
 		} else {
 			termType = TERM_TYPES.getOrDefault(term.getObject().getClass(), "object(" + term.getObject().getClass().getName() + ")");
 		}
-		// TODO symbol table!
 		ctx.addAtom(Atoms.newBasicAtom(TERM_TYPE, termId, TERM_TYPE_CONSTANT));
 		ctx.addAtom(Atoms.newBasicAtom(CONSTANT_TERM_TYPE, termId, Terms.newConstant(termType)));
 		ctx.addAtom(Atoms.newBasicAtom(CONSTANT_TERM_VALUE, termId, Terms.newConstant(term.getObject().toString().replace("\"", "\\\""))));
@@ -447,47 +441,6 @@ public class Reifier {
 		ConstantTerm<?> upperTermId = ctx.getNextId();
 		ctx.addAtom(Atoms.newBasicAtom(INTERVAL_TERM_UPPER, termId, upperTermId));
 		reifyTerm(ctx, upperTermId, term.getUpperBound());
-	}
-
-	private static class ReificationContext implements IdGenerator<ConstantTerm<?>>{
-
-		private final IdGenerator<ConstantTerm<?>> idGenerator;
-		private final Map<Predicate, ConstantTerm<?>> predicateTable = new HashMap<>();
-
-		private final Set<BasicAtom> reifiedItems = new LinkedHashSet<>();
-
-		ReificationContext(IdGenerator<ConstantTerm<?>> idGenerator) {
-			this.idGenerator = idGenerator;
-		}
-
-		ConstantTerm<?> computePredicateId(Predicate predicate) {
-			return predicateTable.computeIfAbsent(predicate, (pred) -> idGenerator.getNextId());		
-		}
-
-		@Override
-		public ConstantTerm<?> getNextId() {
-			return idGenerator.getNextId();
-		}
-
-		void addAtom(BasicAtom item) {
-			reifiedItems.add(item);
-		}
-
-		Set<BasicAtom> generatePredicateAtoms() {
-			Set<BasicAtom> predicateAtoms = new LinkedHashSet<>();
-			for (Map.Entry<Predicate, ConstantTerm<?>> entry : predicateTable.entrySet()) {
-				predicateAtoms.add(Atoms.newBasicAtom(PREDICATE, entry.getValue(), Terms.newConstant(entry.getKey().getName()),
-						Terms.newConstant(entry.getKey().getArity())));
-			}
-			return predicateAtoms;
-		}
-
-		Set<BasicAtom> computeReifiedProgram() {
-			Set<BasicAtom> reifiedProgram = new LinkedHashSet<>(reifiedItems);
-			reifiedProgram.addAll(generatePredicateAtoms());
-			return reifiedProgram;
-		}
-
 	}
 
 }

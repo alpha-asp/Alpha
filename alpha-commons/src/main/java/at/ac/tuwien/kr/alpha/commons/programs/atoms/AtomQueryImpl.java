@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.commons.util;
+package at.ac.tuwien.kr.alpha.commons.programs.atoms;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -7,45 +7,49 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.AnswerSetQuery;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AtomQuery;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 
 /**
  * A query for ASP atoms matching a set of filter predicates.
  */
-public final class AnswerSetQueryImpl implements AnswerSetQuery {
+final class AtomQueryImpl implements AtomQuery {
 
 	private final Predicate predicate;
 	private Map<Integer, java.util.function.Predicate<Term>> filters = new HashMap<>();
 
-	private AnswerSetQueryImpl(Predicate pred) {
+	private AtomQueryImpl(Predicate pred) {
 		this.predicate = pred;
 	}
 
 	/**
-	 * Creates a new AnswerSetQuery that will match all atoms that are instances of the given {@link Predicate}.
+	 * Creates a new AtomQuery that will match all atoms that are instances of the given {@link Predicate}.
 	 * 
 	 * @param predicate the predicate to match against
-	 * @return a new AnswerSetQuery matching against the given predicate
+	 * @return a new AtomQuery matching against the given predicate
 	 */
-	public static AnswerSetQueryImpl forPredicate(Predicate predicate) {
-		return new AnswerSetQueryImpl(predicate);
+	static AtomQuery forPredicate(Predicate predicate) {
+		return new AtomQueryImpl(predicate);
+	}
+
+	static AtomQuery forPredicate(String name, int arity) {
+		return new AtomQueryImpl(Predicates.getPredicate(name, arity));
 	}
 
 	/**
-	 * Adds a new filter to this AnswerSetQuery.
+	 * Adds a new filter to this AtomQuery.
 	 * For an atom <code>a(t1, ..., tn)</code>, the term at index <code>termIdx</code> will be tested against the given filter predicate.
 	 * 
 	 * @param termIdx the index of the term to test
 	 * @param filter  the test predicate to use on terms
-	 * @return this AnswerSetQuery with the additional filter added
+	 * @return this AtomQuery with the additional filter added
 	 */
-	@Override
-	public AnswerSetQueryImpl withFilter(int termIdx, java.util.function.Predicate<Term> filter) {
+	public AtomQuery withFilter(int termIdx, java.util.function.Predicate<Term> filter) {
 		if (termIdx >= this.predicate.getArity()) {
 			throw new IndexOutOfBoundsException(
 					"Predicate " + this.predicate.getName() + " has arity " + this.predicate.getArity() + ", term index " + termIdx + " is invalid!");
@@ -66,9 +70,8 @@ public final class AnswerSetQueryImpl implements AnswerSetQuery {
 	 * @param str
 	 * @return
 	 */
-	@Override
-	public AnswerSetQueryImpl withConstantEquals(int termIdx, String str) {
-		return this.withFilter(termIdx, AnswerSetQueryImpl.constantTermEquals(str));
+	public AtomQuery withConstantEquals(int termIdx, String str) {
+		return this.withFilter(termIdx, AtomQueryImpl.constantTermEquals(str));
 	}
 
 	/**
@@ -78,8 +81,7 @@ public final class AnswerSetQueryImpl implements AnswerSetQuery {
 	 * @param str
 	 * @return
 	 */
-	@Override
-	public AnswerSetQueryImpl withStringEquals(int termIdx, String str) {
+	public AtomQuery withStringEquals(int termIdx, String str) {
 		return this.withFilter(termIdx, (term) -> {
 			if (!(term instanceof ConstantTerm<?>)) {
 				return false;
@@ -99,8 +101,7 @@ public final class AnswerSetQueryImpl implements AnswerSetQuery {
 	 * @param funcArity
 	 * @return
 	 */
-	@Override
-	public AnswerSetQueryImpl withFunctionTerm(int termIdx, String funcSymbol, int funcArity) {
+	public AtomQuery withFunctionTerm(int termIdx, String funcSymbol, int funcArity) {
 		java.util.function.Predicate<Term> isFunction = (term) -> {
 			if (!(term instanceof FunctionTerm)) {
 				return false;
@@ -124,8 +125,7 @@ public final class AnswerSetQueryImpl implements AnswerSetQuery {
 	 * @param otherTerm
 	 * @return
 	 */
-	@Override
-	public AnswerSetQueryImpl withTermEquals(int termIdx, Term otherTerm) {
+	public AtomQuery withTermEquals(int termIdx, Term otherTerm) {
 		java.util.function.Predicate<Term> isEqual = (term) -> {
 			return term.equals(otherTerm);
 		};
@@ -162,7 +162,6 @@ public final class AnswerSetQueryImpl implements AnswerSetQuery {
 	 * @param as
 	 * @return
 	 */
-	@Override
 	public List<Atom> applyTo(AnswerSet as) {
 		if (!as.getPredicates().contains(this.predicate)) {
 			return Collections.emptyList();
@@ -172,7 +171,7 @@ public final class AnswerSetQueryImpl implements AnswerSetQuery {
 
 	private static java.util.function.Predicate<Term> constantTermEquals(final String str) {
 		java.util.function.Predicate<Term> equalsGivenString = (t) -> {
-			return AnswerSetQueryImpl.constantTermEquals(t, str);
+			return AtomQueryImpl.constantTermEquals(t, str);
 		};
 		return equalsGivenString;
 	}
