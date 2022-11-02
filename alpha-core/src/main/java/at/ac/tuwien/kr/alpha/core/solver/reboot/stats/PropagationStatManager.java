@@ -41,24 +41,24 @@ public class PropagationStatManager {
 		this.nonbinPropagationConflictTracker = new SimpleCountingTracker("nonbin_prop_conflicts");
 	}
 
-	public StatTracker getPropagationTracker() {
+	public ResettableStatTracker getPropagationTracker() {
 		return propagationTracker;
 	}
 
-	public StatTracker getPropagationConflictTracker() {
+	public ResettableStatTracker getPropagationConflictTracker() {
 		return propagationConflictTracker;
 	}
 
-	public StatTracker getNonbinPropagationTracker() {
+	public ResettableStatTracker getNonbinPropagationTracker() {
 		return nonbinPropagationTracker;
 	}
 
-	public StatTracker getNonbinPropagationConflictTracker() {
+	public ResettableStatTracker getNonbinPropagationConflictTracker() {
 		return nonbinPropagationConflictTracker;
 	}
 
-	public List<StatTracker> getStatTrackerList() {
-		List<StatTracker> statTrackers = new ArrayList<>();
+	public List<ResettableStatTracker> getStatTrackerList() {
+		List<ResettableStatTracker> statTrackers = new ArrayList<>();
 		statTrackers.add(propagationTracker);
 		statTrackers.add(propagationConflictTracker);
 		statTrackers.add(nonbinPropagationTracker);

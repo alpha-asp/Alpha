@@ -25,8 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.reboot.stats;
 
-public class SimpleCountingTracker implements StatTracker {
-	private String name;
+public class SimpleCountingTracker implements ResettableStatTracker {
+	private final String name;
 	private int count;
 
 	public SimpleCountingTracker(String name) {
@@ -36,6 +36,12 @@ public class SimpleCountingTracker implements StatTracker {
 
 	public void increment() {
 		count++;
+	}
+
+	public void incrementBy(int i) {
+		if (i >= 0) {
+			count += i;
+		}
 	}
 
 	public void reset() {

@@ -43,7 +43,7 @@ import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.solver.reboot.AtomizedChoice;
 import at.ac.tuwien.kr.alpha.core.solver.reboot.AtomizedNoGoodCollection;
 import at.ac.tuwien.kr.alpha.core.solver.reboot.stats.*;
-import at.ac.tuwien.kr.alpha.core.solver.reboot.strategies.FixedIterationRebootStrategy;
+import at.ac.tuwien.kr.alpha.core.solver.reboot.strategies.DynamicLearnedIntervalRebootStrategy;
 import at.ac.tuwien.kr.alpha.core.solver.reboot.strategies.RebootStrategy;
 import at.ac.tuwien.kr.alpha.core.util.StopWatch;
 import org.slf4j.Logger;
@@ -111,9 +111,13 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	private final StopWatch solverStopWatch;
 	private final StopWatch grounderStopWatch;
 	private final StopWatch propagationStopWatch;
+	private final StopWatch mbtBacktrackingStopWatch;
+	private final StopWatch epochStopWatch;
 	private final SimpleCountingTracker iterationTracker;
 	private final SimpleCountingTracker conflictTracker;
 	private final SimpleCountingTracker decisionTracker;
+	private final SimpleCountingTracker learnedNoGoodTracker;
+	private final ResettableStatTracker learnEfficiencyTracker;
 
 	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, SystemConfig config, HeuristicsConfiguration heuristicsConfiguration) {
 		super(atomStore, grounder);
@@ -129,18 +133,26 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		this.disableJustifications = config.isDisableJustificationSearch();
 		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();
 
-		this.rebootEnabled = config.isRebootEnabled();
-		this.disableRebootRepeat = config.isDisableRebootRepeat();
-		this.rebootStrategy = new FixedIterationRebootStrategy(config.getRebootIterations());
-
 		this.solverStopWatch = new StopWatch();
 		this.grounderStopWatch = new StopWatch();
 		this.propagationStopWatch = new StopWatch();
+		this.mbtBacktrackingStopWatch = new StopWatch();
+		this.epochStopWatch = new StopWatch();
 
 		this.iterationTracker = new SimpleCountingTracker("iterations");
 		this.conflictTracker = new SimpleCountingTracker("conflicts");
 		this.decisionTracker = new SimpleCountingTracker("decisions");
+		this.learnedNoGoodTracker = new SimpleCountingTracker("learned_nogoods");
+		this.learnEfficiencyTracker = new ResettableQuotientTracker("learn_effic",
+				learnedNoGoodTracker, new StopWatchTracker("solver_time", epochStopWatch));
 		List<StatTracker> statTrackers = initStatTrackers();
+
+		this.rebootEnabled = config.isRebootEnabled();
+		this.disableRebootRepeat = config.isDisableRebootRepeat();
+		DynamicLearnedIntervalRebootStrategy dynamicRebootStrategy = new DynamicLearnedIntervalRebootStrategy(
+				learnEfficiencyTracker, 0.7, 5, config.getRebootIterations());
+		this.rebootStrategy = dynamicRebootStrategy;
+		statTrackers.add(dynamicRebootStrategy.getIntervalSizeTracker());
 
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment,
 				store.getNoGoodCounter(), statTrackers, 1000);
@@ -160,6 +172,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	@Override
 	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
 		solverStopWatch.start();
+		epochStopWatch.start();
 		if (!searchState.hasBeenInitialized) {
 			initializeSearch();
 		} else {
@@ -201,7 +214,9 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 				stopSolverWatchAndLogRuntimes();
 				return true;
 			} else {
+				mbtBacktrackingStopWatch.start();
 				backtrackFromMBTsRemaining();
+				mbtBacktrackingStopWatch.stop();
 			}
 		}
 	}
@@ -355,6 +370,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		final NoGood learnedNoGood = analysisResult.learnedNoGood;
 		learnedNoGoods.add(learnedNoGood);
 		rebootStrategy.newLearnedNoGood(learnedNoGood);
+		learnedNoGoodTracker.increment();
 		int noGoodId = grounder.register(learnedNoGood);
 		return addAndBackjumpIfNecessary(noGoodId, learnedNoGood, analysisResult.lbd);
 	}
@@ -477,6 +493,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		boolean success = ingest(obtained);
 		learnedNoGoods.addAll(obtained.values());
 		rebootStrategy.newLearnedNoGoods(obtained.values());
+		learnedNoGoodTracker.incrementBy(obtained.values().size());
 		if (!success) {
 			logStats();
 			return false;
@@ -635,7 +652,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	 */
 	private void replayAtomizedChoiceStack(Stack<AtomizedChoice> atomizedChoiceStack) {
 		if (propagate() != null) {
-			throw oops("Conflict in replay during reboot.");
+			throw oops("Conflict in replay during reboot");
 		}
 
 		for (AtomizedChoice atomizedChoice : atomizedChoiceStack) {
@@ -655,11 +672,11 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 			if (activeChoice) {
 				if (propagate() != null) {
-					throw oops("Conflict in replay during reboot.");
+					throw oops("Conflict in replay during reboot");
 				}
 				syncWithGrounder();
 				if (propagate() != null) {
-					throw oops("Conflict in replay during reboot.");
+					throw oops("Conflict in replay during reboot");
 				}
 			}
 		}
@@ -709,35 +726,44 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	 */
 	private void stopSolverWatchAndLogRuntimes() {
 		solverStopWatch.stop();
+		epochStopWatch.stop();
 		LOGGER.info("Solver runtime: {}", solverStopWatch.getNanoTime());
 		LOGGER.info("Grounder runtime: {}", grounderStopWatch.getNanoTime());
 		LOGGER.info("Propagation runtime: {}", propagationStopWatch.getNanoTime());
+		LOGGER.info("Mbt-backtracking runtime: {}", mbtBacktrackingStopWatch.getNanoTime());
+		LOGGER.info("Epoch runtime: {}", epochStopWatch.getNanoTime());
 	}
 
 	private List<StatTracker> initStatTrackers() {
-		StaticNoGoodTracker staticNoGoodTracker = new StaticNoGoodTracker(getNoGoodCounter());
-		TotalNoGoodTracker totalNoGoodTracker = new TotalNoGoodTracker(getNoGoodCounter());
+		StaticNoGoodTracker staticNoGoodExtrTracker = new StaticNoGoodTracker(getNoGoodCounter());
+		LearnedNoGoodTracker learnedNoGoodExtrTracker = new LearnedNoGoodTracker(getNoGoodCounter());
+		TotalNoGoodTracker totalNoGoodExtrTracker = new TotalNoGoodTracker(getNoGoodCounter());
 
 		List<StatTracker> statTrackers = new LinkedList<>();
 		statTrackers.add(iterationTracker);
 		statTrackers.add(conflictTracker);
 		statTrackers.add(decisionTracker);
+		statTrackers.add(learnedNoGoodTracker);
+		statTrackers.add(staticNoGoodExtrTracker);
+		statTrackers.add(learnedNoGoodExtrTracker);
+		statTrackers.add(totalNoGoodExtrTracker);
+		statTrackers.add(learnEfficiencyTracker);
 
 		PropagationStatManager propagationStatManager = this.store.getPropagationStatManager();
 		if (propagationStatManager != null) {
-			List<StatTracker> propagationTrackers = propagationStatManager.getStatTrackerList();
+			List<ResettableStatTracker> propagationTrackers = propagationStatManager.getStatTrackerList();
 			statTrackers.addAll(propagationTrackers);
 
-			StatTracker propagationTracker = propagationStatManager.getPropagationTracker();
-			StatTracker propagationConflictTracker = propagationStatManager.getPropagationConflictTracker();
-			StatTracker nonbinPropagationTracker = propagationStatManager.getNonbinPropagationTracker();
-			StatTracker nonbinPropagationConflictTracker = propagationStatManager.getNonbinPropagationConflictTracker();
-			statTrackers.add(new QuotientTracker("prop_quot", propagationConflictTracker, propagationTracker));
+			ResettableStatTracker propagationTracker = propagationStatManager.getPropagationTracker();
+			ResettableStatTracker propagationConflictTracker = propagationStatManager.getPropagationConflictTracker();
+			ResettableStatTracker nonbinPropagationTracker = propagationStatManager.getNonbinPropagationTracker();
+			ResettableStatTracker nonbinPropagationConflictTracker = propagationStatManager.getNonbinPropagationConflictTracker();
+			statTrackers.add(new ResettableQuotientTracker("prop_quot", propagationConflictTracker, propagationTracker));
 			statTrackers.add(new QuotientTracker("prop_quot_nonbin", nonbinPropagationConflictTracker, nonbinPropagationTracker));
 		}
 
 		statTrackers.add(new QuotientTracker("conflict_quot", conflictTracker, iterationTracker));
-		statTrackers.add(new QuotientTracker("nogood_quot", staticNoGoodTracker, totalNoGoodTracker));
+		statTrackers.add(new QuotientTracker("nogood_quot", staticNoGoodExtrTracker, totalNoGoodExtrTracker));
 
 		return statTrackers;
 	}

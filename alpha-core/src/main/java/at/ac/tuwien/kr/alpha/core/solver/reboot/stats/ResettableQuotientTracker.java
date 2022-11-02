@@ -25,31 +25,33 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.reboot.stats;
 
-import at.ac.tuwien.kr.alpha.core.solver.NoGoodCounter;
+public class ResettableQuotientTracker implements ResettableStatTracker {
+	private final String name;
+	private final ResettableStatTracker numerator;
+	private final ResettableStatTracker denominator;
 
-public class TotalNoGoodTracker implements StatTracker {
-	private final NoGoodCounter nogoodCounter;
-
-	public TotalNoGoodTracker(NoGoodCounter nogoodCounter) {
-		this.nogoodCounter = nogoodCounter;
+	public ResettableQuotientTracker(String name, ResettableStatTracker numerator, ResettableStatTracker denominator) {
+		this.name = name;
+		this.numerator = numerator;
+		this.denominator = denominator;
 	}
 
 	@Override
 	public String getStatName() {
-		return "_total_nogoods";
+		return name;
 	}
 
 	@Override
 	public double getStatValue() {
-		return extractTotalCount(nogoodCounter.getStatsByType());
+		if (denominator.getStatValue() == 0) {
+			return 0;
+		}
+		return numerator.getStatValue() / denominator.getStatValue();
 	}
 
-	private int extractTotalCount(String countStr) {
-		int count = 0;
-		String[] parts = countStr.split(" ");
-		for (int i = 1; i < parts.length; i += 2) {
-				count += Integer.parseInt(parts[i]);
-		}
-		return count;
+	@Override
+	public void reset() {
+		numerator.reset();
+		denominator.reset();
 	}
 }

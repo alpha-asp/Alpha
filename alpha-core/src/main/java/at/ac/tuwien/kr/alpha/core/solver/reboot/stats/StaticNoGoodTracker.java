@@ -36,7 +36,7 @@ public class StaticNoGoodTracker implements StatTracker {
 
 	@Override
 	public String getStatName() {
-		return "static_nogoods";
+		return "_static_nogoods";
 	}
 
 	@Override

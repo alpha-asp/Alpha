@@ -25,31 +25,29 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.reboot.stats;
 
-import at.ac.tuwien.kr.alpha.core.solver.NoGoodCounter;
+import at.ac.tuwien.kr.alpha.core.util.StopWatch;
 
-public class TotalNoGoodTracker implements StatTracker {
-	private final NoGoodCounter nogoodCounter;
+public class StopWatchTracker implements ResettableStatTracker {
+	private final String name;
+	private final StopWatch stopWatch;
 
-	public TotalNoGoodTracker(NoGoodCounter nogoodCounter) {
-		this.nogoodCounter = nogoodCounter;
+	public StopWatchTracker(String name, StopWatch stopWatch) {
+		this.name = name;
+		this.stopWatch = stopWatch;
 	}
 
 	@Override
 	public String getStatName() {
-		return "_total_nogoods";
+		return name;
 	}
 
 	@Override
 	public double getStatValue() {
-		return extractTotalCount(nogoodCounter.getStatsByType());
+		return stopWatch.getTime();
 	}
 
-	private int extractTotalCount(String countStr) {
-		int count = 0;
-		String[] parts = countStr.split(" ");
-		for (int i = 1; i < parts.length; i += 2) {
-				count += Integer.parseInt(parts[i]);
-		}
-		return count;
+	@Override
+	public void reset() {
+		stopWatch.reset();
 	}
 }

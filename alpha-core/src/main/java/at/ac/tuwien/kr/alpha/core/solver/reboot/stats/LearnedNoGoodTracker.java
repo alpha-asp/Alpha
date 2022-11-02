@@ -27,29 +27,30 @@ package at.ac.tuwien.kr.alpha.core.solver.reboot.stats;
 
 import at.ac.tuwien.kr.alpha.core.solver.NoGoodCounter;
 
-public class TotalNoGoodTracker implements StatTracker {
+public class LearnedNoGoodTracker implements StatTracker {
 	private final NoGoodCounter nogoodCounter;
 
-	public TotalNoGoodTracker(NoGoodCounter nogoodCounter) {
+	public LearnedNoGoodTracker(NoGoodCounter nogoodCounter) {
 		this.nogoodCounter = nogoodCounter;
 	}
 
 	@Override
 	public String getStatName() {
-		return "_total_nogoods";
+		return "_learned_nogoods";
 	}
 
 	@Override
 	public double getStatValue() {
-		return extractTotalCount(nogoodCounter.getStatsByType());
+		return extractStaticCount(nogoodCounter.getStatsByType());
 	}
 
-	private int extractTotalCount(String countStr) {
-		int count = 0;
+	private int extractStaticCount(String countStr) {
 		String[] parts = countStr.split(" ");
-		for (int i = 1; i < parts.length; i += 2) {
-				count += Integer.parseInt(parts[i]);
+		for (int i = 0; i < parts.length; i++) {
+			if (parts[i].equals("LEARNT:") && i + 1 < parts.length) {
+				return Integer.parseInt(parts[i + 1]);
+			}
 		}
-		return count;
+		return 0;
 	}
 }

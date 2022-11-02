@@ -59,4 +59,28 @@ public class StopWatch {
 		long currentNanos = running ? System.nanoTime() - startTime : 0;
 		return nanoTime + currentNanos;
 	}
+
+	/**
+	 * Returns the time in milliseconds the {@link StopWatch} has been running in total.
+	 * @return the total running time of the {@link StopWatch} in milliseconds.
+	 */
+	public double getMilliTime() {
+		return (long)(getNanoTime() / 1e6);
+	}
+
+	/**
+	 * Returns the time in seconds the {@link StopWatch} has been running in total.
+	 * @return the total running time of the {@link StopWatch} in seconds.
+	 */
+	public double getTime() {
+		return getNanoTime() / 1e9;
+	}
+
+	/**
+	 * Resets the {@link StopWatch} but keeps it running if it was running before.
+	 */
+	public void reset() {
+		nanoTime = 0;
+		startTime = System.nanoTime();
+	}
 }

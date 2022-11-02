@@ -25,31 +25,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.reboot.stats;
 
-import at.ac.tuwien.kr.alpha.core.solver.NoGoodCounter;
-
-public class TotalNoGoodTracker implements StatTracker {
-	private final NoGoodCounter nogoodCounter;
-
-	public TotalNoGoodTracker(NoGoodCounter nogoodCounter) {
-		this.nogoodCounter = nogoodCounter;
-	}
-
-	@Override
-	public String getStatName() {
-		return "_total_nogoods";
-	}
-
-	@Override
-	public double getStatValue() {
-		return extractTotalCount(nogoodCounter.getStatsByType());
-	}
-
-	private int extractTotalCount(String countStr) {
-		int count = 0;
-		String[] parts = countStr.split(" ");
-		for (int i = 1; i < parts.length; i += 2) {
-				count += Integer.parseInt(parts[i]);
-		}
-		return count;
-	}
+public interface ResettableStatTracker extends StatTracker {
+	void reset();
 }
