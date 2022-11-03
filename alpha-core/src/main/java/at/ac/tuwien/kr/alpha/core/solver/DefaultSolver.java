@@ -186,7 +186,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 			if (searchState.isSearchSpaceCompletelyExplored) {
 				LOGGER.debug("Search space has been fully explored, there are no more answer-sets.");
 				logStats();
-				stopSolverWatchAndLogRuntimes();
+				stopStopWatchesAndLogRuntimes();
 				return false;
 			}
 			ConflictCause conflictCause = propagate();
@@ -211,7 +211,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 				LOGGER.debug("Closed unassigned known atoms (assigning FALSE).");
 			} else if (assignment.getMBTCount() == 0) {
 				provideAnswerSet(action);
-				stopSolverWatchAndLogRuntimes();
+				stopStopWatchesAndLogRuntimes();
 				return true;
 			} else {
 				mbtBacktrackingStopWatch.start();
@@ -721,10 +721,10 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	}
 
 	/**
-	 * Stops the {@link DefaultSolver#solverStopWatch} and logs the current total time
-	 * of {@link DefaultSolver#solverStopWatch} and {@link DefaultSolver#grounderStopWatch}.
+	 * Stops the {@link DefaultSolver#solverStopWatch} and {@link DefaultSolver#epochStopWatch}.
+	 * Then logs the current total time of all {@link StopWatch}es kept by the {@link DefaultSolver}.
 	 */
-	private void stopSolverWatchAndLogRuntimes() {
+	private void stopStopWatchesAndLogRuntimes() {
 		solverStopWatch.stop();
 		epochStopWatch.stop();
 		LOGGER.info("Solver runtime: {}", solverStopWatch.getNanoTime());
@@ -735,18 +735,18 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	}
 
 	private List<StatTracker> initStatTrackers() {
-		StaticNoGoodTracker staticNoGoodExtrTracker = new StaticNoGoodTracker(getNoGoodCounter());
-		LearnedNoGoodTracker learnedNoGoodExtrTracker = new LearnedNoGoodTracker(getNoGoodCounter());
-		TotalNoGoodTracker totalNoGoodExtrTracker = new TotalNoGoodTracker(getNoGoodCounter());
+		StaticNoGoodTracker staticNoGoodExtractingTracker = new StaticNoGoodTracker(getNoGoodCounter());
+		LearnedNoGoodTracker learnedNoGoodExtractingTracker = new LearnedNoGoodTracker(getNoGoodCounter());
+		TotalNoGoodTracker totalNoGoodExtractingTracker = new TotalNoGoodTracker(getNoGoodCounter());
 
 		List<StatTracker> statTrackers = new LinkedList<>();
 		statTrackers.add(iterationTracker);
 		statTrackers.add(conflictTracker);
 		statTrackers.add(decisionTracker);
 		statTrackers.add(learnedNoGoodTracker);
-		statTrackers.add(staticNoGoodExtrTracker);
-		statTrackers.add(learnedNoGoodExtrTracker);
-		statTrackers.add(totalNoGoodExtrTracker);
+		statTrackers.add(staticNoGoodExtractingTracker);
+		statTrackers.add(learnedNoGoodExtractingTracker);
+		statTrackers.add(totalNoGoodExtractingTracker);
 		statTrackers.add(learnEfficiencyTracker);
 
 		PropagationStatManager propagationStatManager = this.store.getPropagationStatManager();
@@ -763,7 +763,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		}
 
 		statTrackers.add(new QuotientTracker("conflict_quot", conflictTracker, iterationTracker));
-		statTrackers.add(new QuotientTracker("nogood_quot", staticNoGoodExtrTracker, totalNoGoodExtrTracker));
+		statTrackers.add(new QuotientTracker("nogood_quot", staticNoGoodExtractingTracker, totalNoGoodExtractingTracker));
 
 		return statTrackers;
 	}
