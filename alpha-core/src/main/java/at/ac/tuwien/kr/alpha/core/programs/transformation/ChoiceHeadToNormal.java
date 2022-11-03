@@ -44,7 +44,6 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
-import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
@@ -121,7 +120,7 @@ public class ChoiceHeadToNormal extends ProgramTransformation<ASPCore2Program, A
 
 	private static boolean containsIntervalTerms(Atom atom) {
 		for (Term term : atom.getTerms()) {
-			if (IntervalTerm.termContainsIntervalTerm(term)) {
+			if (Terms.termContainsIntervalTerm(term)) {
 				return true;
 			}
 		}

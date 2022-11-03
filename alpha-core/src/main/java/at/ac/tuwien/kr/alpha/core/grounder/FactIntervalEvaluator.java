@@ -5,10 +5,11 @@ import java.util.Collections;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
-import at.ac.tuwien.kr.alpha.commons.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
 /**
@@ -34,7 +35,7 @@ public class FactIntervalEvaluator {
 			currentTerms[i] = term;
 			if (term instanceof IntervalTerm) {
 				containsIntervals = true;
-			} else if (term instanceof FunctionTerm && IntervalTerm.functionTermContainsIntervals((FunctionTerm) term)) {
+			} else if (term instanceof FunctionTerm && Terms.functionTermContainsIntervals((FunctionTerm) term)) {
 				containsIntervals = true;
 				throw new UnsupportedOperationException("Intervals inside function terms in facts are not supported yet. Try turning the fact into a rule.");
 			}
@@ -47,6 +48,7 @@ public class FactIntervalEvaluator {
 		return unrollInstances(currentTerms, 0);
 	}
 
+	@SuppressWarnings("unchecked")
 	private static List<Instance> unrollInstances(Term[] currentTerms, int currentPosition) {
 		if (currentPosition == currentTerms.length) {
 			return Collections.singletonList(new Instance(currentTerms));
@@ -58,8 +60,18 @@ public class FactIntervalEvaluator {
 
 		List<Instance> instances = new ArrayList<>();
 
-		int lower = ((IntervalTerm) currentTerm).getLowerBound();
-		int upper = ((IntervalTerm) currentTerm).getUpperBound();
+		Term lowerBoundTerm = ((IntervalTerm) currentTerm).getLowerBound();
+		Term upperBoundTerm = ((IntervalTerm) currentTerm).getUpperBound();
+		if (!(lowerBoundTerm instanceof ConstantTerm)) {
+			throw new IllegalArgumentException("Cannot unroll interval term with non-integer bound: " + lowerBoundTerm);
+		}
+		if (!(upperBoundTerm instanceof ConstantTerm)) {
+			throw new IllegalArgumentException("Cannot unroll interval term with non-integer bound: " + upperBoundTerm);
+		}
+
+		int lower = ((ConstantTerm<Integer>) lowerBoundTerm).getObject();
+		int upper = ((ConstantTerm<Integer>) upperBoundTerm).getObject();
+
 
 		for (int i = lower; i <= upper; i++) {
 			Term[] clonedTerms = currentTerms.clone();
