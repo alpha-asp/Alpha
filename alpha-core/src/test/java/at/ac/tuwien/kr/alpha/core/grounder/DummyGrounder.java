@@ -126,13 +126,6 @@ public class DummyGrounder implements Grounder {
 		return solverDerivedNoGoods.get(noGood);
 	}
 
-	/**
-	 * Empty interface implementation.
-	 */
-	@Override
-	public void reboot(Assignment currentAssignment) {
-	}
-
 	@Override
 	public AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms) {
 		// Note: This grounder only deals with 0-ary predicates, i.e., every atom is a predicate and there is

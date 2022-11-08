@@ -115,14 +115,14 @@ public class DynamicLearnedIntervalRebootStrategy implements RebootStrategy {
 		} else if (currentIntervalMeasure > previousIntervalMeasure) {
 			double newIntervalSize = intervalSize * scalingFactor;
 			System.out.printf("# Reboot performed. Interval size (old -> new): %f -> %f [+ scaled down]\n",
-					oldIntervalSize, intervalSize);
+					oldIntervalSize, newIntervalSize);
 			System.out.printf("# Reason (old, new): %f < %f\n",
 					previousIntervalMeasure, currentIntervalMeasure);
 			return Math.max(newIntervalSize, minInterval);
 		} else {
 			double newIntervalSize = intervalSize / scalingFactor;
 			System.out.printf("# Reboot performed. Interval size (old -> new): %f -> %f [- scaled up]\n",
-					oldIntervalSize, intervalSize);
+					oldIntervalSize, newIntervalSize);
 			System.out.printf("# Reason (old, new): %f >= %f\n",
 					previousIntervalMeasure, currentIntervalMeasure);
 			return Math.max(newIntervalSize, minInterval);

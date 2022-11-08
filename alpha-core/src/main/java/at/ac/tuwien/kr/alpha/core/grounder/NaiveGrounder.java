@@ -43,7 +43,9 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
+import at.ac.tuwien.kr.alpha.core.util.Substitutions;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -83,7 +85,7 @@ import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
  *
  * Copyright (c) 2016-2020, the Alpha Team.
  */
-public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGrounder {
+public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGrounder, RebootableGrounder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
 
 	private final WorkingMemory workingMemory = new WorkingMemory();
@@ -430,6 +432,23 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		initializeFactsAndRules();
 	}
 
+	@Override
+	public Map<Integer, NoGood> forceRuleGrounding(RuleAtom atom) {
+		Map<Integer, NoGood> newNoGoods = new LinkedHashMap<>();
+
+		// Translate RuleAtom back to NonGroundRule + Substitution.
+		String ruleId = (String) ((ConstantTerm<?>)atom.getTerms().get(0)).getObject();
+		CompiledRule nonGroundRule = getNonGroundRule(Integer.parseInt(ruleId));
+		String substitution = (String) ((ConstantTerm<?>)atom.getTerms().get(1)).getObject();
+		Substitution groundingSubstitution = Substitutions.fromString(substitution);
+
+		// Generate the rules that correspond to the RuleAtom
+		List<NoGood> generatedNoGoods = noGoodGenerator.generateNoGoodsFromGroundSubstitution(
+				nonGroundRule, groundingSubstitution);
+		registry.register(generatedNoGoods, newNoGoods);
+		return newNoGoods;
+	}
+
 	// Ideally, this method should be private. It's only visible because NaiveGrounderTest needs to access it.
 	BindingResult getGroundInstantiations(CompiledRule rule, RuleGroundingOrder groundingOrder, Substitution partialSubstitution,
 			Assignment currentAssignment) {
@@ -456,7 +475,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	/**
-	 * Helper method used by {@link NaiveGrounder#bindNextAtomInRule(RuleGroundingOrderImpl, int, int, int, BasicSubstitution)}.
+	 * Helper method used by {@link NaiveGrounder#bindNextAtomInRule(RuleGroundingOrder, int, int, int, Substitution)}.
 	 *
 	 * Takes an <code>ImmutablePair</code> of a {@link BasicSubstitution} and an accompanying {@link AssignmentStatus} and calls
 	 * <code>bindNextAtomInRule</code> for the next literal in the grounding order.
@@ -638,7 +657,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	/**
 	 * Checks that every nogood not marked as {@link NoGoodInterface.Type#INTERNAL} contains only
-	 * atoms which are not {@link PredicateImpl#isSolverInternal()} (except {@link RuleAtom}s, which are allowed).
+	 * atoms which are not {@link Predicate#isSolverInternal()} (except {@link RuleAtom}s, which are allowed).
 	 *
 	 * @param newNoGoods
 	 */

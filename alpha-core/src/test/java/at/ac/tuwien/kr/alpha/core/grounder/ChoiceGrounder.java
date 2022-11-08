@@ -211,11 +211,4 @@ public class ChoiceGrounder implements Grounder {
 		}
 		return solverDerivedNoGoods.get(noGood);
 	}
-
-	/**
-	 * Empty interface implementation.
-	 */
-	@Override
-	public void reboot(Assignment currentAssignment) {
-	}
 }

@@ -20,10 +20,12 @@ public final class Substitutions {
 		String[] assignments = bare.split(",");
 		BasicSubstitution ret = new BasicSubstitution();
 		for (String assignment : assignments) {
-			String[] keyVal = assignment.split("->");
-			VariableTerm variable = Terms.newVariable(keyVal[0]);
-			Term assignedTerm = PROGRAM_PART_PARSER.parseTerm(keyVal[1]);
-			ret.put(variable, assignedTerm);
+			if (!assignment.equals("")) {
+				String[] keyVal = assignment.split("->");
+				VariableTerm variable = Terms.newVariable(keyVal[0]);
+				Term assignedTerm = PROGRAM_PART_PARSER.parseTerm(keyVal[1]);
+				ret.put(variable, assignedTerm);
+			}
 		}
 		return ret;
 	}

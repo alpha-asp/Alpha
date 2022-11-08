@@ -62,6 +62,7 @@ public class NoGoodAtomizer {
 	/**
 	 * Creates a new {@link NoGood} with the same literals as this {@link NoGoodAtomizer}.
 	 * Atom ids are provided by the given {@link AtomStore}.
+	 * Atoms are added to the {@link AtomStore} if they are not contained yet.
 	 *
 	 * @param atomStore the {@link AtomStore} to get atom ids from.
 	 * @return the newly created {@link NoGood} with the same literals as this {@link NoGoodAtomizer}.

@@ -80,9 +80,4 @@ public interface Grounder {
 	 * @return
 	 */
 	int register(NoGood noGood);
-
-	/**
-	 * Reboots the grounder, returning it to its initial state.
-	 */
-	void reboot(Assignment currentAssignment);
 }
