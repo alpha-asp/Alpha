@@ -346,7 +346,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 			choiceManager.backjump(backjumpLevel);
 			propagationStopWatch.start();
 			if (store.propagate() != null) {
-				throw  oops("Violated NoGood after backtracking.");
+				throw oops("Violated NoGood after backtracking.");
 			}
 			propagationStopWatch.stop();
 		}
@@ -620,12 +620,13 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	private void reboot() {
 		LOGGER.info("Performing solver and grounder reboot.");
 
+		RebootableGrounder rebootableGrounder = ((RebootableGrounder) grounder);
 		Stack<AtomizedChoice> atomizedChoiceStack = getAtomizedChoiceStack();
 
 		store.reset();
 		branchingHeuristic.reset();
 		assignment.clear();
-		((RebootableGrounder) grounder).reboot(assignment);
+		rebootableGrounder.reboot(assignment);
 		atomStore.reset();
 		choiceManager.reset();
 
@@ -706,7 +707,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	/**
 	 * Registers the given collection of {@link NoGood}s at the {@link Grounder}
 	 * and calls {@link DefaultSolver#ingest(Map)} with the resulting ids as keys.
-	 * @param noGoods the {@link NoGood}s to ingest.
+	 * @param noGoods the {@link NoGood}s to register and ingest.
 	 */
 	private void ingestNoGoodCollection(Collection<NoGood> noGoods) {
 		Map<Integer, NoGood> newNoGoods = new LinkedHashMap<>();
@@ -728,9 +729,10 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		if (!rebootEnabled) {
 			throw oops("Reboot is not enabled but nogood ingestion from rule atoms was called");
 		}
+		RebootableGrounder rebootableGrounder = ((RebootableGrounder) grounder);
 		Map<Integer, NoGood> newNoGoods = new LinkedHashMap<>();
 		for (RuleAtom ruleAtom : ruleAtoms) {
-			Map<Integer, NoGood> obtained = ((RebootableGrounder) grounder).forceRuleGrounding(ruleAtom);
+			Map<Integer, NoGood> obtained = rebootableGrounder.forceRuleGrounding(ruleAtom);
 			newNoGoods.putAll(obtained);
 		}
 		if (!ingest(newNoGoods)) {
