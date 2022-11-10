@@ -620,7 +620,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	private void reboot() {
 		LOGGER.info("Performing solver and grounder reboot.");
 
-		RebootableGrounder rebootableGrounder = ((RebootableGrounder) grounder);
+		RebootableGrounder rebootableGrounder = (RebootableGrounder) grounder;
 		Stack<AtomizedChoice> atomizedChoiceStack = getAtomizedChoiceStack();
 
 		store.reset();
@@ -729,7 +729,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		if (!rebootEnabled) {
 			throw oops("Reboot is not enabled but nogood ingestion from rule atoms was called");
 		}
-		RebootableGrounder rebootableGrounder = ((RebootableGrounder) grounder);
+		RebootableGrounder rebootableGrounder = (RebootableGrounder) grounder;
 		Map<Integer, NoGood> newNoGoods = new LinkedHashMap<>();
 		for (RuleAtom ruleAtom : ruleAtoms) {
 			Map<Integer, NoGood> obtained = rebootableGrounder.forceRuleGrounding(ruleAtom);
