@@ -26,7 +26,12 @@
 package at.ac.tuwien.kr.alpha.core.solver.reboot;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 
+/**
+ * A choice independent of atom ids provided by an {@link AtomStore}.
+ * It contains an {@link Atom}, a truth value and a backtracked flag.
+ */
 public class AtomizedChoice {
 	private final Atom atom;
 	private final boolean truthValue;

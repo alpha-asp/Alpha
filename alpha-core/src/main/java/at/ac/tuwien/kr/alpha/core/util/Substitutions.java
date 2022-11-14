@@ -1,11 +1,15 @@
 package at.ac.tuwien.kr.alpha.core.util;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.core.grounder.ProgramAnalyzingGrounder;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramPartParser;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 
 public final class Substitutions {
 
@@ -30,4 +34,13 @@ public final class Substitutions {
 		return ret;
 	}
 
+	public static Substitution getSubstitutionFromRuleAtom(RuleAtom atom) {
+		String substitution = (String) ((ConstantTerm<?>)atom.getTerms().get(1)).getObject();
+		return fromString(substitution);
+	}
+
+	public static CompiledRule getNonGroundRuleFromRuleAtom(RuleAtom atom, ProgramAnalyzingGrounder grounder) {
+		String ruleId = (String) ((ConstantTerm<?>)atom.getTerms().get(0)).getObject();
+		return grounder.getNonGroundRule(Integer.parseInt(ruleId));
+	}
 }

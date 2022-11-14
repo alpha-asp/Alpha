@@ -43,7 +43,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.util.Substitutions;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -427,7 +426,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
 		instantiationStrategy.setStaleWorkingMemoryEntries(removeAfterObtainingNewNoGoods);
 		instantiationStrategy.setCurrentAssignment(currentAssignment);
-		EnumerationAtom.resetEnumerations();
 		fixedRules = new ArrayList<>();
 		initializeFactsAndRules();
 	}
@@ -437,10 +435,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		Map<Integer, NoGood> newNoGoods = new LinkedHashMap<>();
 
 		// Translate RuleAtom back to NonGroundRule + Substitution.
-		String ruleId = (String) ((ConstantTerm<?>)atom.getTerms().get(0)).getObject();
-		CompiledRule nonGroundRule = getNonGroundRule(Integer.parseInt(ruleId));
-		String substitution = (String) ((ConstantTerm<?>)atom.getTerms().get(1)).getObject();
-		Substitution groundingSubstitution = Substitutions.fromString(substitution);
+		CompiledRule nonGroundRule = Substitutions.getNonGroundRuleFromRuleAtom(atom, this);
+		Substitution groundingSubstitution = Substitutions.getSubstitutionFromRuleAtom(atom);
 
 		// Generate the rules that correspond to the RuleAtom
 		List<NoGood> generatedNoGoods = noGoodGenerator.generateNoGoodsFromGroundSubstitution(
