@@ -274,6 +274,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		grounderStopWatch.start();
 		Map<Integer, NoGood> obtained = grounder.getNoGoods(assignment);
 		grounderStopWatch.stop();
+		rebootStrategy.newNoGoods(obtained.values());
 		if (!ingest(obtained)) {
 			searchState.isSearchSpaceCompletelyExplored = true;
 		}
@@ -406,6 +407,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		obtained.put(noGoodID, noGood);
 		LOGGER.debug("Learned NoGood is: {}", atomStore.noGoodToString(noGood));
 		// Add NoGood and trigger backjumping.
+		rebootStrategy.newLearnedNoGoods(obtained.values());
 		if (!ingest(obtained)) {
 			logStats();
 			return false;
@@ -545,7 +547,6 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	private boolean ingest(Map<Integer, NoGood> obtained) {
 		growForMaxAtomId();
 		branchingHeuristic.newNoGoods(obtained.values());
-		rebootStrategy.newNoGoods(obtained.values());
 
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
 		Map.Entry<Integer, NoGood> entry;
