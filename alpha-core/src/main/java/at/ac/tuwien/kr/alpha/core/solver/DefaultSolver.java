@@ -148,10 +148,9 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		this.disableRebootRepeat = config.isDisableRebootRepeat();
 		DynamicLearnedIntervalRebootStrategy dynamicRebootStrategy = new DynamicLearnedIntervalRebootStrategy(
 				learnEfficiencyTracker, 0.7, 5, config.getRebootIterations());
-//		this.rebootStrategy = new FixedIterationRebootStrategy(config.getRebootIterations());
 //		this.rebootStrategy = new FixedLearnedRebootStrategy(config.getRebootIterations());
-		this.rebootStrategy = dynamicRebootStrategy;
 //		this.rebootStrategy = new LubyLearnedRebootStrategy();
+		this.rebootStrategy = dynamicRebootStrategy;
 		statTrackers.add(dynamicRebootStrategy.getIntervalSizeTracker());
 
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment,
@@ -407,7 +406,6 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		obtained.put(noGoodID, noGood);
 		LOGGER.debug("Learned NoGood is: {}", atomStore.noGoodToString(noGood));
 		// Add NoGood and trigger backjumping.
-		rebootStrategy.newLearnedNoGoods(obtained.values());
 		if (!ingest(obtained)) {
 			logStats();
 			return false;

@@ -28,8 +28,12 @@ package at.ac.tuwien.kr.alpha.core.solver.reboot.strategies;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.solver.reboot.stats.ResettableStatTracker;
 import at.ac.tuwien.kr.alpha.core.solver.reboot.stats.StatTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DynamicLearnedIntervalRebootStrategy implements RebootStrategy {
+	private static final Logger LOGGER = LoggerFactory.getLogger(DynamicLearnedIntervalRebootStrategy.class);
+
 	private final ResettableStatTracker efficiencyMeasure;
 	private final StatTracker intervalSizeTracker;
 	private final int minInterval;
@@ -114,17 +118,13 @@ public class DynamicLearnedIntervalRebootStrategy implements RebootStrategy {
 			return intervalSize;
 		} else if (currentIntervalMeasure > previousIntervalMeasure) {
 			double newIntervalSize = intervalSize * scalingFactor;
-			System.out.printf("# Reboot performed. Interval size (old -> new): %f -> %f [+ scaled down]\n",
-					oldIntervalSize, newIntervalSize);
-			System.out.printf("# Reason (old, new): %f < %f\n",
-					previousIntervalMeasure, currentIntervalMeasure);
+			LOGGER.info("Reboot interval size: {} -> {}", oldIntervalSize, newIntervalSize);
+			LOGGER.info("Interval measures were: {} < {}", previousIntervalMeasure, currentIntervalMeasure);
 			return Math.max(newIntervalSize, minInterval);
 		} else {
 			double newIntervalSize = intervalSize / scalingFactor;
-			System.out.printf("# Reboot performed. Interval size (old -> new): %f -> %f [- scaled up]\n",
-					oldIntervalSize, newIntervalSize);
-			System.out.printf("# Reason (old, new): %f >= %f\n",
-					previousIntervalMeasure, currentIntervalMeasure);
+			LOGGER.info("Reboot interval size: {} -> {}", oldIntervalSize, newIntervalSize);
+			LOGGER.info("Interval measures were: {} >= {}", previousIntervalMeasure, currentIntervalMeasure);
 			return Math.max(newIntervalSize, minInterval);
 		}
 	}
