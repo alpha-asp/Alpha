@@ -87,12 +87,12 @@ public class DynamicLearnedIntervalRebootStrategy implements RebootStrategy {
 
 	@Override
 	public void newNoGood(NoGood noGood) {
-		learnedCount++;
+
 	}
 
 	@Override
 	public void newLearnedNoGood(NoGood noGood) {
-
+		learnedCount++;
 	}
 
 	@Override
