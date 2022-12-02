@@ -27,6 +27,14 @@
  */
 package at.ac.tuwien.kr.alpha.core.common;
 
+import at.ac.tuwien.kr.alpha.commons.util.Util;
+import at.ac.tuwien.kr.alpha.core.solver.Antecedent;
+
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.IntStream;
+
 import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isNegated;
 import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isPositive;
@@ -36,14 +44,6 @@ import static at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type.INTERNAL;
 import static at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type.LEARNT;
 import static at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type.STATIC;
 import static at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type.SUPPORT;
-
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.IntStream;
-
-import at.ac.tuwien.kr.alpha.commons.util.Util;
-import at.ac.tuwien.kr.alpha.core.solver.Antecedent;
 
 public class NoGood implements NoGoodInterface, Comparable<NoGood> {
 	public static final int HEAD = 0;
@@ -162,6 +162,11 @@ public class NoGood implements NoGoodInterface, Comparable<NoGood> {
 
 			@Override
 			public void decreaseActivity() {
+			}
+
+			@Override
+			public String toString() {
+				return NoGood.this + "(unwatched)";
 			}
 		};
 	}
