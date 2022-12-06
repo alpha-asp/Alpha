@@ -37,27 +37,8 @@ public class FixedDecisionRebootStrategy implements RebootStrategy {
 	}
 
 	@Override
-	public void nextIteration() {
-	}
-
-	@Override
 	public void decisionMade() {
 		decisionCount++;
-	}
-
-	@Override
-	public void conflictEncountered() {
-
-	}
-
-	@Override
-	public void newNoGood(NoGood noGood) {
-
-	}
-
-	@Override
-	public void newLearnedNoGood(NoGood noGood) {
-
 	}
 
 	@Override

@@ -27,24 +27,26 @@ package at.ac.tuwien.kr.alpha.core.solver.reboot.strategies;
 
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 
-import java.util.Collection;
+public class GeometricLearnedRebootStrategy implements RebootStrategy {
+	private static final double BASE = 1.5;
+	private static final double SCALING_FACTOR = 2;
 
-public interface RebootStrategy {
-	default void nextIteration() {}
-	default void decisionMade() {}
-	default void conflictEncountered() {}
-	default void answerSetFound() {}
-	default void backtrackJustified() {}
-	default void newEnumerationNoGood(NoGood noGood) {}
-	default void newJustificationNoGood(NoGood justification) {}
-	default void newNoGood(NoGood noGood) {}
-	default void newNoGoods(Collection<NoGood> newNoGoods) {
-		newNoGoods.forEach(this::newNoGood);
+	private int rebootCount;
+	private int learnedCount;
+
+	@Override
+	public void newLearnedNoGood(NoGood noGood) {
+		learnedCount++;
 	}
-	default void newLearnedNoGood(NoGood noGood) {}
-	default void newLearnedNoGoods(Collection<NoGood> newNoGoods) {
-		newNoGoods.forEach(this::newLearnedNoGood);
+
+	@Override
+	public boolean isRebootScheduled() {
+		return learnedCount >= SCALING_FACTOR * Math.pow(BASE, rebootCount);
 	}
-	boolean isRebootScheduled();
-	void rebootPerformed();
+
+	@Override
+	public void rebootPerformed() {
+		rebootCount++;
+		learnedCount = 0;
+	}
 }

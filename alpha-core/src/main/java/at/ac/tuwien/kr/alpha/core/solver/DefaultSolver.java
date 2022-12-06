@@ -150,7 +150,8 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 				learnEfficiencyTracker, 0.7, 5, config.getRebootIterations());
 //		this.rebootStrategy = new FixedLearnedRebootStrategy(config.getRebootIterations());
 //		this.rebootStrategy = new LubyLearnedRebootStrategy();
-		this.rebootStrategy = dynamicRebootStrategy;
+//		this.rebootStrategy = dynamicRebootStrategy;
+		this.rebootStrategy = new GeometricLearnedRebootStrategy();
 		statTrackers.add(dynamicRebootStrategy.getIntervalSizeTracker());
 
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment,
@@ -215,12 +216,14 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 				LOGGER.debug("Closed unassigned known atoms (assigning FALSE).");
 			} else if (assignment.getMBTCount() == 0) {
 				provideAnswerSet(action);
+				rebootStrategy.answerSetFound();
 				stopStopWatchesAndLogRuntimes();
 				return true;
 			} else {
 				mbtBacktrackingStopWatch.start();
 				backtrackFromMBTsRemaining();
 				mbtBacktrackingStopWatch.stop();
+				rebootStrategy.backtrackJustified();
 			}
 		}
 	}
@@ -264,6 +267,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		choiceManager.backjump(backjumpLevel - 1);
 		LOGGER.debug("Adding enumeration nogood: {}", enumerationNoGood);
 		rebootManager.newEnumerationNoGood(enumerationNoGood);
+		rebootStrategy.newEnumerationNoGood(enumerationNoGood);
 		if (!addAndBackjumpIfNecessary(grounder.register(enumerationNoGood), enumerationNoGood, Integer.MAX_VALUE)) {
 			searchState.isSearchSpaceCompletelyExplored = true;
 		}
@@ -404,6 +408,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		int noGoodID = grounder.register(noGood);
 		Map<Integer, NoGood> obtained = new LinkedHashMap<>();
 		obtained.put(noGoodID, noGood);
+		rebootStrategy.newJustificationNoGood(noGood);
 		LOGGER.debug("Learned NoGood is: {}", atomStore.noGoodToString(noGood));
 		// Add NoGood and trigger backjumping.
 		if (!ingest(obtained)) {

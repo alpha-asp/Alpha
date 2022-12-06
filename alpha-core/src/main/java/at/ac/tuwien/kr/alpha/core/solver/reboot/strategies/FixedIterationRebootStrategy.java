@@ -42,26 +42,6 @@ public class FixedIterationRebootStrategy implements RebootStrategy {
 	}
 
 	@Override
-	public void decisionMade() {
-
-	}
-
-	@Override
-	public void conflictEncountered() {
-
-	}
-
-	@Override
-	public void newNoGood(NoGood noGood) {
-
-	}
-
-	@Override
-	public void newLearnedNoGood(NoGood noGood) {
-
-	}
-
-	@Override
 	public boolean isRebootScheduled() {
 		return iterationCount >= breakpoint;
 	}

@@ -12,26 +12,6 @@ public class FixedLearnedRebootStrategy implements RebootStrategy {
 	}
 
 	@Override
-	public void nextIteration() {
-
-	}
-
-	@Override
-	public void decisionMade() {
-
-	}
-
-	@Override
-	public void conflictEncountered() {
-
-	}
-
-	@Override
-	public void newNoGood(NoGood noGood) {
-
-	}
-
-	@Override
 	public void newLearnedNoGood(NoGood noGood) {
 		learnedCounter++;
 	}

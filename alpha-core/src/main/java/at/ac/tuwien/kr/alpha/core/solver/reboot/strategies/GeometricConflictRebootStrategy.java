@@ -33,30 +33,9 @@ public class GeometricConflictRebootStrategy implements RebootStrategy {
 
 	private int rebootCount;
 	private int conflictCount;
-
-	@Override
-	public void nextIteration() {
-
-	}
-
-	@Override
-	public void decisionMade() {
-
-	}
-
 	@Override
 	public void conflictEncountered() {
 		conflictCount++;
-	}
-
-	@Override
-	public void newNoGood(NoGood noGood) {
-
-	}
-
-	@Override
-	public void newLearnedNoGood(NoGood noGood) {
-
 	}
 
 	@Override
