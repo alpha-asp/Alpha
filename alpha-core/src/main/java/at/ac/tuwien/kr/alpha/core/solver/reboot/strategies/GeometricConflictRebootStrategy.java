@@ -25,8 +25,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.reboot.strategies;
 
-import at.ac.tuwien.kr.alpha.core.common.NoGood;
-
 public class GeometricConflictRebootStrategy implements RebootStrategy {
 	private static final double BASE = 1.5;
 	private static final double SCALING_FACTOR = 2;

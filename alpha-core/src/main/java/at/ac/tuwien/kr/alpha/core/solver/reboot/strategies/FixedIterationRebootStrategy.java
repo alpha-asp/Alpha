@@ -25,8 +25,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.reboot.strategies;
 
-import at.ac.tuwien.kr.alpha.core.common.NoGood;
-
 public class FixedIterationRebootStrategy implements RebootStrategy {
 	private final int breakpoint;
 	private int iterationCount;

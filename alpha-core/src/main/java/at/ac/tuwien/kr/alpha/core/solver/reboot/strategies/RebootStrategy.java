@@ -30,21 +30,42 @@ import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import java.util.Collection;
 
 public interface RebootStrategy {
-	default void nextIteration() {}
-	default void decisionMade() {}
-	default void conflictEncountered() {}
-	default void answerSetFound() {}
-	default void backtrackJustified() {}
-	default void newEnumerationNoGood(NoGood noGood) {}
-	default void newJustificationNoGood(NoGood justification) {}
-	default void newNoGood(NoGood noGood) {}
+	default void nextIteration() {
+	}
+
+	default void decisionMade() {
+	}
+
+	default void conflictEncountered() {
+	}
+
+	default void answerSetFound() {
+	}
+
+	default void backtrackJustified() {
+	}
+
+	default void newEnumerationNoGood(NoGood noGood) {
+	}
+
+	default void newJustificationNoGood(NoGood justification) {
+	}
+
+	default void newNoGood(NoGood noGood) {
+	}
+
 	default void newNoGoods(Collection<NoGood> newNoGoods) {
 		newNoGoods.forEach(this::newNoGood);
 	}
-	default void newLearnedNoGood(NoGood noGood) {}
+
+	default void newLearnedNoGood(NoGood noGood) {
+	}
+
 	default void newLearnedNoGoods(Collection<NoGood> newNoGoods) {
 		newNoGoods.forEach(this::newLearnedNoGood);
 	}
+
 	boolean isRebootScheduled();
+
 	void rebootPerformed();
 }
