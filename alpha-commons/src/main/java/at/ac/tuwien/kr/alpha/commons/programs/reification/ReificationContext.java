@@ -12,7 +12,7 @@ import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.IdGenerator;
 
-class ReificationContext implements IdGenerator<ConstantTerm<?>>{
+class ReificationContext implements IdGenerator<ConstantTerm<?>> {
 
 	private final IdGenerator<ConstantTerm<?>> idGenerator;
 	private final Map<Predicate, ConstantTerm<?>> predicateTable = new HashMap<>();

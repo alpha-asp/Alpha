@@ -111,7 +111,7 @@ public class ReificationTest {
 				Atoms.query("term_type", 2)
 						.withTermEquals(1, Terms.newSymbolicConstant("variable")))
 				.collect(Collectors.toSet()).size());
-		assertEquals(3,reified.stream().filter(
+		assertEquals(3, reified.stream().filter(
 			Atoms.query("variableTerm_symbol", 2)
 					.withTermEquals(1, Terms.newConstant("X")))
 			.collect(Collectors.toSet()).size());

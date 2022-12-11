@@ -1,7 +1,6 @@
 package at.ac.tuwien.kr.alpha.commons.programs.reification;
 
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
