@@ -29,6 +29,7 @@ import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
 
+// TODO This is a functional test and should not be run with standard unit tests
 public class AggregateRewritingTest {
 
 	private static final ProgramParser PARSER = new ProgramParserImpl();

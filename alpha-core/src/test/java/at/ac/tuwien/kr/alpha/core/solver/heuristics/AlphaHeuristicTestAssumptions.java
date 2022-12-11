@@ -29,27 +29,30 @@ import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.function.Function;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
+import at.ac.tuwien.kr.alpha.core.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.core.solver.NaiveNoGoodStore;
-import at.ac.tuwien.kr.alpha.core.solver.TestableChoiceManager;
 import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
 import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
 
@@ -63,30 +66,39 @@ import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
  */
 public class AlphaHeuristicTestAssumptions {
 
-	private final ProgramParser parser = new ProgramParserImpl();
-	private final NormalizeProgramTransformation normalizer = new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG);
-	private final Function<String, CompiledProgram> parseAndPreprocess = (str) -> {
-		return InternalProgram.fromNormalProgram(normalizer.apply(parser.parse(str)));
-	};
-
 	private Grounder grounder;
 	private WritableAssignment assignment;
-	private TestableChoiceManager choiceManager;
+	private ChoiceManager choiceManager;
 	private AtomStore atomStore;
 
 	@BeforeEach
 	public void setUp() {
-		String testProgram = ""
-				+ "b1."
-				+ "b2."
-				+ "{b3}."
-				+ "{b4}."
-				+ "h :- b1, b2, not b3, not b4.";
-		CompiledProgram internalProgram = parseAndPreprocess.apply(testProgram);
+		/* program :=
+		 *     b1. b2.
+		 *     b3 :- not nb3.
+		 *     nb3 :- not b3.
+		 *     b4 :- not nb4.
+		 *     nb4 :- not b4.
+		 *     h :- b1, b2, not b3, not b4.
+		 */
+		List<Atom> facts = Arrays.asList(Atoms.newBasicAtom(Predicates.getPredicate("b1", 0)), Atoms.newBasicAtom(Predicates.getPredicate("b2", 0)));
+		List<CompiledRule> rules = Arrays.asList(
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("b3", 0))), Atoms.newBasicAtom(Predicates.getPredicate("nb3", 0)).toLiteral(false)),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("nb3", 0))), Atoms.newBasicAtom(Predicates.getPredicate("b3", 0)).toLiteral(false)),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("b4", 0))), Atoms.newBasicAtom(Predicates.getPredicate("nb4", 0)).toLiteral(false)),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("nb4", 0))), Atoms.newBasicAtom(Predicates.getPredicate("b4", 0)).toLiteral(false)),
+				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("h", 0))),
+						Atoms.newBasicAtom(Predicates.getPredicate("b1", 0)).toLiteral(),
+						Atoms.newBasicAtom(Predicates.getPredicate("b2", 0)).toLiteral(),
+						Atoms.newBasicAtom(Predicates.getPredicate("b3", 0)).toLiteral(false),
+						Atoms.newBasicAtom(Predicates.getPredicate("b4", 0)).toLiteral(false))
+				);
+		CompiledProgram program = new InternalProgram(rules, facts);
+		
 		atomStore = new AtomStoreImpl();
-		grounder = new NaiveGrounder(internalProgram, atomStore, true);
+		grounder = new NaiveGrounder(program, atomStore, true);
 		assignment = new TrailAssignment(atomStore);
-		choiceManager = new TestableChoiceManager(assignment, new NaiveNoGoodStore(assignment));
+		choiceManager = new ChoiceManager(assignment, new NaiveNoGoodStore(assignment));
 	}
 
 	@Test

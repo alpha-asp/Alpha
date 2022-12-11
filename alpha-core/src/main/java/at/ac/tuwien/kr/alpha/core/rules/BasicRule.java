@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.rules;
 
+import java.util.Arrays;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
@@ -45,4 +46,7 @@ public class BasicRule extends AbstractRule<Head> implements Rule<Head> {
 		super(head, body);
 	}
 
+	public BasicRule(Head head, Literal... body) {
+		this(head, Arrays.asList(body));
+	}
 }

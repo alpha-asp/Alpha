@@ -9,13 +9,13 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.function.Executable;
 
@@ -43,6 +43,7 @@ import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
+import at.ac.tuwien.kr.alpha.core.solver.Antecedent;
 import at.ac.tuwien.kr.alpha.core.solver.RegressionTestConfig;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
 
@@ -55,25 +56,30 @@ public class TestUtils {
 		}
 	}
 	
-	public static Atom atom(String predicateName, String... termStrings) {
-		Term[] terms = new Term[termStrings.length];
-		for (int i = 0; i < termStrings.length; i++) {
-			String termString = termStrings[i];
-			if (StringUtils.isAllUpperCase(termString.substring(0, 1))) {
-				terms[i] = Terms.newVariable(termString);
-			} else {
-				terms[i] = Terms.newConstant(termString);
+	/**
+	 * Tests whether two Antecedent objects have the same reason literals (irrespective of their order).
+	 * Note that both Antecedents are assumed to contain no duplicate literals.
+	 * @param l left Antecedent.
+	 * @param r right Antecedent
+	 * @return true iff both Antecedents contain the same literals.
+	 */
+	public static boolean antecedentsEquals(Antecedent l, Antecedent r) {
+		if (l == r) {
+			return true;
+		}
+		if (l != null && r != null && l.getReasonLiterals().length == r.getReasonLiterals().length) {
+			HashSet<Integer> lSet = new HashSet<>();
+			for (int literal : l.getReasonLiterals()) {
+				lSet.add(literal);
 			}
+			for (int literal : r.getReasonLiterals()) {
+				if (!lSet.contains(literal)) {
+					return false;
+				}
+			}
+			return true;
 		}
-		return Atoms.newBasicAtom(Predicates.getPredicate(predicateName, terms.length), terms);
-	}
-
-	public static Atom atom(String predicateName, int... termInts) {
-		Term[] terms = new Term[termInts.length];
-		for (int i = 0; i < termInts.length; i++) {
-			terms[i] = Terms.newConstant(termInts[i]);
-		}
-		return Atoms.newBasicAtom(Predicates.getPredicate(predicateName, terms.length), terms);
+		return false;
 	}
 	
 	public static void printNoGoods(AtomStore atomStore, Collection<NoGood> noGoods) {

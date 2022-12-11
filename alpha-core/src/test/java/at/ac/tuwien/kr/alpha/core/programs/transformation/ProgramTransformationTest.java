@@ -15,10 +15,11 @@ import org.slf4j.LoggerFactory;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
-import at.ac.tuwien.kr.alpha.core.externals.Externals;
+import at.ac.tuwien.kr.alpha.commons.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 
+// TODO This is a functional test and should not be run with standard unit tests
 public class ProgramTransformationTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ProgramTransformationTest.class);

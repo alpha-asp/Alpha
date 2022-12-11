@@ -205,7 +205,7 @@ public class ChoiceManager implements Checkable {
 		return choice;
 	}
 
-	void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms, Map<Integer, Set<Integer>> headsToBodies) {
+	public void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms, Map<Integer, Set<Integer>> headsToBodies) {
 		choicePointInfluenceManager.addInformation(choiceAtoms);
 		addHeadsToBodies(headsToBodies);
 	}

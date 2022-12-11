@@ -45,7 +45,6 @@ import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToLiteral;
 import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isPositive;
-import static at.ac.tuwien.kr.alpha.core.solver.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.TRUE;
@@ -338,7 +337,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	}
 
 	private ConflictCause assignWithTrail(int atom, ThriceTruth value, Antecedent impliedBy) {
-		if (!isAtom(atom)) {
+		if (!AtomStore.isAtom(atom)) {
 			throw new IllegalArgumentException("not an atom");
 		}
 		if (value == null) {

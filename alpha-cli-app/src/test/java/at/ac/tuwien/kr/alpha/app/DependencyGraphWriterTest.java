@@ -11,6 +11,7 @@ import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
 import at.ac.tuwien.kr.alpha.api.impl.AlphaImpl;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 
+// TODO This is a functional test and should not be run with standard unit tests
 public class DependencyGraphWriterTest {
 	private static final String LS = System.lineSeparator();
 
