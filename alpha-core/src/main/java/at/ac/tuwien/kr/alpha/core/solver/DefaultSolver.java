@@ -150,8 +150,8 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 				learnEfficiencyTracker, 0.7, 5, config.getRebootIterations());
 //		this.rebootStrategy = new FixedLearnedRebootStrategy(config.getRebootIterations());
 //		this.rebootStrategy = new LubyLearnedRebootStrategy();
-//		this.rebootStrategy = dynamicRebootStrategy;
-		this.rebootStrategy = new GeometricLearnedRebootStrategy();
+		this.rebootStrategy = dynamicRebootStrategy;
+//		this.rebootStrategy = new GeometricLearnedRebootStrategy();
 		statTrackers.add(dynamicRebootStrategy.getIntervalSizeTracker());
 
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment,
