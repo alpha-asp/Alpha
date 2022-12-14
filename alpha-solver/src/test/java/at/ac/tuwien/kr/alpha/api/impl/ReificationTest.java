@@ -7,12 +7,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AtomQuery;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 
@@ -55,7 +62,7 @@ public class ReificationTest {
 	}
 
 	@Test
-	public void simplePositiveRule() {
+	public void positiveRule() {
 		Set<BasicAtom> reified = alpha.reify(alpha.readProgramString("p(X) :- q(X), r(X)."));
 		List<BasicAtom> ruleDescriptorResult = reified.stream().filter(Atoms.query("rule", 1)).collect(Collectors.toList());
 		assertEquals(1, ruleDescriptorResult.size());
@@ -115,6 +122,96 @@ public class ReificationTest {
 			Atoms.query("variableTerm_symbol", 2)
 					.withTermEquals(1, Terms.newConstant("X")))
 			.collect(Collectors.toSet()).size());
+	}
+
+	@Test
+	public void ruleWithNegativeLiteral() {
+		Set<BasicAtom> reified = alpha.reify(alpha.readProgramString("p(X) :- q(X), not r(X)."));
+		List<ConstantTerm<?>> qIds = findLiteralIdsForPredicate(Predicates.getPredicate("q", 1), Terms.newConstant(0), reified);
+		assertEquals(1, qIds.size());
+		assertEquals(1, 
+			reified.stream().filter(
+				Atoms.query("literal_polarity", 2)
+					.withTermEquals(0, qIds.get(0))
+					.withTermEquals(1, Terms.newSymbolicConstant("pos")))
+			.collect(Collectors.toList())
+			.size()
+		);
+		List<ConstantTerm<?>> rIds = findLiteralIdsForPredicate(Predicates.getPredicate("r", 1), Terms.newConstant(0), reified);
+		assertEquals(1, rIds.size());
+		assertEquals(1, 
+			reified.stream().filter(
+				Atoms.query("literal_polarity", 2)
+					.withTermEquals(0, rIds.get(0))
+					.withTermEquals(1, Terms.newSymbolicConstant("neg")))
+			.collect(Collectors.toList())
+			.size()
+		);
+	}
+
+	@Test
+	public void comparisonAtom() {
+		Set<BasicAtom> reified = alpha.reify(alpha.readProgramString("p(X) :- X = 42."));
+
+	}
+
+	private static List<ConstantTerm<?>> findLiteralIdsForPredicate(Predicate predicate, ConstantTerm<?> reifiedRuleId, Set<BasicAtom> reifiedProgram) {
+		ConstantTerm<?> predicateId = findPredicateId(predicate, reifiedProgram);
+		return ruleBodyLiteralIdStream(reifiedRuleId, reifiedProgram)
+			.filter((literalId) -> {
+				List<ConstantTerm<?>> atomIdResult = reifiedProgram.stream()
+					.filter(Atoms.query("literal_atom", 2).withTermEquals(0, literalId))
+					.map((literalToAtomDescriptor) -> (ConstantTerm<?>) literalToAtomDescriptor.getTerms().get(1))
+					.collect(Collectors.toList());
+				if (atomIdResult.isEmpty()) {
+					return false;
+				}
+				ConstantTerm<?> atomId = atomIdResult.get(0);
+				List<ConstantTerm<?>> predicateIdOfBasicAtomResult = reifiedProgram.stream()
+					.filter(Atoms.query("basicAtom_predicate", 2).withTermEquals(0, atomId))
+					.map((atomToPredicateDescriptor) -> (ConstantTerm<?>) atomToPredicateDescriptor.getTerms().get(1))
+					.collect(Collectors.toList());
+				return predicateIdOfBasicAtomResult.isEmpty() ? false : predicateIdOfBasicAtomResult.get(0).equals(predicateId);
+			})
+			.collect(Collectors.toList());
+	}
+
+	private static List<ConstantTerm<?>> findLiteralIdsForComparisonOperator(ComparisonOperator operator, ConstantTerm<?> reifiedRuleId, Set<BasicAtom> reifiedProgram) {
+		return ruleBodyLiteralIdStream(reifiedRuleId, reifiedProgram)
+			.filter((literalId) -> {
+				List<ConstantTerm<?>> atomIdResult = reifiedProgram.stream()
+					.filter(Atoms.query("literal_atom", 2).withTermEquals(0, literalId))
+					.map((literalToAtomDescriptor) -> (ConstantTerm<?>) literalToAtomDescriptor.getTerms().get(1))
+					.collect(Collectors.toList());
+				if (atomIdResult.isEmpty()) {
+					return false;
+				}
+				ConstantTerm<?> atomId = atomIdResult.get(0);
+				return false; // TODO!
+			}).collect(Collectors.toList()); // TODO
+	}
+
+	private static ConstantTerm<?> findPredicateId(Predicate predicate, Set<BasicAtom> reifiedProgram) {
+		List<BasicAtom> reifiedPredicateResult = reifiedProgram.stream()
+			.filter(queryForReifiedPredicate(predicate))
+			.collect(Collectors.toList());
+		if(reifiedPredicateResult.size() > 1) {
+			Assertions.fail("Expected only one atom when querying for reified predicate!");
+		}
+		return (ConstantTerm<?>) reifiedPredicateResult.get(0).getTerms().get(0);
+	}
+
+	private static AtomQuery queryForReifiedPredicate(Predicate predicate) {
+		return Atoms.query("predicate", 3)
+			.withTermEquals(1, Terms.newConstant(predicate.getName()))
+			.withTermEquals(2, Terms.newConstant(predicate.getArity()));
+	}
+
+	private static Stream<ConstantTerm<?>> ruleBodyLiteralIdStream(ConstantTerm<?> ruleId, Set<BasicAtom> reifiedProgram) {
+		return reifiedProgram.stream()
+			.filter(Atoms.query("rule_bodyLiteral", 2).withTermEquals(0, ruleId))
+			// After filtering we have atoms describing body literals - extract the second term which is the id of the literal
+			.map((bodyLiteralDescriptor) -> (ConstantTerm<?>) bodyLiteralDescriptor.getTerms().get(1));
 	}
 
 }

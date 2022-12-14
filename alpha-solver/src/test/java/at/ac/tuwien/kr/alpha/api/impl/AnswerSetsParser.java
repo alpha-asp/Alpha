@@ -48,7 +48,7 @@ public class AnswerSetsParser {
 	}
 
 	public static Set<BasicAtom> parseAtoms(String s) {
-		Set<AnswerSet> tmp = parse(s);
+		Set<AnswerSet> tmp = parse("{" + s + "}");
 		if(tmp.size() > 1) {
 			throw new IllegalArgumentException("Cannot parse multiset of atoms! Use answer set parsing methods instead!");
 		}
