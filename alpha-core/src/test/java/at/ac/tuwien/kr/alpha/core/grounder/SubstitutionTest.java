@@ -27,12 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.Arrays;
-
-import org.junit.jupiter.api.Test;
-
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
@@ -50,13 +44,16 @@ import at.ac.tuwien.kr.alpha.commons.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 import at.ac.tuwien.kr.alpha.core.test.util.SubstitutionTestUtil;
-import at.ac.tuwien.kr.alpha.core.util.Substitutions;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SubstitutionTest {
 	private static final ProgramParser PARSER = new ProgramParserImpl();
@@ -164,17 +161,5 @@ public class SubstitutionTest {
 		Substitution substitution = BasicSubstitution.specializeSubstitution(PY, PB, substitution1);
 		String printedString = SubstitutionTestUtil.groundLiteralToString(atom.toLiteral(!negated), substitution, true);
 		assertEquals((negated ? "not " : "") + "p(a, b)", printedString);
-	}
-
-	@Test
-	public void substitutionFromString() {
-		Rule<Head> rule = PARSER.parse("x :- p(X,Y), not q(X,Y).").getRules().get(0);
-		CompiledRule nonGroundRule = InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(rule));
-		Substitution substitution1 = BasicSubstitution.specializeSubstitution(PX, PA, BasicSubstitution.EMPTY_SUBSTITUTION);
-		Substitution substitution = BasicSubstitution.specializeSubstitution(PY, PB, substitution1);
-		RuleAtom ruleAtom = new RuleAtom(nonGroundRule, substitution);
-		String substitutionString = (String) ((ConstantTerm<?>) ruleAtom.getTerms().get(1)).getObject();
-		Substitution fromString = Substitutions.fromString(substitutionString);
-		assertEquals(substitution, fromString);
 	}
 }

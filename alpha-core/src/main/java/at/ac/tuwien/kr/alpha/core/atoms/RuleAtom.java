@@ -27,11 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.atoms;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -43,27 +38,74 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
+
 /**
- * Atoms corresponding to rule bodies use this predicate, first term is rule number,
- * second is a term containing variable substitutions.
+ * Atoms corresponding to rule bodies use this predicate, its only term is a Java object linking to the non-ground rule and grounding substitution.
  */
 public class RuleAtom implements Atom {
-	public static final Predicate PREDICATE = Predicates.getPredicate("_R_", 2, true, true);
+	public static final Predicate PREDICATE = Predicates.getPredicate("_R_", 1, true, true);
 
-	private final List<ConstantTerm<String>> terms;
+	private final List<ConstantTerm<RuleAtomConstant>> terms;
 
-	private RuleAtom(List<ConstantTerm<String>> terms) {
-		if (terms.size() != 2) {
-			throw new IllegalArgumentException();
+	public static class RuleAtomConstant implements Comparable<RuleAtomConstant> {
+		private final CompiledRule nonGroundRule;
+		private final Substitution substitution;
+		private final Term[] compiledSubstitution;	// For faster comparison to other RuleAtomConstants: ascending key-ordered right-hand sides of substitution.
+		private final int ruleId;
+
+		RuleAtomConstant(CompiledRule nonGroundRule, Substitution substitution) {
+			this.nonGroundRule = nonGroundRule;
+			this.substitution = substitution;
+			ruleId = nonGroundRule.getRuleId();
+			compiledSubstitution = new Term[this.substitution.getSubstitution().size()];
+			int i = 0;
+			// Iterate substitution in ascending order of its key and flatten the tree into an array.
+			for (Map.Entry<VariableTerm, Term> variableSubstitution : this.substitution.getSubstitution().entrySet()) {
+				this.compiledSubstitution[i++] = variableSubstitution.getValue();
+			}
 		}
 
-		this.terms = terms;
+		@Override
+		public int compareTo(RuleAtomConstant other) {
+			if (ruleId != other.ruleId) {
+				return Integer.compare(ruleId, other.ruleId);
+			}
+			// Note: We assume here that substitutions for the same nonGroundRule are all over the same variables.
+			if (compiledSubstitution.length != other.compiledSubstitution.length) {
+				throw oops("RuleAtoms over the same rule have different-sized substitutions.");
+			}
+			for (int i = 0; i < compiledSubstitution.length; i++) {
+				// Since all terms are interned, equality can be checked by comparing the Java-objects.
+				if (compiledSubstitution[i] != other.compiledSubstitution[i]) {
+					return compiledSubstitution[i].compareTo(other.compiledSubstitution[i]);
+				}
+			}
+			return 0;
+		}
+
+		public CompiledRule getNonGroundRule() {
+			return nonGroundRule;
+		}
+
+		public Substitution getSubstitution() {
+			return substitution;
+		}
+
+		@Override
+		public String toString() {
+			return "ruleId=" + ruleId + ":substitution=" + Arrays.toString(compiledSubstitution);
+		}
 	}
 
 	public RuleAtom(CompiledRule nonGroundRule, Substitution substitution) {
-		this(Arrays.asList(
-				Terms.newConstant(Integer.toString(nonGroundRule.getRuleId())),
-				Terms.newConstant(substitution.toString())));
+		this.terms = Collections.singletonList(Terms.newConstant(new RuleAtomConstant(nonGroundRule, substitution)));
 	}
 
 	@Override
@@ -73,12 +115,12 @@ public class RuleAtom implements Atom {
 
 	@Override
 	public List<Term> getTerms() {
-		return Arrays.asList(terms.get(0), terms.get(1));
+		return Collections.singletonList(terms.get(0));
 	}
 
 	@Override
 	public boolean isGround() {
-		// NOTE: Both terms are ConstantTerms, which are ground by definition.
+		// NOTE: single term is a ConstantTerm, which is ground by definition.
 		return true;
 	}
 
@@ -113,7 +155,7 @@ public class RuleAtom implements Atom {
 
 	@Override
 	public String toString() {
-		return PREDICATE.getName() + "(" + terms.get(0) + "," + terms.get(1) + ')';
+		return PREDICATE.getName() + "(" + terms.get(0) + ')';
 	}
 
 	@Override
