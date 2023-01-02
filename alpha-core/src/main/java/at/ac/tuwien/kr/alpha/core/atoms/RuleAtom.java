@@ -38,8 +38,8 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
 
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,34 +57,31 @@ public class RuleAtom implements Atom {
 	public static class RuleAtomConstant implements Comparable<RuleAtomConstant> {
 		private final CompiledRule nonGroundRule;
 		private final Substitution substitution;
-		private final Term[] compiledSubstitution;	// For faster comparison to other RuleAtomConstants: ascending key-ordered right-hand sides of substitution.
-		private final int ruleId;
+		private final int substitutionHash;
 
 		RuleAtomConstant(CompiledRule nonGroundRule, Substitution substitution) {
 			this.nonGroundRule = nonGroundRule;
 			this.substitution = substitution;
-			ruleId = nonGroundRule.getRuleId();
-			compiledSubstitution = new Term[this.substitution.getSubstitution().size()];
-			int i = 0;
-			// Iterate substitution in ascending order of its key and flatten the tree into an array.
-			for (Map.Entry<VariableTerm, Term> variableSubstitution : this.substitution.getSubstitution().entrySet()) {
-				this.compiledSubstitution[i++] = variableSubstitution.getValue();
-			}
+			this.substitutionHash = substitution.hashCode();
 		}
 
 		@Override
 		public int compareTo(RuleAtomConstant other) {
-			if (ruleId != other.ruleId) {
-				return Integer.compare(ruleId, other.ruleId);
+			if (nonGroundRule.getRuleId() != other.nonGroundRule.getRuleId()) {
+				return Integer.compare(nonGroundRule.getRuleId(), other.nonGroundRule.getRuleId());
 			}
-			// Note: We assume here that substitutions for the same nonGroundRule are all over the same variables.
-			if (compiledSubstitution.length != other.compiledSubstitution.length) {
+			if (substitution.getSubstitution().size() != other.getSubstitution().getSubstitution().size()) {
 				throw oops("RuleAtoms over the same rule have different-sized substitutions.");
 			}
-			for (int i = 0; i < compiledSubstitution.length; i++) {
-				// Since all terms are interned, equality can be checked by comparing the Java-objects.
-				if (compiledSubstitution[i] != other.compiledSubstitution[i]) {
-					return compiledSubstitution[i].compareTo(other.compiledSubstitution[i]);
+			// Note: We assume here that substitutions for the same nonGroundRule are all over the same variables and iteration order.
+			Iterator<Map.Entry<VariableTerm, Term>> iteratorThis = substitution.getSubstitution().entrySet().iterator();
+			Iterator<Map.Entry<VariableTerm, Term>> iteratorOther = other.getSubstitution().getSubstitution().entrySet().iterator();
+			while (iteratorThis.hasNext()) {
+				Term thisTerm = iteratorThis.next().getValue();
+				Term otherTerm = iteratorOther.next().getValue();
+				int compare = thisTerm.compareTo(otherTerm);
+				if (compare != 0) {
+					return compare;
 				}
 			}
 			return 0;
@@ -99,8 +96,29 @@ public class RuleAtom implements Atom {
 		}
 
 		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+
+			RuleAtomConstant that = (RuleAtomConstant) o;
+			if (!nonGroundRule.equals(that.nonGroundRule) || substitutionHash != that.substitutionHash) {
+				return false;
+			}
+			return getSubstitution().equals(that.getSubstitution());
+		}
+
+		@Override
+		public int hashCode() {
+			return 31 * getNonGroundRule().hashCode() + substitutionHash;
+		}
+
+		@Override
 		public String toString() {
-			return "ruleId=" + ruleId + ":substitution=" + Arrays.toString(compiledSubstitution);
+			return "ruleId=" + nonGroundRule.getRuleId() + ":substitution=" + substitution.toString();
 		}
 	}
 
