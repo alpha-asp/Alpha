@@ -52,21 +52,21 @@ import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 public class RuleAtom implements Atom {
 	public static final Predicate PREDICATE = Predicates.getPredicate("_R_", 1, true, true);
 
-	private final List<ConstantTerm<RuleAtomConstant>> terms;
+	private final List<ConstantTerm<RuleAtomData>> terms;
 
-	public static class RuleAtomConstant implements Comparable<RuleAtomConstant> {
+	public static class RuleAtomData implements Comparable<RuleAtomData> {
 		private final CompiledRule nonGroundRule;
 		private final Substitution substitution;
 		private final int substitutionHash;
 
-		RuleAtomConstant(CompiledRule nonGroundRule, Substitution substitution) {
+		RuleAtomData(CompiledRule nonGroundRule, Substitution substitution) {
 			this.nonGroundRule = nonGroundRule;
 			this.substitution = substitution;
 			this.substitutionHash = substitution.hashCode();
 		}
 
 		@Override
-		public int compareTo(RuleAtomConstant other) {
+		public int compareTo(RuleAtomData other) {
 			if (nonGroundRule.getRuleId() != other.nonGroundRule.getRuleId()) {
 				return Integer.compare(nonGroundRule.getRuleId(), other.nonGroundRule.getRuleId());
 			}
@@ -104,7 +104,7 @@ public class RuleAtom implements Atom {
 				return false;
 			}
 
-			RuleAtomConstant that = (RuleAtomConstant) o;
+			RuleAtomData that = (RuleAtomData) o;
 			if (!nonGroundRule.equals(that.nonGroundRule) || substitutionHash != that.substitutionHash) {
 				return false;
 			}
@@ -123,7 +123,7 @@ public class RuleAtom implements Atom {
 	}
 
 	public RuleAtom(CompiledRule nonGroundRule, Substitution substitution) {
-		this.terms = Collections.singletonList(Terms.newConstant(new RuleAtomConstant(nonGroundRule, substitution)));
+		this.terms = Collections.singletonList(Terms.newConstant(new RuleAtomData(nonGroundRule, substitution)));
 	}
 
 	@Override

@@ -43,7 +43,7 @@ public class RuleAtomTest {
 			PX, new Instance(Terms.newSymbolicConstant("a")), BasicSubstitution.EMPTY_SUBSTITUTION));
 
 		RuleAtom ruleAtom = new RuleAtom(nonGroundRule, substitution);
-		RuleAtom.RuleAtomConstant substitutionFromRuleAtom = (RuleAtom.RuleAtomConstant) ((ConstantTerm<?>) ruleAtom.getTerms().get(0)).getObject();
+		RuleAtom.RuleAtomData substitutionFromRuleAtom = (RuleAtom.RuleAtomData) ((ConstantTerm<?>) ruleAtom.getTerms().get(0)).getObject();
 		assertEquals(substitution, substitutionFromRuleAtom.getSubstitution());
 	}
 
@@ -62,7 +62,7 @@ public class RuleAtomTest {
 			atomForSpecialize, instanceForSpecialize, BasicSubstitution.EMPTY_SUBSTITUTION);
 
 		RuleAtom ruleAtom = new RuleAtom(nonGroundRule, substitution);
-		RuleAtom.RuleAtomConstant substitutionFromRuleAtom = (RuleAtom.RuleAtomConstant) ((ConstantTerm<?>) ruleAtom.getTerms().get(0)).getObject();
+		RuleAtom.RuleAtomData substitutionFromRuleAtom = (RuleAtom.RuleAtomData) ((ConstantTerm<?>) ruleAtom.getTerms().get(0)).getObject();
 		assertEquals(substitution, substitutionFromRuleAtom.getSubstitution());
 	}
 }

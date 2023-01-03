@@ -377,9 +377,9 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 			}
 			// For RuleAtoms in toJustify the corresponding ground body contains BasicAtoms that have been assigned FALSE in the closing.
 			// First, get NonGroundRule + Substitution, stored in the RuleAtom's single term.
-			RuleAtom.RuleAtomConstant ruleAtomConstant = (RuleAtom.RuleAtomConstant) ((ConstantTerm<?>)(atom.getTerms().get(0))).getObject();
-			Substitution groundingSubstitution = ruleAtomConstant.getSubstitution();
-			CompiledRule nonGroundRule = ruleAtomConstant.getNonGroundRule();
+			RuleAtom.RuleAtomData ruleAtomData = (RuleAtom.RuleAtomData) ((ConstantTerm<?>)(atom.getTerms().get(0))).getObject();
+			Substitution groundingSubstitution = ruleAtomData.getSubstitution();
+			CompiledRule nonGroundRule = ruleAtomData.getNonGroundRule();
 			// Find ground literals in the body that have been assigned false and justify those.
 			for (Literal bodyLiteral : nonGroundRule.getBody()) {
 				Atom groundAtom = bodyLiteral.getAtom().substitute(groundingSubstitution);
