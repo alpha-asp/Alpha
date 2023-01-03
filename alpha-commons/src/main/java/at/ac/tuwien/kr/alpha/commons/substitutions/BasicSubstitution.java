@@ -193,7 +193,7 @@ public class BasicSubstitution implements at.ac.tuwien.kr.alpha.api.grounder.Sub
 
 	@Override
 	public boolean isVariableSet(VariableTerm variable) {
-		return substitution.get(variable) != null;
+		return substitution.containsKey(variable);
 	}
 
 	public Set<VariableTerm> getMappedVariables() {

@@ -27,6 +27,13 @@
  */
 package at.ac.tuwien.kr.alpha.core.atoms;
 
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
+
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -37,14 +44,6 @@ import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
-
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 
 /**
  * Atoms corresponding to rule bodies use this predicate, its only term is a Java object linking to the non-ground rule and grounding substitution.
@@ -73,13 +72,16 @@ public class RuleAtom implements Atom {
 			if (substitution.getSubstitution().size() != other.getSubstitution().getSubstitution().size()) {
 				throw oops("RuleAtoms over the same rule have different-sized substitutions.");
 			}
-			// Note: We assume here that substitutions for the same nonGroundRule are all over the same variables and iteration order.
-			Iterator<Map.Entry<VariableTerm, Term>> iteratorThis = substitution.getSubstitution().entrySet().iterator();
-			Iterator<Map.Entry<VariableTerm, Term>> iteratorOther = other.getSubstitution().getSubstitution().entrySet().iterator();
-			while (iteratorThis.hasNext()) {
-				Term thisTerm = iteratorThis.next().getValue();
-				Term otherTerm = iteratorOther.next().getValue();
-				int compare = thisTerm.compareTo(otherTerm);
+			Set<VariableTerm> vars = new LinkedHashSet<>();
+			nonGroundRule.getBody().forEach((lit) -> vars.addAll(lit.getOccurringVariables()));
+			for (VariableTerm var : vars) {
+				if (!substitution.isVariableSet(var)) {
+					throw oops("RuleAtom with incomplete substitution! Missing a value for variable " + var);
+				}
+				if (!other.substitution.isVariableSet(var)) {
+					throw oops("RuleAtom with incomplete substitution! Missing a value for variable " + var);
+				}
+				int compare = substitution.eval(var).compareTo(other.substitution.eval(var));
 				if (compare != 0) {
 					return compare;
 				}
