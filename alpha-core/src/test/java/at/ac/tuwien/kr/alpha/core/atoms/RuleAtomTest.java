@@ -47,4 +47,22 @@ public class RuleAtomTest {
 		assertEquals(substitution, substitutionFromRuleAtom.getSubstitution());
 	}
 
+	@Test
+	public void substitutionWithFunctionTermsObtainableFromRuleAtom() {
+		Rule<Head> rule = PARSER.parse("q(X) :- p(X,Y).").getRules().get(0);
+		CompiledRule nonGroundRule = InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(rule));
+		// Build substitution X -> b(a,a), Y -> b(b(a,a),b(a,a)).
+		BasicAtom atomForSpecialize = Atoms.newBasicAtom(Predicates.getPredicate("p", 2), X, Y);
+		ConstantTerm<String> aTerm = Terms.newSymbolicConstant("a");
+		Instance instanceForSpecialize = new Instance(Terms.newFunctionTerm("b", aTerm, aTerm),
+			Terms.newFunctionTerm("b",
+				Terms.newFunctionTerm("b", aTerm, aTerm),
+				Terms.newFunctionTerm("b", aTerm, aTerm)));
+		Substitution substitution = BasicSubstitution.specializeSubstitution(
+			atomForSpecialize, instanceForSpecialize, BasicSubstitution.EMPTY_SUBSTITUTION);
+
+		RuleAtom ruleAtom = new RuleAtom(nonGroundRule, substitution);
+		RuleAtom.RuleAtomConstant substitutionFromRuleAtom = (RuleAtom.RuleAtomConstant) ((ConstantTerm<?>) ruleAtom.getTerms().get(0)).getObject();
+		assertEquals(substitution, substitutionFromRuleAtom.getSubstitution());
+	}
 }
