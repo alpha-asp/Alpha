@@ -27,12 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.commons.substitutions;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeMap;
-
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
@@ -41,6 +35,12 @@ import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeMap;
 
 public class BasicSubstitution implements at.ac.tuwien.kr.alpha.api.grounder.Substitution {
 
@@ -193,7 +193,7 @@ public class BasicSubstitution implements at.ac.tuwien.kr.alpha.api.grounder.Sub
 
 	@Override
 	public boolean isVariableSet(VariableTerm variable) {
-		return substitution.get(variable) != null;
+		return substitution.containsKey(variable);
 	}
 
 	public Set<VariableTerm> getMappedVariables() {

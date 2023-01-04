@@ -27,11 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.rules;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.google.common.annotations.VisibleForTesting;
-
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
@@ -44,10 +39,16 @@ import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingInfoImpl;
+import com.google.common.annotations.VisibleForTesting;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents a normal rule or a constraint for the semi-naive grounder.
  * A normal rule has no head atom if it represents a constraint, otherwise it has one atom in its head.
+ *
+ * {@link InternalRule}s are assumed to be uniquely identified by an ID.
  */
 public class InternalRule extends NormalRuleImpl implements CompiledRule {
 
@@ -59,6 +60,12 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 
 	private final RuleGroundingInfoImpl groundingOrders;
 
+	/**
+	 * Creates a new {@link InternalRule} with the given head plus body and a fresh identifier.
+	 * Note that no check is done whether head and body already occur in another {@link InternalRule}.
+	 * @param head the head of the rule.
+	 * @param body the list of body literals of the rule.
+	 */
 	public InternalRule(NormalHead head, List<Literal> body) {
 		super(head, body);
 		if (body.isEmpty()) {
@@ -143,4 +150,20 @@ public class InternalRule extends NormalRuleImpl implements CompiledRule {
 		return this.ruleId;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		InternalRule that = (InternalRule) o;
+		return getRuleId() == that.getRuleId();
+	}
+
+	@Override
+	public int hashCode() {
+		return Integer.hashCode(getRuleId());
+	}
 }
