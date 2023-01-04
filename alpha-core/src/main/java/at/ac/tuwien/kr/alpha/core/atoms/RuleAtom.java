@@ -73,13 +73,18 @@ public class RuleAtom implements Atom {
 			if (substitution.getSubstitution().size() != other.getSubstitution().getSubstitution().size()) {
 				throw oops("RuleAtoms over the same rule have different-sized substitutions.");
 			}
-			// Note: We assume here that substitutions for the same nonGroundRule are all over the same variables and iteration order.
+			// Note: Since Substitutions are backed by TreeMaps, their variables can be iterated in the same order.
 			Iterator<Map.Entry<VariableTerm, Term>> iteratorThis = substitution.getSubstitution().entrySet().iterator();
 			Iterator<Map.Entry<VariableTerm, Term>> iteratorOther = other.getSubstitution().getSubstitution().entrySet().iterator();
 			while (iteratorThis.hasNext()) {
-				Term thisTerm = iteratorThis.next().getValue();
-				Term otherTerm = iteratorOther.next().getValue();
-				int compare = thisTerm.compareTo(otherTerm);
+				Map.Entry<VariableTerm, Term> thisNextEntry = iteratorThis.next();
+				Map.Entry<VariableTerm, Term> otherNextEntry = iteratorOther.next();
+				VariableTerm thisVariable = thisNextEntry.getKey();
+				VariableTerm otherVariable = otherNextEntry.getKey();
+				if (thisVariable != otherVariable) {
+					throw oops("Comparing substitutions for the same non-ground rule whose variables differ: " + thisVariable + " != " + otherVariable);
+				}
+				int compare = thisNextEntry.getValue().compareTo(otherNextEntry.getValue());
 				if (compare != 0) {
 					return compare;
 				}
