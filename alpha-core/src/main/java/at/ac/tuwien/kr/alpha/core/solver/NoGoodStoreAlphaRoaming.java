@@ -774,7 +774,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 
 		@Override
 		public String toString() {
-			return "BinaryWatchList(" + forLiteral + ")";
+			return "BinaryWatchList(" + literalToString(forLiteral) + ")";
 		}
 
 		@Override

@@ -22,7 +22,7 @@ import at.ac.tuwien.kr.alpha.core.parser.ParseTreeVisitor;
 // TODO this class should be called something different since it's turning into a general "atom set snippet parser"
 // TODO this is duplicated from core module, need to pull out test utils into separate testsupport module
 public class AnswerSetsParser {
-	
+
 	private static final ParseTreeVisitor VISITOR = new ParseTreeVisitor(Collections.emptyMap(), false);
 
 	public static Set<AnswerSet> parse(String s) {
@@ -49,24 +49,24 @@ public class AnswerSetsParser {
 
 	public static Set<BasicAtom> parseAtoms(String s) {
 		Set<AnswerSet> tmp = parse("{" + s + "}");
-		if(tmp.size() > 1) {
-			throw new IllegalArgumentException("Cannot parse multiset of atoms! Use answer set parsing methods instead!");
+		if (tmp.size() > 1) {
+			throw new IllegalArgumentException(
+					"Cannot parse multiset of atoms! Use answer set parsing methods instead!");
 		}
-		if(tmp.isEmpty()) {
+		if (tmp.isEmpty()) {
 			return Collections.emptySet();
 		}
 		AnswerSet as = tmp.stream().findFirst().get();
 		Set<BasicAtom> atoms = as.getPredicates()
-			.stream()
+				.stream()
 				.map(
 						(pred) -> as.getPredicateInstances(pred).stream()
-							.map((atom) -> {
-								if(!(atom instanceof BasicAtom)) {
-									throw new IllegalArgumentException("Expected a BasicAtom, but got: " + atom);
-								}
-								return (BasicAtom) atom;
-							}).collect(Collectors.toSet())
-				)
+								.map((atom) -> {
+									if (!(atom instanceof BasicAtom)) {
+										throw new IllegalArgumentException("Expected a BasicAtom, but got: " + atom);
+									}
+									return (BasicAtom) atom;
+								}).collect(Collectors.toSet()))
 				.reduce(new TreeSet<BasicAtom>(), (result, element) -> {
 					result.addAll(element);
 					return result;

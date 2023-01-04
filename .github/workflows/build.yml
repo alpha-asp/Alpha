@@ -8,19 +8,22 @@ jobs:
         # We test against Java releases:
         #  - greater than 7
         #  AND
-        #    - with LTS and in "Premier Support" phase
+        #    - with LTS and at least in Oracle's "Extended Support" phase
         #    OR
         #    - not succeeded by any other release
+        #
         # No Oracle JDK >11, see
         # https://blogs.oracle.com/java-platform-group/oracle-jdk-releases-for-java-11-and-later
         # https://www.oracle.com/technetwork/java/java-se-support-roadmap.html
         java:
-        # LTS and in "Premier Support" as of 2019-03 (until 2022-03)
+        # LTS with Oracle "Extended Support" until 2030-12
         - 8
-        # LTS and in "Premier Support" as of 2019-03 (until 2023-09)
+        # LTS with Oracle "Extended Support" until 2026-09
         - 11
-        # LTS as of 2021-11 (until 2029)
+        # LTS with Oracle "Extended Support" until 2029-09
         - 17
+        # Not succeeded as of 2022-12
+        - 19
         os: [ubuntu, windows]
     env:
       # We only post coverage data for exactly one build to coveralls.
