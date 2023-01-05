@@ -27,11 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.programs.atoms;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -43,27 +38,97 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
 
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
+
 /**
- * Atoms corresponding to rule bodies use this predicate, first term is rule number,
- * second is a term containing variable substitutions.
+ * Atoms corresponding to rule bodies use this predicate, its only term is a Java object linking to the non-ground rule and grounding substitution.
  */
 public class RuleAtom implements Atom {
-	public static final Predicate PREDICATE = Predicates.getPredicate("_R_", 2, true, true);
+	public static final Predicate PREDICATE = Predicates.getPredicate("_R_", 1, true, true);
 
-	private final List<ConstantTerm<String>> terms;
+	private final List<ConstantTerm<RuleAtomData>> terms;
 
-	private RuleAtom(List<ConstantTerm<String>> terms) {
-		if (terms.size() != 2) {
-			throw new IllegalArgumentException();
+	public static class RuleAtomData implements Comparable<RuleAtomData> {
+		private final CompiledRule nonGroundRule;
+		private final Substitution substitution;
+		private final int substitutionHash;
+
+		RuleAtomData(CompiledRule nonGroundRule, Substitution substitution) {
+			this.nonGroundRule = nonGroundRule;
+			this.substitution = substitution;
+			this.substitutionHash = substitution.hashCode();
 		}
 
-		this.terms = terms;
+		@Override
+		public int compareTo(RuleAtomData other) {
+			if (nonGroundRule.getRuleId() != other.nonGroundRule.getRuleId()) {
+				return Integer.compare(nonGroundRule.getRuleId(), other.nonGroundRule.getRuleId());
+			}
+			if (substitution.getSubstitution().size() != other.getSubstitution().getSubstitution().size()) {
+				throw oops("RuleAtoms over the same rule have different-sized substitutions.");
+			}
+			// Note: Since Substitutions are backed by TreeMaps, their variables can be iterated in the same order.
+			Iterator<Map.Entry<VariableTerm, Term>> iteratorThis = substitution.getSubstitution().entrySet().iterator();
+			Iterator<Map.Entry<VariableTerm, Term>> iteratorOther = other.getSubstitution().getSubstitution().entrySet().iterator();
+			while (iteratorThis.hasNext()) {
+				Map.Entry<VariableTerm, Term> thisNextEntry = iteratorThis.next();
+				Map.Entry<VariableTerm, Term> otherNextEntry = iteratorOther.next();
+				VariableTerm thisVariable = thisNextEntry.getKey();
+				VariableTerm otherVariable = otherNextEntry.getKey();
+				if (thisVariable != otherVariable) {
+					throw oops("Comparing substitutions for the same non-ground rule whose variables differ: " + thisVariable + " != " + otherVariable);
+				}
+				int compare = thisNextEntry.getValue().compareTo(otherNextEntry.getValue());
+				if (compare != 0) {
+					return compare;
+				}
+			}
+			return 0;
+		}
+
+		public CompiledRule getNonGroundRule() {
+			return nonGroundRule;
+		}
+
+		public Substitution getSubstitution() {
+			return substitution;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+
+			RuleAtomData that = (RuleAtomData) o;
+			if (!nonGroundRule.equals(that.nonGroundRule) || substitutionHash != that.substitutionHash) {
+				return false;
+			}
+			return getSubstitution().equals(that.getSubstitution());
+		}
+
+		@Override
+		public int hashCode() {
+			return 31 * getNonGroundRule().hashCode() + substitutionHash;
+		}
+
+		@Override
+		public String toString() {
+			return "ruleId=" + nonGroundRule.getRuleId() + ":substitution=" + substitution.toString();
+		}
 	}
 
 	public RuleAtom(CompiledRule nonGroundRule, Substitution substitution) {
-		this(Arrays.asList(
-				Terms.newConstant(Integer.toString(nonGroundRule.getRuleId())),
-				Terms.newConstant(substitution.toString())));
+		this.terms = Collections.singletonList(Terms.newConstant(new RuleAtomData(nonGroundRule, substitution)));
 	}
 
 	@Override
@@ -73,12 +138,12 @@ public class RuleAtom implements Atom {
 
 	@Override
 	public List<Term> getTerms() {
-		return Arrays.asList(terms.get(0), terms.get(1));
+		return Collections.singletonList(terms.get(0));
 	}
 
 	@Override
 	public boolean isGround() {
-		// NOTE: Both terms are ConstantTerms, which are ground by definition.
+		// NOTE: single term is a ConstantTerm, which is ground by definition.
 		return true;
 	}
 
@@ -113,7 +178,7 @@ public class RuleAtom implements Atom {
 
 	@Override
 	public String toString() {
-		return PREDICATE.getName() + "(" + terms.get(0) + "," + terms.get(1) + ')';
+		return PREDICATE.getName() + "(" + terms.get(0) + ')';
 	}
 
 	@Override
