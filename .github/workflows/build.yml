@@ -12,6 +12,8 @@ jobs:
         #    OR
         #    - not succeeded by any other release
         java:
+        # LTS and in "Premier Support" as of 2019-03 (until 2023-09)
+        - 11
         # LTS as of 2021-12 (until 2029)
         - 17
         os: [ubuntu, windows]
@@ -19,7 +21,7 @@ jobs:
       # We only post coverage data for exactly one build to coveralls.
       # To pick that build from the build matrix, we designate one
       # Java version to be the "main" one.
-      MAIN_JAVA: 17
+      MAIN_JAVA: 11
       # We only post coverage data for exactly one build to coveralls.
       # To pick that build from the build matrix, we designate one
       # OS to be the "main" one.
