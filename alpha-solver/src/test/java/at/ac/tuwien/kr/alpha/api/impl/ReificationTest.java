@@ -55,18 +55,14 @@ public class ReificationTest {
 		assertEquals(1, factAtomResult.size());
 		BasicAtom factAtom = factAtomResult.get(0);
 		Term idTerm = factAtom.getTerms().get(0);
-		assertTrue(reified.stream().filter(
+		assertTrue(reified.stream().anyMatch(
 				Atoms.query("atom_type", 2)
 						.withTermEquals(0, idTerm)
-						.withTermEquals(1, Terms.newSymbolicConstant("basic")))
-				.findFirst()
-				.isPresent());
-		assertTrue(reified.stream().filter(
+						.withTermEquals(1, Terms.newSymbolicConstant("basic"))));
+		assertTrue(reified.stream().anyMatch(
 				Atoms.query("basicAtom_numTerms", 2)
 						.withTermEquals(0, idTerm)
-						.withTermEquals(1, Terms.newConstant(0)))
-				.findFirst()
-				.isPresent());
+						.withTermEquals(1, Terms.newConstant(0))));
 		Optional<BasicAtom> predicateAtomResult = reified.stream().filter(Atoms.query("basicAtom_predicate", 2)
 				.withTermEquals(0, idTerm)).findFirst();
 		assertTrue(predicateAtomResult.isPresent());
@@ -98,7 +94,7 @@ public class ReificationTest {
 				Atoms.query("head_type", 2)
 						.withTermEquals(0, headId)
 						.withTermEquals(1, Terms.newSymbolicConstant("normal")))
-				.collect(Collectors.toList()).size());
+				.count());
 		List<BasicAtom> headAtomDescriptorResult = reified.stream().filter(
 				Atoms.query("normalHead_atom", 2)
 						.withTermEquals(0, headId))
@@ -117,7 +113,7 @@ public class ReificationTest {
 				Atoms.query("rule_numBodyLiterals", 2)
 						.withTermEquals(0, ruleId)
 						.withTermEquals(1, Terms.newConstant(2)))
-				.collect(Collectors.toList()).size());
+				.count());
 		Set<BasicAtom> bodyLiteralDescriptors = reified.stream().filter(
 				Atoms.query("rule_bodyLiteral", 2)
 						.withTermEquals(0, ruleId))
@@ -128,20 +124,20 @@ public class ReificationTest {
 					Atoms.query("literal_polarity", 2)
 							.withTermEquals(0, bodyLiteralDescriptor.getTerms().get(1))
 							.withTermEquals(1, Terms.newSymbolicConstant("pos")))
-					.collect(Collectors.toList()).size());
+					.count());
 			assertEquals(1, reified.stream().filter(
 					Atoms.query("literal_atom", 2)
 							.withTermEquals(0, bodyLiteralDescriptor.getTerms().get(1)))
-					.collect(Collectors.toList()).size());
+					.count());
 		}
 		assertEquals(3, reified.stream().filter(
 				Atoms.query("term_type", 2)
 						.withTermEquals(1, Terms.newSymbolicConstant("variable")))
-				.collect(Collectors.toSet()).size());
+				.count());
 		assertEquals(3, reified.stream().filter(
 				Atoms.query("variableTerm_symbol", 2)
 						.withTermEquals(1, Terms.newConstant("X")))
-				.collect(Collectors.toSet()).size());
+				.count());
 	}
 
 	@Test
@@ -155,8 +151,7 @@ public class ReificationTest {
 						Atoms.query("literal_polarity", 2)
 								.withTermEquals(0, qIds.get(0))
 								.withTermEquals(1, Terms.newSymbolicConstant("pos")))
-						.collect(Collectors.toList())
-						.size());
+						.count());
 		List<ConstantTerm<?>> rIds = findLiteralIdsForPredicate(Predicates.getPredicate("r", 1), Terms.newConstant(0),
 				reified);
 		assertEquals(1, rIds.size());
@@ -165,8 +160,7 @@ public class ReificationTest {
 						Atoms.query("literal_polarity", 2)
 								.withTermEquals(0, rIds.get(0))
 								.withTermEquals(1, Terms.newSymbolicConstant("neg")))
-						.collect(Collectors.toList())
-						.size());
+						.count());
 	}
 
 	@Test
@@ -178,7 +172,16 @@ public class ReificationTest {
 
 	@Test
 	public void aggregateAtom() {
-		
+		Set<BasicAtom> reified = alpha.reify(alpha.readProgramString("aggregateTrue :- X < #count{X : p(X)} < Y, X = 1, Y = 3."));
+		List<ConstantTerm<?>> countLitIds = findLiteralIdsForAggregate(Terms.newSymbolicConstant("count"), Terms.newConstant(0), reified);
+		assertEquals(1, countLitIds.size());
+	}
+
+	@Test
+	public void externalAtom() {
+		Set<BasicAtom> reified = alpha.reify(alpha.readProgramString("foo :- &stdlib_string_concat[\"foo\", \"bar\"](FOOBAR)."));
+		List<ConstantTerm<?>> strcatLitIds = findLiteralIdsForExternal(Terms.newConstant("stdlib_string_concat"), Terms.newConstant(0), reified);
+		assertEquals(1, strcatLitIds.size());
 	}
 
 	private static List<ConstantTerm<?>> findLiteralIdsForPredicate(Predicate predicate, ConstantTerm<?> reifiedRuleId,
@@ -206,6 +209,46 @@ public class ReificationTest {
 				.collect(Collectors.toList());
 	}
 
+	private static List<ConstantTerm<?>> findLiteralIdsForAggregate(ConstantTerm<String> aggregateFunction, ConstantTerm<?> reifiedRuleId, Set<BasicAtom> reifiedProgram) {
+		return ruleBodyLiteralIdStream(reifiedRuleId, reifiedProgram)
+			.filter((literalId) -> {
+				List<ConstantTerm<?>> atomIdResult = reifiedProgram.stream()
+							.filter(Atoms.query("literal_atom", 2).withTermEquals(0, literalId))
+							.map((literalToAtomDescriptor) -> (ConstantTerm<?>) literalToAtomDescriptor.getTerms()
+									.get(1))
+							.collect(Collectors.toList());
+					if (atomIdResult.isEmpty()) {
+						return false;
+					}
+					ConstantTerm<?> atomId = atomIdResult.get(0);
+					return reifiedProgram.stream()
+						.anyMatch(
+							Atoms.query("aggregateAtom_aggregateFunction", 2)
+								.withTermEquals(0, atomId)
+								.withTermEquals(1, aggregateFunction));
+			}).collect(Collectors.toList());
+	}
+
+	private static List<ConstantTerm<?>> findLiteralIdsForExternal(ConstantTerm<String> methodName, ConstantTerm<?> reifiedRuleId, Set<BasicAtom> reifiedProgram) {
+		return ruleBodyLiteralIdStream(reifiedRuleId, reifiedProgram)
+			.filter((literalId) -> {
+				List<ConstantTerm<?>> atomIdResult = reifiedProgram.stream()
+							.filter(Atoms.query("literal_atom", 2).withTermEquals(0, literalId))
+							.map((literalToAtomDescriptor) -> (ConstantTerm<?>) literalToAtomDescriptor.getTerms()
+									.get(1))
+							.collect(Collectors.toList());
+					if (atomIdResult.isEmpty()) {
+						return false;
+					}
+					ConstantTerm<?> atomId = atomIdResult.get(0);
+					return reifiedProgram.stream()
+						.anyMatch(
+							Atoms.query("externalAtom_name", 2)
+								.withTermEquals(0, atomId)
+								.withTermEquals(1, methodName));
+			}).collect(Collectors.toList());
+	}
+
 	private static List<ConstantTerm<?>> findLiteralIdsForComparisonOperator(ComparisonOperator operator,
 			ConstantTerm<?> reifiedRuleId, Set<BasicAtom> reifiedProgram) {
 		return ruleBodyLiteralIdStream(reifiedRuleId, reifiedProgram)
@@ -220,12 +263,10 @@ public class ReificationTest {
 					}
 					ConstantTerm<?> atomId = atomIdResult.get(0);
 					return reifiedProgram.stream()
-						.filter(
+						.anyMatch(
 							Atoms.query("comparisonAtom_operator", 2)
 								.withTermEquals(0, atomId)
-								.withTermEquals(1, CMP_OP_IDS.get(operator)))
-						.findAny()
-						.isPresent();
+								.withTermEquals(1, CMP_OP_IDS.get(operator)));
 				}).collect(Collectors.toList());
 	}
 
