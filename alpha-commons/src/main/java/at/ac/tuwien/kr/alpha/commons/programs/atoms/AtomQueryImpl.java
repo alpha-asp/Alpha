@@ -38,7 +38,7 @@ final class AtomQueryImpl implements AtomQuery {
 	}
 
 	static AtomQuery forPredicate(String name, int arity) {
-		return new AtomQueryImpl(Predicates.getPredicate(name, arity));
+		return forPredicate(Predicates.getPredicate(name, arity));
 	}
 
 	/**
