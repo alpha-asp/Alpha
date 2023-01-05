@@ -16,4 +16,4 @@
 *.gpg  filter=lfs diff=lfs merge=lfs binary
 *.bin  filter=lfs diff=lfs merge=lfs binary
 
-benchmarks/omiga/** linguist-vendored
+alpha-core/benchmarks/** linguist-vendored

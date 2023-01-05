@@ -61,3 +61,5 @@ $ cp alpha-cli-app/build/distributions/*.zip alpha.zip
 Attach the two files to the release on GitHub, then publish the release. Lastly, check that everything is fine,
 e.g. that the tag/version really points at the revision you wanted to rlease and that `alpha.zip` and `alpha.jar
 downloaded from GitHub do what they are supposed to do.
+
+Optionally, archive the release on Zenodo. If you do so, add the new identifier to `CITATION.cff`.

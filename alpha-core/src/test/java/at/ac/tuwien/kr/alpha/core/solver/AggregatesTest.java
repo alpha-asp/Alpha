@@ -335,4 +335,36 @@ public class AggregatesTest {
 				"full(2)");
 	}
 
+	@AggregateRegressionTest
+	public void aggregateRightHandTermCountGreater(RegressionTestConfig cfg) {
+		String program = "p(1)." + 
+			"p(2)." + 
+			"q :- #count { N : p(N) } > 1.";
+		assertRegressionTestAnswerSet(cfg, program, "p(1), p(2), q");
+	}
+
+	@AggregateRegressionTest
+	public void aggregateRightHandTermCountEqAssigning(RegressionTestConfig cfg) {
+		String program = "p(1)." + 
+			"p(2)." + 
+			"q :- #count { N : p(N) } = 2.";
+		assertRegressionTestAnswerSet(cfg, program, "p(1), p(2), q");
+	}
+
+	@AggregateRegressionTest
+	public void aggregateRightHandTermCountNeqAssigning(RegressionTestConfig cfg) {
+		String program = "p(1)." + 
+			"p(2)." + 
+			"q :- #count { N : p(N) } != 1.";
+		assertRegressionTestAnswerSet(cfg, program, "p(1), p(2), q");
+	}
+
+	@AggregateRegressionTest
+	public void aggregateRightHandTermCountLt(RegressionTestConfig cfg) {
+		String program = "p(1)." + 
+			"p(2)." + 
+			"q :- #count { N : p(N) } < 3.";
+		assertRegressionTestAnswerSet(cfg, program, "p(1), p(2), q");
+	}
+
 }
