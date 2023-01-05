@@ -71,6 +71,7 @@ import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.SimplePreprocessing;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
 
 public class AlphaImpl implements Alpha {
@@ -141,8 +142,13 @@ public class AlphaImpl implements Alpha {
 
 	@VisibleForTesting
 	InternalProgram performProgramPreprocessing(NormalProgram program) {
-		LOGGER.debug("Preprocessing InternalProgram!");
+		LOGGER.debug("Performing program preprocessing!");
 		InternalProgram retVal = InternalProgram.fromNormalProgram(program);
+		if (config.isPreprocessingEnabled()) {
+			SimplePreprocessing simplePreprocessing = new SimplePreprocessing();
+			NormalProgram simplePreprocessed = simplePreprocessing.apply(program);
+			retVal = InternalProgram.fromNormalProgram(simplePreprocessed);
+		}
 		if (config.isEvaluateStratifiedPart()) {
 			AnalyzedProgram analyzed = new AnalyzedProgram(retVal.getRules(), retVal.getFacts());
 			retVal = new StratifiedEvaluation().apply(analyzed);

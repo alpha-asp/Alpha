@@ -221,7 +221,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	/**
 	 * Registers a starting literal of a NonGroundRule at its corresponding working memory.
-	 * 
+	 *
 	 * @param nonGroundRule the rule in which the literal occurs.
 	 */
 	private void registerLiteralAtWorkingMemory(Literal literal, CompiledRule nonGroundRule) {
@@ -291,7 +291,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	/**
 	 * Prepares facts of the input program for joining and derives all NoGoods representing ground rules. May only be called once.
-	 * 
+	 *
 	 * @return
 	 */
 	protected HashMap<Integer, NoGood> bootstrap() {

@@ -181,4 +181,11 @@ public class CommandLineParserTest {
 		assertEquals("some-string", cfg.getSystemConfig().getAtomSeparator());
 	}
 
+	@Test
+	public void disableProgramPreprocessing() throws ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig ctx = parser.parseCommandLine(new String[]{"-str", "aString.", "-dpp"});
+		assertFalse(ctx.getSystemConfig().isPreprocessingEnabled());
+	}
+
 }

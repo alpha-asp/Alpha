@@ -618,6 +618,7 @@ public class AlphaImplTest {
 		config.setDebugInternalChecks(true);
 		config.setDisableJustificationSearch(false);
 		config.setEvaluateStratifiedPart(false);
+		config.setPreprocessingEnabled(false);
 		config.setReplayChoices(Arrays.asList(21, 26, 36, 56, 91, 96, 285, 166, 101, 290, 106, 451, 445, 439, 448,
 			433, 427, 442, 421, 415, 436, 409, 430, 397, 391, 424, 385, 379,
 			418, 373, 412, 406, 394, 388, 382, 245, 232, 208
@@ -626,5 +627,5 @@ public class AlphaImplTest {
 		Optional<AnswerSet> answerSet = alpha.solve(parsedProgram).findFirst();
 		assertTrue(answerSet.isPresent());
 	}
-	
+
 }
