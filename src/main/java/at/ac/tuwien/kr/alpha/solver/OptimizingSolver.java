@@ -7,7 +7,6 @@ import at.ac.tuwien.kr.alpha.common.WeightedAnswerSet;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.solver.optimization.WeakConstraintsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,12 +23,9 @@ import java.util.function.Consumer;
  */
 public class OptimizingSolver extends DefaultSolver {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OptimizingSolver.class);
-	private final WeakConstraintsManager weakConstraintsManager;
 
 	public OptimizingSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, SystemConfig config, HeuristicsConfiguration heuristicsConfiguration) {
 		super(atomStore, grounder, store, assignment, random, config, heuristicsConfiguration);
-		this.weakConstraintsManager = new WeakConstraintsManager(assignment);
-		this.weakConstraintsManager.setChecksEnabled(config.isDebugInternalChecks());
 	}
 
 	@Override
@@ -88,12 +84,5 @@ public class OptimizingSolver extends DefaultSolver {
 		LOGGER.debug("Answer-Set found: {}", was);
 		action.accept(was);
 		logStats();
-	}
-
-	@Override
-	protected boolean ingest(Map<Integer, NoGood> obtained) {
-		growForMaxAtomId();
-		weakConstraintsManager.addWeakConstraintsInformation(grounder.getWeakConstraintInformation());
-		return super.ingest(obtained);
 	}
 }

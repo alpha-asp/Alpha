@@ -4,6 +4,7 @@ import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -20,6 +21,9 @@ class WeakConstraintRecorder {
 	}
 
 	List<Triple<Integer, Integer, Integer>> getAndResetWeakConstraintAtomWeightLevels() {
+		if (weakConstraintAtomWeightLevels.isEmpty()) {
+			return Collections.emptyList();
+		}
 		List<Triple<Integer, Integer, Integer>> currentWeakConstraintAtomWeightLevels = weakConstraintAtomWeightLevels;
 		this.weakConstraintAtomWeightLevels = new ArrayList<>();
 		return currentWeakConstraintAtomWeightLevels;

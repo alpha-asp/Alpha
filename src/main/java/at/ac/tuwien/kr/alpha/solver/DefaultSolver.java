@@ -47,6 +47,7 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.ChainedBranchingHeuristics;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
+import at.ac.tuwien.kr.alpha.solver.optimization.WeakConstraintsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,6 +86,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	protected final WritableAssignment assignment;
 	private final GroundConflictNoGoodLearner learner;
 	private final BranchingHeuristic branchingHeuristic;
+	protected final WeakConstraintsManager weakConstraintsManager;
 
 	private int mbtAtFixpoint;
 	private int conflictsAfterClosing;
@@ -114,6 +116,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		this.disableJustifications = config.isDisableJustificationSearch();
 		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
+		this.weakConstraintsManager = new WeakConstraintsManager(assignment);
+		this.weakConstraintsManager.setChecksEnabled(config.isDebugInternalChecks());
 	}
 
 	private BranchingHeuristic chainFallbackHeuristic(Grounder grounder, WritableAssignment assignment, Random random, HeuristicsConfiguration heuristicsConfiguration) {
@@ -459,6 +463,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	protected boolean ingest(Map<Integer, NoGood> obtained) {
 		growForMaxAtomId();
+		weakConstraintsManager.addWeakConstraintsInformation(grounder.getWeakConstraintInformation());
 		branchingHeuristic.newNoGoods(obtained.values());
 
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
