@@ -73,11 +73,12 @@ public class WeakConstraintsTests {
 		TestUtils.ignoreTestForNaiveSolver(cfg);
 		String program = "{a;b}." +
 			":- not a, not b." +
+			"c :- a." +
 			":~b.[1@3]" +
 			":~a.[2@1,foo]" +
-			":~a.[2@1,foo]";
+			":~c.[2@1,foo]";
 		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
-		assertOptimumAnswerSetEquals("a", "2@1", actualAnswerSets);
+		assertOptimumAnswerSetEquals("a, c", "2@1", actualAnswerSets);
 	}
 
 	@RegressionTest
