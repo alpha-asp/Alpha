@@ -27,15 +27,15 @@
  */
 package at.ac.tuwien.kr.alpha.config;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingConfig;
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class SystemConfig {
 
@@ -63,6 +63,8 @@ public class SystemConfig {
 	public static final boolean DEFAULT_GROUNDER_ACCUMULATOR_ENABLED = false;
 	public static final String DEFAULT_ATOM_SEPARATOR = ", ";
 	public static final AggregateRewritingConfig DEFAULT_AGGREGATE_REWRITING_CONFIG = new AggregateRewritingConfig();
+	public static final boolean DEFAULT_OPTIMIZATION_ENABLED = false;
+	public static final String DEFAULT_MAX_WEIGHT_AT_LEVELS = "";
 
 	private String grounderName = DEFAULT_GROUNDER_NAME;
 	private String solverName = DEFAULT_SOLVER_NAME;
@@ -84,6 +86,8 @@ public class SystemConfig {
 	private boolean grounderAccumulatorEnabled = DEFAULT_GROUNDER_ACCUMULATOR_ENABLED;
 	private String atomSeparator = DEFAULT_ATOM_SEPARATOR;
 	private AggregateRewritingConfig aggregateRewritingConfig = DEFAULT_AGGREGATE_REWRITING_CONFIG;
+	private boolean answerSetOptimizationEnabled = DEFAULT_OPTIMIZATION_ENABLED;
+	private String answerSetsMaxWeightAtLevels = DEFAULT_MAX_WEIGHT_AT_LEVELS;
 
 	public String getGrounderName() {
 		return this.grounderName;
@@ -256,5 +260,20 @@ public class SystemConfig {
 	public void setAggregateRewritingConfig(AggregateRewritingConfig aggregateRewritingConfig) {
 		this.aggregateRewritingConfig = aggregateRewritingConfig;
 	}
-	
+
+	public boolean isAnswerSetOptimizationEnabled() {
+		return answerSetOptimizationEnabled;
+	}
+
+	public void setAnswerSetOptimizationEnabled(boolean answerSetOptimizationEnabled) {
+		this.answerSetOptimizationEnabled = answerSetOptimizationEnabled;
+	}
+
+	public String getAnswerSetsMaxWeightAtLevels() {
+		return answerSetsMaxWeightAtLevels;
+	}
+
+	public void setAnswerSetsMaxWeightAtLevels(String answerSetsMaxWeightAtLevels) {
+		this.answerSetsMaxWeightAtLevels = answerSetsMaxWeightAtLevels;
+	}
 }

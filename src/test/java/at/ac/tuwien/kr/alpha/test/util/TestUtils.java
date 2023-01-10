@@ -172,6 +172,16 @@ public static Atom atom(String predicateName, String... termStrings) {
 		return buildSolverFromSystemConfig(prog, cfg.toSystemConfig());
 	}
 
+	public static Solver buildSolverForOptimizationRegressionTest(InputProgram prog, RegressionTestConfig cfg) {
+		SystemConfig systemConfig = cfg.toSystemConfig();
+		systemConfig.setAnswerSetOptimizationEnabled(true);
+		return buildSolverFromSystemConfig(prog, systemConfig);
+	}
+
+	public static Set<AnswerSet> collectRegressionTestOptimalAnswerSets(String prog, RegressionTestConfig config) {
+		return buildSolverForOptimizationRegressionTest(new ProgramParser().parse(prog), config).collectSet();
+	}
+
 	public static Solver buildSolverForRegressionTest(String prog, RegressionTestConfig cfg) {
 		return buildSolverFromSystemConfig(new ProgramParser().parse(prog), cfg.toSystemConfig());
 	}

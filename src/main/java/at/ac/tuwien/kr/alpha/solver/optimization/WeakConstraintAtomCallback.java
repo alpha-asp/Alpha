@@ -11,22 +11,22 @@ import java.util.Objects;
  * Copyright (c) 2021, the Alpha Team.
  */
 public class WeakConstraintAtomCallback implements AtomCallbackManager.AtomCallback {
-	private final WeakConstraintsManager weakConstraintsManager;
+	private final WeakConstraintsManagerForBoundedOptimality weakConstraintsManagerForBoundedOptimality;
 	public final int atom;
 	public final int weight;
 	public final int level;
 	public ThriceTruth lastTruthValue;
 
-	WeakConstraintAtomCallback(WeakConstraintsManager weakConstraintsManager, int atom, int weight, int level) {
+	WeakConstraintAtomCallback(WeakConstraintsManagerForBoundedOptimality weakConstraintsManager, int atom, int weight, int level) {
 		this.atom = atom;
 		this.weight = weight;
 		this.level = level;
-		this.weakConstraintsManager = weakConstraintsManager;
+		this.weakConstraintsManagerForBoundedOptimality = weakConstraintsManager;
 	}
 
 	@Override
 	public void processCallback() {
-		weakConstraintsManager.processCallback(this);
+		weakConstraintsManagerForBoundedOptimality.processCallback(this);
 	}
 
 	@Override

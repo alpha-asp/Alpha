@@ -6,7 +6,7 @@ import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertOptimumAnswerSetEquals;
-import static at.ac.tuwien.kr.alpha.test.util.TestUtils.collectRegressionTestAnswerSets;
+import static at.ac.tuwien.kr.alpha.test.util.TestUtils.collectRegressionTestOptimalAnswerSets;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -20,7 +20,7 @@ public class WeakConstraintsTests {
 		String program = ":~a.[1@0,foo,bar]" +
 			":~b.[2@0,baz]" +
 			"a :- not b. b:- not a.";
-		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
+		Set<AnswerSet> actualAnswerSets = collectRegressionTestOptimalAnswerSets(program, cfg);
 		assertOptimumAnswerSetEquals("a", "1@0", actualAnswerSets);
 	}
 
@@ -31,7 +31,7 @@ public class WeakConstraintsTests {
 		String program = ":~a.[2@2,foo,bar]" +
 			":~b.[1@1,baz]" +
 			"a :- not b. b:- not a.";
-		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
+		Set<AnswerSet> actualAnswerSets = collectRegressionTestOptimalAnswerSets(program, cfg);
 		assertOptimumAnswerSetEquals("b", "1@1", actualAnswerSets);
 	}
 
@@ -41,7 +41,7 @@ public class WeakConstraintsTests {
 		String program = ":~a.[2@1,foo,bar]" +
 			":~b.[1@-1,baz]" +
 			"a :- not b. b:- not a.";
-		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
+		Set<AnswerSet> actualAnswerSets = collectRegressionTestOptimalAnswerSets(program, cfg);
 		assertOptimumAnswerSetEquals("b", "1@-1", actualAnswerSets);
 	}
 
@@ -52,7 +52,7 @@ public class WeakConstraintsTests {
 			":~b.[1@1,baz]" +
 			":~b.[3@-4,baz]" +
 			"a :- not b. b:- not a.";
-		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
+		Set<AnswerSet> actualAnswerSets = collectRegressionTestOptimalAnswerSets(program, cfg);
 		assertOptimumAnswerSetEquals("b", "3@-4, 1@1", actualAnswerSets);
 	}
 
@@ -64,7 +64,7 @@ public class WeakConstraintsTests {
 			":~b.[1@3]" +
 			":~a.[2@1,foo]" +
 			":~a.[2@1,bar]";
-		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
+		Set<AnswerSet> actualAnswerSets = collectRegressionTestOptimalAnswerSets(program, cfg);
 		assertOptimumAnswerSetEquals("a", "4@1", actualAnswerSets);
 	}
 
@@ -77,7 +77,7 @@ public class WeakConstraintsTests {
 			":~b.[1@3]" +
 			":~a.[2@1,foo]" +
 			":~c.[2@1,foo]";
-		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
+		Set<AnswerSet> actualAnswerSets = collectRegressionTestOptimalAnswerSets(program, cfg);
 		assertOptimumAnswerSetEquals("a, c", "2@1", actualAnswerSets);
 	}
 
@@ -93,7 +93,7 @@ public class WeakConstraintsTests {
 			"w(Z) :- Z = 8 - K, q(K)." +
 			":~a,w(Z).[Z@1]";
 		assertThrows(IllegalArgumentException.class, () -> {
-			Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
+			Set<AnswerSet> actualAnswerSets = collectRegressionTestOptimalAnswerSets(program, cfg);
 			// In case negative weights can be dealt with (e.g. by fully grounding or under certain restrictions),
 			// the optimum answer set of above program is: p(1),...,p(9),q(9),w(-1),a,has_q at valuation -1@1
 			// Under current behaviour we expect the computation of answer-sets to fail already.
@@ -113,7 +113,7 @@ public class WeakConstraintsTests {
 			":~ weightatlevel(W,L).[W@L]" +
 			"has_wal :- weightatlevel(W,L)." +
 			":- not has_wal.";
-		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
+		Set<AnswerSet> actualAnswerSets = collectRegressionTestOptimalAnswerSets(program, cfg);
 		assertOptimumAnswerSetEquals(
 			"dom(1), dom(2), dom(3), c(1), b(1), a(1), weightatlevel(3,1), has_wal", "3@1", actualAnswerSets);
 	}

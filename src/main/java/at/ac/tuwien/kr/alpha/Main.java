@@ -116,7 +116,7 @@ public class Main {
 		if (cfg.getInputConfig().isWritePreprocessed()) {
 			Main.writeInternalProgram(preprocessed, cfg.getInputConfig().getPreprocessedPath());
 		}
-		Main.computeAndConsumeAnswerSets(alpha, cfg.getInputConfig(), preprocessed);
+		Main.computeAndConsumeAnswerSets(alpha, cfg, preprocessed);
 	}
 
 	/**
@@ -172,7 +172,8 @@ public class Main {
 		}
 	}
 
-	private static void computeAndConsumeAnswerSets(Alpha alpha, InputConfig inputCfg, InternalProgram program) {
+	private static void computeAndConsumeAnswerSets(Alpha alpha, AlphaConfig cfg, InternalProgram program) {
+		InputConfig inputCfg = cfg.getInputConfig();
 		Solver solver = alpha.prepareSolverFor(program, inputCfg.getFilter());
 		Stream<AnswerSet> stream = solver.stream();
 		if (alpha.getConfig().isSortAnswerSets()) {
@@ -190,7 +191,7 @@ public class Main {
 			final AnswerSetFormatter<String> fmt = new SimpleAnswerSetFormatter(alpha.getConfig().getAtomSeparator());
 			BiConsumer<Integer, AnswerSet> stdoutPrinter = (n, as) -> {
 				System.out.println("Answer set " + n + ":" + System.lineSeparator() + fmt.format(as));
-				if (program.containsWeakConstraints()) {
+				if (as instanceof WeightedAnswerSet) {
 					// If weak constraints are presents, all answer sets are weighted.
 					System.out.println("Optimization: " + ((WeightedAnswerSet) as).getWeightsAsString());
 				}
@@ -216,7 +217,7 @@ public class Main {
 				}
 			} else {
 				System.out.println("SATISFIABLE");
-				if (program.containsWeakConstraints() && counter.get() < limit) {
+				if (cfg.getSystemConfig().isAnswerSetOptimizationEnabled() && counter.get() < limit) {
 					// If less answer sets were found than requested and optimisation is enabled, then the last one is an optimal answer set.
 					System.out.println("OPTIMUM PROVEN");
 				}

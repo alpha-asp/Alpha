@@ -27,6 +27,9 @@
  */
 package at.ac.tuwien.kr.alpha.config;
 
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingConfig;
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -44,10 +47,6 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingConfig;
-import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 
 /**
  * Parses given argument lists (as passed when Alpha is called from command line) into {@link SystemConfig}s and
@@ -150,6 +149,11 @@ public class CommandLineParser {
 			.desc("a character (sequence) to use as separator for atoms in printed answer sets (default: "
 					+ SystemConfig.DEFAULT_ATOM_SEPARATOR + ")")
 			.build();
+	private static final Option OPT_ENABLE_OPTIMIZATION = Option.builder("opt").longOpt("enableOptimization")
+			.desc("enables branch-and-bound answer-set optimization based on the weak constraints of the input program.").build();
+	private static final Option OPT_MAXWEIGHT = Option.builder("mw").longOpt("maxWeight").hasArg(true).argName("weight")
+			.desc("the (weak constraints) valuation of answer sets must be below this weight, only has an effect if answer-set optimization is enabled. " +
+			"Weights are given as a comma-separated list of weight@level pairs, e.g.: 3@1,2@2,5@-1").build();
 	//@formatter:on
 
 	private static final Options CLI_OPTS = new Options();
@@ -192,6 +196,8 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_ACCUMULATOR_ENABLED);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_OUTPUT_ATOM_SEPARATOR);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_ENABLE_OPTIMIZATION);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_MAXWEIGHT);
 	}
 
 	/*
@@ -249,6 +255,8 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES.getOpt(), this::handleGrounderToleranceRules);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_ACCUMULATOR_ENABLED.getOpt(), this::handleGrounderNoInstanceRemoval);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_OUTPUT_ATOM_SEPARATOR.getOpt(), this::handleAtomSeparator);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_ENABLE_OPTIMIZATION.getOpt(), this::handleEnableOptimization);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_MAXWEIGHT.getOpt(), this::handleMaxWeight);
 	}
 
 	private void initializeInputOptionHandlers() {
@@ -489,5 +497,12 @@ public class CommandLineParser {
 	private void handleAtomSeparator(Option opt, SystemConfig cfg) {
 		cfg.setAtomSeparator(StringEscapeUtils.unescapeJava(opt.getValue(SystemConfig.DEFAULT_ATOM_SEPARATOR)));
 	}
-	
+
+	private void handleEnableOptimization(Option opt, SystemConfig cfg) {
+		cfg.setAnswerSetOptimizationEnabled(true);
+	}
+
+	private void handleMaxWeight(Option opt, SystemConfig cfg) {
+		cfg.setAnswerSetsMaxWeightAtLevels(opt.getValue(SystemConfig.DEFAULT_MAX_WEIGHT_AT_LEVELS));
+	}
 }

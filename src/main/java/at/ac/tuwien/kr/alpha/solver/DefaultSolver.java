@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.WeightedAnswerSet;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
@@ -48,6 +49,7 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
 import at.ac.tuwien.kr.alpha.solver.optimization.WeakConstraintsManager;
+import at.ac.tuwien.kr.alpha.solver.optimization.WeakConstraintsManagerForUnboundedEnumeration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,7 +88,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	protected final WritableAssignment assignment;
 	private final GroundConflictNoGoodLearner learner;
 	private final BranchingHeuristic branchingHeuristic;
-	protected final WeakConstraintsManager weakConstraintsManager;
+	protected WeakConstraintsManager weakConstraintsManager;
 
 	private int mbtAtFixpoint;
 	private int conflictsAfterClosing;
@@ -116,7 +118,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		this.disableJustifications = config.isDisableJustificationSearch();
 		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
-		this.weakConstraintsManager = new WeakConstraintsManager(assignment);
+		this.weakConstraintsManager = new WeakConstraintsManagerForUnboundedEnumeration(assignment);
 		this.weakConstraintsManager.setChecksEnabled(config.isDebugInternalChecks());
 	}
 
@@ -241,6 +243,10 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	private void provideAnswerSet(Consumer<? super AnswerSet> action) {
 		AnswerSet as = translate(assignment.getTrueAssignments());
+		if (grounder.inputProgramContainsWeakConstraints()) {
+			// Adorn AnswerSet with weights if weak constraints are contained in the input program.
+			as = new WeightedAnswerSet(as, weakConstraintsManager.getCurrentWeightAtLevels());
+		}
 		LOGGER.debug("Answer-Set found: {}", as);
 		action.accept(as);
 		logStats();

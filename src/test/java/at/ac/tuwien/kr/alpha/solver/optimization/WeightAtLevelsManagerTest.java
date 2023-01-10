@@ -120,4 +120,31 @@ public class WeightAtLevelsManagerTest {
 		weightAtLevelsManager.markCurrentWeightAsBestKnown();
 		assertFalse(weightAtLevelsManager.isCurrentBetterThanBest());
 	}
+
+	@Test
+	public void initializationWithMaxBound() {
+		WeightAtLevelsManager weightAtLevelsManager = new WeightAtLevelsManager("1@1,5@6,3@2");
+		weightAtLevelsManager.setChecksEnabled(true);
+		assertTrue(weightAtLevelsManager.isCurrentBetterThanBest());
+	}
+
+	@Test
+	public void initializationWithMaxBoundAllowsBetterUntilBound() {
+		WeightAtLevelsManager weightAtLevelsManager = new WeightAtLevelsManager("1@2,4@3");
+		weightAtLevelsManager.setChecksEnabled(true);
+		TreeMap<Integer, Integer> initialWeights = weightAtLevelsManager.getCurrentWeightAtLevels();
+		assertEquals(initialWeights.size(), 0);
+		assertTrue(weightAtLevelsManager.isCurrentBetterThanBest());
+		weightAtLevelsManager.increaseCurrentWeight(2, 1);
+		assertTrue(weightAtLevelsManager.isCurrentBetterThanBest());
+		weightAtLevelsManager.increaseCurrentWeight(3, 3);
+		assertTrue(weightAtLevelsManager.isCurrentBetterThanBest());
+		weightAtLevelsManager.increaseCurrentWeight(3, 1);
+		assertFalse(weightAtLevelsManager.isCurrentBetterThanBest());
+	}
+
+	@Test
+	public void initializationWithEmptyMaxBoundThrowsException() {
+		assertThrows(IllegalArgumentException.class, () -> new WeightAtLevelsManager(""));
+	}
 }

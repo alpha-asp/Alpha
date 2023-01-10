@@ -5,6 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.TreeMap;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -41,6 +44,50 @@ public class WeightAtLevelsManager implements Checkable {
 		bestKnownWeightAtLevels = new ArrayList<>();
 		maxOffsetCurrentIsAllEqualBest = -1;
 		isCurrentBetterThanBest = true;
+	}
+
+	/**
+	 * Initializes {@link WeightAtLevelsManager} with given upper bound, i.e., bound is taken valuation of a best-known answer-set.
+	 * @param maximumWeightAtLevels a comma-separated list of weight@levels pairs.
+	 */
+	public WeightAtLevelsManager(String maximumWeightAtLevels) {
+		this();
+		if (maximumWeightAtLevels.isEmpty()) {
+			throw new IllegalArgumentException("Initial maximum bound is empty.");
+		}
+		initializeFromString(maximumWeightAtLevels);
+	}
+
+	private void initializeFromString(String maximumWeightAtLevels) {
+		HashMap<Integer, Integer> levelsToWeight = new LinkedHashMap<>();
+		int maxLevel = 0;
+		// Parse maximumWeightAtLevels string.
+		for (String weightAtLevel : maximumWeightAtLevels.split(",")) {
+			String[] weightAndLevel = weightAtLevel.split("@");
+			if (weightAndLevel.length != 2) {
+				throw new IllegalArgumentException("Could not parse given comma-separated list of weight@level pairs. Given input was: " + maximumWeightAtLevels);
+			}
+			int weight = Integer.parseInt(weightAndLevel[0]);
+			Integer level = Integer.parseInt(weightAndLevel[1]);
+			if (weight == 0) {
+				continue;	// Skip weights of zero.
+			}
+			levelsToWeight.putIfAbsent(level, 0);
+			levelsToWeight.put(level, weight + levelsToWeight.get(level));
+			if (level > maxLevel) {
+				maxLevel = level;
+			}
+		}
+		// Initialize according to parsed weights at levels.
+		setMaxLevel(maxLevel);
+		for (Map.Entry<Integer, Integer> levelToWeight : levelsToWeight.entrySet()) {
+			increaseCurrentWeight(levelToWeight.getKey(), levelToWeight.getValue());
+		}
+		markCurrentWeightAsBestKnown();
+		// Re-set the current weight at all levels back to zero.
+		for (Map.Entry<Integer, Integer> levelToWeight : levelsToWeight.entrySet()) {
+			decreaseCurrentWeight(levelToWeight.getKey(), levelToWeight.getValue());
+		}
 	}
 
 	@Override

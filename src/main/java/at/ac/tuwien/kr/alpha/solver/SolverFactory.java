@@ -62,7 +62,7 @@ public final class SolverFactory {
 			case "naive" :
 				return new NaiveSolver(atomStore, grounder);
 			case "default":
-				if (grounder.inputProgramContainsWeakConstraints()) {
+				if (config.isAnswerSetOptimizationEnabled()) {
 					return new OptimizingSolver(atomStore, grounder, store, assignment, random, config, heuristicsConfiguration);
 				} else {
 					return new DefaultSolver(atomStore, grounder, store, assignment, random, config, heuristicsConfiguration);

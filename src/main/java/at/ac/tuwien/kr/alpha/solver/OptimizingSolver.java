@@ -7,6 +7,7 @@ import at.ac.tuwien.kr.alpha.common.WeightedAnswerSet;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.solver.optimization.WeakConstraintsManagerForBoundedOptimality;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +27,8 @@ public class OptimizingSolver extends DefaultSolver {
 
 	public OptimizingSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, SystemConfig config, HeuristicsConfiguration heuristicsConfiguration) {
 		super(atomStore, grounder, store, assignment, random, config, heuristicsConfiguration);
+		this.weakConstraintsManager = new WeakConstraintsManagerForBoundedOptimality(assignment, config.getAnswerSetsMaxWeightAtLevels());
+		this.weakConstraintsManager.setChecksEnabled(config.isDebugInternalChecks());
 	}
 
 	@Override
@@ -47,7 +50,7 @@ public class OptimizingSolver extends DefaultSolver {
 			if (conflictCause != null) {
 				LOGGER.debug("Conflict encountered, analyzing conflict.");
 				learnFromConflict(conflictCause);
-			} else if (!weakConstraintsManager.isCurrentBetterThanBest()) {
+			} else if (!((WeakConstraintsManagerForBoundedOptimality)weakConstraintsManager).isCurrentBetterThanBest()) {
 				LOGGER.debug("Current assignment is worse than previously found answer set, backjumping now.");
 				backtrackFromBound();
 			} else if (assignment.didChange()) {
@@ -68,7 +71,7 @@ public class OptimizingSolver extends DefaultSolver {
 	}
 
 	private void backtrackFromBound() {
-		NoGood excludingNoGood = weakConstraintsManager.generateExcludingNoGood();
+		NoGood excludingNoGood = ((WeakConstraintsManagerForBoundedOptimality)weakConstraintsManager).generateExcludingNoGood();
 		Map<Integer, NoGood> obtained = new LinkedHashMap<>();
 		obtained.put(grounder.register(excludingNoGood), excludingNoGood);
 		if (!ingest(obtained)) {
@@ -79,7 +82,7 @@ public class OptimizingSolver extends DefaultSolver {
 	private void provideAnswerSet(Consumer<? super WeightedAnswerSet> action) {
 		// Enrich answer-set with weights information and record current-best upper bound.
 		AnswerSet as = translate(assignment.getTrueAssignments());
-		weakConstraintsManager.markCurrentWeightAsBestKnown();
+		((WeakConstraintsManagerForBoundedOptimality)weakConstraintsManager).markCurrentWeightAsBestKnown();
 		WeightedAnswerSet was = new WeightedAnswerSet(as, weakConstraintsManager.getCurrentWeightAtLevels());
 		LOGGER.debug("Answer-Set found: {}", was);
 		action.accept(was);
