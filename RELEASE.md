@@ -47,17 +47,19 @@ as JAR files and two scripts to run Alpha on Unix-like and Windows respectively.
 To generate `alpha.jar`:
 
 ```bash
-$ ./gradlew bundledJar
-$ cp build/libs/alpha-bundled.jar alpha.jar
+$ ./gradlew alpha-cli-app:bundledJar
+$ cp alpha-cli-app/build/libs/alpha-cli*-bundled.jar alpha.jar
 ```
 
 To generate `alpha.zip`:
 
 ```bash
-$ ./gradlew distZip
-$ cp build/distributions/alpha.zip alpha.zip
+$ ./gradlew alpha-cli-app:distZip
+$ cp alpha-cli-app/build/distributions/*.zip alpha.zip
 ```
 
 Attach the two files to the release on GitHub, then publish the release. Lastly, check that everything is fine,
 e.g. that the tag/version really points at the revision you wanted to rlease and that `alpha.zip` and `alpha.jar
 downloaded from GitHub do what they are supposed to do.
+
+Optionally, archive the release on Zenodo. If you do so, add the new identifier to `CITATION.cff`.

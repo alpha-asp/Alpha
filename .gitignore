@@ -7,6 +7,10 @@
 
 # Temporary/Generated Files
 /out/
+*/build
+
+# Log files
+junit.log
 
 # Created by https://www.gitignore.io/api/java,gradle,eclipse
 
@@ -97,8 +101,10 @@ gradle-app.setting
 
 ### Custom additions ###
 /.checkstyle
-/junit.log
+*/junit.log
 .idea/modules/*.iml
 *.tokens
 /.dbeaver
 /Scripts
+/.vscode/
+workspace.code-workspace
