@@ -184,6 +184,13 @@ public class ReificationTest {
 		assertEquals(1, strcatLitIds.size());
 	}
 
+	@Test
+	public void constraint() {
+		Set<BasicAtom> reified = alpha.reify(alpha.readProgramString(":- p(X), q(X)."));
+		assertEquals(1, reified.stream().filter(Atoms.query("constraint", 1)).count());
+		assertTrue(reified.stream().noneMatch(Atoms.query("rule", 1)));
+	}
+
 	private static List<ConstantTerm<?>> findLiteralIdsForPredicate(Predicate predicate, ConstantTerm<?> reifiedRuleId,
 			Set<BasicAtom> reifiedProgram) {
 		ConstantTerm<?> predicateId = findPredicateId(predicate, reifiedProgram);

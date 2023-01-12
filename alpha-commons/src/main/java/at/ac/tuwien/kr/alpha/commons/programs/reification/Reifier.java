@@ -39,6 +39,7 @@ public class Reifier {
 
 	// Predicates describing rules.
 	static final Predicate RULE = Predicates.getPredicate("rule", 1);
+	static final Predicate CONSTRAINT = Predicates.getPredicate("constraint", 1);
 	static final Predicate RULE_HEAD = Predicates.getPredicate("rule_head", 2);
 	static final Predicate RULE_NUM_BODY_LITERALS = Predicates.getPredicate("rule_numBodyLiterals", 2);
 	static final Predicate RULE_BODY_LITERAL = Predicates.getPredicate("rule_bodyLiteral", 2);
@@ -201,9 +202,6 @@ public class Reifier {
 			reifyAtom(ctx, factId, fact);
 		}
 		for (Rule<? extends Head> rule : program.getRules()) {
-			if (rule.isConstraint()) {
-				continue;
-			}
 			reifyRule(ctx, rule);
 		}
 		return ctx.computeReifiedProgram();
@@ -220,8 +218,12 @@ public class Reifier {
 
 	void reifyRule(ReificationContext ctx, Rule<? extends Head> rule) {
 		ConstantTerm<?> ruleId = ctx.getNextId();
-		ctx.addAtom(Atoms.newBasicAtom(RULE, ruleId));
-		reifyHead(ctx, ruleId, rule.getHead());
+		if (rule.isConstraint()) {
+			ctx.addAtom(Atoms.newBasicAtom(CONSTRAINT, ruleId));
+		} else {
+			ctx.addAtom(Atoms.newBasicAtom(RULE, ruleId));
+			reifyHead(ctx, ruleId, rule.getHead());
+		}
 		ctx.addAtom(Atoms.newBasicAtom(RULE_NUM_BODY_LITERALS, ruleId, Terms.newConstant(rule.getBody().size())));
 		for (Literal lit : rule.getBody()) {
 			ConstantTerm<?> literalId = ctx.getNextId();
