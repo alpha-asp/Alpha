@@ -1,13 +1,17 @@
-package at.ac.tuwien.kr.alpha.grounder.atoms;
+package at.ac.tuwien.kr.alpha.core.atoms;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.atoms.AbstractAtom;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,7 +20,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 
 /**
  * Represents the head of a weak constraint (i.e., a special internal atom indicating that a rule really is a weak
@@ -24,8 +28,8 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  *
  * Copyright (c) 2020-2021, the Alpha Team.
  */
-public class WeakConstraintAtom extends Atom {
-	private static final Predicate PREDICATE = Predicate.getInstance("_weakconstraint_", 3, true, true);
+public class WeakConstraintAtom extends AbstractAtom implements BasicAtom {
+	private static final Predicate PREDICATE = Predicates.getPredicate("_weakconstraint_", 3, true, true);
 	private static final String TERMLISTSYMBOL = "_tuple";
 
 	private final Term weight;
@@ -49,17 +53,17 @@ public class WeakConstraintAtom extends Atom {
 	}
 
 	public static WeakConstraintAtom getInstance(Term weight, Term level, List<Term> termList) {
-		Term actualLevel = level != null ? level : ConstantTerm.getInstance(0);
+		Term actualLevel = level != null ? level : Terms.newConstant(0);
 		List<Term> actualTermlist = termList != null ? termList : Collections.emptyList();
-		return new WeakConstraintAtom(weight, actualLevel, FunctionTerm.getInstance(TERMLISTSYMBOL, actualTermlist));
+		return new WeakConstraintAtom(weight, actualLevel, Terms.newFunctionTerm(TERMLISTSYMBOL, actualTermlist));
 	}
 
 	public Integer getWeight() {
-		return (Integer) ((ConstantTerm)weight).getObject();
+		return (Integer) ((ConstantTerm<?>)weight).getObject();
 	}
 
 	public Integer getLevel() {
-		return (Integer) ((ConstantTerm)level).getObject();
+		return (Integer) ((ConstantTerm<?>)level).getObject();
 	}
 
 	private static boolean isIntegerOrVariable(Term term) {
@@ -67,15 +71,15 @@ public class WeakConstraintAtom extends Atom {
 			return true;
 		}
 		if (term instanceof ConstantTerm) {
-			Comparable constant = ((ConstantTerm) term).getObject();
+			Comparable<?> constant = ((ConstantTerm<?>) term).getObject();
 			return constant instanceof Integer;
 		}
 		return false;
 	}
 
 	private static boolean isNegativeInteger(Term term) {
-		if (term instanceof ConstantTerm && ((ConstantTerm) term).getObject() instanceof Integer) {
-			return ((Integer)((ConstantTerm) term).getObject()) < 0;
+		if (term instanceof ConstantTerm && ((ConstantTerm<?>) term).getObject() instanceof Integer) {
+			return ((Integer)((ConstantTerm<?>) term).getObject()) < 0;
 		}
 		return false;
 	}
@@ -111,11 +115,11 @@ public class WeakConstraintAtom extends Atom {
 	}
 
 	@Override
-	public Atom substitute(Substitution substitution) {
+	public WeakConstraintAtom substitute(Substitution substitution) {
 		if (isGround()) {
 			return this;
 		}
-		return new WeakConstraintAtom(weight.substitute(substitution), level.substitute(substitution), termList.substitute(substitution));
+		return new WeakConstraintAtom(weight.substitute(substitution), level.substitute(substitution), (FunctionTerm) termList.substitute(substitution));
 	}
 
 	@Override
@@ -154,5 +158,10 @@ public class WeakConstraintAtom extends Atom {
 	@Override
 	public int hashCode() {
 		return Objects.hash(weight, level, termList);
+	}
+
+	@Override
+	public Atom normalizeVariables(String prefix, int counterStartingValue) {
+		throw new UnsupportedOperationException("WeakConstraintAtom cannot normalize its variables.");
 	}
 }

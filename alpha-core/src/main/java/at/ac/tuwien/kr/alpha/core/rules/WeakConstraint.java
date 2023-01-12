@@ -1,8 +1,8 @@
-package at.ac.tuwien.kr.alpha.common.rule;
+package at.ac.tuwien.kr.alpha.core.rules;
 
-import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 import java.util.List;
 

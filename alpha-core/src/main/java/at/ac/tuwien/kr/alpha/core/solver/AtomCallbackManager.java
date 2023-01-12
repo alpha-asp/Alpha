@@ -1,12 +1,12 @@
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.core.solver;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 
-import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
-import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.arrayGrowthSize;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 
 /**
  * Manages the execution of {@link AtomCallback}s, i.e., callbacks when atoms change their truth value.

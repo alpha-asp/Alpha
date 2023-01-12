@@ -1,26 +1,6 @@
 package at.ac.tuwien.kr.alpha.core.test.util;
 
-import static java.util.Collections.emptySet;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.function.Executable;
-
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.WeightedAnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.config.Heuristic;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
@@ -32,6 +12,7 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.WeightedAnswerSet;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
@@ -46,6 +27,24 @@ import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransf
 import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.core.solver.RegressionTestConfig;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.function.Executable;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
+
+import static java.util.Collections.emptySet;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestUtils {
 
@@ -167,14 +166,14 @@ public class TestUtils {
 		return buildSolverFromSystemConfig(prog, cfg.toSystemConfig());
 	}
 
-	public static Solver buildSolverForOptimizationRegressionTest(InputProgram prog, RegressionTestConfig cfg) {
+	public static Solver buildSolverForOptimizationRegressionTest(ASPCore2Program prog, RegressionTestConfig cfg) {
 		SystemConfig systemConfig = cfg.toSystemConfig();
 		systemConfig.setAnswerSetOptimizationEnabled(true);
 		return buildSolverFromSystemConfig(prog, systemConfig);
 	}
 
 	public static Set<AnswerSet> collectRegressionTestOptimalAnswerSets(String prog, RegressionTestConfig config) {
-		return buildSolverForOptimizationRegressionTest(new ProgramParser().parse(prog), config).collectSet();
+		return buildSolverForOptimizationRegressionTest(new ProgramParserImpl().parse(prog), config).collectSet();
 	}
 	public static Solver buildSolverForRegressionTest(String prog, RegressionTestConfig cfg) {
 		return buildSolverFromSystemConfig(new ProgramParserImpl().parse(prog), cfg.toSystemConfig());
@@ -226,15 +225,8 @@ public class TestUtils {
 		Assumptions.assumeTrue(cfg.isSupportNegativeSumElements());
 	}
 	public static WeightedAnswerSet weightedAnswerSetFromStrings(String basicAnswerSetAsString, String weightAtLevelsAsString) {
-		BasicAnswerSet basicAnswerSet = (BasicAnswerSet) AnswerSetsParser.parse("{ " + basicAnswerSetAsString + " }").iterator().next();
-		// Extract weights at levels from given string.
-		String[] weightsAtLevels = weightAtLevelsAsString.split(", ");
-		TreeMap<Integer, Integer> weightAtLevelsTreeMap = new TreeMap<>();
-		for (String weightsAtLevel : weightsAtLevels) {
-			String[] wAtL = weightsAtLevel.split("@");
-			weightAtLevelsTreeMap.put(Integer.parseInt(wAtL[1]), Integer.parseInt(wAtL[0]));
-		}
-		return new WeightedAnswerSet(basicAnswerSet, weightAtLevelsTreeMap);
+		AnswerSet basicAnswerSet = AnswerSetsParser.parse("{ " + basicAnswerSetAsString + " }").iterator().next();
+		return new WeightedAnswerSet(basicAnswerSet, WeightedAnswerSet.weightPerLevelFromString(weightAtLevelsAsString));
 	}
 
 	public static void assertOptimumAnswerSetEquals(String expectedOptimumAnswerSet, String expectedWeightsAtLevels, Set<AnswerSet> actual) {

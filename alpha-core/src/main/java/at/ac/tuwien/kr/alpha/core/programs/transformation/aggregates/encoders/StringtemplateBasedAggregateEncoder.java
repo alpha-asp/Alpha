@@ -1,11 +1,5 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
-import org.apache.commons.collections4.ListUtils;
-import org.stringtemplate.v4.ST;
-
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
@@ -24,6 +18,11 @@ import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.EnumerationRewriting;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
+import org.apache.commons.collections4.ListUtils;
+import org.stringtemplate.v4.ST;
+
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Abstract base class for aggregate encoders making use of stringtemplates in their rewriting workflow.
@@ -86,7 +85,7 @@ public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggreg
 
 		// Add the programatically created bound rule and return
 		return new InputProgram(ListUtils.union(coreEncoding.getRules(), Collections.singletonList(boundRule)), coreEncoding.getFacts(),
-				new InlineDirectivesImpl());
+				new InlineDirectivesImpl(), coreEncoding.containsWeakConstraints());
 	}
 
 	private String getBoundPredicateName(String aggregateId) {

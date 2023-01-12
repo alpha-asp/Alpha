@@ -1,8 +1,5 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
@@ -23,6 +20,9 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Transforms rules such that arithmetic terms only occur in comparison predicates.
@@ -52,7 +52,7 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 			return inputProgram;
 		}
 		// Create new program with rewritten rules.
-		return new NormalProgramImpl(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+		return new NormalProgramImpl(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives(), inputProgram.containsWeakConstraints());
 	}
 
 	/**

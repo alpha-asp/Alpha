@@ -28,7 +28,7 @@
 package at.ac.tuwien.kr.alpha.core.solver;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.WeightedAnswerSet;
+import at.ac.tuwien.kr.alpha.commons.WeightedAnswerSet;
 import at.ac.tuwien.kr.alpha.api.StatisticsReportingSolver;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;

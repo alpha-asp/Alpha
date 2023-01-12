@@ -1,7 +1,10 @@
 package at.ac.tuwien.kr.alpha.commons;
 
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.emptySortedSet;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.AnswerSetQuery;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -10,11 +13,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
-import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.AnswerSetQuery;
-import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.commons.util.Util;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySortedSet;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -107,6 +107,9 @@ class BasicAnswerSet implements AnswerSet {
 
 	@Override
 	public int compareTo(AnswerSet other) {
+		if (other.getClass() != this.getClass()) {
+			return 1;
+		}
 		final SortedSet<Predicate> predicates = this.getPredicates();
 		int result = Util.compareSortedSets(predicates, other.getPredicates());
 

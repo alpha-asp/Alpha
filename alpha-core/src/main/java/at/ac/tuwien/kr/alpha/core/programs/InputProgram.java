@@ -27,16 +27,17 @@
  */
 package at.ac.tuwien.kr.alpha.core.programs;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
+import at.ac.tuwien.kr.alpha.core.rules.WeakConstraint;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Alpha-internal representation of an ASP program, i.e., a set of ASP rules.
@@ -45,14 +46,14 @@ import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
  */
 public class InputProgram extends AbstractProgram<Rule<Head>> implements ASPCore2Program{
 
-	public static final InputProgram EMPTY = new InputProgram(Collections.emptyList(), Collections.emptyList(), new InlineDirectivesImpl());
+	public static final InputProgram EMPTY = new InputProgram(Collections.emptyList(), Collections.emptyList(), new InlineDirectivesImpl(), false);
 
-	public InputProgram(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
-		super(rules, facts, inlineDirectives);
+	public InputProgram(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives, boolean containsWeakConstraints) {
+		super(rules, facts, inlineDirectives, containsWeakConstraints);
 	}
 
 	public InputProgram() {
-		super(new ArrayList<>(), new ArrayList<>(), new InlineDirectivesImpl());
+		super(new ArrayList<>(), new ArrayList<>(), new InlineDirectivesImpl(), false);
 	}
 
 	public static Builder builder() {
@@ -71,6 +72,7 @@ public class InputProgram extends AbstractProgram<Rule<Head>> implements ASPCore
 		private List<Rule<Head>> rules = new ArrayList<>();
 		private List<Atom> facts = new ArrayList<>();
 		private InlineDirectives inlineDirectives = new InlineDirectivesImpl();
+		private boolean containsWeakConstraints;
 
 		public Builder(ASPCore2Program prog) {
 			this.addRules(prog.getRules());
@@ -83,12 +85,15 @@ public class InputProgram extends AbstractProgram<Rule<Head>> implements ASPCore
 		}
 
 		public Builder addRules(List<Rule<Head>> rules) {
-			this.rules.addAll(rules);
+			for (Rule<Head> rule : rules) {
+				addRule(rule);
+			}
 			return this;
 		}
 
 		public Builder addRule(Rule<Head> r) {
 			this.rules.add(r);
+			this.containsWeakConstraints |= r instanceof WeakConstraint;
 			return this;
 		}
 
@@ -112,7 +117,7 @@ public class InputProgram extends AbstractProgram<Rule<Head>> implements ASPCore
 		}
 
 		public InputProgram build() {
-			return new InputProgram(this.rules, this.facts, this.inlineDirectives);
+			return new InputProgram(this.rules, this.facts, this.inlineDirectives, this.containsWeakConstraints);
 		}
 	}
 

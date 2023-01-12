@@ -1,8 +1,8 @@
-package at.ac.tuwien.kr.alpha.solver.optimization;
+package at.ac.tuwien.kr.alpha.core.solver.optimization;
 
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
-import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
+import at.ac.tuwien.kr.alpha.core.common.NoGood;
+import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
+import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,9 +14,9 @@ import java.util.List;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.MBT;
 
 /**
  * Manages weak constraints: stores the value of the current partial assignment, the best known value of any answer-set,

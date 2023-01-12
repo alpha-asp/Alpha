@@ -27,21 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.assertRegressionTestAnswerSet;
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.assertRegressionTestAnswerSets;
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.assertRegressionTestAnswerSetsWithBase;
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.buildSolverForRegressionTest;
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.collectRegressionTestAnswerSets;
-import static java.util.Collections.singleton;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
-
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
@@ -58,6 +43,21 @@ import at.ac.tuwien.kr.alpha.core.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.test.util.AnswerSetsParser;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.assertRegressionTestAnswerSet;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.assertRegressionTestAnswerSets;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.assertRegressionTestAnswerSetsWithBase;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.collectRegressionTestAnswerSets;
+import static java.util.Collections.singleton;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SolverTests {
 	
@@ -80,9 +80,8 @@ public class SolverTests {
 		final Atom fact = Atoms.newBasicAtom(Predicates.getPredicate("foo", 1), Terms.newConstant(thingy));
 
 		final InputProgram program = new InputProgram(
-			Collections.emptyList(),
-			Collections.singletonList(fact),
-			new InlineDirectivesImpl()
+			Collections.emptyList(), Collections.singletonList(fact),
+			new InlineDirectivesImpl(), false
 		);
 
 		assertEquals(singleton(new AnswerSetBuilder()

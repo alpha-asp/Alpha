@@ -1,13 +1,13 @@
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.WeightedAnswerSet;
-import at.ac.tuwien.kr.alpha.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.solver.optimization.WeakConstraintsManagerForBoundedOptimality;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.NoGood;
+import at.ac.tuwien.kr.alpha.commons.WeightedAnswerSet;
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.core.solver.heuristics.HeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.core.solver.optimization.WeakConstraintsManagerForBoundedOptimality;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

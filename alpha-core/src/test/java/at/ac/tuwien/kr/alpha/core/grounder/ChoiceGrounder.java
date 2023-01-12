@@ -27,30 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import static at.ac.tuwien.kr.alpha.commons.util.Util.entriesToMap;
-import static at.ac.tuwien.kr.alpha.commons.util.Util.entry;
-import static at.ac.tuwien.kr.alpha.core.common.NoGood.headFirst;
-import static at.ac.tuwien.kr.alpha.core.common.NoGoodTest.fromOldLiterals;
-import static java.util.Arrays.asList;
-import static java.util.Collections.singleton;
-import org.apache.commons.lang3.tuple.Triple;
-
-import java.util.Arrays;
-import java.util.Collections;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.stream.Stream;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -70,6 +46,28 @@ import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.stream.Stream;
+
+import static at.ac.tuwien.kr.alpha.commons.util.Util.entriesToMap;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.entry;
+import static at.ac.tuwien.kr.alpha.core.common.NoGood.headFirst;
+import static at.ac.tuwien.kr.alpha.core.common.NoGoodTest.fromOldLiterals;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 
 /**
  * Represents a small ASP program with choices {@code { aa :- not bb.  bb :- not aa. }}.

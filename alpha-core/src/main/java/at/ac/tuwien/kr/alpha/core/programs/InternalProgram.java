@@ -1,26 +1,25 @@
 package at.ac.tuwien.kr.alpha.core.programs;
 
+import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
+import at.ac.tuwien.kr.alpha.core.atoms.WeakConstraintAtom;
+import at.ac.tuwien.kr.alpha.core.grounder.FactIntervalEvaluator;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
+import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
-import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
-import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.atoms.WeakConstraintAtom;
-import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
-import at.ac.tuwien.kr.alpha.core.grounder.FactIntervalEvaluator;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
-import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 
 /**
  * A program in the internal representation needed for grounder and solver, i.e.: rules must have normal heads, all
@@ -31,14 +30,12 @@ import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
  */
 public class InternalProgram extends AbstractProgram<CompiledRule> implements CompiledProgram {
 
-	private final boolean containsWeakConstraints;
 	private final Map<Predicate, LinkedHashSet<CompiledRule>> predicateDefiningRules = new LinkedHashMap<>();
 	private final Map<Predicate, LinkedHashSet<Instance>> factsByPredicate = new LinkedHashMap<>();
 	private final Map<Integer, CompiledRule> rulesById = new LinkedHashMap<>();
 
 	public InternalProgram(List<CompiledRule> rules, List<Atom> facts, boolean containsWeakConstraints) {
-		super(rules, facts, null);
-		this.containsWeakConstraints = containsWeakConstraints;
+		super(rules, facts, null, containsWeakConstraints);
 		recordFacts(facts);
 		recordRules(rules);
 	}
@@ -55,7 +52,7 @@ public class InternalProgram extends AbstractProgram<CompiledRule> implements Co
 				facts.add(r.getHead().getAtom());
 			} else {
 				internalRules.add(InternalRule.fromNormalRule(r));
-				if (r.getHeadAtom() instanceof WeakConstraintAtom) {
+				if (!r.isConstraint() && r.getHead().getAtom() instanceof WeakConstraintAtom) {
 					containsWeakConstraints = true;
 				}
 			}
@@ -111,10 +108,6 @@ public class InternalProgram extends AbstractProgram<CompiledRule> implements Co
 		for (CompiledRule rule : getRules()) {
 			normalRules.add(new NormalRuleImpl(rule.getHead(), new ArrayList<>(rule.getBody())));
 		}
-		return new NormalProgramImpl(normalRules, getFacts(), getInlineDirectives());
-	}
-
-	public boolean containsWeakConstraints() {
-		return containsWeakConstraints;
+		return new NormalProgramImpl(normalRules, getFacts(), getInlineDirectives(), containsWeakConstraints());
 	}
 }

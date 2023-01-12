@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.grounder;
+package at.ac.tuwien.kr.alpha.core.grounder;
 
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;

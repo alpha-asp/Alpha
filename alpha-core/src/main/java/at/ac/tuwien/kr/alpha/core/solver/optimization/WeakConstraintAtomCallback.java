@@ -1,7 +1,7 @@
-package at.ac.tuwien.kr.alpha.solver.optimization;
+package at.ac.tuwien.kr.alpha.core.solver.optimization;
 
-import at.ac.tuwien.kr.alpha.solver.AtomCallbackManager;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+import at.ac.tuwien.kr.alpha.core.solver.AtomCallbackManager;
+import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
 
 import java.util.Objects;
 

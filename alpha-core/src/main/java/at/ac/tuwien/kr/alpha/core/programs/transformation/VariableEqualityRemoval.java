@@ -27,16 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
@@ -52,6 +42,16 @@ import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Removes variable equalities from rules by replacing one variable with the other.
  *
@@ -65,7 +65,7 @@ public class VariableEqualityRemoval extends ProgramTransformation<ASPCore2Progr
 		for (Rule<Head> rule : inputProgram.getRules()) {
 			rewrittenRules.add(findAndReplaceVariableEquality(rule));
 		}
-		return new InputProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+		return new InputProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives(), inputProgram.containsWeakConstraints());
 	}
 
 	private Rule<Head> findAndReplaceVariableEquality(Rule<Head> rule) {

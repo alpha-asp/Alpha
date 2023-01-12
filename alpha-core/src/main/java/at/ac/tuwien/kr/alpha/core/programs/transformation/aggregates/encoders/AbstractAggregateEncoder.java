@@ -1,11 +1,5 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.collections4.ListUtils;
-
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
@@ -26,6 +20,11 @@ import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.PredicateInternalizer;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
+import org.apache.commons.collections4.ListUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Abstract base class for aggregate encoders. An aggregate encoder provides an encoding for a given aggregate literal,
@@ -82,7 +81,7 @@ public abstract class AbstractAggregateEncoder {
 			Rule<Head> elementRule = encodeAggregateElement(aggregateToEncode, elementToEncode);
 			elementEncodingRules.add(PredicateInternalizer.makePrefixedPredicatesInternal(elementRule, aggregateId));
 		}
-		return new InputProgram(ListUtils.union(literalEncoding.getRules(), elementEncodingRules), literalEncoding.getFacts(), new InlineDirectivesImpl());
+		return new InputProgram(ListUtils.union(literalEncoding.getRules(), elementEncodingRules), literalEncoding.getFacts(), new InlineDirectivesImpl(), literalEncoding.containsWeakConstraints());
 	}
 
 	/**

@@ -1,12 +1,12 @@
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.test.util.TestUtils;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.test.util.TestUtils.assertOptimumAnswerSetEquals;
-import static at.ac.tuwien.kr.alpha.test.util.TestUtils.collectRegressionTestOptimalAnswerSets;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.assertOptimumAnswerSetEquals;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.collectRegressionTestOptimalAnswerSets;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**

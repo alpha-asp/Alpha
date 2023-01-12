@@ -1,6 +1,6 @@
-package at.ac.tuwien.kr.alpha.solver.optimization;
+package at.ac.tuwien.kr.alpha.core.solver.optimization;
 
-import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
+import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.ArrayList;

@@ -1,10 +1,10 @@
 package at.ac.tuwien.kr.alpha.api.programs;
 
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
+
+import java.util.List;
 
 /**
  * An ASP program as accepted by Alpha.
@@ -28,5 +28,11 @@ public interface Program<R extends Rule<? extends Head>> {
 	 * The rules in the program.
 	 */
 	List<R> getRules();
+
+	/**
+	 * Indicates whether this program contains some weak constraints.
+	 * @return true iff this program contains weak constraints.
+	 */
+	boolean containsWeakConstraints();
 
 }

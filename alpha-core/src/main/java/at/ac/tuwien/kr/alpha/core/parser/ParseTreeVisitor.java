@@ -27,22 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.parser;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
-import static java.util.Collections.emptyList;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.tree.TerminalNode;
-
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
@@ -55,7 +39,6 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.WeakConstraint;
 import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead;
 import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead.ChoiceElement;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
@@ -77,6 +60,22 @@ import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
+import at.ac.tuwien.kr.alpha.core.rules.WeakConstraint;
+import org.antlr.v4.runtime.RuleContext;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
+import static java.util.Collections.emptyList;
 
 /**
  * Copyright (c) 2016-2018, the Alpha Team.

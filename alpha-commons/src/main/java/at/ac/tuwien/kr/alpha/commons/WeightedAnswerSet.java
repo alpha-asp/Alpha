@@ -1,4 +1,6 @@
-package at.ac.tuwien.kr.alpha.common;
+package at.ac.tuwien.kr.alpha.commons;
+
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -118,6 +120,31 @@ public class WeightedAnswerSet extends BasicAnswerSet {
 			joiner.add(weightPerLevel.getValue() + "@" + weightPerLevel.getKey());
 		}
 		return joiner.toString();
+	}
+
+	/**
+	 * Extract weights at levels from string of comma-separated pairs of the form weight@level.
+	 * Multiple weights for the same level are summed-up.
+	 * @param weightAtLevels
+	 * @return a TreeMap containing
+	 */
+	public static TreeMap<Integer, Integer> weightPerLevelFromString(String weightAtLevels) {
+		String[] weightsAtLevels = weightAtLevels.split(",");
+		TreeMap<Integer, Integer> weightAtLevelsTreeMap = new TreeMap<>();
+		for (String weightsAtLevel : weightsAtLevels) {
+			String[] wAtL = weightsAtLevel.trim().split("@");
+			if (wAtL.length != 2) {
+				throw new IllegalArgumentException("Could not parse given comma-separated list of weight@level pairs. Given input was: " + weightAtLevels);
+			}
+			int weight = Integer.parseInt(wAtL[0]);
+			int level = Integer.parseInt(wAtL[1]);
+			if (weight == 0) {
+				continue;	// Skip zero weights.
+			}
+			weightAtLevelsTreeMap.putIfAbsent(level, 0);
+			weightAtLevelsTreeMap.put(level, weight + weightAtLevelsTreeMap.get(level));
+		}
+		return weightAtLevelsTreeMap;
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.solver.optimization;
+package at.ac.tuwien.kr.alpha.core.solver.optimization;
 
 import org.junit.jupiter.api.Test;
 

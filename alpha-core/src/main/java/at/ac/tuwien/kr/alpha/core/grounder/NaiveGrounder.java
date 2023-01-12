@@ -27,28 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
@@ -77,6 +55,27 @@ import at.ac.tuwien.kr.alpha.core.grounder.instantiation.LiteralInstantiator;
 import at.ac.tuwien.kr.alpha.core.grounder.structure.AnalyzeUnjustified;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
+import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
 
 /**
  * A semi-naive grounder.
@@ -206,7 +205,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 
 			// Collect head and body variables.
-			HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.toLiteral().getBindingVariables());
+			HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.getOccurringVariables());
 			HashSet<VariableTerm> occurringVariablesBody = new HashSet<>();
 			for (Literal lit : nonGroundRule.getPositiveBody()) {
 				occurringVariablesBody.addAll(lit.getBindingVariables());

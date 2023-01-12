@@ -27,24 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.file.Paths;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.apache.commons.cli.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.WeightedAnswerSet;
 import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.StatisticsReportingSolver;
@@ -60,7 +44,22 @@ import at.ac.tuwien.kr.alpha.api.util.AnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.app.ComponentGraphWriter;
 import at.ac.tuwien.kr.alpha.app.DependencyGraphWriter;
 import at.ac.tuwien.kr.alpha.app.config.CommandLineParser;
+import at.ac.tuwien.kr.alpha.commons.WeightedAnswerSet;
 import at.ac.tuwien.kr.alpha.commons.util.SimpleAnswerSetFormatter;
+import org.apache.commons.cli.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Main entry point for Alpha.
