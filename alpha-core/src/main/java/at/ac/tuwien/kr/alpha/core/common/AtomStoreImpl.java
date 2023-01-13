@@ -37,7 +37,7 @@ import java.util.Map;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
-import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.solver.AtomCounter;
 
 /**

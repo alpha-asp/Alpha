@@ -4,7 +4,7 @@ import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.programs.VariableNormalizableAtom;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 
 /**
  * An external atom, i.e. an {@link Atom} that is interpreted by calling a linked Java-Method.

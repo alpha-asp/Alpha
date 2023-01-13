@@ -1,9 +1,9 @@
 package at.ac.tuwien.kr.alpha.commons;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.AnswerSetQuery;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AtomQuery;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 import java.util.Collections;
@@ -129,7 +129,7 @@ class BasicAnswerSet implements AnswerSet {
 	}
 
 	@Override
-	public List<Atom> query(AnswerSetQuery query) {
+	public List<Atom> query(AtomQuery query) {
 		return query.applyTo(this);
 	}
 }

@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
+import at.ac.tuwien.kr.alpha.core.programs.rules.InternalRule;
 
 /**
  * A grounding order computed by {@link RuleGroundingInfoImpl} for a specific {@link InternalRule} and a specific starting literal.

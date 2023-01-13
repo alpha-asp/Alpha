@@ -27,28 +27,28 @@
  */
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.api.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.IntervalAtom;
-import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
-import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.IntervalAtom;
 
 /**
  * Rewrites all interval terms in a rule into a new variable and an IntervalAtom.
@@ -90,7 +90,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		for (Map.Entry<VariableTerm, IntervalTerm> interval : intervalReplacements.entrySet()) {
 			rewrittenBody.add(new IntervalAtom(interval.getValue(), interval.getKey()).toLiteral());
 		}
-		return new NormalRuleImpl(rewrittenHead, rewrittenBody);
+		return Rules.newNormalRule(rewrittenHead, rewrittenBody);
 	}
 
 	/**
@@ -189,6 +189,6 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		if (!didChange) {
 			return inputProgram;
 		}
-		return new NormalProgramImpl(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives(), inputProgram.containsWeakConstraints());
+		return Programs.newNormalProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives(), inputProgram.containsWeakConstraints());
 	}
 }

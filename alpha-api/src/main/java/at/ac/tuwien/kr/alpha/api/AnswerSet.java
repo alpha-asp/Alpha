@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.api;
 
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AtomQuery;
 
 import java.util.List;
 import java.util.Map;
@@ -37,5 +38,5 @@ public interface AnswerSet extends Comparable<AnswerSet> {
 	/**
 	 * List {@link Atom}s in this answer set satisfying the given {@link AnswerSetQuery}.
 	 */
-	List<Atom> query(AnswerSetQuery query);
+	List<Atom> query(AtomQuery query);
 }

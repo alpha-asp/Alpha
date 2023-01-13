@@ -31,21 +31,22 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.commons.AnswerSets;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
-import at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.IntIterator;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
-import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.ChoiceAtom;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.core.programs.rules.InternalRule;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -70,17 +71,16 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 
 /**
- * Represents a small ASP program with choices {@code { aa :- not bb.  bb :- not aa. }}.
+ * Represents a small ASP program with choices {@code { aa :- not bb. bb :- not aa. }}.
  */
 public class ChoiceGrounder implements Grounder {
 	public static final Set<AnswerSet> EXPECTED = new HashSet<>(asList(
-		new AnswerSetBuilder()
-			.predicate("aa")
-			.build(),
-		new AnswerSetBuilder()
-			.predicate("bb")
-			.build()
-	));
+			new AnswerSetBuilder()
+					.predicate("aa")
+					.build(),
+			new AnswerSetBuilder()
+					.predicate("bb")
+					.build()));
 
 	private static final int ATOM_AA = 1;
 	private static final int ATOM_BB = 2;
@@ -96,32 +96,31 @@ public class ChoiceGrounder implements Grounder {
 	private static final int BRULE_BB = 14; // { -_br2, -aa }
 	private static final int CHOICE_EN_BR1 = 15; // { -_en_br1 }
 	private static final int CHOICE_EN_BR2 = 16; // { -_en_br2 }
-	private static final int CHOICE_DIS_BR1 = 17; // { -_dis_br1,  bb}
+	private static final int CHOICE_DIS_BR1 = 17; // { -_dis_br1, bb}
 	private static final int CHOICE_DIS_BR2 = 18; // { -dis_br2, aa }
 	private static final Map<Integer, NoGood> NOGOODS = Stream.of(
-		entry(RULE_AA, headFirst(fromOldLiterals(-ATOM_AA, ATOM_BR1))),
-		entry(BRULE_AA, headFirst(fromOldLiterals(-ATOM_BR1, -ATOM_BB))),
-		entry(RULE_BB, headFirst(fromOldLiterals(-ATOM_BB, ATOM_BR2))),
-		entry(BRULE_BB, headFirst(fromOldLiterals(-ATOM_BR2, -ATOM_AA))),
-		entry(CHOICE_EN_BR1, headFirst(fromOldLiterals(-ATOM_EN_BR1))),
-		entry(CHOICE_EN_BR2, headFirst(fromOldLiterals(-ATOM_EN_BR2))),
-		entry(CHOICE_DIS_BR1, headFirst(fromOldLiterals(-ATOM_DIS_BR1, ATOM_BB))),
-		entry(CHOICE_DIS_BR2, headFirst(fromOldLiterals(-ATOM_DIS_BR2, ATOM_AA)))
-	).collect(entriesToMap());
+			entry(RULE_AA, headFirst(fromOldLiterals(-ATOM_AA, ATOM_BR1))),
+			entry(BRULE_AA, headFirst(fromOldLiterals(-ATOM_BR1, -ATOM_BB))),
+			entry(RULE_BB, headFirst(fromOldLiterals(-ATOM_BB, ATOM_BR2))),
+			entry(BRULE_BB, headFirst(fromOldLiterals(-ATOM_BR2, -ATOM_AA))),
+			entry(CHOICE_EN_BR1, headFirst(fromOldLiterals(-ATOM_EN_BR1))),
+			entry(CHOICE_EN_BR2, headFirst(fromOldLiterals(-ATOM_EN_BR2))),
+			entry(CHOICE_DIS_BR1, headFirst(fromOldLiterals(-ATOM_DIS_BR1, ATOM_BB))),
+			entry(CHOICE_DIS_BR2, headFirst(fromOldLiterals(-ATOM_DIS_BR2, ATOM_AA)))).collect(entriesToMap());
 	private static final Map<Integer, Integer> CHOICE_ENABLE = Stream.of(
-		entry(ATOM_BR1, ATOM_EN_BR1),
-		entry(ATOM_BR2, ATOM_EN_BR2)
-	).collect(entriesToMap());
+			entry(ATOM_BR1, ATOM_EN_BR1),
+			entry(ATOM_BR2, ATOM_EN_BR2)).collect(entriesToMap());
 	private static final Map<Integer, Integer> CHOICE_DISABLE = Stream.of(
-		entry(ATOM_BR1, ATOM_DIS_BR1),
-		entry(ATOM_BR2, ATOM_DIS_BR2)
-	).collect(entriesToMap());
+			entry(ATOM_BR1, ATOM_DIS_BR1),
+			entry(ATOM_BR2, ATOM_DIS_BR2)).collect(entriesToMap());
 	private static BasicAtom atomAA = Atoms.newBasicAtom(Predicates.getPredicate("aa", 0));
 	private static BasicAtom atomBB = Atoms.newBasicAtom(Predicates.getPredicate("bb", 0));
-	private static BasicRule ruleAA = new BasicRule(Heads.newNormalHead(atomAA), Collections.singletonList(Atoms.newBasicAtom(Predicates.getPredicate("bb", 0)).toLiteral(false)));
-	private static BasicRule ruleBB = new BasicRule(Heads.newNormalHead(atomBB), Collections.singletonList(Atoms.newBasicAtom(Predicates.getPredicate("aa", 0)).toLiteral(false)));
-	private static Atom rule1 = new RuleAtom(InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(ruleAA)), new BasicSubstitution());
-	private static Atom rule2 = new RuleAtom(InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(ruleBB)), new BasicSubstitution());
+	private static Rule<Head> ruleAA = Rules.newRule(Heads.newNormalHead(atomAA),
+			Collections.singletonList(Atoms.newBasicAtom(Predicates.getPredicate("bb", 0)).toLiteral(false)));
+	private static Rule<Head> ruleBB = Rules.newRule(Heads.newNormalHead(atomBB),
+			Collections.singletonList(Atoms.newBasicAtom(Predicates.getPredicate("aa", 0)).toLiteral(false)));
+	private static Atom rule1 = new RuleAtom(InternalRule.fromNormalRule(Rules.toNormalRule(ruleAA)), new BasicSubstitution());
+	private static Atom rule2 = new RuleAtom(InternalRule.fromNormalRule(Rules.toNormalRule(ruleBB)), new BasicSubstitution());
 	private static Atom atomEnBR1 = ChoiceAtom.on(1);
 	private static Atom atomEnBR2 = ChoiceAtom.on(2);
 	private static Atom atomDisBR1 = ChoiceAtom.off(3);
@@ -159,11 +158,11 @@ public class ChoiceGrounder implements Grounder {
 		Map<Predicate, SortedSet<Atom>> predicateInstances = new HashMap<>();
 		for (Predicate trueAtomPredicate : trueAtomPredicates) {
 			BasicAtom basicAtom = Atoms.newBasicAtom(trueAtomPredicate);
-			predicateInstances.put(trueAtomPredicate, new TreeSet<>(singleton(basicAtom)));
+			predicateInstances.put(trueAtomPredicate, new TreeSet<>(Collections.singleton(basicAtom)));
 		}
 
 		// Note: This grounder only deals with 0-ary predicates, i.e., every atom is a predicate and there is
-		// 	 only one predicate instance representing 0 terms.
+		// only one predicate instance representing 0 terms.
 		return AnswerSets.newAnswerSet(trueAtomPredicates, predicateInstances);
 	}
 
@@ -176,7 +175,7 @@ public class ChoiceGrounder implements Grounder {
 			return new HashMap<>();
 		}
 	}
-	
+
 	private boolean isFirst = true;
 
 	@Override
@@ -198,7 +197,6 @@ public class ChoiceGrounder implements Grounder {
 	public List<Triple<Integer, Integer, Integer>> getWeakConstraintInformation() {
 		return emptyList();
 	}
-
 	@Override
 	public Map<Integer, Set<Integer>> getHeadsToBodies() {
 		return Collections.emptyMap();

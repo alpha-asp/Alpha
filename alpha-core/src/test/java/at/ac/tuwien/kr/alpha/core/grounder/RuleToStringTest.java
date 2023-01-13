@@ -33,13 +33,12 @@ import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
-import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
+import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.programs.rules.InternalRule;
 
 /**
  * Tests {@link BasicRule#toString()} and {@link InternalRule#toString()}.
@@ -93,7 +92,7 @@ public class RuleToStringTest {
 	}
 
 	private void constructNonGroundRuleAndCheckToString(String textualRule) {
-		CompiledRule nonGroundRule = InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(parseSingleRule(textualRule)));
+		CompiledRule nonGroundRule = InternalRule.fromNormalRule(Rules.toNormalRule(parseSingleRule(textualRule)));
 		assertEquals(textualRule, nonGroundRule.toString());
 	}
 

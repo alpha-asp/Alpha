@@ -29,7 +29,7 @@ package at.ac.tuwien.kr.alpha.core.common.fixedinterpretations;
 
 import org.apache.commons.lang3.ClassUtils;
 
-import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

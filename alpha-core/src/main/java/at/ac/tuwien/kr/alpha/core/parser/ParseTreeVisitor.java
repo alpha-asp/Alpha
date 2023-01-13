@@ -27,43 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.parser;
 
-import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
-import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
-import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead;
-import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead.ChoiceElement;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.api.terms.ArithmeticOperator;
-import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.api.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.AnswerSets;
-import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
-import at.ac.tuwien.kr.alpha.commons.literals.Literals;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2BaseVisitor;
-import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.WeakConstraint;
-import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.tree.TerminalNode;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -74,8 +37,47 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
-import static java.util.Collections.emptyList;
+import org.antlr.v4.runtime.RuleContext;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead.ChoiceElement;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ArithmeticOperator;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.AnswerSets;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.literals.Literals;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2BaseVisitor;
+import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
+import at.ac.tuwien.kr.alpha.core.rules.WeakConstraint;
 
 /**
  * Copyright (c) 2016-2018, the Alpha Team.
@@ -84,7 +86,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	private final Map<String, PredicateInterpretation> externals;
 	private final boolean acceptVariables;
 
-	private InputProgram.Builder programBuilder;
+	private ASPCore2ProgramBuilder programBuilder;
 	private InlineDirectives inlineDirectives;
 
 	public ParseTreeVisitor(Map<String, PredicateInterpretation> externals) {
@@ -103,7 +105,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	/**
 	 * Translates a program context (referring to a node in an ATN specific to ANTLR) to the internal representation of Alpha.
 	 */
-	public InputProgram translate(ASPCore2Parser.ProgramContext input) {
+	public ASPCore2Program translate(ASPCore2Parser.ProgramContext input) {
 		return visitProgram(input);
 	}
 
@@ -153,17 +155,17 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public InputProgram visitProgram(ASPCore2Parser.ProgramContext ctx) {
+	public ASPCore2Program visitProgram(ASPCore2Parser.ProgramContext ctx) {
 		// program : statements? query?;
 		if (ctx.query() != null) {
 			throw notSupported(ctx.query());
 		}
 
 		if (ctx.statements() == null) {
-			return InputProgram.EMPTY;
+			return Programs.emptyProgram();
 		}
-		inlineDirectives = new InlineDirectivesImpl();
-		programBuilder = InputProgram.builder();
+		inlineDirectives = Programs.newInlineDirectives();
+		programBuilder = Programs.builder();
 		visitStatements(ctx.statements());
 		programBuilder.addInlineDirectives(inlineDirectives);
 		return programBuilder.build();
@@ -186,7 +188,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			programBuilder.addFact(((NormalHead) head).getAtom());
 		} else {
 			// Treat facts with choice or disjunction in the head like a rule.
-			programBuilder.addRule(new BasicRule(head, emptyList()));
+			programBuilder.addRule(Rules.newRule(head, Collections.emptyList()));
 		}
 		return null;
 	}
@@ -194,14 +196,14 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Object visitStatement_constraint(ASPCore2Parser.Statement_constraintContext ctx) {
 		// CONS body DOT
-		programBuilder.addRule(new BasicRule(null, visitBody(ctx.body())));
+		programBuilder.addRule(Rules.newRule(null, visitBody(ctx.body())));
 		return null;
 	}
 
 	@Override
 	public Object visitStatement_rule(ASPCore2Parser.Statement_ruleContext ctx) {
 		// head CONS body DOT
-		programBuilder.addRule(new BasicRule(visitHead(ctx.head()), visitBody(ctx.body())));
+		programBuilder.addRule(Rules.newRule(visitHead(ctx.head()), visitBody(ctx.body())));
 		return null;
 	}
 
@@ -315,7 +317,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	public List<Literal> visitBody(ASPCore2Parser.BodyContext ctx) {
 		// body : ( naf_literal | aggregate ) (COMMA body)?;
 		if (ctx == null) {
-			return emptyList();
+			return Collections.emptyList();
 		}
 
 		final List<Literal> literals = new ArrayList<>();
@@ -492,7 +494,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	public List<Term> visitTerms(ASPCore2Parser.TermsContext ctx) {
 		// terms : term (COMMA terms)?;
 		if (ctx == null) {
-			return emptyList();
+			return Collections.emptyList();
 		}
 
 		final List<Term> terms = new ArrayList<>();

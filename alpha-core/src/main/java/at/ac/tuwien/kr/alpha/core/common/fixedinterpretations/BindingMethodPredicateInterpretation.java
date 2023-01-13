@@ -36,8 +36,8 @@ import java.util.List;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.BindingPredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 
 public class BindingMethodPredicateInterpretation implements BindingPredicateInterpretation {
 	private final Method method;

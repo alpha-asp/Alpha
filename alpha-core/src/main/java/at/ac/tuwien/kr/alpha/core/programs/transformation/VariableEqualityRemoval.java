@@ -27,21 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
-import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
-import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -51,6 +36,21 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 
 /**
  * Removes variable equalities from rules by replacing one variable with the other.
@@ -65,7 +65,7 @@ public class VariableEqualityRemoval extends ProgramTransformation<ASPCore2Progr
 		for (Rule<Head> rule : inputProgram.getRules()) {
 			rewrittenRules.add(findAndReplaceVariableEquality(rule));
 		}
-		return new InputProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives(), inputProgram.containsWeakConstraints());
+		return Programs.newASPCore2Program(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives(), inputProgram.containsWeakConstraints());
 	}
 
 	private Rule<Head> findAndReplaceVariableEquality(Rule<Head> rule) {
@@ -149,6 +149,6 @@ public class VariableEqualityRemoval extends ProgramTransformation<ASPCore2Progr
 				headAtom.getTerms().set(i, replaced);
 			}
 		}
-		return new BasicRule(rewrittenHead, rewrittenBody);
+		return Rules.newRule(rewrittenHead, rewrittenBody);
 	}
 }

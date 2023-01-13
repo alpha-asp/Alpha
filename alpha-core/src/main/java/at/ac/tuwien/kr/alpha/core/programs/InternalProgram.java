@@ -1,25 +1,28 @@
 package at.ac.tuwien.kr.alpha.core.programs;
 
-import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
-import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
-import at.ac.tuwien.kr.alpha.core.atoms.WeakConstraintAtom;
-import at.ac.tuwien.kr.alpha.core.grounder.FactIntervalEvaluator;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
-import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+
+import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.commons.programs.AbstractProgram;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
+import at.ac.tuwien.kr.alpha.core.atoms.WeakConstraintAtom;
+import at.ac.tuwien.kr.alpha.core.grounder.FactIntervalEvaluator;
+import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.programs.rules.InternalRule;
 
 /**
  * A program in the internal representation needed for grounder and solver, i.e.: rules must have normal heads, all
@@ -106,8 +109,8 @@ public class InternalProgram extends AbstractProgram<CompiledRule> implements Co
 	public NormalProgram toNormalProgram() {
 		List<NormalRule> normalRules = new ArrayList<>();
 		for (CompiledRule rule : getRules()) {
-			normalRules.add(new NormalRuleImpl(rule.getHead(), new ArrayList<>(rule.getBody())));
+			normalRules.add(Rules.newNormalRule(rule.getHead(), new ArrayList<>(rule.getBody())));
 		}
-		return new NormalProgramImpl(normalRules, getFacts(), getInlineDirectives(), containsWeakConstraints());
+		return Programs.newNormalProgram(normalRules, getFacts(), getInlineDirectives(), containsWeakConstraints());
 	}
 }
