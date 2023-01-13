@@ -5,6 +5,7 @@ import java.util.SortedSet;
 
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AtomQuery;
 
 /**
  * API representation of an answer set, i.e. a set of atoms that is a model of an ASP program.
@@ -31,5 +32,5 @@ public interface AnswerSet extends Comparable<AnswerSet> {
 	/**
 	 * List {@link Atom}s in this answer set satisfying the given {@link AnswerSetQuery}.
 	 */
-	List<Atom> query(AnswerSetQuery query);
+	List<Atom> query(AtomQuery query);
 }

@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.commons.comparisons;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 
 public class ComparisonOperators {
 

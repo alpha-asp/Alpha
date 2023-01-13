@@ -3,8 +3,8 @@ package at.ac.tuwien.kr.alpha.core.programs.transformation;
 import at.ac.tuwien.kr.alpha.api.config.AggregateRewritingConfig;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
-import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
-import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewriting;
 
 /**
@@ -34,7 +34,7 @@ public class NormalizeProgramTransformation extends ProgramTransformation<ASPCor
 		EnumerationAtom.resetEnumerations();
 
 		// Construct the normal program.
-		NormalProgram retVal = NormalProgramImpl.fromInputProgram(tmpPrg);
+		NormalProgram retVal = Programs.toNormalProgram(tmpPrg);
 		// Transform intervals.
 		retVal = new IntervalTermToIntervalAtom().apply(retVal);
 		// Rewrite ArithmeticTerms.

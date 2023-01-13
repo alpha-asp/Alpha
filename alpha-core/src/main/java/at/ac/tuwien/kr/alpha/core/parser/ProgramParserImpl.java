@@ -19,10 +19,11 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
 public class ProgramParserImpl implements ProgramParser {
 
@@ -142,7 +143,7 @@ public class ProgramParserImpl implements ProgramParser {
 
 	@Override
 	public ASPCore2Program parse(Map<String, PredicateInterpretation> externalPredicateDefinitions, Path... programSources) throws IOException {
-		InputProgram.Builder bld = InputProgram.builder();
+		ASPCore2ProgramBuilder bld = Programs.builder();
 		for (Path src : programSources) {
 			bld.accumulate(parse(src, externalPredicateDefinitions));
 		}
@@ -151,7 +152,7 @@ public class ProgramParserImpl implements ProgramParser {
 
 	@Override
 	public ASPCore2Program parse(Iterable<Path> programSources, Map<String, PredicateInterpretation> externalPredicateDefinitions) throws IOException {
-		InputProgram.Builder bld = InputProgram.builder();
+		ASPCore2ProgramBuilder bld = Programs.builder();
 		for (Path src : programSources) {
 			bld.accumulate(parse(src, externalPredicateDefinitions));
 		}

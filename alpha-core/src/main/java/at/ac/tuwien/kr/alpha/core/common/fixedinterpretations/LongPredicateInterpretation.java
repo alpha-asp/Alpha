@@ -29,7 +29,7 @@ package at.ac.tuwien.kr.alpha.core.common.fixedinterpretations;
 
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 
 public class LongPredicateInterpretation extends NonBindingPredicateInterpretation {
 	private final java.util.function.LongPredicate predicate;

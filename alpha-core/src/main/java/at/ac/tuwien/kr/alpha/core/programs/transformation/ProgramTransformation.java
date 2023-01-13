@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
 import at.ac.tuwien.kr.alpha.api.programs.Program;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 
 /**
  * Copyright (c) 2017-2019, the Alpha Team.

@@ -37,8 +37,8 @@ import at.ac.tuwien.kr.alpha.api.programs.literals.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
-import at.ac.tuwien.kr.alpha.core.atoms.EnumerationLiteral;
-import at.ac.tuwien.kr.alpha.core.atoms.IntervalLiteral;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.EnumerationLiteral;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.IntervalLiteral;
 
 /**
  * Provides ground instantiations for literals.

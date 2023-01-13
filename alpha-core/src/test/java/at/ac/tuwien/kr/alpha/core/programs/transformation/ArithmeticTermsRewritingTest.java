@@ -18,13 +18,13 @@ import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
-import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 
 /**
  * Copyright (c) 2021, the Alpha Team.
@@ -43,7 +43,7 @@ public class ArithmeticTermsRewritingTest {
 
 	@Test
 	public void rewriteRule() {
-		NormalProgram inputProgram = NormalProgramImpl.fromInputProgram(parser.parse("p(X+1) :- q(Y/2), r(f(X*2),Y), X-2 = Y*3, X = 0..9."));
+		NormalProgram inputProgram = Programs.toNormalProgram(parser.parse("p(X+1) :- q(Y/2), r(f(X*2),Y), X-2 = Y*3, X = 0..9."));
 		assertEquals(1, inputProgram.getRules().size());
 		ArithmeticTermsRewriting arithmeticTermsRewriting = new ArithmeticTermsRewriting();
 		NormalProgram rewrittenProgram = arithmeticTermsRewriting.apply(inputProgram);
@@ -56,7 +56,7 @@ public class ArithmeticTermsRewritingTest {
 
 	@Test
 	public void rewriteExternalAtom() {
-		NormalProgram inputProgram = NormalProgramImpl.fromInputProgram(parser.parse("p :- Y = 13, &extArithTest[Y*5](Y-4)."));
+		NormalProgram inputProgram = Programs.toNormalProgram(parser.parse("p :- Y = 13, &extArithTest[Y*5](Y-4)."));
 		assertEquals(1, inputProgram.getRules().size());
 		ArithmeticTermsRewriting arithmeticTermsRewriting = new ArithmeticTermsRewriting();
 		NormalProgram rewrittenProgram = arithmeticTermsRewriting.apply(inputProgram);
