@@ -32,17 +32,14 @@ import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
-import at.ac.tuwien.kr.alpha.core.rules.WeakConstraint;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
  * Alpha-internal representation of an ASP program, i.e., a set of ASP rules.
  * <p>
- * Copyright (c) 2017-2019, the Alpha Team.
+ * Copyright (c) 2017-2023, the Alpha Team.
  */
 class ASPCore2ProgramImpl extends AbstractProgram<Rule<Head>> implements ASPCore2Program{
 
@@ -51,74 +48,4 @@ class ASPCore2ProgramImpl extends AbstractProgram<Rule<Head>> implements ASPCore
 	ASPCore2ProgramImpl(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives, boolean containsWeakConstraints) {
 		super(rules, facts, inlineDirectives, containsWeakConstraints);
 	}
-
-	ASPCore2ProgramImpl() {
-		super(new ArrayList<>(), new ArrayList<>(), new InlineDirectivesImpl(), false);
-	}
-
-	public static Builder builder() {
-		return new Builder();
-	}
-
-	public static Builder builder(ASPCore2Program prog) {
-		return new Builder(prog);
-	}
-
-	/**
-	 * Builder for more complex program construction scenarios, ensuring that an {@link InputProgram} is immutable
-	 */
-	public static class Builder {
-
-		private List<Rule<Head>> rules = new ArrayList<>();
-		private List<Atom> facts = new ArrayList<>();
-		private InlineDirectives inlineDirectives = new InlineDirectivesImpl();
-		private boolean containsWeakConstraints;
-
-		public Builder(ASPCore2Program prog) {
-			this.addRules(prog.getRules());
-			this.addFacts(prog.getFacts());
-			this.addInlineDirectives(prog.getInlineDirectives());
-		}
-
-		public Builder() {
-
-		}
-
-		public Builder addRules(List<Rule<Head>> rules) {
-			for (Rule<Head> rule : rules) {
-				addRule(rule);
-			}
-			return this;
-		}
-
-		public Builder addRule(Rule<Head> r) {
-			this.rules.add(r);
-			this.containsWeakConstraints |= r instanceof WeakConstraint;
-			return this;
-		}
-
-		public Builder addFacts(List<Atom> facts) {
-			this.facts.addAll(facts);
-			return this;
-		}
-
-		public Builder addFact(Atom fact) {
-			this.facts.add(fact);
-			return this;
-		}
-
-		public Builder addInlineDirectives(InlineDirectives inlineDirectives) {
-			this.inlineDirectives.accumulate(inlineDirectives);
-			return this;
-		}
-
-		public Builder accumulate(ASPCore2Program prog) {
-			return this.addRules(prog.getRules()).addFacts(prog.getFacts()).addInlineDirectives(prog.getInlineDirectives());
-		}
-
-		public InputProgram build() {
-			return new InputProgram(this.rules, this.facts, this.inlineDirectives, this.containsWeakConstraints);
-		}
-	}
-
 }

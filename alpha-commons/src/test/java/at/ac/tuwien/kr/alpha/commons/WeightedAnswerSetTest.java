@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.commons;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import org.junit.jupiter.api.Test;
 
 import static at.ac.tuwien.kr.alpha.commons.WeightedAnswerSet.weightPerLevelFromString;

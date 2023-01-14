@@ -27,19 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.parser;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.tree.TerminalNode;
-
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
@@ -71,13 +58,25 @@ import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.WeakConstraint;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.WeakConstraint;
+import org.antlr.v4.runtime.RuleContext;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 
 /**
  * Copyright (c) 2016-2018, the Alpha Team.
@@ -210,7 +209,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Object visitStatement_weightConstraint(ASPCore2Parser.Statement_weightConstraintContext ctx) {
 		// WCONS body? DOT SQUARE_OPEN weight_at_level SQUARE_CLOSE
-		List<Literal> bodyLiterals = ctx.body() != null ? visitBody(ctx.body()) : emptyList();
+		List<Literal> bodyLiterals = ctx.body() != null ? visitBody(ctx.body()) : Collections.emptyList();
 		Term weight = (Term)visit(ctx.weight_at_level().weight);
 		Term level = ctx.weight_at_level().level != null ? (Term)visit(ctx.weight_at_level().level) : null;
 		List<Term> termList = ctx.weight_at_level().termlist != null ? visitTerms(ctx.weight_at_level().termlist) : null;

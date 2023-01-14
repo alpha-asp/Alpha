@@ -68,7 +68,6 @@ import static at.ac.tuwien.kr.alpha.core.common.NoGood.headFirst;
 import static at.ac.tuwien.kr.alpha.core.common.NoGoodTest.fromOldLiterals;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
 
 /**
  * Represents a small ASP program with choices {@code { aa :- not bb. bb :- not aa. }}.
