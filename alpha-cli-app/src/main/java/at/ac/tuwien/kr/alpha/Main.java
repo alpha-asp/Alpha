@@ -150,7 +150,7 @@ public class Main {
 	}
 
 	/**
-	 * Writes the given {@link CompiledProgram} to the destination passed as the second parameter
+	 * Writes the given {@link NormalProgram} to the destination passed as the second parameter
 	 * 
 	 * @param prg  the program to write
 	 * @param path the path to write the program to
@@ -212,7 +212,7 @@ public class Main {
 				}
 			} else {
 				System.out.println("SATISFIABLE");
-				if (sysCfg.isAnswerSetOptimizationEnabled() && counter.get() < limit) {
+				if (sysCfg.isAnswerSetOptimizationEnabled() && solver.didExhaustSearchSpace()) {
 					// If less answer sets were found than requested and optimisation is enabled, then the last one is an optimal answer set.
 					System.out.println("OPTIMUM PROVEN");
 				}

@@ -27,10 +27,14 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.isNegated;
-import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.isPositive;
-import static java.lang.Math.abs;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.IntIterator;
+import at.ac.tuwien.kr.alpha.core.common.NoGood;
+import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,15 +45,10 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.function.Consumer;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-import at.ac.tuwien.kr.alpha.core.common.IntIterator;
-import at.ac.tuwien.kr.alpha.core.common.NoGood;
-import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.isPositive;
+import static java.lang.Math.abs;
 
 /**
  * Copyright (c) 2016-2020, the Alpha Team.
@@ -142,6 +141,13 @@ public class NaiveSolver extends AbstractSolver {
 				}
 			}
 		}
+	}
+
+
+	@Override
+	public boolean didExhaustSearchSpace() {
+		// Note: private method NaiveSolver::didExhaustSearchSpace assumes being called only after the first choice and does not work here.
+		throw new UnsupportedOperationException("NaiveSolver cannot report whether search space was exhausted.");
 	}
 
 	private void assignUnassignedToFalse() {

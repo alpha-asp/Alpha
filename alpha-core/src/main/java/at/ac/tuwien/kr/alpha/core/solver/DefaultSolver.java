@@ -536,6 +536,11 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		choiceManager.choose(new Choice(literal, false));
 		return true;
 	}
+
+	@Override
+	public boolean didExhaustSearchSpace() {
+		return searchState.isSearchSpaceCompletelyExplored;
+	}
 	
 	@Override
 	public int getNumberOfChoices() {

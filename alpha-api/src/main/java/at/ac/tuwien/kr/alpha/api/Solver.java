@@ -38,4 +38,12 @@ public interface Solver {
 		return stream().collect(Collectors.toList());
 	}
 
+	/**
+	 * Reports whether this {@link Solver} completely searched all of the given search space for desired answer sets.
+	 * For this to be true, the solver does not need to check every candidate explicitly, but also use learned knowledge or other
+	 * factors (like optimality) in order to prove that no relevant answer set remains un-investigated.
+	 * @return true iff the given search space was investigated exhaustively.
+	 */
+	boolean didExhaustSearchSpace();
+
 }
