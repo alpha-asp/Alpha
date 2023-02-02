@@ -85,7 +85,7 @@ public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggreg
 
 		// Add the programatically created bound rule and return
 		return Programs.newASPCore2Program(ListUtils.union(coreEncoding.getRules(), Collections.singletonList(boundRule)), coreEncoding.getFacts(),
-				Programs.newInlineDirectives());
+				Programs.newInlineDirectives(), coreEncoding.containsWeakConstraints());
 	}
 
 	private String getBoundPredicateName(String aggregateId) {

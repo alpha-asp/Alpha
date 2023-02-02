@@ -63,7 +63,11 @@ public final class SolverFactory {
 			case "naive" :
 				return new NaiveSolver(atomStore, grounder);
 			case "default":
-				return new DefaultSolver(atomStore, grounder, store, assignment, random, config, heuristicsConfiguration);
+				if (config.isAnswerSetOptimizationEnabled()) {
+					return new OptimizingSolver(atomStore, grounder, store, assignment, random, config, heuristicsConfiguration);
+				} else {
+					return new DefaultSolver(atomStore, grounder, store, assignment, random, config, heuristicsConfiguration);
+				}
 		}
 		throw new IllegalArgumentException("Unknown solver requested.");
 	}

@@ -5,7 +5,7 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.core.depgraph.DependencyGraphImpl;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -24,15 +24,15 @@ public class AnalyzedProgram extends InternalProgram {
 	private final DependencyGraph dependencyGraph;
 	private final ComponentGraph  componentGraph;
 
-	public AnalyzedProgram(List<CompiledRule> rules, List<Atom> facts) {
-		super(rules, facts);
+	public AnalyzedProgram(List<CompiledRule> rules, List<Atom> facts, Boolean containsWeakConstraints) {
+		super(rules, facts, containsWeakConstraints);
 		dependencyGraph = DependencyGraphImpl.buildDependencyGraph(getRulesById());
 		componentGraph = buildComponentGraph(dependencyGraph);
 	}
 
 	public static AnalyzedProgram analyzeNormalProgram(NormalProgram prog) {
-		ImmutablePair<List<CompiledRule>, List<Atom>> rulesAndFacts = InternalProgram.internalizeRulesAndFacts(prog);
-		return new AnalyzedProgram(rulesAndFacts.left, rulesAndFacts.right);
+		ImmutableTriple<List<CompiledRule>, List<Atom>, Boolean> rulesAndFacts = InternalProgram.internalizeRulesAndFacts(prog);
+		return new AnalyzedProgram(rulesAndFacts.left, rulesAndFacts.middle, rulesAndFacts.right);
 	}
 
 	private ComponentGraph buildComponentGraph(DependencyGraph depGraph) {

@@ -52,7 +52,7 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 			return inputProgram;
 		}
 		// Create new program with rewritten rules.
-		return Programs.newNormalProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+		return Programs.newNormalProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives(), inputProgram.containsWeakConstraints());
 	}
 
 	/**

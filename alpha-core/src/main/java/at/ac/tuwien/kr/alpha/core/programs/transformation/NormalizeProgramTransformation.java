@@ -29,6 +29,8 @@ public class NormalizeProgramTransformation extends ProgramTransformation<ASPCor
 		tmpPrg = new ChoiceHeadToNormal().apply(tmpPrg);
 		// Transform aggregates.
 		tmpPrg = new AggregateRewriting(aggregateRewritingCfg.isUseSortingGridEncoding(), aggregateRewritingCfg.isSupportNegativeValuesInSums()).apply(tmpPrg);
+		// Transform weak constraints.
+		tmpPrg = new WeakConstraintNormalization().apply(tmpPrg);
 		// Transform enumeration atoms.
 		tmpPrg = new EnumerationRewriting().apply(tmpPrg);
 		EnumerationAtom.resetEnumerations();

@@ -27,9 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.commons.programs.atoms;
 
-import java.util.List;
-import java.util.Set;
-
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -37,6 +34,9 @@ import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * An Atom is the common superclass of all representations of ASP atoms used by Alpha.
@@ -79,7 +79,7 @@ public abstract class AbstractAtom implements Atom {
 	/**
 	 * Returns whether this atom is ground, i.e., variable-free.
 	 *
-	 * @return true iff the terms of this atom contain no {@link VariableTermImpl}.
+	 * @return true iff the terms of this atom contain no {@link VariableTerm}.
 	 */
 	@Override
 	public abstract boolean isGround();

@@ -326,7 +326,7 @@ public class AlphaImplTest {
 
 		Alpha system = new AlphaImpl();
 
-		ASPCore2Program prog = Programs.newASPCore2Program(singletonList(rule), emptyList(), Programs.newInlineDirectives());
+		ASPCore2Program prog = Programs.newASPCore2Program(singletonList(rule), emptyList(), Programs.newInlineDirectives(), false);
 
 		Set<AnswerSet> actual = system.solve(prog).collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("p").instance("x").build()));

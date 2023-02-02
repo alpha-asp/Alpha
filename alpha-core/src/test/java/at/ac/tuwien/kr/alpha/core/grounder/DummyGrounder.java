@@ -33,11 +33,14 @@ import static at.ac.tuwien.kr.alpha.core.common.NoGood.headFirst;
 import static at.ac.tuwien.kr.alpha.core.common.NoGoodTest.fromOldLiterals;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.Arrays;
 import java.util.Collections;
+import static java.util.Collections.emptyList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -172,7 +175,17 @@ public class DummyGrounder implements Grounder {
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
 		return new ImmutablePair<>(new HashMap<>(), new HashMap<>());
 	}
-	
+
+	@Override
+	public boolean inputProgramContainsWeakConstraints() {
+		return false;
+	}
+
+	@Override
+	public List<Triple<Integer, Integer, Integer>> getWeakConstraintInformation() {
+		return emptyList();
+	}
+
 	@Override
 	public Map<Integer, Set<Integer>> getHeadsToBodies() {
 		return Collections.emptyMap();

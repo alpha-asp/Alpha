@@ -1,11 +1,12 @@
 package at.ac.tuwien.kr.alpha.api;
 
-import java.util.List;
-import java.util.SortedSet;
-
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AtomQuery;
+
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
 
 /**
  * API representation of an answer set, i.e. a set of atoms that is a model of an ASP program.
@@ -23,6 +24,11 @@ public interface AnswerSet extends Comparable<AnswerSet> {
 	 * All instances of the given predicate within the answer set.
 	 */
 	SortedSet<Atom> getPredicateInstances(Predicate predicate);
+
+	/**
+	 * Returns a mapping of {@link Predicate}s to all respective instances.
+	 */
+	Map<Predicate, SortedSet<Atom>> getPredicateInstances();
 
 	/**
 	 * Boolean flag indicating whether this {@link AnswerSet} represents the empty set.

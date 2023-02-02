@@ -27,22 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.file.Paths;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.apache.commons.cli.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
@@ -61,7 +45,23 @@ import at.ac.tuwien.kr.alpha.api.util.AnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.app.ComponentGraphWriter;
 import at.ac.tuwien.kr.alpha.app.DependencyGraphWriter;
 import at.ac.tuwien.kr.alpha.app.config.CommandLineParser;
+import at.ac.tuwien.kr.alpha.commons.WeightedAnswerSet;
 import at.ac.tuwien.kr.alpha.commons.util.SimpleAnswerSetFormatter;
+import org.apache.commons.cli.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.file.Paths;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Main entry point for Alpha.
@@ -150,7 +150,7 @@ public class Main {
 	}
 
 	/**
-	 * Writes the given {@link CompiledProgram} to the destination passed as the second parameter
+	 * Writes the given {@link NormalProgram} to the destination passed as the second parameter
 	 * 
 	 * @param prg  the program to write
 	 * @param path the path to write the program to
@@ -186,6 +186,10 @@ public class Main {
 			final AnswerSetFormatter<String> fmt = new SimpleAnswerSetFormatter(sysCfg.getAtomSeparator());
 			BiConsumer<Integer, AnswerSet> stdoutPrinter = (n, as) -> {
 				System.out.println("Answer set " + Integer.toString(n) + ":" + System.lineSeparator() + fmt.format(as));
+				if (as instanceof WeightedAnswerSet) {
+					// If weak constraints are presents, all answer sets are weighted.
+					System.out.println("Optimization: " + ((WeightedAnswerSet) as).getWeightsAsString());
+				}
 			};
 			if (inputCfg.isWriteAnswerSetsAsXlsx()) {
 				BiConsumer<Integer, AnswerSet> xlsxWriter = new AnswerSetToXlsxWriter(inputCfg.getAnswerSetFileOutputPath());
@@ -208,6 +212,10 @@ public class Main {
 				}
 			} else {
 				System.out.println("SATISFIABLE");
+				if (sysCfg.isAnswerSetOptimizationEnabled() && solver.didExhaustSearchSpace()) {
+					// If less answer sets were found than requested and optimisation is enabled, then the last one is an optimal answer set.
+					System.out.println("OPTIMUM PROVEN");
+				}
 			}
 		} else {
 			// Note: Even though we are not consuming the result, we will still compute

@@ -7,7 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
@@ -19,6 +19,7 @@ import at.ac.tuwien.kr.alpha.commons.programs.AbstractProgram;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
+import at.ac.tuwien.kr.alpha.core.atoms.WeakConstraintAtom;
 import at.ac.tuwien.kr.alpha.core.grounder.FactIntervalEvaluator;
 import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.programs.rules.InternalRule;
@@ -28,7 +29,7 @@ import at.ac.tuwien.kr.alpha.core.programs.rules.InternalRule;
  * aggregates must be rewritten, all intervals must be preprocessed (into interval atoms), and equality predicates must
  * be rewritten.
  * <p>
- * Copyright (c) 2017-2021, the Alpha Team.
+ * Copyright (c) 2017-2023, the Alpha Team.
  */
 public class InternalProgram extends AbstractProgram<CompiledRule> implements CompiledProgram {
 
@@ -36,15 +37,16 @@ public class InternalProgram extends AbstractProgram<CompiledRule> implements Co
 	private final Map<Predicate, LinkedHashSet<Instance>> factsByPredicate = new LinkedHashMap<>();
 	private final Map<Integer, CompiledRule> rulesById = new LinkedHashMap<>();
 
-	public InternalProgram(List<CompiledRule> rules, List<Atom> facts) {
-		super(rules, facts, null);
+	public InternalProgram(List<CompiledRule> rules, List<Atom> facts, boolean containsWeakConstraints) {
+		super(rules, facts, null, containsWeakConstraints);
 		recordFacts(facts);
 		recordRules(rules);
 	}
 
-	static ImmutablePair<List<CompiledRule>, List<Atom>> internalizeRulesAndFacts(NormalProgram normalProgram) {
+	static ImmutableTriple<List<CompiledRule>, List<Atom>, Boolean> internalizeRulesAndFacts(NormalProgram normalProgram) {
 		List<CompiledRule> internalRules = new ArrayList<>();
 		List<Atom> facts = new ArrayList<>(normalProgram.getFacts());
+		boolean containsWeakConstraints = false;
 		for (Rule<NormalHead> r : normalProgram.getRules()) {
 			if (r.getBody().isEmpty()) {
 				if (!r.getHead().isGround()) {
@@ -53,14 +55,17 @@ public class InternalProgram extends AbstractProgram<CompiledRule> implements Co
 				facts.add(r.getHead().getAtom());
 			} else {
 				internalRules.add(InternalRule.fromNormalRule(r));
+				if (!r.isConstraint() && r.getHead().getAtom() instanceof WeakConstraintAtom) {
+					containsWeakConstraints = true;
+				}
 			}
 		}
-		return new ImmutablePair<>(internalRules, facts);
+		return new ImmutableTriple<>(internalRules, facts, containsWeakConstraints);
 	}
 
 	public static InternalProgram fromNormalProgram(NormalProgram normalProgram) {
-		ImmutablePair<List<CompiledRule>, List<Atom>> rulesAndFacts = InternalProgram.internalizeRulesAndFacts(normalProgram);
-		return new InternalProgram(rulesAndFacts.left, rulesAndFacts.right);
+		ImmutableTriple<List<CompiledRule>, List<Atom>, Boolean> rulesAndFacts = InternalProgram.internalizeRulesAndFacts(normalProgram);
+		return new InternalProgram(rulesAndFacts.left, rulesAndFacts.middle, rulesAndFacts.right);
 	}
 
 	private void recordFacts(List<Atom> facts) {
@@ -106,7 +111,6 @@ public class InternalProgram extends AbstractProgram<CompiledRule> implements Co
 		for (CompiledRule rule : getRules()) {
 			normalRules.add(Rules.newNormalRule(rule.getHead(), new ArrayList<>(rule.getBody())));
 		}
-		return Programs.newNormalProgram(normalRules, getFacts(), getInlineDirectives());
+		return Programs.newNormalProgram(normalRules, getFacts(), getInlineDirectives(), containsWeakConstraints());
 	}
-
 }

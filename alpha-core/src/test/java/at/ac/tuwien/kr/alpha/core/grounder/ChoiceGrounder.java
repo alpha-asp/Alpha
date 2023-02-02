@@ -27,25 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import static at.ac.tuwien.kr.alpha.commons.util.Util.entriesToMap;
-import static at.ac.tuwien.kr.alpha.commons.util.Util.entry;
-import static at.ac.tuwien.kr.alpha.core.common.NoGood.headFirst;
-import static at.ac.tuwien.kr.alpha.core.common.NoGoodTest.fromOldLiterals;
-import static java.util.Arrays.asList;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.stream.Stream;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -66,6 +47,27 @@ import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.programs.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.core.programs.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.programs.rules.InternalRule;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.stream.Stream;
+
+import static at.ac.tuwien.kr.alpha.commons.util.Util.entriesToMap;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.entry;
+import static at.ac.tuwien.kr.alpha.core.common.NoGood.headFirst;
+import static at.ac.tuwien.kr.alpha.core.common.NoGoodTest.fromOldLiterals;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 
 /**
  * Represents a small ASP program with choices {@code { aa :- not bb. bb :- not aa. }}.
@@ -185,6 +187,15 @@ public class ChoiceGrounder implements Grounder {
 		}
 	}
 
+	@Override
+	public boolean inputProgramContainsWeakConstraints() {
+		return false;
+	}
+
+	@Override
+	public List<Triple<Integer, Integer, Integer>> getWeakConstraintInformation() {
+		return emptyList();
+	}
 	@Override
 	public Map<Integer, Set<Integer>> getHeadsToBodies() {
 		return Collections.emptyMap();

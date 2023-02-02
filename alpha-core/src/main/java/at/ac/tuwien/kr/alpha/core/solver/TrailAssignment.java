@@ -81,7 +81,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	};
 
 	private final AtomStore atomStore;
-	private ChoiceManager choiceManagerCallback;
+	private AtomCallbackManager atomCallbackManager = new AtomCallbackManager();
 
 	/**
 	 * Contains for each known atom a value whose two least
@@ -146,8 +146,8 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	}
 
 	@Override
-	public void setCallback(ChoiceManager choiceManager) {
-		choiceManagerCallback = choiceManager;
+	public AtomCallbackManager getAtomCallbackManager() {
+		return atomCallbackManager;
 	}
 
 	@Override
@@ -211,7 +211,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	private void informCallback(int atom) {
 		if (callbackUponChange[atom]) {
-			choiceManagerCallback.callbackOnChanged(atom);
+			atomCallbackManager.callbackOnChanged(atom);
 		}
 	}
 
@@ -563,6 +563,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		impliedBy = Arrays.copyOf(impliedBy, newCapacity);
 		callbackUponChange = Arrays.copyOf(callbackUponChange, newCapacity);
 		trail = Arrays.copyOf(trail, newCapacity * 2);	// Trail has at most 2 assignments (MBT+TRUE) for each atom.
+		atomCallbackManager.growForMaxAtomId(maxAtomId);
 	}
 
 	public int getNumberOfAssignedAtoms() {

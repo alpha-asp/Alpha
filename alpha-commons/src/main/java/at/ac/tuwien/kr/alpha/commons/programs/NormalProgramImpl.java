@@ -1,11 +1,11 @@
 package at.ac.tuwien.kr.alpha.commons.programs;
 
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
+
+import java.util.List;
 
 /**
  * A program that only contains NormalRules.
@@ -14,8 +14,8 @@ import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
  */
 class NormalProgramImpl extends AbstractProgram<NormalRule> implements NormalProgram {
 
-	NormalProgramImpl(List<NormalRule> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
-		super(rules, facts, inlineDirectives);
+	NormalProgramImpl(List<NormalRule> rules, List<Atom> facts, InlineDirectives inlineDirectives, boolean containsWeakConstraints) {
+		super(rules, facts, inlineDirectives, containsWeakConstraints);
 	}
 
 }

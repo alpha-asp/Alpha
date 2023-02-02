@@ -82,7 +82,7 @@ public abstract class AbstractAggregateEncoder {
 			Rule<Head> elementRule = encodeAggregateElement(aggregateToEncode, elementToEncode);
 			elementEncodingRules.add(PredicateInternalizer.makePrefixedPredicatesInternal(elementRule, aggregateId));
 		}
-		return Programs.newASPCore2Program(ListUtils.union(literalEncoding.getRules(), elementEncodingRules), literalEncoding.getFacts(), Programs.newInlineDirectives());
+		return Programs.newASPCore2Program(ListUtils.union(literalEncoding.getRules(), elementEncodingRules), literalEncoding.getFacts(), Programs.newInlineDirectives(), literalEncoding.containsWeakConstraints());
 	}
 
 	/**

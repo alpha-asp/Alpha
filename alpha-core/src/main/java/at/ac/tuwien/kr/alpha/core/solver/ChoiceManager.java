@@ -79,7 +79,6 @@ public class ChoiceManager implements Checkable {
 		this.assignment = assignment;
 		this.choicePointInfluenceManager = new ChoiceInfluenceManager(assignment);
 		this.choiceStack = new Stack<>();
-		assignment.setCallback(this);
 		this.bnpEstimation = store instanceof BinaryNoGoodPropagationEstimation
 				? (BinaryNoGoodPropagationEstimation)store
 				: null;
@@ -101,7 +100,7 @@ public class ChoiceManager implements Checkable {
 	@Override
 	public void setChecksEnabled(boolean checksEnabled) {
 		this.checksEnabled = checksEnabled;
-		this.choicePointInfluenceManager.setChecksEnabled(checksEnabled);
+		choicePointInfluenceManager.setChecksEnabled(checksEnabled);
 		
 		if (checksEnabled) {
 			debugWatcher = new DebugWatcher();
@@ -112,10 +111,6 @@ public class ChoiceManager implements Checkable {
 
 	public boolean isChecksEnabled() {
 		return checksEnabled;
-	}
-
-	public void callbackOnChanged(int atom) {
-		choicePointInfluenceManager.callbackOnChanged(atom);
 	}
 
 	public int getBackjumps() {

@@ -1,9 +1,5 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
@@ -19,7 +15,12 @@ import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.WeakConstraint;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Transforms an {@link AspCore2ProgramImpl} such that, for all aggregate (body-)literals, only the comparison operators "="
@@ -41,7 +42,7 @@ import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
  * Note that input programs must only contain aggregate literals of form <code>TERM OP #aggr{...}</code> or <code>#aggr{...} OP TERM</code>,
  * i.e. with only
  * a left or right term and operator (but not both). When preprocessing programs, apply this transformation AFTER
- * {@link at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateLiteralSplitting}.
+ * {@link at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateLiteralSplitting}.
  * 
  * Copyright (c) 2020-2021, the Alpha Team.
  */
@@ -55,6 +56,10 @@ public final class AggregateOperatorNormalization {
 		List<Literal> rewrittenBody = new ArrayList<>();
 		for (Literal lit : rule.getBody()) {
 			rewrittenBody.addAll(rewriteLiteral(lit));
+		}
+		if (rule instanceof WeakConstraint) {
+			WeakConstraint wcRule = (WeakConstraint) rule;
+			return new WeakConstraint(rewrittenBody, wcRule.getWeight(), wcRule.getLevel(), wcRule.getTermList());
 		}
 		return Rules.newRule(rule.getHead(), rewrittenBody);
 	}

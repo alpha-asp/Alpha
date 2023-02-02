@@ -65,7 +65,7 @@ public class VariableEqualityRemoval extends ProgramTransformation<ASPCore2Progr
 		for (Rule<Head> rule : inputProgram.getRules()) {
 			rewrittenRules.add(findAndReplaceVariableEquality(rule));
 		}
-		return Programs.newASPCore2Program(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+		return Programs.newASPCore2Program(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives(), inputProgram.containsWeakConstraints());
 	}
 
 	private Rule<Head> findAndReplaceVariableEquality(Rule<Head> rule) {
