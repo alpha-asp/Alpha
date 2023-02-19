@@ -46,7 +46,9 @@ naf_literals : naf_literal (COMMA naf_literals)?;
 
 naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
 
-classical_literal : MINUS? ID (PAREN_OPEN terms PAREN_CLOSE)?;
+basic_atom : ID (PAREN_OPEN terms PAREN_CLOSE)?;
+
+classical_literal : MINUS? basic_atom;
 
 builtin_atom : term binop term;
 
@@ -77,9 +79,12 @@ interval_bound : numeral | VARIABLE;
 
 external_atom : MINUS? AMPERSAND ID (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?; // NOT Core2 syntax.
 
-directive : directive_enumeration;  // NOT Core2 syntax, allows solver specific directives. Further directives shall be added here.
+directive : directive_enumeration | directive_test;  // NOT Core2 syntax, allows solver specific directives. Further directives shall be added here.
 
 directive_enumeration : SHARP 'enumeration_predicate_is' ID DOT;  // NOT Core2 syntax, used for aggregate translation.
+
+// Alpha-specific language extension: Unit Tests (-> https://github.com/alpha-asp/Alpha/issues/237)
+directive_test : SHARP 'test' ID PAREN_OPEN 'expect' COLON ('unsat' | (binop? NUMBER)) PAREN_CLOSE CURLY_OPEN test_input test_assert+ CURLY_CLOSE;
 
 basic_terms : basic_term (COMMA basic_terms)? ;
 
@@ -91,4 +96,13 @@ variable_term : VARIABLE | ANONYMOUS_VARIABLE;
 
 answer_set : CURLY_OPEN classical_literal? (COMMA classical_literal)* CURLY_CLOSE;
 
-answer_sets: answer_set* EOF;
+answer_sets : answer_set* EOF;
+
+test_input : 'input' CURLY_OPEN (basic_atom DOT)* CURLY_CLOSE;
+
+test_assert : test_assert_all | test_assert_some;
+
+test_assert_all : 'assert' 'for' 'all' CURLY_OPEN statements? CURLY_CLOSE;
+
+test_assert_some : 'assert' 'for' 'some' CURLY_OPEN statements? CURLY_CLOSE;
+

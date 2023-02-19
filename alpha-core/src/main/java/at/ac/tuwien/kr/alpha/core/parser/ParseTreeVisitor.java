@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2023, the Alpha Team.
  * All rights reserved.
  * <p>
  * Additional changes made by Siemens.
@@ -63,6 +63,7 @@ import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.api.programs.tests.Assertion;
 import at.ac.tuwien.kr.alpha.commons.AnswerSets;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
@@ -75,6 +76,7 @@ import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
+import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser.StatementsContext;
 
 /**
  * Copyright (c) 2016-2018, the Alpha Team.
@@ -465,14 +467,19 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
+	public BasicAtom visitBasic_atom(ASPCore2Parser.Basic_atomContext ctx) {
+		// basic_atom : ID (PAREN_OPEN terms PAREN_CLOSE)?;
+		List<Term> terms = visitTerms(ctx.terms());
+		return Atoms.newBasicAtom(Predicates.getPredicate(ctx.ID().getText(), terms.size()), terms);
+	}
+
+	@Override
 	public BasicAtom visitClassical_literal(ASPCore2Parser.Classical_literalContext ctx) {
-		// classical_literal : MINUS? ID (PAREN_OPEN terms PAREN_CLOSE)?;
+		// classical_literal : MINUS? basic_atom;
 		if (ctx.MINUS() != null) {
 			throw notSupported(ctx);
 		}
-
-		final List<Term> terms = visitTerms(ctx.terms());
-		return Atoms.newBasicAtom(Predicates.getPredicate(ctx.ID().getText(), terms.size()), terms);
+		return visitBasic_atom(ctx.basic_atom());
 	}
 
 	@Override
@@ -616,4 +623,23 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		// | term BITXOR term
 		return Terms.newArithmeticTerm((Term) visit(ctx.term(0)), ArithmeticOperator.BITXOR, (Term) visit(ctx.term(1)));
 	}
+
+	@Override
+	public Assertion visitTest_assert_all(ASPCore2Parser.Test_assert_allContext ctx) {
+		StatementsContext stmtCtx = ctx.statements();
+		if(stmtCtx == null) { // empty verifier for a test case is OK
+
+		}
+		return null; // TODO
+	}
+
+	public ASPCore2Program visitTestVerifier(ASPCore2Parser.StatementsContext ctx) {
+		return null; // TODO
+	}
+
+	@Override
+	public Assertion visitTest_assert_some(ASPCore2Parser.Test_assert_someContext ctx) {
+		return null; // TODO
+	} 
+
 }
