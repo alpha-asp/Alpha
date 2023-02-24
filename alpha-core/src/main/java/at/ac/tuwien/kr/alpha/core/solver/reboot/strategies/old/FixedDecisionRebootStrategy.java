@@ -23,39 +23,31 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.solver.reboot.strategies;
+package at.ac.tuwien.kr.alpha.core.solver.reboot.strategies.old;
 
-public class LubyConflictRebootStrategy implements RebootStrategy {
-	private static final double SCALING_FACTOR = 10;
+import at.ac.tuwien.kr.alpha.core.solver.reboot.strategies.RebootStrategy;
 
-	private int rebootCount;
-	private int conflictCount;
+public class FixedDecisionRebootStrategy implements RebootStrategy {
+	private final int breakpoint;
+	private int decisionCount;
+
+	public FixedDecisionRebootStrategy(int breakpoint) {
+		this.breakpoint = breakpoint;
+		this.decisionCount = 0;
+	}
 
 	@Override
-	public void conflictEncountered() {
-		conflictCount++;
+	public void decisionMade() {
+		decisionCount++;
 	}
 
 	@Override
 	public boolean isRebootScheduled() {
-		return conflictCount >= SCALING_FACTOR * luby(rebootCount + 1);
+		return decisionCount >= breakpoint;
 	}
 
 	@Override
 	public void rebootPerformed() {
-		rebootCount++;
-	}
-
-	private double luby(double i) {
-		for (int k = 1; k < 31; k++) {
-			if (i == (Math.pow(2, k)) - 1) {
-				return Math.pow(2, k - 1);
-			}
-		}
-		for (int k = 1;; k++) {
-			if (Math.pow(2, k - 1) <= i && i < Math.pow(2, k) - 1) {
-				return luby(i - Math.pow(2, k - 1) + 1);
-			}
-		}
+		decisionCount = 0;
 	}
 }

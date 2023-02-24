@@ -27,6 +27,9 @@ public final class Substitutions {
 			if (!assignment.equals("")) {
 				String[] keyVal = assignment.split("->");
 				VariableTerm variable = Terms.newVariable(keyVal[0]);
+				if (keyVal.length < 2) {
+					System.out.println(assignment);
+				}
 				Term assignedTerm = PROGRAM_PART_PARSER.parseTerm(keyVal[1]);
 				ret.put(variable, assignedTerm);
 			}

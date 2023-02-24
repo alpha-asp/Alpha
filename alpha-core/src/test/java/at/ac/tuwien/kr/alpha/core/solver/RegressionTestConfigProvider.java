@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import at.ac.tuwien.kr.alpha.api.config.RebootStrategy;
 import org.junit.jupiter.params.provider.Arguments;
 
 import at.ac.tuwien.kr.alpha.api.config.Heuristic;
@@ -16,8 +17,9 @@ public class RegressionTestConfigProvider {
 	private static final String DEFAULT_ATOM_STORE = "alpharoaming";
 	private static final String DEFAULT_BRANCHING_HEURISTIC = "VSIDS";
 	private static final boolean DEFAULT_REBOOT_ENABLED = false;
-	private static final int DEFAULT_REBOOT_ITERATIONS = 5;
 	private static final boolean DEFAULT_DISABLE_REBOOT_REPEAT = true;
+	private static final RebootStrategy DEFAULT_REBOOT_STRATEGY = RebootStrategy.FIXED;
+	private static final int DEFAULT_REBOOT_STRATEGY_ITERATIONS = 5;
 	private static final String DEFAULT_GROUNDER_TOLERANCE = "strict";
 	private static final boolean DEFAULT_DISABLE_INSTANCE_REMOVAL = false;
 	private static final boolean DEFAULT_ENABLE_DEBUG_CHECKS = false;
@@ -40,7 +42,8 @@ public class RegressionTestConfigProvider {
 		String[] atomStores = ci ? new String[]{DEFAULT_ATOM_STORE, "naive"} : new String[]{DEFAULT_ATOM_STORE};
 		String[] heuristics = ci ? nonDeprecatedHeuristics() : new String[]{"NAIVE", DEFAULT_BRANCHING_HEURISTIC};
 		boolean[] rebootEnabledValues = new boolean[]{DEFAULT_REBOOT_ENABLED, true};
-		int[] rebootIterationsValues = new int[]{DEFAULT_REBOOT_ITERATIONS};
+		RebootStrategy[] rebootStrategyValues = new RebootStrategy[]{DEFAULT_REBOOT_STRATEGY};
+		int[] rebootStrategyIterationsValues = new int[]{DEFAULT_REBOOT_STRATEGY_ITERATIONS};
 		boolean[] disableRebootRepeatValues = new boolean[]{DEFAULT_DISABLE_REBOOT_REPEAT};
 		String[] gtcValues = new String[]{DEFAULT_GROUNDER_TOLERANCE, "permissive"};
 		String gtrValue = DEFAULT_GROUNDER_TOLERANCE;
@@ -63,19 +66,22 @@ public class RegressionTestConfigProvider {
 			for (String atomStoreName : atomStores) {
 				for (String branchingHeuristicName : heuristics) {
 					for (boolean rebootEnabled : rebootEnabledValues) {
-						for (int rebootIterations : rebootIterationsValues) {
-							for (boolean disableRebootRepeat : disableRebootRepeatValues) {
-								for (String grounderTolerance : gtcValues) {
-									for (boolean disableInstanceRemoval : disableInstanceRemovalValues) {
-										for (boolean evaluateStratified : evaluateStratifiedValues) {
-											for (boolean enableDebugChecks : enableDebugChecksValues) {
-												configsToTest.add(new RegressionTestConfig(
-														solverName, grounder, atomStoreName,
-														Heuristic.valueOf(branchingHeuristicName),
-														rebootEnabled, rebootIterations, disableRebootRepeat,
-														seed, enableDebugChecks, grounderTolerance, gtrValue,
-														disableInstanceRemoval, evaluateStratified,
-														true, true));
+						for (boolean disableRebootRepeat : disableRebootRepeatValues) {
+							for (RebootStrategy rebootStrategy : rebootStrategyValues) {
+								for (int rebootIterations : rebootStrategyIterationsValues) {
+									for (String grounderTolerance : gtcValues) {
+										for (boolean disableInstanceRemoval : disableInstanceRemovalValues) {
+											for (boolean evaluateStratified : evaluateStratifiedValues) {
+												for (boolean enableDebugChecks : enableDebugChecksValues) {
+													configsToTest.add(new RegressionTestConfig(
+															solverName, grounder, atomStoreName,
+															Heuristic.valueOf(branchingHeuristicName),
+															rebootEnabled, disableRebootRepeat, rebootStrategy,
+															rebootIterations, seed, enableDebugChecks,
+															grounderTolerance, gtrValue,
+															disableInstanceRemoval, evaluateStratified,
+															true, true));
+												}
 											}
 										}
 									}
@@ -111,11 +117,11 @@ public class RegressionTestConfigProvider {
 							new RegressionTestConfig(
 									DEFAULT_SOLVER_NAME, DEFAULT_GROUNDER_NAME, DEFAULT_ATOM_STORE,
 									Heuristic.valueOf(DEFAULT_BRANCHING_HEURISTIC),
-									DEFAULT_REBOOT_ENABLED, DEFAULT_REBOOT_ITERATIONS, DEFAULT_DISABLE_REBOOT_REPEAT,
-									0, DEFAULT_ENABLE_DEBUG_CHECKS, DEFAULT_GROUNDER_TOLERANCE,
-									DEFAULT_GROUNDER_TOLERANCE, DEFAULT_DISABLE_INSTANCE_REMOVAL,
-									evalStratified,
-									useSortingGrid, supportNegativeElements));
+									DEFAULT_REBOOT_ENABLED,  DEFAULT_DISABLE_REBOOT_REPEAT, DEFAULT_REBOOT_STRATEGY,
+									DEFAULT_REBOOT_STRATEGY_ITERATIONS, 0, DEFAULT_ENABLE_DEBUG_CHECKS,
+									DEFAULT_GROUNDER_TOLERANCE, DEFAULT_GROUNDER_TOLERANCE,
+									DEFAULT_DISABLE_INSTANCE_REMOVAL,
+									evalStratified, useSortingGrid, supportNegativeElements));
 				}
 			}
 		}

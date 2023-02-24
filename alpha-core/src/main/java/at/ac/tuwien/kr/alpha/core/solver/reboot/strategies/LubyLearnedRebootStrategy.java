@@ -28,10 +28,13 @@ package at.ac.tuwien.kr.alpha.core.solver.reboot.strategies;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 
 public class LubyLearnedRebootStrategy implements RebootStrategy {
-	private static final double SCALING_FACTOR = 10;
-
+	private final double scalingFactor;
 	private int rebootCount;
 	private int learnedCount;
+
+	public LubyLearnedRebootStrategy(double scalingFactor) {
+		this.scalingFactor = scalingFactor;
+	}
 
 	@Override
 	public void newLearnedNoGood(NoGood noGood) {
@@ -40,7 +43,7 @@ public class LubyLearnedRebootStrategy implements RebootStrategy {
 
 	@Override
 	public boolean isRebootScheduled() {
-		return learnedCount >= SCALING_FACTOR * luby(rebootCount + 1);
+		return learnedCount >= scalingFactor * luby(rebootCount + 1);
 	}
 
 	@Override

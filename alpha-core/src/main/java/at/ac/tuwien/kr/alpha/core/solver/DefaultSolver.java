@@ -146,13 +146,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 		this.rebootEnabled = config.isRebootEnabled();
 		this.disableRebootRepeat = config.isDisableRebootRepeat();
-		DynamicLearnedIntervalRebootStrategy dynamicRebootStrategy = new DynamicLearnedIntervalRebootStrategy(
-				learnEfficiencyTracker, 0.7, 5, config.getRebootIterations());
-//		this.rebootStrategy = new FixedLearnedRebootStrategy(config.getRebootIterations());
-//		this.rebootStrategy = new LubyLearnedRebootStrategy();
-		this.rebootStrategy = dynamicRebootStrategy;
-//		this.rebootStrategy = new GeometricLearnedRebootStrategy();
-		statTrackers.add(dynamicRebootStrategy.getIntervalSizeTracker());
+		this.rebootStrategy = RebootStrategyFactory.getRebootStrategy(config);
 
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment,
 				store.getNoGoodCounter(), statTrackers, 1000);

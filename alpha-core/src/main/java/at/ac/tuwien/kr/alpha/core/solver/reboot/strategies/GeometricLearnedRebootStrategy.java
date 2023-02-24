@@ -28,11 +28,16 @@ package at.ac.tuwien.kr.alpha.core.solver.reboot.strategies;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 
 public class GeometricLearnedRebootStrategy implements RebootStrategy {
-	private static final double BASE = 1.5;
-	private static final double SCALING_FACTOR = 2;
+	private final double base;
+	private final double scalingFactor;
 
 	private int rebootCount;
 	private int learnedCount;
+
+	public GeometricLearnedRebootStrategy(double base, double scalingFactor) {
+		this.base = base;
+		this.scalingFactor = scalingFactor;
+	}
 
 	@Override
 	public void newLearnedNoGood(NoGood noGood) {
@@ -41,7 +46,7 @@ public class GeometricLearnedRebootStrategy implements RebootStrategy {
 
 	@Override
 	public boolean isRebootScheduled() {
-		return learnedCount >= SCALING_FACTOR * Math.pow(BASE, rebootCount);
+		return learnedCount >= scalingFactor * Math.pow(base, rebootCount);
 	}
 
 	@Override

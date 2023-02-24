@@ -23,11 +23,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.solver.reboot.strategies;
+package at.ac.tuwien.kr.alpha.core.solver.reboot.strategies.old;
 
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.solver.reboot.stats.ResettableStatTracker;
 import at.ac.tuwien.kr.alpha.core.solver.reboot.stats.StatTracker;
+import at.ac.tuwien.kr.alpha.core.solver.reboot.strategies.RebootStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,9 +40,11 @@ public class DynamicLearnedIntervalRebootStrategy implements RebootStrategy {
 	private final int minInterval;
 	private final double scalingFactor;
 	private double intervalSize;
+	private double nextIntervalSize;
 	private int learnedCount;
 	private double previousIntervalMeasure;
 	private boolean isFirstInterval;
+	private boolean wasHalfPointHandled;
 
 	public DynamicLearnedIntervalRebootStrategy(ResettableStatTracker efficiencyMeasure,
 												double scalingFactor,
@@ -64,6 +67,7 @@ public class DynamicLearnedIntervalRebootStrategy implements RebootStrategy {
 		this.learnedCount = 0;
 		this.previousIntervalMeasure = 0;
 		this.isFirstInterval = true;
+		this.wasHalfPointHandled = false;
 	}
 
 	public StatTracker getIntervalSizeTracker() {
@@ -73,6 +77,7 @@ public class DynamicLearnedIntervalRebootStrategy implements RebootStrategy {
 	@Override
 	public void newLearnedNoGood(NoGood noGood) {
 		learnedCount++;
+		handleHalfPointIfNeeded();
 	}
 
 	@Override
@@ -82,12 +87,12 @@ public class DynamicLearnedIntervalRebootStrategy implements RebootStrategy {
 
 	@Override
 	public void rebootPerformed() {
-		double currentIntervalMeasure = efficiencyMeasure.getStatValue();
-		intervalSize = getNewIntervalSize(currentIntervalMeasure);
-		previousIntervalMeasure = currentIntervalMeasure;
+		previousIntervalMeasure = efficiencyMeasure.getStatValue();
+		intervalSize = nextIntervalSize;
 
 		efficiencyMeasure.reset();
 		learnedCount = 0;
+		wasHalfPointHandled = false;
 	}
 
 	private double getNewIntervalSize(double currentIntervalMeasure) {
@@ -97,15 +102,41 @@ public class DynamicLearnedIntervalRebootStrategy implements RebootStrategy {
 			isFirstInterval = false;
 			return intervalSize;
 		} else if (currentIntervalMeasure > previousIntervalMeasure) {
-			double newIntervalSize = intervalSize * scalingFactor;
+			double newIntervalSize = downscaleIntervalSize(intervalSize);
 			LOGGER.info("Reboot interval size: {} -> {}", oldIntervalSize, newIntervalSize);
 			LOGGER.info("Interval measures were: {} < {}", previousIntervalMeasure, currentIntervalMeasure);
 			return Math.max(newIntervalSize, minInterval);
 		} else {
-			double newIntervalSize = intervalSize / scalingFactor;
+			double newIntervalSize = upscaleIntervalSize(intervalSize);
 			LOGGER.info("Reboot interval size: {} -> {}", oldIntervalSize, newIntervalSize);
 			LOGGER.info("Interval measures were: {} >= {}", previousIntervalMeasure, currentIntervalMeasure);
 			return Math.max(newIntervalSize, minInterval);
+		}
+	}
+
+	private double downscaleIntervalSize(double intervalSize) {
+		return intervalSize * scalingFactor;
+	}
+
+	private double upscaleIntervalSize(double intervalSize) {
+		return intervalSize / (scalingFactor * scalingFactor);
+	}
+
+	private boolean isHalfPointReached() {
+		return learnedCount >= (int) (intervalSize / 2);
+	}
+
+	private void handleHalfPoint() {
+		double currentIntervalMeasure = efficiencyMeasure.getStatValue();
+		nextIntervalSize = getNewIntervalSize(currentIntervalMeasure);
+
+		efficiencyMeasure.reset();
+		wasHalfPointHandled = true;
+	}
+
+	private void handleHalfPointIfNeeded() {
+		if (!wasHalfPointHandled && isHalfPointReached()) {
+			handleHalfPoint();
 		}
 	}
 }

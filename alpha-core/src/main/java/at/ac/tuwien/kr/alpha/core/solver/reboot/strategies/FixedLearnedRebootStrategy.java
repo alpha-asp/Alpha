@@ -3,7 +3,7 @@ package at.ac.tuwien.kr.alpha.core.solver.reboot.strategies;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 
 public class FixedLearnedRebootStrategy implements RebootStrategy {
-	private int breakpoint;
+	private final int breakpoint;
 	private int learnedCounter;
 
 	public FixedLearnedRebootStrategy(int breakpoint) {
