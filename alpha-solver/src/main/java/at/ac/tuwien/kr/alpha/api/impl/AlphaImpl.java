@@ -36,6 +36,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -59,6 +60,13 @@ import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.reification.Reifier;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.util.IdGenerator;
+import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
@@ -67,7 +75,6 @@ import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
@@ -77,19 +84,25 @@ public class AlphaImpl implements Alpha {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlphaImpl.class);
 
-	private SystemConfig config = new SystemConfig(); // Config is initialized with default values.
-	private ProgramParser parser = new ProgramParserImpl();
+	private final SystemConfig config; // Config is initialized with default values.
+	private final ProgramParser parser = new ProgramParserImpl();
+	private final Reifier reifier = new Reifier(() -> {
+		IdGenerator<Integer> idGen = new IntIdGenerator(0);
+		return () -> Terms.newConstant(idGen.getNextId());
+	});
+
 
 	public AlphaImpl(SystemConfig cfg) {
 		this.config = cfg;
 	}
 
 	public AlphaImpl() {
+		this.config = new SystemConfig();
 	}
 
 	@Override
 	public ASPCore2Program readProgram(InputConfig cfg) throws IOException {
-		InputProgram.Builder prgBuilder = InputProgram.builder();
+		ASPCore2ProgramBuilder prgBuilder = Programs.builder();
 		ASPCore2Program tmpProg;
 		if (!cfg.getFiles().isEmpty()) {
 			tmpProg = readProgramFiles(cfg.isLiterate(), cfg.getPredicateMethods(), cfg.getFiles());
@@ -109,7 +122,7 @@ public class AlphaImpl implements Alpha {
 
 	@Override
 	public ASPCore2Program readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
-		InputProgram.Builder prgBuilder = InputProgram.builder();
+		ASPCore2ProgramBuilder prgBuilder = Programs.builder();
 		ASPCore2Program tmpProg;
 		for (Path path : paths) {
 			InputStream stream;
@@ -219,10 +232,6 @@ public class AlphaImpl implements Alpha {
 		return SolverFactory.getInstance(config, atomStore, grounder);
 	}
 
-	public void setConfig(SystemConfig config) {
-		this.config = config;
-	}
-
 	@Override
 	public DebugSolvingContext prepareDebugSolve(ASPCore2Program program) {
 		return prepareDebugSolve(program, InputConfig.DEFAULT_FILTER);
@@ -231,8 +240,8 @@ public class AlphaImpl implements Alpha {
 	@Override
 	public DebugSolvingContext prepareDebugSolve(NormalProgram program) {
 		return prepareDebugSolve(program, InputConfig.DEFAULT_FILTER);
-	}	
-	
+	}
+
 	@Override
 	public DebugSolvingContext prepareDebugSolve(final ASPCore2Program program, java.util.function.Predicate<Predicate> filter) {
 		return prepareDebugSolve(normalizeProgram(program), filter);
@@ -253,27 +262,27 @@ public class AlphaImpl implements Alpha {
 		compGraph = analyzed.getComponentGraph();
 		final Solver solver = prepareSolverFor(analyzed, filter);
 		return new DebugSolvingContext() {
-			
+
 			@Override
 			public Solver getSolver() {
 				return solver;
 			}
-			
+
 			@Override
 			public NormalProgram getPreprocessedProgram() {
 				return preprocessed;
 			}
-			
+
 			@Override
 			public NormalProgram getNormalizedProgram() {
 				return program;
 			}
-			
+
 			@Override
 			public DependencyGraph getDependencyGraph() {
 				return depGraph;
 			}
-			
+
 			@Override
 			public ComponentGraph getComponentGraph() {
 				return compGraph;
@@ -289,6 +298,11 @@ public class AlphaImpl implements Alpha {
 	@Override
 	public Solver prepareSolverFor(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
 		return prepareSolverFor(performProgramPreprocessing(program), filter);
+	}
+
+	@Override
+	public Set<BasicAtom> reify(ASPCore2Program program) {
+		return reifier.reifyProgram(program);
 	}
 
 }

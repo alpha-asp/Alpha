@@ -9,14 +9,15 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.BasicLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 
 /**
  *
@@ -27,7 +28,7 @@ import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 public class PredicateInternalizer {
 
 	public static ASPCore2Program makePrefixedPredicatesInternal(ASPCore2Program program, String prefix) {
-		InputProgram.Builder prgBuilder = InputProgram.builder();
+		ASPCore2ProgramBuilder prgBuilder = Programs.builder();
 		for (Atom atom : program.getFacts()) {
 			if (atom.getPredicate().getName().startsWith(prefix)) {
 				prgBuilder.addFact(PredicateInternalizer.makePredicateInternal((BasicAtom) atom));
@@ -69,7 +70,7 @@ public class PredicateInternalizer {
 				newBody.add(bodyElement);
 			}
 		}
-		return new BasicRule(newHead, newBody);
+		return Rules.newRule(newHead, newBody);
 	}
 
 	private static BasicAtom makePredicateInternal(BasicAtom atom) {

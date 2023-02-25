@@ -28,9 +28,9 @@
 package at.ac.tuwien.kr.alpha.core.solver;
 
 import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToNegatedLiteral;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomToNegatedLiteral;
 import static at.ac.tuwien.kr.alpha.core.solver.NoGoodStore.LBD_NO_VALUE;
 import static at.ac.tuwien.kr.alpha.core.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
 import static at.ac.tuwien.kr.alpha.core.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
@@ -57,19 +57,19 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.ProgramAnalyzingGrounder;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.solver.heuristics.BranchingHeuristic;
 import at.ac.tuwien.kr.alpha.core.solver.heuristics.BranchingHeuristicFactory;
 import at.ac.tuwien.kr.alpha.core.solver.heuristics.ChainedBranchingHeuristics;
 import at.ac.tuwien.kr.alpha.core.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.core.solver.heuristics.NaiveHeuristic;
 import at.ac.tuwien.kr.alpha.core.solver.learning.GroundConflictNoGoodLearner;
-import at.ac.tuwien.kr.alpha.core.util.Substitutions;
 
 /**
  * The new default solver employed in Alpha.
@@ -457,10 +457,11 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 				toJustifyIterator.remove();
 				continue;
 			}
-			// Translate RuleAtom back to NonGroundRule + Substitution.
-			RuleAtom ruleAtom = (RuleAtom) atom;
-			CompiledRule nonGroundRule = Substitutions.getNonGroundRuleFromRuleAtom(ruleAtom, analyzingGrounder);
-			Substitution groundingSubstitution = Substitutions.getSubstitutionFromRuleAtom(ruleAtom);
+			// For RuleAtoms in toJustify the corresponding ground body contains BasicAtoms that have been assigned FALSE in the closing.
+			// First, get NonGroundRule + Substitution, stored in the RuleAtom's single term.
+			RuleAtom.RuleAtomData ruleAtomData = (RuleAtom.RuleAtomData) ((ConstantTerm<?>)(atom.getTerms().get(0))).getObject();
+			CompiledRule nonGroundRule = ruleAtomData.getNonGroundRule();
+			Substitution groundingSubstitution = ruleAtomData.getSubstitution();
 			// Find ground literals in the body that have been assigned false and justify those.
 			for (Literal bodyLiteral : nonGroundRule.getBody()) {
 				Atom groundAtom = bodyLiteral.getAtom().substitute(groundingSubstitution);

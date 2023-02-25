@@ -26,10 +26,10 @@
 package at.ac.tuwien.kr.alpha.core.solver.reboot;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.Literals;
-import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.ChoiceAtom;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.EnumerationAtom;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.Literals;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import org.slf4j.Logger;

@@ -25,7 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 

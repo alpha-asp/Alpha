@@ -45,12 +45,12 @@ import java.util.Map;
 
 import static at.ac.tuwien.kr.alpha.commons.util.Util.arrayGrowthSize;
 import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isNegated;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isPositive;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.literalToString;
 import static at.ac.tuwien.kr.alpha.core.common.NoGood.HEAD;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.literalToString;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.TRUE;
@@ -796,7 +796,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 
 		@Override
 		public String toString() {
-			return "BinaryWatchList(" + forLiteral + ")";
+			return "BinaryWatchList(" + literalToString(forLiteral) + ")";
 		}
 
 		@Override

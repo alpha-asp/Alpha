@@ -28,18 +28,18 @@
 package at.ac.tuwien.kr.alpha.core.grounder;
 
 import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
-import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.RuleAtom;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 
-import static at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom.off;
-import static at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom.on;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.*;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.ChoiceAtom.off;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.ChoiceAtom.on;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.*;
 import static java.util.Collections.emptyList;
 
 public class ChoiceRecorder {

@@ -6,7 +6,7 @@ jobs:
     strategy:
       matrix:
         # We test against Java releases:
-        #  - greater than 7
+        #  - greater than or equal to 11
         #  AND
         #    - with LTS and in "Premier Support" phase
         #    OR
@@ -15,12 +15,12 @@ jobs:
         # https://blogs.oracle.com/java-platform-group/oracle-jdk-releases-for-java-11-and-later
         # https://www.oracle.com/technetwork/java/java-se-support-roadmap.html
         java:
-        # LTS and in "Premier Support" as of 2019-03 (until 2022-03)
-        - 8
         # LTS and in "Premier Support" as of 2019-03 (until 2023-09)
         - 11
         # LTS as of 2021-11 (until 2029)
         - 17
+        # Not succeeded as of 2022-12
+        - 19
         os: [ubuntu, windows]
     env:
       # We only post coverage data for exactly one build to coveralls.
@@ -40,7 +40,7 @@ jobs:
     # See https://github.com/marketplace/actions/gradle-wrapper-validation
     - uses: gradle/wrapper-validation-action@v1
     # See https://github.com/marketplace/actions/setup-java-jdk
-    - uses: actions/setup-java@v2
+    - uses: actions/setup-java@v3
       with:
         java-version: ${{ matrix.java }}
         distribution: 'temurin'
@@ -52,7 +52,7 @@ jobs:
       if: matrix.os == env.MAIN_OS && matrix.java == env.MAIN_JAVA
       continue-on-error: true
       with:
-        arguments: jacocoTestReport coveralls
+        arguments: jacocoAggregatedTestReport coveralls
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
     - uses: codecov/codecov-action@v1

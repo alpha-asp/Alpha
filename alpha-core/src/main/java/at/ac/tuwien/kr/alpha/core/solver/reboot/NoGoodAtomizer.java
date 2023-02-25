@@ -27,10 +27,10 @@ package at.ac.tuwien.kr.alpha.core.solver.reboot;
 
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.core.atoms.Literals;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.Literals;
 
 /**
  * A nogood independent of atom ids provided by an {@link AtomStore}.

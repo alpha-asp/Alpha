@@ -82,6 +82,7 @@ public class CommandLineParser {
 			.desc("write files for normalized and preprocessed programs, also emit dependency- and component graphs as (graphviz) dot files").build();
 	private static final Option OPT_WRITE_XSLX = Option.builder("wx").longOpt("write-xlsx").hasArg(true).argName("path").type(String.class)
 			.desc("Write answer sets to excel files, i.e. xlsx workbooks (one workbook per answer set)").build();
+	private static final Option OPT_REIFY = Option.builder("reify").longOpt("reifyProgram").hasArg(false).desc("Reifies, i.e. encodes as ASP facts, the given program.").build();
 
 	// general system-wide config
 	private static final Option OPT_GROUNDER = Option.builder("g").longOpt("grounder").hasArg(true).argName("grounder")
@@ -175,6 +176,7 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_ASPSTRING);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_DEBUG_PREPROCESSING);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_XSLX);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_REIFY);
 
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SOLVER);
@@ -277,6 +279,7 @@ public class CommandLineParser {
 		this.inputOptionHandlers.put(CommandLineParser.OPT_LITERATE.getOpt(), this::handleLiterate);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_DEBUG_PREPROCESSING.getOpt(), this::handleDebugPreprocessing);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_XSLX.getOpt(), this::handleWriteXlsx);
+		this.inputOptionHandlers.put(CommandLineParser.OPT_REIFY.getOpt(), this::handleReify);
 	}
 
 	public AlphaConfig parseCommandLine(String[] args) throws ParseException {
@@ -497,6 +500,10 @@ public class CommandLineParser {
 		cfg.setAnswerSetFileOutputPath(outputPath);
 	}
 
+	private void handleReify(Option opt, InputConfig cfg) {
+		cfg.setReifyInput(true);
+	}
+
 	private void handleStats(Option opt, SystemConfig cfg) {
 		cfg.setPrintStats(true);
 	}
@@ -508,7 +515,7 @@ public class CommandLineParser {
 	private void handleDisableSortingGrid(Option opt, SystemConfig cfg) {
 		cfg.getAggregateRewritingConfig().setUseSortingGridEncoding(false);
 	}
-	
+
 	private void handleDisableNegativeSumElements(Option opt, SystemConfig cfg) {
 		cfg.getAggregateRewritingConfig().setSupportNegativeValuesInSums(false);
 	}
@@ -542,5 +549,5 @@ public class CommandLineParser {
 	private void handleAtomSeparator(Option opt, SystemConfig cfg) {
 		cfg.setAtomSeparator(StringEscapeUtils.unescapeJava(opt.getValue(SystemConfig.DEFAULT_ATOM_SEPARATOR)));
 	}
-	
+
 }

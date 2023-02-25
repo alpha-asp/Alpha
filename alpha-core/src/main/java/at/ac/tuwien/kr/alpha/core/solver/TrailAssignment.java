@@ -27,15 +27,12 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static at.ac.tuwien.kr.alpha.commons.util.Util.arrayGrowthSize;
-import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isPositive;
-import static at.ac.tuwien.kr.alpha.core.solver.Atoms.isAtom;
-import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.FALSE;
-import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.MBT;
-import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.TRUE;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.core.common.Assignment;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.IntIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,13 +40,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.core.common.Assignment;
-import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-import at.ac.tuwien.kr.alpha.core.common.IntIterator;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.arrayGrowthSize;
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.core.solver.Atoms.isAtom;
+import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.TRUE;
 
 /**
  * An implementation of Assignment using a trail (of literals) and arrays as underlying structures for storing
@@ -73,7 +72,11 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 		@Override
 		public void decreaseActivity() {
+		}
 
+		@Override
+		public String toString() {
+			return "ClosingIndicatorAntecedent";
 		}
 	};
 

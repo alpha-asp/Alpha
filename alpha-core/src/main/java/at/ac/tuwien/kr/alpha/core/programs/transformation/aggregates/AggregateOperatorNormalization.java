@@ -10,20 +10,19 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionS
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.api.terms.ArithmeticOperator;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ArithmeticOperator;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
-import at.ac.tuwien.kr.alpha.commons.literals.Literals;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.literals.Literals;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 
 /**
- * Transforms an {@link InputProgram} such that, for all aggregate (body-)literals, only the comparison operators "="
+ * Transforms an {@link AspCore2ProgramImpl} such that, for all aggregate (body-)literals, only the comparison operators "="
  * and "<=" are used.
  * 
  * Rewriting of "#count" and "#sum" aggregates is done using the following equivalences:
@@ -57,7 +56,7 @@ public final class AggregateOperatorNormalization {
 		for (Literal lit : rule.getBody()) {
 			rewrittenBody.addAll(rewriteLiteral(lit));
 		}
-		return new BasicRule(rule.getHead(), rewrittenBody);
+		return Rules.newRule(rule.getHead(), rewrittenBody);
 	}
 
 	private static List<Literal> rewriteLiteral(Literal lit) {
