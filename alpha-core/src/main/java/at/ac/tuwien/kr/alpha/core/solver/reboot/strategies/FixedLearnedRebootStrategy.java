@@ -12,6 +12,11 @@ public class FixedLearnedRebootStrategy implements RebootStrategy {
 	}
 
 	@Override
+	public void newEnumerationNoGood(NoGood noGood) {
+		learnedCounter++;
+	}
+
+	@Override
 	public void newLearnedNoGood(NoGood noGood) {
 		learnedCounter++;
 	}
