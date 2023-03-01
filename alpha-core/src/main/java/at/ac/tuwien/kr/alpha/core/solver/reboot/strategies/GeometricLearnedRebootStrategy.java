@@ -40,6 +40,11 @@ public class GeometricLearnedRebootStrategy implements RebootStrategy {
 	}
 
 	@Override
+	public void newEnumerationNoGood(NoGood noGood) {
+		learnedCount++;
+	}
+
+	@Override
 	public void newLearnedNoGood(NoGood noGood) {
 		learnedCount++;
 	}

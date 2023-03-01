@@ -4,30 +4,30 @@ import at.ac.tuwien.kr.alpha.core.common.NoGood;
 
 public class FixedLearnedRebootStrategy implements RebootStrategy {
 	private final int breakpoint;
-	private int learnedCounter;
+	private int learnedCount;
 
 	public FixedLearnedRebootStrategy(int breakpoint) {
 		this.breakpoint = breakpoint;
-		this.learnedCounter = 0;
+		this.learnedCount = 0;
 	}
 
 	@Override
 	public void newEnumerationNoGood(NoGood noGood) {
-		learnedCounter++;
+		learnedCount++;
 	}
 
 	@Override
 	public void newLearnedNoGood(NoGood noGood) {
-		learnedCounter++;
+		learnedCount++;
 	}
 
 	@Override
 	public boolean isRebootScheduled() {
-		return learnedCounter >= breakpoint;
+		return learnedCount >= breakpoint;
 	}
 
 	@Override
 	public void rebootPerformed() {
-		learnedCounter = 0;
+		learnedCount = 0;
 	}
 }

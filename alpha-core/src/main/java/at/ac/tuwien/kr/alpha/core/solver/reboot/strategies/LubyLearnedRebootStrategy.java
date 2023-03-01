@@ -37,6 +37,11 @@ public class LubyLearnedRebootStrategy implements RebootStrategy {
 	}
 
 	@Override
+	public void newEnumerationNoGood(NoGood noGood) {
+		learnedCount++;
+	}
+
+	@Override
 	public void newLearnedNoGood(NoGood noGood) {
 		learnedCount++;
 	}

@@ -97,13 +97,13 @@ public class CommandLineParser {
 			.desc("disables repeated reboots resulting in at most one reboot during solving, only effective if reboot is enabled (default: " + SystemConfig.DEFAULT_DISABLE_REBOOT_REPEAT + ")").build();
 	private static final Option OPT_REBOOT_STRATEGY = Option.builder("rbs").longOpt("rebootStrategy").hasArg(true).argName("strategy")
 			.desc("the reboot strategy to use (default: " + SystemConfig.DEFAULT_REBOOT_STRATEGY.name() + ")").build();
-	private static final Option OPT_REBOOT_STRATEGY_ITERATIONS = Option.builder("rsi").longOpt("rebootIterations")
+	private static final Option OPT_REBOOT_STRATEGY_ITERATIONS = Option.builder("rsi").longOpt("rebootStrategyIterations")
 			.hasArg(true).argName("number").type(Integer.class)
 			.desc("the number of solver iterations between reboots for a fixed reboot strategy (default: " + SystemConfig.DEFAULT_REBOOT_STRATEGY_ITERATIONS + ")").build();
-	private static final Option OPT_REBOOT_STRATEGY_BASE = Option.builder("rsb").longOpt("rebootIterations")
+	private static final Option OPT_REBOOT_STRATEGY_BASE = Option.builder("rsb").longOpt("rebootStrategyBase")
 			.hasArg(true).argName("number").type(Double.class)
 			.desc("the base value of a reboot strategy (default: " + SystemConfig.DEFAULT_REBOOT_STRATEGY_BASE + ")").build();
-	private static final Option OPT_REBOOT_STRATEGY_FACTOR = Option.builder("rsf").longOpt("rebootIterations")
+	private static final Option OPT_REBOOT_STRATEGY_FACTOR = Option.builder("rsf").longOpt("rebootStrategyFactor")
 			.hasArg(true).argName("number").type(Double.class)
 			.desc("the scaling factor of a reboot strategy (default: " + SystemConfig.DEFAULT_REBOOT_STRATEGY_FACTOR + ")").build();
 	private static final Option OPT_SORT = Option.builder("sort").longOpt("sort").hasArg(false)
