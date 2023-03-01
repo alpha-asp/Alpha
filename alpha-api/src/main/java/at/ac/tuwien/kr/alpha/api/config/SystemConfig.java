@@ -52,7 +52,7 @@ public class SystemConfig {
 	public static final boolean DEFAULT_REBOOT_ENABLED = false;
 	public static final boolean DEFAULT_DISABLE_REBOOT_REPEAT = false;
 	public static final RebootStrategy DEFAULT_REBOOT_STRATEGY = RebootStrategy.ANSWER;
-	public static final int DEFAULT_REBOOT_STRATEGY_ITERATIONS = 10000;
+	public static final int DEFAULT_REBOOT_STRATEGY_INTERVAL = 10000;
 	public static final double DEFAULT_REBOOT_STRATEGY_BASE = 1.5;
 	public static final double DEFAULT_REBOOT_STRATEGY_FACTOR = 2;
 	public static final long DEFAULT_SEED = System.nanoTime();
@@ -82,7 +82,7 @@ public class SystemConfig {
 	private boolean rebootEnabled = DEFAULT_REBOOT_ENABLED;
 	private boolean disableRebootRepeat = DEFAULT_DISABLE_REBOOT_REPEAT;
 	private RebootStrategy rebootStrategy = DEFAULT_REBOOT_STRATEGY;
-	private int rebootStrategyIterations = DEFAULT_REBOOT_STRATEGY_ITERATIONS;
+	private int rebootStrategyInterval = DEFAULT_REBOOT_STRATEGY_INTERVAL;
 	private double rebootStrategyBase = DEFAULT_REBOOT_STRATEGY_BASE;
 	private double rebootStrategyFactor = DEFAULT_REBOOT_STRATEGY_FACTOR;
 	private boolean quiet = DEFAULT_QUIET;
@@ -159,12 +159,12 @@ public class SystemConfig {
 		this.rebootStrategy = RebootStrategy.valueOf(rebootStrategyName.replace("-", "_").toUpperCase());
 	}
 
-	public int getRebootStrategyIterations() {
-		return this.rebootStrategyIterations;
+	public int getRebootStrategyInterval() {
+		return this.rebootStrategyInterval;
 	}
 
-	public void setRebootStrategyIterations(int rebootStrategyIterations) {
-		this.rebootStrategyIterations = rebootStrategyIterations;
+	public void setRebootStrategyInterval(int rebootStrategyInterval) {
+		this.rebootStrategyInterval = rebootStrategyInterval;
 	}
 
 	public double getRebootStrategyBase() {

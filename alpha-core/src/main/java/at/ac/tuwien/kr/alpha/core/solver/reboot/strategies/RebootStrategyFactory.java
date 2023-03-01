@@ -6,7 +6,7 @@ public final class RebootStrategyFactory {
 	public static RebootStrategy getRebootStrategy(SystemConfig config) {
 		switch (config.getRebootStrategy()) {
 			case FIXED:
-				return new FixedLearnedRebootStrategy(config.getRebootStrategyIterations());
+				return new FixedLearnedRebootStrategy(config.getRebootStrategyInterval());
 			case GEOM:
 				return new GeometricLearnedRebootStrategy(config.getRebootStrategyBase(), config.getRebootStrategyFactor());
 			case LUBY:

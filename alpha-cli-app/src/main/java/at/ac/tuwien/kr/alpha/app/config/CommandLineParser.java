@@ -97,9 +97,9 @@ public class CommandLineParser {
 			.desc("disables repeated reboots resulting in at most one reboot during solving, only effective if reboot is enabled (default: " + SystemConfig.DEFAULT_DISABLE_REBOOT_REPEAT + ")").build();
 	private static final Option OPT_REBOOT_STRATEGY = Option.builder("rbs").longOpt("rebootStrategy").hasArg(true).argName("strategy")
 			.desc("the reboot strategy to use (default: " + SystemConfig.DEFAULT_REBOOT_STRATEGY.name() + ")").build();
-	private static final Option OPT_REBOOT_STRATEGY_ITERATIONS = Option.builder("rsi").longOpt("rebootStrategyIterations")
+	private static final Option OPT_REBOOT_STRATEGY_INTERVAL = Option.builder("rsi").longOpt("rebootStrategyInterval")
 			.hasArg(true).argName("number").type(Integer.class)
-			.desc("the number of solver iterations between reboots for a fixed reboot strategy (default: " + SystemConfig.DEFAULT_REBOOT_STRATEGY_ITERATIONS + ")").build();
+			.desc("the size of the interval between reboots for a fixed reboot strategy (default: " + SystemConfig.DEFAULT_REBOOT_STRATEGY_INTERVAL + ")").build();
 	private static final Option OPT_REBOOT_STRATEGY_BASE = Option.builder("rsb").longOpt("rebootStrategyBase")
 			.hasArg(true).argName("number").type(Double.class)
 			.desc("the base value of a reboot strategy (default: " + SystemConfig.DEFAULT_REBOOT_STRATEGY_BASE + ")").build();
@@ -184,7 +184,7 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_REBOOT_ENABLED);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_REBOOT_REPEAT);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_REBOOT_STRATEGY);
-		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_REBOOT_STRATEGY_ITERATIONS);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_REBOOT_STRATEGY_INTERVAL);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_REBOOT_STRATEGY_BASE);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_REBOOT_STRATEGY_FACTOR);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SORT);
@@ -248,7 +248,7 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_REBOOT_ENABLED.getOpt(), this::handleRebootEnabled);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_REBOOT_REPEAT.getOpt(), this::handleDisableRebootRepeat);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_REBOOT_STRATEGY.getOpt(), this::handleRebootStrategy);
-		this.globalOptionHandlers.put(CommandLineParser.OPT_REBOOT_STRATEGY_ITERATIONS.getOpt(), this::handleRebootStrategyIterations);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_REBOOT_STRATEGY_INTERVAL.getOpt(), this::handleRebootStrategyInterval);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_REBOOT_STRATEGY_BASE.getOpt(), this::handleRebootStrategyBase);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_REBOOT_STRATEGY_FACTOR.getOpt(), this::handleRebootStrategyFactor);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_SORT.getOpt(), this::handleSort);
@@ -389,14 +389,14 @@ public class CommandLineParser {
 		}
 	}
 
-	private void handleRebootStrategyIterations(Option opt, SystemConfig cfg) {
+	private void handleRebootStrategyInterval(Option opt, SystemConfig cfg) {
 		String optVal = opt.getValue();
 		int limit;
 		if (optVal != null) {
 			limit = Integer.parseInt(optVal);
-			cfg.setRebootStrategyIterations(limit);
+			cfg.setRebootStrategyInterval(limit);
 		} else {
-			cfg.setRebootStrategyIterations(SystemConfig.DEFAULT_REBOOT_STRATEGY_ITERATIONS);
+			cfg.setRebootStrategyInterval(SystemConfig.DEFAULT_REBOOT_STRATEGY_INTERVAL);
 		}
 	}
 
