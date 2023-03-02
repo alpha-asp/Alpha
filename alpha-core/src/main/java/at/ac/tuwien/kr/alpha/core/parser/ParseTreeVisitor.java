@@ -27,43 +27,22 @@
  */
 package at.ac.tuwien.kr.alpha.core.parser;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.tree.TerminalNode;
-
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.*;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead.ChoiceElement;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.api.programs.terms.ArithmeticOperator;
-import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.api.programs.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
-import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.*;
 import at.ac.tuwien.kr.alpha.api.programs.tests.Assertion;
+import at.ac.tuwien.kr.alpha.api.programs.tests.TestCase;
 import at.ac.tuwien.kr.alpha.commons.AnswerSets;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
@@ -74,9 +53,14 @@ import at.ac.tuwien.kr.alpha.commons.programs.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.programs.tests.Tests;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
-import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser.StatementsContext;
+import org.antlr.v4.runtime.RuleContext;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
+import java.util.*;
+import java.util.function.IntPredicate;
 
 /**
  * Copyright (c) 2016-2018, the Alpha Team.
@@ -85,8 +69,15 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	private final Map<String, PredicateInterpretation> externals;
 	private final boolean acceptVariables;
 
-	private ASPCore2ProgramBuilder programBuilder;
 	private InlineDirectives inlineDirectives;
+
+	/*
+	 * Since verifiers for tests are ASP programs in themselves, we need to parse nested programs.
+	 * Therefore, have a stack onto which we "park" a program builder for the outer scope (i.e. main program)
+	 * while we parse the inner scope (i.e. test verifier).
+	 */
+	private ASPCore2ProgramBuilder currentLevelProgramBuilder;
+	private Stack<ASPCore2ProgramBuilder> programBuilders = new Stack<>();
 
 	public ParseTreeVisitor(Map<String, PredicateInterpretation> externals) {
 		this(externals, true);
@@ -164,10 +155,10 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			return Programs.emptyProgram();
 		}
 		inlineDirectives = Programs.newInlineDirectives();
-		programBuilder = Programs.builder();
+		currentLevelProgramBuilder = Programs.builder();
 		visitStatements(ctx.statements());
-		programBuilder.addInlineDirectives(inlineDirectives);
-		return programBuilder.build();
+		currentLevelProgramBuilder.addInlineDirectives(inlineDirectives);
+		return currentLevelProgramBuilder.build();
 	}
 
 	@Override
@@ -184,10 +175,10 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		// head DOT
 		Head head = visitHead(ctx.head());
 		if (head instanceof NormalHead) {
-			programBuilder.addFact(((NormalHead) head).getAtom());
+			currentLevelProgramBuilder.addFact(((NormalHead) head).getAtom());
 		} else {
 			// Treat facts with choice or disjunction in the head like a rule.
-			programBuilder.addRule(Rules.newRule(head, Collections.emptyList()));
+			currentLevelProgramBuilder.addRule(Rules.newRule(head, Collections.emptyList()));
 		}
 		return null;
 	}
@@ -195,14 +186,14 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Object visitStatement_constraint(ASPCore2Parser.Statement_constraintContext ctx) {
 		// CONS body DOT
-		programBuilder.addRule(Rules.newRule(null, visitBody(ctx.body())));
+		currentLevelProgramBuilder.addRule(Rules.newRule(null, visitBody(ctx.body())));
 		return null;
 	}
 
 	@Override
 	public Object visitStatement_rule(ASPCore2Parser.Statement_ruleContext ctx) {
 		// head CONS body DOT
-		programBuilder.addRule(Rules.newRule(visitHead(ctx.head()), visitBody(ctx.body())));
+		currentLevelProgramBuilder.addRule(Rules.newRule(visitHead(ctx.head()), visitBody(ctx.body())));
 		return null;
 	}
 
@@ -297,6 +288,25 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	public Object visitDirective_enumeration(ASPCore2Parser.Directive_enumerationContext ctx) {
 		// directive_enumeration : SHARP 'enum_predicate_is' ID DOT;
 		inlineDirectives.addDirective(InlineDirectives.DIRECTIVE.enum_predicate_is, ctx.ID().getText());
+		return null;
+	}
+
+	@Override
+	public Object visitDirective_test(ASPCore2Parser.Directive_testContext ctx) {
+		String name = ctx.ID().getText();
+		IntPredicate answerSetCountVerifier = visitTest_satisfiability_condition(ctx.test_satisfiability_condition());
+		Set<BasicAtom> input = visitTest_input(ctx.test_input());
+		Set<Assertion> assertions;
+		if (ctx.test_assert() == null) {
+			assertions = Collections.emptySet();
+		} else {
+			assertions = new LinkedHashSet<>();
+			for (ASPCore2Parser.Test_assertContext assertionCtx : ctx.test_assert()) {
+				assertions.add(visitTest_assert(assertionCtx));
+			}
+		}
+		TestCase testCase = Tests.newTestCase(name, answerSetCountVerifier, input, assertions);
+		currentLevelProgramBuilder.addTestCase(testCase);
 		return null;
 	}
 
@@ -624,22 +634,70 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		return Terms.newArithmeticTerm((Term) visit(ctx.term(0)), ArithmeticOperator.BITXOR, (Term) visit(ctx.term(1)));
 	}
 
-	@Override
-	public Assertion visitTest_assert_all(ASPCore2Parser.Test_assert_allContext ctx) {
-		StatementsContext stmtCtx = ctx.statements();
-		if(stmtCtx == null) { // empty verifier for a test case is OK
-
+	public IntPredicate visitTest_satisfiability_condition(ASPCore2Parser.Test_satisfiability_conditionContext ctx) {
+		// 'expect' COLON ('unsat' | (binop? NUMBER));
+		if (ctx.binop() == null && ctx.NUMBER() == null) {
+			// 'unsat'
+			return (i) -> i == 0;
+		} else {
+			// binop? NUMBER
+			int num = Integer.valueOf(ctx.NUMBER().getText());
+			if (ctx.binop() == null) {
+				return (i) -> i == num;
+			} else {
+				ComparisonOperator op = visitBinop(ctx.binop());
+				return (i) -> op.compare(Terms.newConstant(i), Terms.newConstant(num));
+			}
 		}
-		return null; // TODO
 	}
 
-	public ASPCore2Program visitTestVerifier(ASPCore2Parser.StatementsContext ctx) {
-		return null; // TODO
+	@Override
+	public Set<BasicAtom> visitTest_input(ASPCore2Parser.Test_inputContext ctx) {
+		if (ctx.basic_atom() == null) {
+			return Collections.emptySet();
+		}
+		Set<BasicAtom> result = new LinkedHashSet<>();
+		for (ASPCore2Parser.Basic_atomContext atomCtx : ctx.basic_atom()) {
+			result.add(visitBasic_atom(atomCtx));
+		}
+		return result;
+	}
+
+	public Assertion visitTest_assert(ASPCore2Parser.Test_assertContext ctx) {
+		if (ctx.test_assert_all() != null) {
+			return visitTest_assert_all(ctx.test_assert_all());
+		} else if (ctx.test_assert_some() != null) {
+			return visitTest_assert_some(ctx.test_assert_some());
+		} else {
+			throw new IllegalArgumentException("Unsupported assertion mode at: " + ctx.getText());
+		}
+	}
+
+	@Override
+	public Assertion visitTest_assert_all(ASPCore2Parser.Test_assert_allContext ctx) {
+		// 'assert' 'for' 'all' CURLY_OPEN statements? CURLY_CLOSE;
+		return visitTestVerifier(Assertion.Mode.FOR_ALL, ctx.statements());
 	}
 
 	@Override
 	public Assertion visitTest_assert_some(ASPCore2Parser.Test_assert_someContext ctx) {
-		return null; // TODO
-	} 
+		// 'assert' 'for' 'some' CURLY_OPEN statements? CURLY_CLOSE;
+		return visitTestVerifier(Assertion.Mode.FOR_SOME, ctx.statements());
+	}
+
+	public Assertion visitTestVerifier(Assertion.Mode assertionMode, ASPCore2Parser.StatementsContext ctx) {
+		if (ctx == null) { // empty verifier for a test case is OK
+			return Tests.newAssertion(assertionMode, Programs.emptyProgram());
+		}
+		List<ASPCore2Parser.StatementContext> stmts = ctx.statement();
+		programBuilders.push(currentLevelProgramBuilder);
+		currentLevelProgramBuilder = new ASPCore2ProgramBuilder();
+		for (ASPCore2Parser.StatementContext stmtCtx : stmts) {
+			visit(stmtCtx);
+		}
+		ASPCore2Program verifier = currentLevelProgramBuilder.build();
+		currentLevelProgramBuilder = programBuilders.pop();
+		return Tests.newAssertion(assertionMode, verifier);
+	}
 
 }

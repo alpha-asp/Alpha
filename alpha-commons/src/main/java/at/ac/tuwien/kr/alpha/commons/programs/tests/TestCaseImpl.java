@@ -6,6 +6,7 @@ import java.util.function.IntPredicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.tests.Assertion;
 import at.ac.tuwien.kr.alpha.api.programs.tests.TestCase;
+import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 class TestCaseImpl implements TestCase {
 
@@ -40,5 +41,12 @@ class TestCaseImpl implements TestCase {
 	public Set<Assertion> getAssertions() {
 		return assertions;
 	}
-	
+
+	public String toString() {
+		String ls = System.lineSeparator();
+		String inputString = input.isEmpty() ? "" : Util.join("", input, ls, ls);
+		String assertionsString = assertions.isEmpty() ? "" : Util.join("", assertions, ls, ls);
+		return "#test " + name + "(expect: " + answerSetCountVerifier.toString() + ") { " + ls + inputString + assertionsString + "}";
+	}
+
 }

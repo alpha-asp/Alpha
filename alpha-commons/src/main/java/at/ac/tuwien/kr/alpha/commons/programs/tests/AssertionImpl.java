@@ -22,5 +22,10 @@ class AssertionImpl implements Assertion {
 	public ASPCore2Program getVerifier() {
 		return verifier;
 	}
-	
+
+	@Override
+	public String toString() {
+		return  "assert " + mode.toString() + "{" + verifier.toString() + "}";
+	}
+
 }

@@ -1,13 +1,13 @@
 package at.ac.tuwien.kr.alpha.commons.programs;
 
-import java.util.Collections;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * The parent type for all kinds of programs. Defines a program's basic structure (facts + rules + inlineDirectives)
@@ -40,14 +40,13 @@ public abstract class AbstractProgram<R extends Rule<? extends Head>> {
 		return inlineDirectives;
 	}
 
+
 	@Override
 	public String toString() {
 		final String ls = System.lineSeparator();
-		final String result = facts.isEmpty() ? "" : Util.join("", facts, "." + ls, "." + ls);
-		if (rules.isEmpty()) {
-			return result;
-		}
-		return Util.join(result, rules, ls, ls);
+		final String factString = facts.isEmpty() ? "" : Util.join("", facts, "." + ls, "." + ls);
+		final String ruleString = rules.isEmpty() ? "" : Util.join("", rules, ls, ls);
+		return factString + ruleString;
 	}
 
 }

@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.commons.programs;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
@@ -10,6 +11,7 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.tests.TestCase;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 
 public final class Programs {
@@ -22,8 +24,12 @@ public final class Programs {
 		return ASPCore2ProgramImpl.EMPTY;
 	}
 
+	public static ASPCore2Program newASPCore2Program(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives, List<TestCase> testCases) {
+		return new ASPCore2ProgramImpl(rules, facts, inlineDirectives, testCases);
+	}
+
 	public static ASPCore2Program newASPCore2Program(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
-		return new ASPCore2ProgramImpl(rules, facts, inlineDirectives);
+		return new ASPCore2ProgramImpl(rules, facts, inlineDirectives, Collections.emptyList());
 	}
 
 	public static ASPCore2ProgramBuilder builder() {
@@ -59,10 +65,13 @@ public final class Programs {
 		private List<Atom> facts = new ArrayList<>();
 		private InlineDirectives inlineDirectives = new InlineDirectivesImpl();
 
+		private List<TestCase> testCases = new ArrayList<>();
+
 		public ASPCore2ProgramBuilder(ASPCore2Program prog) {
 			this.addRules(prog.getRules());
 			this.addFacts(prog.getFacts());
 			this.addInlineDirectives(prog.getInlineDirectives());
+			this.addTestCases(prog.getTestCases());
 		}
 
 		public ASPCore2ProgramBuilder() {
@@ -94,12 +103,22 @@ public final class Programs {
 			return this;
 		}
 
+		public ASPCore2ProgramBuilder addTestCase(TestCase testCase) {
+			this.testCases.add(testCase);
+			return this;
+		}
+
+		public ASPCore2ProgramBuilder addTestCases(List<TestCase> testCases) {
+			this.testCases.addAll(testCases);
+			return this;
+		}
+
 		public ASPCore2ProgramBuilder accumulate(ASPCore2Program prog) {
-			return this.addRules(prog.getRules()).addFacts(prog.getFacts()).addInlineDirectives(prog.getInlineDirectives());
+			return this.addRules(prog.getRules()).addFacts(prog.getFacts()).addInlineDirectives(prog.getInlineDirectives()).addTestCases(prog.getTestCases());
 		}
 
 		public ASPCore2Program build() {
-			return Programs.newASPCore2Program(this.rules, this.facts, this.inlineDirectives);
+			return Programs.newASPCore2Program(this.rules, this.facts, this.inlineDirectives, this.testCases);
 		}
 
 	}

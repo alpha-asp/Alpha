@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import at.ac.tuwien.kr.alpha.api.programs.tests.TestCase;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.junit.jupiter.api.Test;
@@ -65,6 +66,14 @@ import at.ac.tuwien.kr.alpha.commons.util.Util;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ParserTest {
+
+	private static final String UNIT_TEST_EXPECT_UNSAT =
+			"p(1). p(2). "
+			+ ":- p(X), p(Y), X + Y = 3."
+			+ "#test this_is_unsat(expect: unsat) {"
+			+ "input {}"
+			+ "}";
+
 	private final ProgramParserImpl parser = new ProgramParserImpl();
 
 	@Test
@@ -227,6 +236,14 @@ public class ParserTest {
 		Atom stringAtom = prog.getFacts().get(0);
 		String stringWithQuotes = stringAtom.getTerms().get(0).toString();
 		assertEquals("\"a string with \"quotes\"\"", stringWithQuotes);
+	}
+
+	@Test
+	public void unitTestExpectUnsat() {
+		ASPCore2Program prog = parser.parse(UNIT_TEST_EXPECT_UNSAT);
+		assertEquals(1, prog.getTestCases().size());
+		TestCase tc = prog.getTestCases().get(0);
+		assertEquals("this_is_unsat", tc.getName());
 	}
 
 }

@@ -83,8 +83,9 @@ directive : directive_enumeration | directive_test;  // NOT Core2 syntax, allows
 
 directive_enumeration : SHARP 'enumeration_predicate_is' ID DOT;  // NOT Core2 syntax, used for aggregate translation.
 
+// TODO change lexer rules s.t. test-specific keywords can still be used as IDs!
 // Alpha-specific language extension: Unit Tests (-> https://github.com/alpha-asp/Alpha/issues/237)
-directive_test : SHARP 'test' ID PAREN_OPEN 'expect' COLON ('unsat' | (binop? NUMBER)) PAREN_CLOSE CURLY_OPEN test_input test_assert+ CURLY_CLOSE;
+directive_test : SHARP 'test' ID PAREN_OPEN test_satisfiability_condition PAREN_CLOSE CURLY_OPEN test_input test_assert* CURLY_CLOSE;
 
 basic_terms : basic_term (COMMA basic_terms)? ;
 
@@ -97,6 +98,8 @@ variable_term : VARIABLE | ANONYMOUS_VARIABLE;
 answer_set : CURLY_OPEN classical_literal? (COMMA classical_literal)* CURLY_CLOSE;
 
 answer_sets : answer_set* EOF;
+
+test_satisfiability_condition : 'expect' COLON ('unsat' | (binop? NUMBER));
 
 test_input : 'input' CURLY_OPEN (basic_atom DOT)* CURLY_CLOSE;
 
