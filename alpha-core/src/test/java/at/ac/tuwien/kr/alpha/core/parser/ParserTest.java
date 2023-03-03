@@ -70,8 +70,8 @@ public class ParserTest {
 	private static final String UNIT_TEST_EXPECT_UNSAT =
 			"p(1). p(2). "
 			+ ":- p(X), p(Y), X + Y = 3."
-			+ "#test this_is_unsat(expect: unsat) {"
-			+ "input {}"
+			+ "#test expected_unsat(expect: unsat) {"
+			+ "given {}"
 			+ "}";
 
 	private final ProgramParserImpl parser = new ProgramParserImpl();
@@ -243,7 +243,7 @@ public class ParserTest {
 		ASPCore2Program prog = parser.parse(UNIT_TEST_EXPECT_UNSAT);
 		assertEquals(1, prog.getTestCases().size());
 		TestCase tc = prog.getTestCases().get(0);
-		assertEquals("this_is_unsat", tc.getName());
+		assertEquals("expected_unsat", tc.getName());
 	}
 
 }

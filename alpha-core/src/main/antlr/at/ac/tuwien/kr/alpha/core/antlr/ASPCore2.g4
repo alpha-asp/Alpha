@@ -85,7 +85,7 @@ directive_enumeration : SHARP 'enumeration_predicate_is' ID DOT;  // NOT Core2 s
 
 // TODO change lexer rules s.t. test-specific keywords can still be used as IDs!
 // Alpha-specific language extension: Unit Tests (-> https://github.com/alpha-asp/Alpha/issues/237)
-directive_test : SHARP 'test' ID PAREN_OPEN test_satisfiability_condition PAREN_CLOSE CURLY_OPEN test_input test_assert* CURLY_CLOSE;
+directive_test : DIRECTIVE_TEST ID PAREN_OPEN test_satisfiability_condition PAREN_CLOSE CURLY_OPEN test_input test_assert* CURLY_CLOSE;
 
 basic_terms : basic_term (COMMA basic_terms)? ;
 
@@ -99,13 +99,13 @@ answer_set : CURLY_OPEN classical_literal? (COMMA classical_literal)* CURLY_CLOS
 
 answer_sets : answer_set* EOF;
 
-test_satisfiability_condition : 'expect' COLON ('unsat' | (binop? NUMBER));
+test_satisfiability_condition : TEST_EXPECT COLON (TEST_UNSAT | (binop? NUMBER));
 
-test_input : 'input' CURLY_OPEN (basic_atom DOT)* CURLY_CLOSE;
+test_input : TEST_GIVEN CURLY_OPEN (basic_atom DOT)* CURLY_CLOSE;
 
 test_assert : test_assert_all | test_assert_some;
 
-test_assert_all : 'assert' 'for' 'all' CURLY_OPEN statements? CURLY_CLOSE;
+test_assert_all : TEST_ASSERT_ALL CURLY_OPEN statements? CURLY_CLOSE;
 
-test_assert_some : 'assert' 'for' 'some' CURLY_OPEN statements? CURLY_CLOSE;
+test_assert_some : TEST_ASSERT_SOME CURLY_OPEN statements? CURLY_CLOSE;
 

@@ -40,6 +40,14 @@ AGGREGATE_MAX : '#max';
 AGGREGATE_MIN : '#min';
 AGGREGATE_SUM : '#sum';
 
+DIRECTIVE_TEST : '#test';
+TEST_EXPECT : 'expect';
+TEST_UNSAT : 'unsat';
+TEST_GIVEN : 'given';
+TEST_ASSERT_ALL : 'assertForAll';
+TEST_ASSERT_SOME : 'assertForSome';
+
+
 ID : ('a'..'z') ( 'A'..'Z' | 'a'..'z' | '0'..'9' | '_' )*;
 VARIABLE : ('A'..'Z') ( 'A'..'Z' | 'a'..'z' | '0'..'9' | '_' )*;
 NUMBER : '0' | ('1'..'9') ('0'..'9')*;
