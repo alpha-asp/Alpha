@@ -27,6 +27,7 @@ public class InputConfig {
 	public static final boolean DEFAULT_WRITE_XLSX = false;
 	public static final String DEFAULT_XLSX_OUTFILE_PATH = "alphaAnswerSet"; // current directory, files named "alphaAnswerSet.{num}.{ext}"
 	public static final boolean DEFAULT_REIFY_INPUT = false;
+	public static final boolean DEFAULT_RUN_TESTS = false;
 
 	private List<String> aspStrings = new ArrayList<>();
 	private List<String> files = new ArrayList<>();
@@ -41,6 +42,7 @@ public class InputConfig {
 	private boolean writeAnswerSetsAsXlsx = InputConfig.DEFAULT_WRITE_XLSX;
 	private String answerSetFileOutputPath;
 	private boolean reifyInput = InputConfig.DEFAULT_REIFY_INPUT;
+	private boolean runTests = InputConfig.DEFAULT_RUN_TESTS;
 
 	private Map<String, PredicateInterpretation> predicateMethods = new HashMap<>();
 	
@@ -217,6 +219,14 @@ public class InputConfig {
 
 	public void setReifyInput(boolean reifyInput) {
 		this.reifyInput = reifyInput;
+	}
+
+	public boolean isRunTests() {
+		return runTests;
+	}
+
+	public void setRunTests(boolean runTests) {
+		this.runTests = runTests;
 	}
 
 }
