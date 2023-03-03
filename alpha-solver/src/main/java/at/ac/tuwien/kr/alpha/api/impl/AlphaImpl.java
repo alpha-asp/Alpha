@@ -27,25 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.api.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.channels.Channels;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.annotations.VisibleForTesting;
-
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
@@ -60,11 +41,16 @@ import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.tests.Assertion;
+import at.ac.tuwien.kr.alpha.api.programs.tests.TestCase;
+import at.ac.tuwien.kr.alpha.api.programs.tests.TestResult;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.reification.Reifier;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.programs.tests.Tests;
 import at.ac.tuwien.kr.alpha.commons.util.IdGenerator;
 import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
@@ -79,6 +65,21 @@ import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.channels.Channels;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.function.IntPredicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AlphaImpl implements Alpha {
 
@@ -304,5 +305,62 @@ public class AlphaImpl implements Alpha {
 	public Set<BasicAtom> reify(ASPCore2Program program) {
 		return reifier.reifyProgram(program);
 	}
+
+	public TestResult test(ASPCore2Program program) {
+		NormalProgram programUnderTest = normalizeProgram(program);
+		for (TestCase testCase : program.getTestCases()) {
+			runTestCase(programUnderTest, testCase, true); // TODO
+		}
+		return null; // TODO
+	}
+
+	private TestResult.TestCaseResult runTestCase(NormalProgram programUnderTest, TestCase testCase, boolean skipOnFailure) {
+		List<Atom> facts = new ArrayList<>(programUnderTest.getFacts());
+		facts.addAll(testCase.getInput());
+		NormalProgram prog = Programs.newNormalProgram(programUnderTest.getRules(), facts, programUnderTest.getInlineDirectives());
+		Set<AnswerSet> answerSets = solve(prog).collect(Collectors.toSet());
+		IntPredicate answerSetsVerifier = testCase.getAnswerSetCountVerifier();
+		Optional<String> answerSetCountErrMsg;
+		if (!answerSetsVerifier.test(answerSets.size())) {
+			answerSetCountErrMsg = Optional.of("Answer Set count incorrect, verifier: " + answerSetsVerifier + " failed, count is " + answerSets.size());
+			if (skipOnFailure) {
+				return Tests.newTestCaseResult(testCase.getName(), answerSetCountErrMsg, 0, 0, testCase.getAssertions().size(), Collections.emptyMap());
+			}
+		}
+		int passedCnt = 0;
+		int failedCnt = 0;
+		Map<Assertion, List<String>> assertionErrors = new LinkedHashMap<>();
+		for (Assertion assertion : testCase.getAssertions()) {
+			java.util.function.Predicate<AnswerSet> assertionMatcher = (as) -> this.answerSetSatisfiesAssertion(as, assertion);
+			List<String> errorList = assertionErrors.computeIfAbsent(assertion, (ass) -> new ArrayList<>());
+			switch (assertion.getMode()) {
+				case FOR_ALL:
+					if (!answerSets.stream().allMatch(assertionMatcher)) {
+						errorList.addAll(
+								answerSets.stream()
+										.filter(assertionMatcher.negate())
+										.map((as) -> "Universal assertion failed on answer set: " + as)
+										.collect(Collectors.toSet())
+						);
+					}
+					break;
+				case FOR_SOME:
+					if (answerSets.stream().noneMatch(assertionMatcher)) {
+						errorList.add("No answer set matches existential assertion!");
+					}
+					break;
+				default:
+					throw new UnsupportedOperationException("Unsupported assertion mode: " + assertion.getMode());
+			}
+		}
+		return null; // TODO
+	}
+
+	private boolean answerSetSatisfiesAssertion(AnswerSet as, Assertion assertion) {
+		ASPCore2Program verifierWithInput = Programs.builder(assertion.getVerifier()).addFacts(new ArrayList<>(as.asFacts())).build();
+		return solve(verifierWithInput).findAny().isPresent();
+	}
+
+
 
 }
