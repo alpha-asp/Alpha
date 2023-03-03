@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.api.programs.tests;
 
+import java.util.List;
 import java.util.Set;
 import java.util.function.IntPredicate;
 
@@ -13,6 +14,6 @@ public interface TestCase {
 
 	Set<BasicAtom> getInput();
 
-	Set<Assertion> getAssertions();
+	List<Assertion> getAssertions();
 
 }

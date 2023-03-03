@@ -296,11 +296,11 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		String name = ctx.ID().getText();
 		IntPredicate answerSetCountVerifier = visitTest_satisfiability_condition(ctx.test_satisfiability_condition());
 		Set<BasicAtom> input = visitTest_input(ctx.test_input());
-		Set<Assertion> assertions;
+		List<Assertion> assertions;
 		if (ctx.test_assert() == null) {
-			assertions = Collections.emptySet();
+			assertions = Collections.emptyList();
 		} else {
-			assertions = new LinkedHashSet<>();
+			assertions = new ArrayList<>();
 			for (ASPCore2Parser.Test_assertContext assertionCtx : ctx.test_assert()) {
 				assertions.add(visitTest_assert(assertionCtx));
 			}
@@ -638,15 +638,15 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		// 'expect' COLON ('unsat' | (binop? NUMBER));
 		if (ctx.binop() == null && ctx.NUMBER() == null) {
 			// 'unsat'
-			return (i) -> i == 0;
+			return Tests.newIsUnsatCondition();
 		} else {
 			// binop? NUMBER
 			int num = Integer.valueOf(ctx.NUMBER().getText());
 			if (ctx.binop() == null) {
-				return (i) -> i == num;
+				return Tests.newAnswerSetCountCondition(ComparisonOperators.EQ, num);
 			} else {
 				ComparisonOperator op = visitBinop(ctx.binop());
-				return (i) -> op.compare(Terms.newConstant(i), Terms.newConstant(num));
+				return Tests.newAnswerSetCountCondition(op, num);
 			}
 		}
 	}

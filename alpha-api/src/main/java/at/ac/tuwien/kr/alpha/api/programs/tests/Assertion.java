@@ -5,8 +5,8 @@ import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 public interface Assertion {
 	
 	enum Mode {
-		FOR_ALL("for all"),
-		FOR_SOME("for some");
+		FOR_ALL("forAll"),
+		FOR_SOME("forSome");
 
 		private final String text;
 

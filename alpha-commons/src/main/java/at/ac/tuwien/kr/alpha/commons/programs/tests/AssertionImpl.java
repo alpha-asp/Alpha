@@ -25,7 +25,7 @@ class AssertionImpl implements Assertion {
 
 	@Override
 	public String toString() {
-		return  "assert " + mode.toString() + "{" + verifier.toString() + "}";
+		return  "assert" + mode.toString() + " {" + System.lineSeparator() + verifier.toString() + "}";
 	}
 
 }

@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.commons.programs.tests;
 
+import java.util.List;
 import java.util.Set;
 import java.util.function.IntPredicate;
 
@@ -13,9 +14,9 @@ class TestCaseImpl implements TestCase {
 	private final String name;
 	private final IntPredicate answerSetCountVerifier;
 	private final Set<BasicAtom> input;
-	private final Set<Assertion> assertions;
+	private final List<Assertion> assertions;
 
-	TestCaseImpl(final String name, final IntPredicate answerSetCountVerifier, final Set<BasicAtom> input, final Set<Assertion> assertions) {
+	TestCaseImpl(final String name, final IntPredicate answerSetCountVerifier, final Set<BasicAtom> input, final List<Assertion> assertions) {
 		this.name = name;
 		this.answerSetCountVerifier = answerSetCountVerifier;
 		this.input = input;
@@ -38,15 +39,15 @@ class TestCaseImpl implements TestCase {
 	}
 
 	@Override
-	public Set<Assertion> getAssertions() {
+	public List<Assertion> getAssertions() {
 		return assertions;
 	}
 
 	public String toString() {
 		String ls = System.lineSeparator();
-		String inputString = input.isEmpty() ? "" : Util.join("", input, ls, ls);
-		String assertionsString = assertions.isEmpty() ? "" : Util.join("", assertions, ls, ls);
-		return "#test " + name + "(expect: " + answerSetCountVerifier.toString() + ") { " + ls + inputString + assertionsString + "}";
+		String inputString = input.isEmpty() ? "" : Util.join("{", input, ls, "}");
+		String assertionsString = assertions.isEmpty() ? "" : Util.join(ls, assertions, ls, ls);
+		return "#test " + name + "(expect: " + answerSetCountVerifier.toString() + ") { " + ls + "given " + inputString + assertionsString + "}";
 	}
 
 }
