@@ -8,6 +8,10 @@ public interface TestResult {
 
 	List<TestCaseResult> getTestCaseResults();
 
+	default boolean isSuccess() {
+		return getTestCaseResults().stream().allMatch(TestCaseResult::isSuccess);
+	}
+
 	interface TestCaseResult {
 
 		String getTestCaseName();
@@ -18,12 +22,10 @@ public interface TestResult {
 
 		int getAssertionsFailed();
 
-		int getAssertionsSkipped();
-
 		Map<Assertion, List<String>> getAssertionErrors();
 
-		default boolean isSuccessful() {
-			return answerSetCountVerificationResult().isEmpty() && getAssertionsFailed() == 0 && getAssertionsSkipped() == 0;
+		default boolean isSuccess() {
+			return answerSetCountVerificationResult().isEmpty() && getAssertionsFailed() == 0;
 		}
 
 	}

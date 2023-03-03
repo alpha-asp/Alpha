@@ -58,7 +58,7 @@ public final class Tests {
 		};
 	}
 
-	public static TestResult.TestCaseResult newTestCaseResult(String testCaseName, Optional<String> answerSetCountResult, int assertionsPassed, int assertionsFailed, int assertionsSkipped, Map<Assertion, List<String>> assertionErrors) {
+	public static TestResult.TestCaseResult newTestCaseResult(String testCaseName, Optional<String> answerSetCountResult, int assertionsPassed, int assertionsFailed, Map<Assertion, List<String>> assertionErrors) {
 		return  new TestResult.TestCaseResult() {
 			@Override
 			public String getTestCaseName() {
@@ -78,11 +78,6 @@ public final class Tests {
 			@Override
 			public int getAssertionsFailed() {
 				return assertionsFailed;
-			}
-
-			@Override
-			public int getAssertionsSkipped() {
-				return assertionsSkipped;
 			}
 
 			@Override
