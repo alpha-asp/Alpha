@@ -89,7 +89,7 @@ public class CommandLineParser {
 	private static final Option OPT_WRITE_XSLX = Option.builder("wx").longOpt("write-xlsx").hasArg(true).argName("path").type(String.class)
 			.desc("Write answer sets to excel files, i.e. xlsx workbooks (one workbook per answer set)").build();
 	private static final Option OPT_REIFY = Option.builder("reify").longOpt("reifyProgram").hasArg(false).desc("Reifies, i.e. encodes as ASP facts, the given program.").build();
-	private static final Option OPT_RUN_TESTS = Option.builder("t").longOpt("--run-tests").hasArg(false).desc("Runs all unit tests of the given ASP Program").build();
+	private static final Option OPT_RUN_TESTS = Option.builder("t").longOpt("run-tests").hasArg(false).desc("Runs all unit tests of the given ASP Program").build();
 
 	// general system-wide config
 	private static final Option OPT_GROUNDER = Option.builder("g").longOpt("grounder").hasArg(true).argName("grounder")
