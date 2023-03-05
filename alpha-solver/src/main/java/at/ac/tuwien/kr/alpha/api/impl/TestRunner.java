@@ -69,10 +69,10 @@ class TestRunner {
 			}
 			if (!errors.isEmpty()) {
 				failedCnt++;
+				assertionErrors.put(assertion, errors);
 			} else {
 				passedCnt++;
 			}
-
 		}
 		return Tests.newTestCaseResult(testCase.getName(), answerSetCountErrMsg, passedCnt, failedCnt, assertionErrors);
 	}
