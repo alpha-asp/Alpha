@@ -46,7 +46,9 @@ naf_literals : naf_literal (COMMA naf_literals)?;
 
 naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
 
-basic_atom : ID (PAREN_OPEN terms PAREN_CLOSE)?;
+id : ID | TEST_EXPECT | TEST_UNSAT | TEST_GIVEN | TEST_ASSERT_ALL | TEST_ASSERT_SOME | DIRECTIVE_ENUM | DIRECTIVE_TEST;
+
+basic_atom : id (PAREN_OPEN terms PAREN_CLOSE)?;
 
 classical_literal : MINUS? basic_atom;
 
@@ -56,8 +58,8 @@ binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
 
 terms : term (COMMA terms)?;
 
-term : ID                                   # term_const
-     | ID (PAREN_OPEN terms? PAREN_CLOSE)   # term_func
+term : id                                   # term_const
+     | id (PAREN_OPEN terms? PAREN_CLOSE)   # term_func
      | numeral                              # term_number
      | QUOTED_STRING                        # term_string
      | VARIABLE                             # term_variable
@@ -77,21 +79,21 @@ interval : lower = interval_bound DOT DOT upper = interval_bound; // NOT Core2 s
 
 interval_bound : numeral | VARIABLE;
 
-external_atom : MINUS? AMPERSAND ID (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?; // NOT Core2 syntax.
+external_atom : MINUS? AMPERSAND id (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?; // NOT Core2 syntax.
 
 directive : directive_enumeration | directive_test;  // NOT Core2 syntax, allows solver specific directives. Further directives shall be added here.
 
-directive_enumeration : SHARP 'enumeration_predicate_is' ID DOT;  // NOT Core2 syntax, used for aggregate translation.
+directive_enumeration :  SHARP DIRECTIVE_ENUM id DOT;  // NOT Core2 syntax, used for aggregate translation.
 
 // TODO change lexer rules s.t. test-specific keywords can still be used as IDs!
 // Alpha-specific language extension: Unit Tests (-> https://github.com/alpha-asp/Alpha/issues/237)
-directive_test : DIRECTIVE_TEST ID PAREN_OPEN test_satisfiability_condition PAREN_CLOSE CURLY_OPEN test_input test_assert* CURLY_CLOSE;
+directive_test : SHARP DIRECTIVE_TEST id PAREN_OPEN test_satisfiability_condition PAREN_CLOSE CURLY_OPEN test_input test_assert* CURLY_CLOSE;
 
 basic_terms : basic_term (COMMA basic_terms)? ;
 
 basic_term : ground_term | variable_term;
 
-ground_term : /*SYMBOLIC_CONSTANT*/ ID | QUOTED_STRING | numeral;
+ground_term : /*SYMBOLIC_CONSTANT*/ id | QUOTED_STRING | numeral;
 
 variable_term : VARIABLE | ANONYMOUS_VARIABLE;
 

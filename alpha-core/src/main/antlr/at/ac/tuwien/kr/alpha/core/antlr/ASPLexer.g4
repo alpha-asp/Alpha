@@ -40,7 +40,9 @@ AGGREGATE_MAX : '#max';
 AGGREGATE_MIN : '#min';
 AGGREGATE_SUM : '#sum';
 
-DIRECTIVE_TEST : '#test';
+DIRECTIVE_ENUM : 'enumeration_predicate_is';
+
+DIRECTIVE_TEST : 'test';
 TEST_EXPECT : 'expect';
 TEST_UNSAT : 'unsat';
 TEST_GIVEN : 'given';

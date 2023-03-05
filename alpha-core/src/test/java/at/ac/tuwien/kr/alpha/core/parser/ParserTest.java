@@ -84,6 +84,9 @@ public class ParserTest {
 			"a :- b. #test ensure_a(expect: 1) { given { b. } assertForAll { :- not a. }} " +
 					"#test ensure_not_c (expect: 1) { given { b.} assertForAll { :- c. }}";
 
+	private static final String UNIT_TEST_KEYWORDS_AS_IDS =
+			"assert(a) :- given(b). # test test(expect: 1) { given { given(b). } assertForAll { :- not assert(a). :- assertForSome(b).}}";
+
 	private final ProgramParserImpl parser = new ProgramParserImpl();
 
 	@Test
@@ -289,6 +292,17 @@ public class ParserTest {
 		assertEquals("ensure_a", tc1.getName());
 		TestCase tc2 = prog.getTestCases().get(1);
 		assertEquals("ensure_not_c", tc2.getName());
+	}
+
+	@Test
+	public void unitTestKeywordsAsIds() {
+		ASPCore2Program prog = parser.parse(UNIT_TEST_KEYWORDS_AS_IDS);
+		assertEquals(1, prog.getTestCases().size());
+		TestCase tc = prog.getTestCases().get(0);
+		assertEquals("test", tc.getName());
+		assertEquals(1, tc.getInput().size());
+		assertEquals(1, tc.getAssertions().size());
+		assertEquals(Assertion.Mode.FOR_ALL, tc.getAssertions().get(0).getMode());
 	}
 
 }

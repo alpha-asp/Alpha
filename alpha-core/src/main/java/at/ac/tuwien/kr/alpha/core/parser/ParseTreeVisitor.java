@@ -286,14 +286,15 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public Object visitDirective_enumeration(ASPCore2Parser.Directive_enumerationContext ctx) {
-		// directive_enumeration : SHARP 'enum_predicate_is' ID DOT;
-		inlineDirectives.addDirective(InlineDirectives.DIRECTIVE.enum_predicate_is, ctx.ID().getText());
+		// directive_enumeration : DIRECTIVE_ENUM id DOT;
+		inlineDirectives.addDirective(InlineDirectives.DIRECTIVE.enum_predicate_is, visitId(ctx.id()));
 		return null;
 	}
 
 	@Override
 	public Object visitDirective_test(ASPCore2Parser.Directive_testContext ctx) {
-		String name = ctx.ID().getText();
+		// directive_test : DIRECTIVE_TEST id PAREN_OPEN test_satisfiability_condition PAREN_CLOSE CURLY_OPEN test_input test_assert* CURLY_CLOSE;
+		String name = visitId(ctx.id());
 		IntPredicate answerSetCountVerifier = visitTest_satisfiability_condition(ctx.test_satisfiability_condition());
 		Set<BasicAtom> input = visitTest_input(ctx.test_input());
 		List<Assertion> assertions;
@@ -393,10 +394,10 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public Term visitGround_term(ASPCore2Parser.Ground_termContext ctx) {
-		// ground_term : ID | QUOTED_STRING | numeral;
-		if (ctx.ID() != null) {
-			// ID
-			return Terms.newSymbolicConstant(ctx.ID().getText());
+		// ground_term : id | QUOTED_STRING | numeral;
+		if (ctx.id() != null) {
+			// id
+			return Terms.newSymbolicConstant(visitId(ctx.id()));
 		} else if (ctx.QUOTED_STRING() != null) {
 			// QUOTED_STRING
 			String quotedString = ctx.QUOTED_STRING().getText();
@@ -477,10 +478,16 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
+	public String visitId(ASPCore2Parser.IdContext ctx) {
+		// id : ID | TEST_EXPECT | TEST_UNSAT | TEST_GIVEN | TEST_ASSERT_ALL | TEST_ASSERT_SOME;
+		return ctx.getText();
+	}
+
+	@Override
 	public BasicAtom visitBasic_atom(ASPCore2Parser.Basic_atomContext ctx) {
 		// basic_atom : ID (PAREN_OPEN terms PAREN_CLOSE)?;
 		List<Term> terms = visitTerms(ctx.terms());
-		return Atoms.newBasicAtom(Predicates.getPredicate(ctx.ID().getText(), terms.size()), terms);
+		return Atoms.newBasicAtom(Predicates.getPredicate(visitId(ctx.id()), terms.size()), terms);
 	}
 
 	@Override
@@ -522,7 +529,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public ConstantTerm<String> visitTerm_const(ASPCore2Parser.Term_constContext ctx) {
-		return Terms.newSymbolicConstant(ctx.ID().getText());
+		return Terms.newSymbolicConstant(visitId(ctx.id()));
 	}
 
 	@Override
@@ -533,7 +540,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public FunctionTerm visitTerm_func(ASPCore2Parser.Term_funcContext ctx) {
-		return Terms.newFunctionTerm(ctx.ID().getText(), visitTerms(ctx.terms()));
+		return Terms.newFunctionTerm(visitId(ctx.id()), visitTerms(ctx.terms()));
 	}
 
 	@Override
@@ -559,13 +566,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public ExternalAtom visitExternal_atom(ASPCore2Parser.External_atomContext ctx) {
-		// external_atom : AMPERSAND ID (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?;
+		// external_atom : AMPERSAND id (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?;
 
 		if (ctx.MINUS() != null) {
 			throw notSupported(ctx);
 		}
 
-		final String predicateName = ctx.ID().getText();
+		final String predicateName = visitId(ctx.id());
 		final PredicateInterpretation interpretation = externals.get(predicateName);
 
 		if (interpretation == null) {
