@@ -120,6 +120,12 @@ public class AlphaImplTest {
 			"a :- b. #test ensure_a(expect: 1) { given { b. } assertForAll { :- not a. }} " +
 					"#test ensure_not_c (expect: 1) { given { b.} assertForAll { :- c. }}";
 
+	private static final String UNIT_TEST_FAILING_ASSERTION =
+			"a :- b. #test ensure_c(expect: 1) { given { b. } assertForAll { :- not c. } }";
+
+	private static final String UNIT_TEST_FAILING_COUNT =
+			"a :- b. #test ensure_a(expect: 2) { given { b. } assertForAll { :- not a. } }";
+
 	private static int invocations;
 
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate
@@ -593,6 +599,35 @@ public class AlphaImplTest {
 		TestResult testResult = alpha.test(prog);
 		assertTrue(testResult.isSuccess());
 		assertEquals(2, testResult.getTestCaseResults().size());
+	}
+
+	@Test
+	public void failingAssertionUnitTest() {
+		Alpha alpha = new AlphaImpl();
+		ASPCore2Program prog = alpha.readProgramString(UNIT_TEST_FAILING_ASSERTION);
+		TestResult testResult = alpha.test(prog);
+		assertFalse(testResult.isSuccess());
+		assertEquals(1, testResult.getTestCaseResults().size());
+		TestResult.TestCaseResult tcResult = testResult.getTestCaseResults().get(0);
+		assertFalse(tcResult.isSuccess());
+		assertEquals(0, tcResult.getAssertionsPassed());
+		assertEquals(1, tcResult.getAssertionsFailed());
+		assertFalse(tcResult.answerSetCountVerificationResult().isPresent());
+		assertEquals(1, tcResult.getAssertionErrors().size());
+	}
+
+	@Test
+	public void failingAnswerSetCountUnitTest() {
+		Alpha alpha = new AlphaImpl();
+		ASPCore2Program prog = alpha.readProgramString(UNIT_TEST_FAILING_COUNT);
+		TestResult testResult = alpha.test(prog);
+		assertFalse(testResult.isSuccess());
+		assertEquals(1, testResult.getTestCaseResults().size());
+		TestResult.TestCaseResult tcResult = testResult.getTestCaseResults().get(0);
+		assertFalse(tcResult.isSuccess());
+		assertEquals(1, tcResult.getAssertionsPassed());
+		assertEquals(0, tcResult.getAssertionsFailed());
+		assertTrue(tcResult.answerSetCountVerificationResult().isPresent());
 	}
 
 	/**
