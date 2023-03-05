@@ -85,7 +85,6 @@ directive : directive_enumeration | directive_test;  // NOT Core2 syntax, allows
 
 directive_enumeration :  SHARP DIRECTIVE_ENUM id DOT;  // NOT Core2 syntax, used for aggregate translation.
 
-// TODO change lexer rules s.t. test-specific keywords can still be used as IDs!
 // Alpha-specific language extension: Unit Tests (-> https://github.com/alpha-asp/Alpha/issues/237)
 directive_test : SHARP DIRECTIVE_TEST id PAREN_OPEN test_satisfiability_condition PAREN_CLOSE CURLY_OPEN test_input test_assert* CURLY_CLOSE;
 
