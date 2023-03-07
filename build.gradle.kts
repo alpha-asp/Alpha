@@ -31,6 +31,7 @@ repositories {
 
 configure<ReleaseExtension> {
 	failOnUnversionedFiles.set(false)
+	tagTemplate.set("v${version}")
 	with(git) {
 		requireBranch.set("master")
 	}
