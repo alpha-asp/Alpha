@@ -34,7 +34,6 @@ configure<ReleaseExtension> {
 	failOnUnversionedFiles.set(false)
 	tagTemplate.set("v${version}")
 	with(git) {
-		requireBranch.set("revamp-release-workflow")
-		// to disable branch verification: requireBranch.set(null as String?)
+		requireBranch.set("master")
 	}
 }
