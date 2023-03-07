@@ -32,7 +32,7 @@ repositories {
 configure<ReleaseExtension> {
 	ignoredSnapshotDependencies.set(listOf("net.researchgate:gradle-release"))
 	failOnUnversionedFiles.set(false)
-	tagTemplate.set("v${version}")
+	//tagTemplate.set("v${releaseVersion}")
 	with(git) {
 		requireBranch.set("master")
 	}
