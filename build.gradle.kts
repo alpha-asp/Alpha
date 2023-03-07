@@ -31,7 +31,8 @@ repositories {
 
 configure<ReleaseExtension> {
 	failOnUnversionedFiles.set(false)
-	tagTemplate.set("v${version}")
+	// Tag template currently doesn't work with non-interactive release, see https://github.com/researchgate/gradle-release/issues/371
+	// tagTemplate.set("v${version}")
 	with(git) {
 		requireBranch.set("master")
 	}
