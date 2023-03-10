@@ -34,6 +34,6 @@ configure<ReleaseExtension> {
 	// Tag template currently doesn't work with non-interactive release, see https://github.com/researchgate/gradle-release/issues/371
 	// tagTemplate.set("v${version}")
 	with(git) {
-		requireBranch.set("master")
+		requireBranch.set("automatic-release-action")
 	}
 }
