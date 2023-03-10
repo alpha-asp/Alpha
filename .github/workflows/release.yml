@@ -38,5 +38,5 @@ jobs:
     # https://github.com/researchgate/gradle-release  
       uses: gradle/gradle-build-action@v2
       with:
-        arguments: release -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${{ github.event.inputs.release_version}} -Prelease.newVersion=${{ github.event.inputs.next_version}}
+        arguments: release -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${{ github.event.inputs.release_version}} -Prelease.newVersion=${{ github.event.inputs.next_version}}-SNAPSHOT
 
