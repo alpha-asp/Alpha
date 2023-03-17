@@ -27,7 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.core.solver.reboot.stats.PropagationStatManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,12 +144,7 @@ public class NaiveNoGoodStore implements NoGoodStore {
 		clear();
 		counter.reset();
 	}
-
-	@Override
-	public PropagationStatManager getPropagationStatManager() {
-		return null;
-	}
-
+	
 	@Override
 	public void cleanupLearnedNoGoods() {
 	}

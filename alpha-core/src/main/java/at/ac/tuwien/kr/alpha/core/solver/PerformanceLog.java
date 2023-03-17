@@ -25,10 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.core.solver.reboot.stats.StatTracker;
 import org.slf4j.Logger;
-
-import java.util.List;
 
 /**
  * Collects performance data (mainly number of decisions per second) and outputs them on demand.
@@ -38,7 +35,6 @@ public class PerformanceLog {
 	private final ChoiceManager choiceManager;
 	private final TrailAssignment assignment;
 	private final NoGoodCounter noGoodCounter;
-	private final List<StatTracker> statTrackers;
 	private final long msBetweenOutputs;
 
 	private Long timeFirstEntry;
@@ -48,12 +44,11 @@ public class PerformanceLog {
 	/**
 	 * @param msBetweenOutputs minimum number of milliseconds that have to pass between writing of performance logs.
 	 */
-	public PerformanceLog(ChoiceManager choiceManager, TrailAssignment assignment, NoGoodCounter noGoodCounter, List<StatTracker> statTrackers, long msBetweenOutputs) {
+	public PerformanceLog(ChoiceManager choiceManager, TrailAssignment assignment, NoGoodCounter noGoodCounter, long msBetweenOutputs) {
 		super();
 		this.choiceManager = choiceManager;
 		this.assignment = assignment;
 		this.noGoodCounter = noGoodCounter;
-		this.statTrackers = statTrackers;
 		this.msBetweenOutputs = msBetweenOutputs;
 	}
 
@@ -70,18 +65,13 @@ public class PerformanceLog {
 		long currentTime = System.currentTimeMillis();
 		int currentNumberOfChoices = choiceManager.getChoices();
 		if (currentTime >= timeLastPerformanceLog + msBetweenOutputs) {
-			logger.info("Decisions in {}s: {}", (currentTime - timeLastPerformanceLog) / 1000.0f, currentNumberOfChoices - numberOfChoicesLastPerformanceLog);
+			logger.debug("Decisions in {}s: {}", (currentTime - timeLastPerformanceLog) / 1000.0f, currentNumberOfChoices - numberOfChoicesLastPerformanceLog);
 			timeLastPerformanceLog = currentTime;
 			numberOfChoicesLastPerformanceLog = currentNumberOfChoices;
 			float overallTime = (currentTime - timeFirstEntry) / 1000.0f;
 			float decisionsPerSec = currentNumberOfChoices / overallTime;
-			logger.info("Overall performance: {} decisions in {}s or {} decisions per sec. Overall replayed assignments: {}.", currentNumberOfChoices, overallTime, decisionsPerSec, assignment.replayCounter);
-			logger.info("Current nogood counts: {}", noGoodCounter.getStatsByType());
-			if (statTrackers != null) {
-				for (StatTracker statTracker : statTrackers) {
-					logger.info("Tracked [{}]: {}", statTracker.getStatName(), String.format("%f", statTracker.getStatValue()));
-				}
-			}
+			logger.debug("Overall performance: {} decisions in {}s or {} decisions per sec. Overall replayed assignments: {}.", currentNumberOfChoices, overallTime, decisionsPerSec, assignment.replayCounter);
+			logger.debug("Current nogood counts: {}", noGoodCounter.getStatsByType());
 		}
 	}
 }

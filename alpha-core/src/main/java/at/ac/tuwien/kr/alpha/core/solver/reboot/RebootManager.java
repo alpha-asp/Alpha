@@ -61,10 +61,6 @@ public class RebootManager {
 		discoverRuleAtoms(noGood);
 	}
 
-	public void newEnumerationNoGoods(Collection<NoGood> noGoods) {
-		noGoods.forEach(this::newEnumerationNoGood);
-	}
-
 	public void newLearnedNoGood(NoGood noGood) {
 		if (!scanForAtomsToFilter(noGood)) {
 			learnedNoGoods.add(noGood);
@@ -87,8 +83,8 @@ public class RebootManager {
 	}
 
 	public List<RuleAtom> getDiscoveredRuleAtoms() {
-		LOGGER.info("Number of rule atoms: " + discoveredRuleAtoms.size());
-		LOGGER.info("Number of filtered out nogoods: " + filteredCounter);
+		LOGGER.debug("Number of rule atoms: " + discoveredRuleAtoms.size());
+		LOGGER.debug("Number of filtered out nogoods: " + filteredCounter);
 		return discoveredRuleAtoms;
 	}
 

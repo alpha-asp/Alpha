@@ -1,7 +1,6 @@
 package at.ac.tuwien.kr.alpha.core.solver;
 
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
-import at.ac.tuwien.kr.alpha.core.solver.reboot.stats.PropagationStatManager;
 
 /**
  * An interface defining the use of a NoGood store.
@@ -61,6 +60,4 @@ public interface NoGoodStore {
 	 * Clears all data within the nogood store.
 	 */
 	void reset();
-
-	PropagationStatManager getPropagationStatManager();
 }

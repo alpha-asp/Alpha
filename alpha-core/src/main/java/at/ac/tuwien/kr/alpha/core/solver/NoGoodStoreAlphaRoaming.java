@@ -27,7 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.core.solver.reboot.stats.PropagationStatManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,13 +86,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	private boolean hasBinaryNoGoods;
 
 	private final NoGoodCounter counter = new NoGoodCounter();
-	private final PropagationStatManager propagationStatManager;
 
 	public NoGoodStoreAlphaRoaming(WritableAssignment assignment, boolean checksEnabled) {
 		this.assignment = assignment;
 		this.checksEnabled = checksEnabled;
 		this.learnedNoGoodDeletion = new LearnedNoGoodDeletion(this, assignment);
-		this.propagationStatManager = new PropagationStatManager();
 	}
 
 	public NoGoodStoreAlphaRoaming(WritableAssignment assignment) {
@@ -162,12 +159,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	public void reset() {
 		clear();
 		counter.reset();
-		propagationStatManager.reset();
-	}
-
-	@Override
-	public PropagationStatManager getPropagationStatManager() {
-		return propagationStatManager;
 	}
 
 
@@ -473,7 +464,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		// Propagate binary watches.
 		ConflictCause conflictCause = binaryWatches[literal].propagateWeakly();
 		if (conflictCause != null || restrictToBinaryNoGoods) {
-			propagationStatManager.handleBinaryConflict();
 			return conflictCause;
 		}
 
@@ -490,11 +480,9 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 				while (watchIterator.hasNext()) {
 					watchlist.add(watchIterator.next());
 				}
-				propagationStatManager.handleNonBinaryConflict();
 				return conflictCause;
 			}
 		}
-		propagationStatManager.handleNoConflict();
 		return null;
 	}
 
@@ -566,7 +554,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		// Propagate binary watches.
 		ConflictCause conflictCause = binaryWatches[literal].propagateStrongly();
 		if (conflictCause != null || restrictToBinaryNoGoods) {
-			propagationStatManager.handleBinaryConflict();
 			return conflictCause;
 		}
 
@@ -586,11 +573,9 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 				while (watchIterator.hasNext()) {
 					watchlist.add(watchIterator.next());
 				}
-				propagationStatManager.handleNonBinaryConflict();
 				return conflictCause;
 			}
 		}
-		propagationStatManager.handleNoConflict();
 		return null;
 	}
 
