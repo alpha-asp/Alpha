@@ -27,34 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.api.impl;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.config.Heuristic;
@@ -68,6 +40,7 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.programs.tests.TestResult;
 import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
@@ -82,6 +55,22 @@ import at.ac.tuwien.kr.alpha.core.externals.AspStandardLibrary;
 import at.ac.tuwien.kr.alpha.core.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AlphaImplTest {
 
@@ -114,6 +103,28 @@ public class AlphaImplTest {
 			+ "has_resultstring :- resultstring(_)."
 			+ ":- not has_resultstring.";
 	//@formatter:on
+
+	private static final String UNIT_TEST_EXPECT_UNSAT =
+			"p(1). p(2). "
+			+ ":- p(X), p(Y), X + Y = 3."
+			+ "#test expected_unsat(expect: unsat) {"
+			+ "given {}"
+			+ "}";
+
+	private static final String UNIT_TEST_BASIC_TEST =
+			"a :- b. #test ensure_a(expect: 1) { given { b. } assertForAll { :- not a. } }";
+	private static final String UNIT_TEST_MORE_ASSERTIONS =
+			"a :- b. #test ensure_a(expect: 1) { given { b. } assertForAll { :- not a. } assertForSome { :- not a.} }";
+
+	private static final String UNIT_TEST_MORE_TCS =
+			"a :- b. #test ensure_a(expect: 1) { given { b. } assertForAll { :- not a. }} " +
+					"#test ensure_not_c (expect: 1) { given { b.} assertForAll { :- c. }}";
+
+	private static final String UNIT_TEST_FAILING_ASSERTION =
+			"a :- b. #test ensure_c(expect: 1) { given { b. } assertForAll { :- not c. } }";
+
+	private static final String UNIT_TEST_FAILING_COUNT =
+			"a :- b. #test ensure_a(expect: 2) { given { b. } assertForAll { :- not a. } }";
 
 	private static int invocations;
 
@@ -541,6 +552,82 @@ public class AlphaImplTest {
 		CompiledProgram preprocessed = system.performProgramPreprocessing(normal);
 		assertTrue(preprocessed.getFacts().contains(Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newSymbolicConstant("a"))),
 				"Preprocessed program does not contain fact derived from stratifiable rule, but should!");
+	}
+
+	@Test
+	public void passingUnitTestExpectUnsat() {
+		Alpha alpha = new AlphaImpl();
+		ASPCore2Program prog = alpha.readProgramString(UNIT_TEST_EXPECT_UNSAT);
+		TestResult testResult = alpha.test(prog);
+		assertTrue(testResult.isSuccess());
+	}
+
+	@Test
+	public void passingUnitTestBasicTest() {
+		Alpha alpha = new AlphaImpl();
+		ASPCore2Program prog = alpha.readProgramString(UNIT_TEST_BASIC_TEST);
+		TestResult testResult = alpha.test(prog);
+		assertTrue(testResult.isSuccess());
+		assertEquals(1, testResult.getTestCaseResults().size());
+		TestResult.TestCaseResult tcResult = testResult.getTestCaseResults().get(0);
+		assertTrue(tcResult.isSuccess());
+		assertEquals(1, tcResult.getAssertionsPassed());
+		assertEquals(0, tcResult.getAssertionsFailed());
+		assertFalse(tcResult.answerSetCountVerificationResult().isPresent());
+		assertTrue(tcResult.getAssertionErrors().isEmpty());
+	}
+
+	@Test
+	public void passingUnitTestMultipleAssertions() {
+		Alpha alpha = new AlphaImpl();
+		ASPCore2Program prog = alpha.readProgramString(UNIT_TEST_MORE_ASSERTIONS);
+		TestResult testResult = alpha.test(prog);
+		assertTrue(testResult.isSuccess());
+		assertEquals(1, testResult.getTestCaseResults().size());
+		TestResult.TestCaseResult tcResult = testResult.getTestCaseResults().get(0);
+		assertTrue(tcResult.isSuccess());
+		assertEquals(2, tcResult.getAssertionsPassed());
+		assertEquals(0, tcResult.getAssertionsFailed());
+		assertFalse(tcResult.answerSetCountVerificationResult().isPresent());
+		assertTrue(tcResult.getAssertionErrors().isEmpty());
+	}
+
+	@Test
+	public void passingUnitTestMultipleTestCases() {
+		Alpha alpha = new AlphaImpl();
+		ASPCore2Program prog = alpha.readProgramString(UNIT_TEST_MORE_TCS);
+		TestResult testResult = alpha.test(prog);
+		assertTrue(testResult.isSuccess());
+		assertEquals(2, testResult.getTestCaseResults().size());
+	}
+
+	@Test
+	public void failingAssertionUnitTest() {
+		Alpha alpha = new AlphaImpl();
+		ASPCore2Program prog = alpha.readProgramString(UNIT_TEST_FAILING_ASSERTION);
+		TestResult testResult = alpha.test(prog);
+		assertFalse(testResult.isSuccess());
+		assertEquals(1, testResult.getTestCaseResults().size());
+		TestResult.TestCaseResult tcResult = testResult.getTestCaseResults().get(0);
+		assertFalse(tcResult.isSuccess());
+		assertEquals(0, tcResult.getAssertionsPassed());
+		assertEquals(1, tcResult.getAssertionsFailed());
+		assertFalse(tcResult.answerSetCountVerificationResult().isPresent());
+		assertEquals(1, tcResult.getAssertionErrors().size());
+	}
+
+	@Test
+	public void failingAnswerSetCountUnitTest() {
+		Alpha alpha = new AlphaImpl();
+		ASPCore2Program prog = alpha.readProgramString(UNIT_TEST_FAILING_COUNT);
+		TestResult testResult = alpha.test(prog);
+		assertFalse(testResult.isSuccess());
+		assertEquals(1, testResult.getTestCaseResults().size());
+		TestResult.TestCaseResult tcResult = testResult.getTestCaseResults().get(0);
+		assertFalse(tcResult.isSuccess());
+		assertEquals(1, tcResult.getAssertionsPassed());
+		assertEquals(0, tcResult.getAssertionsFailed());
+		assertTrue(tcResult.answerSetCountVerificationResult().isPresent());
 	}
 
 	/**
