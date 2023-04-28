@@ -24,7 +24,7 @@ possibilities to interface with the ecosystem built around the Java Virtual Mach
 
 ## Getting Started
 
-Download a current version of the distribution jar (`alpha-cli-app-$version-bundled.jar`) from [Releases](https://github.com/alpha-asp/Alpha/releases) and save it as `alpha.jar` for convenience.
+Download a current version of the distribution jar (`alpha-cli-app-${version}-bundled.jar`) from [Releases](https://github.com/alpha-asp/Alpha/releases) and save it as `alpha.jar` for convenience.
 
 Running Alpha is as simple as running any other JAR:
 
