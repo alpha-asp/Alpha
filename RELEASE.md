@@ -2,64 +2,70 @@
 
 This document explains how to build and release Alpha.
 
-First, decide which revision (= Git commit) of Alpha you want to release. This revision should be on `master`
-and ideally ahead of any previously released revisions. We denote the Git commit hash of the revision to be
-released as `$rev` (it is a reference to a commit, so it could be the name of a branch, say, `master` or just
-a hash like `cafebabe`).
-
-You probably have already checked out this version, but if you haven't, do so now:
+The regular release workflow for Alpha assumes that a release will always be based on the latest commit in the `master` branch. In order to release Alpha, first checkout the `master` branch and make sure you're up to date:
 
 ```bash
-$ git checkout $rev
+$ git checkout master
+$ git pull
 ```
 
-Now is the time to make sure the revision you are about to release actually works fine. Run tests, try it out
-manually, maybe go paranoid and `./gradlew clean` everything and try again. Only continue if you are happy with
-the revision you are about to release, and avoid list minute fixes.
+Now is the time to make sure the revision you are about to release actually works. Build it using `./gradlew clean build`, potentially do some manual tests, play around a bit, maybe go paranoid and `./gradlew clean build` everything once more. Only continue if you are happy with the state you are about to release, and avoid last minute fixes.
 
-Next, give `$rev` a name, by tagging it. The naming convention for tags is
-[Semantic Versioning 2](http://semver.org/spec/v2.0.0.html). **Read through the specification of Semantic
-Versioning carefully, before releasing anything. If in doubt, read it again and seek advice.**
+The actual release process consists of following steps:
+- Create a release tag using gradle release plugin.
+- From the tag created by gradle release plugin, create a release on github.
 
-Make sure the version you want to release does not collide and fits with any
-[tags already present on GitHub](https://github.com/alpha-asp/Alpha/tags). We denote the version to be released
-as `$version` (it looks like "v0.1.0", "v1.0.0-beta", note it starts with the letter "v").
+#### Creating a release tag using Gradle Release Plugin
+
+Before running the release plugin, decide on a release version identifier and the next development version. Version identifiers must confirm to [Semantic Versioning 2](http://semver.org/spec/v2.0.0.html). **Read through the specification of Semantic Versioning carefully, before releasing anything. If in doubt, read it again and seek advice.** Also, make sure the version you want to release does not collide with any [tag already present on GitHub](https://github.com/alpha-asp/Alpha/tags). We denote the version to be released as `$version` (it looks like "0.1.0", "1.0.0-beta").
+
+The next development version (denoted `$nextVersion`) is the version you expect to be the next release version. Note that it isn't set in stone since actual release versions are set during the release process. For example, if your release version is `0.9.0`, your next version could be `0.10.0` or `1.0.0`.
+
+To create a release tag and set the correct versions in the `gradle.properties` file, call the gradle release plugin:
 
 ```bash
-$ git tag $version
+$ ./gradlew release -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=$version -Prelease.newVersion=$nextVersion-SNAPSHOT
 ```
+**Make sure you add the `-SNAPSHOT` qualifier to the next version!** This is the version that will be put into `gradle.properties` in the `master` branch after creating the release tag, i.e. subsequent builds of `master` (e.g. nightly builds from CI workflows) will have this version.
 
-Now you push this tag to GitHub:
-
-```bash
-$ git push --tags
-```
+The release plugin automatically pushes all changes it makes in the repository. After running it, make sure:
+- `gradle.properties` in `master` has the new `SNAPSHOT` version.
+- On github, you can see a new tag with the same name as your release version.
+- When you check out the tag, `gradle.properties` contains the correct version, i.e. the tag name. 
 
 Navigate to (Releases)[https://github.com/alpha-asp/Alpha/releases] and press "Draft a new release"). Fill in `$version`
 as the name of your tag, and change the Release Title to `$version`. Feel free to write a release note (we currently
 have no policy in place for release notes). If `$version` is below 1 or you are releasing a preview version, check the
 box.
 
-Now, let's generate two distribution packages of Alpha for convenience. You will attach two files to the release on
-GitHub. `alpha.jar`, a self-contained and executbale JAR and `alpha.zip` which contains Alpha as JAR file, dependencies
-as JAR files and two scripts to run Alpha on Unix-like and Windows respectively.
+Now, let's generate some distribution packages of Alpha for convenience. You will attach the following files to the release on GitHub:
+- `alpha-cli-app-$version-bundled.jar: A "fat-jar" containingthe Alpha CLI applications along with all dependencies in one jar file.
+- Distribution zip- and tar-archives for the CLI application: Zip- and tar-versions of an archive with Alpha, all dependencies, and launcher scripts for windows and UNIX-like systems.
+- A zip- and tar-archive of the source code for Alpha.
 
-To generate `alpha.jar`:
+To generate these artifacts, check out your release tag:
+
+```bash
+$ git checkout $version
+```
+
+To generate the "fat-jar":
 
 ```bash
 $ ./gradlew alpha-cli-app:bundledJar
-$ cp alpha-cli-app/build/libs/alpha-cli*-bundled.jar alpha.jar
 ```
 
-To generate `alpha.zip`:
+The jar file can be found in `./alpha-cli-app/build/libs/alpha-cli-app-$version-bundled.jar`
+
+To generate distribution archives:
 
 ```bash
-$ ./gradlew alpha-cli-app:distZip
-$ cp alpha-cli-app/build/distributions/*.zip alpha.zip
+$ ./gradlew alpha-cli-app:distZip && ./gradlew alpha-cli-app:distTar
 ```
 
-Attach the two files to the release on GitHub, then publish the release. Lastly, check that everything is fine,
-e.g. that the tag/version really points at the revision you wanted to rlease and that `alpha.zip` and `alpha.jar
-downloaded from GitHub do what they are supposed to do.
+The finished archives are located in `./alpha-cli-app/build/distributions/`.
+Last `./gradlew clean` the project to get rid of all build artifacts, then create a `sources.zip` (using e.g. `zip -r sources.zip .`) and a `sources.tar.gz` (using e.g. `tar -czf /tmp/sources.tar.gz .`)
+
+Attach the generated files to the release on GitHub, then publish the release. Last but not least, check that everything is fine, i.e. the files - when downloaded from the github release - do what they're supposed to.
 
 Optionally, archive the release on Zenodo. If you do so, add the new identifier to `CITATION.cff`.
