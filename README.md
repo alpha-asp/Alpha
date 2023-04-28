@@ -54,7 +54,7 @@ $ ./gradlew build
 
 will automatically fetch all dependencies (declared in [`build.gradle.kts`](build.gradle.kts)) and compile the project.
 
-Artifacts generated will be placed in the `build/` subfolder of the repsective module. Most notably you'll find files ready for distribution at
+Artifacts generated will be placed in the `build/` subfolder of the respective module. Most notably you'll find files ready for distribution at
 `alpha-cli-app/build/distributions/`. They contain archives which in turn contain a `bin/` directory with scripts to run Alpha on Linux
 and Windows.
 
