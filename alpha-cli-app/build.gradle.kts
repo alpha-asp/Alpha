@@ -1,5 +1,6 @@
 plugins {
 	id("alpha.java-application-conventions")
+	id("org.graalvm.buildtools.native") version "0.9.8"
 }
 
 dependencies {
@@ -70,4 +71,23 @@ tasks.create<Jar>("bundledJar") {
 
 tasks.test {
 	useJUnitPlatform()
+}
+
+graalvmNative {
+	binaries {
+		named("main") {
+			imageName.set("alpha")
+			mainClass.set(main)
+			buildArgs.addAll(
+				"--no-fallback",
+				"-H:Log=registerResource",
+				"-H:+ReportExceptionStackTraces",
+				"--report-unsupported-elements-at-runtime"
+			)
+			javaLauncher.set(javaToolchains.launcherFor {
+				languageVersion.set(JavaLanguageVersion.of(17))
+				vendor.set(JvmVendorSpec.matching("GraalVM"))
+			})
+		}
+	}
 }
