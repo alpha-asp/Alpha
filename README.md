@@ -52,19 +52,19 @@ Alpha uses the [Gradle build automation system](https://gradle.org). Executing
 $ ./gradlew build
 ```
 
-will automatically fetch all dependencies (declared in [`build.gradle`](build.gradle)) and compile the project.
+will automatically fetch all dependencies (declared in [`build.gradle.kts`](build.gradle.kts)) and compile the project.
 
-Artifacts generated will be placed in `build/`. Most notably you'll find files ready for distribution at
-`build/distributions/`. They contain archives which in turn contain a `bin/` directory with scripts to run Alpha on Linux
+Artifacts generated will be placed in the `build/` subfolder of the repsective module. Most notably you'll find files ready for distribution at
+`alpha-cli-app/build/distributions/`. They contain archives which in turn contain a `bin/` directory with scripts to run Alpha on Linux
 and Windows.
 
 If you want to generate a JAR file to be run standalone, execute
 
 ```bash
-$ ./gradlew bundledJar
+$ ./gradlew alpha-cli-app:bundledJar
 ```
 
-and pick up `build/libs/alpha-bundled.jar`.
+and pick up `alpha-cli-app/build/libs/alpha-cli-app-${version}-bundled.jar`.
 
 ### A Note on IDEs
 
