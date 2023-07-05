@@ -64,6 +64,16 @@ tasks.jacocoTestReport {
 	}
 }
 
+tasks.register<WriteProperties>("buildProperties") {
+	outputFile = file("${sourceSets["main"].output.resourcesDir}/META-INF/build.properties")
+	encoding = "UTF-8"
+	property("project.version", project.version)
+}
+
+tasks.processResources {
+	dependsOn("buildProperties")
+}
+
 publishing {
 	publications {
 		create<MavenPublication>("binary") {
