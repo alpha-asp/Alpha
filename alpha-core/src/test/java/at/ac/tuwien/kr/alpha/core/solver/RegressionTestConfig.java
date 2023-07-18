@@ -18,6 +18,8 @@ public class RegressionTestConfig {
 	private final boolean disableRebootRepeat;
 	private final RebootStrategy rebootStrategy;
 	private final int rebootStrategyInterval;
+	private final double rebootStrategyBase;
+	private final double rebootStrategyFactor;
 
 	private final long seed;
 
@@ -32,13 +34,14 @@ public class RegressionTestConfig {
 	private final boolean evaluateStratifiedPart;
 
 	private final boolean encodeAggregatesUsingSortingGrid;
-	
+
 	private final boolean supportNegativeSumElements;
 
 	public RegressionTestConfig(
 			String solverName, String grounderName, String noGoodStoreName, Heuristic branchingHeuristic,
-			boolean rebootEnabled, boolean disableRebootRepeat, RebootStrategy rebootStrategy, int rebootStrategyInterval,
-			long seed, boolean debugChecks, String grounderToleranceConstraints, String grounderToleranceRules,
+			boolean rebootEnabled, boolean disableRebootRepeat, RebootStrategy rebootStrategy,
+			int rebootStrategyInterval, double rebootStrategyBase, double rebootStrategyFactor, long seed,
+			boolean debugChecks, String grounderToleranceConstraints, String grounderToleranceRules,
 			boolean disableInstanceRemoval, boolean evaluateStratifiedPart, boolean useSortingGrid,
 			boolean supportNegativeSumElements) {
 		this.solverName = solverName;
@@ -49,6 +52,8 @@ public class RegressionTestConfig {
 		this.disableRebootRepeat = disableRebootRepeat;
 		this.rebootStrategy = rebootStrategy;
 		this.rebootStrategyInterval = rebootStrategyInterval;
+		this.rebootStrategyBase = rebootStrategyBase;
+		this.rebootStrategyFactor = rebootStrategyFactor;
 		this.seed = seed;
 		this.debugChecks = debugChecks;
 		this.grounderToleranceConstraints = grounderToleranceConstraints;
@@ -130,17 +135,19 @@ public class RegressionTestConfig {
 	public boolean isSupportNegativeSumElements() {
 		return this.supportNegativeSumElements;
 	}
-	
+
 	@Override
 	public String toString() {
 		return String.format(
 				"RegressionTestConfig [solverName=%s, grounderName=%s, noGoodStoreName=%s, branchingHeuristic=%s,"
-				+ " rebootEnabled=%b, disableRebootRepeat=%b, rebootStrategy=%s, rebootStrategyInterval=%d, seed=%s,"
-				+ " debugChecks=%s, grounderToleranceConstraints=%s, grounderToleranceRules=%s, disableInstanceRemoval=%s,"
-				+ " evaluateStratifiedPart=%s, useSortingGrid=%s, supportNegativeSumElements=%s]",
+						+ " rebootEnabled=%b, disableRebootRepeat=%b, rebootStrategy=%s, rebootStrategyInterval=%d,"
+						+ " rebootStrategyBase=%f, rebootStrategyFactor=%f, seed=%s, debugChecks=%s,"
+						+ " grounderToleranceConstraints=%s, grounderToleranceRules=%s, disableInstanceRemoval=%s,"
+						+ " evaluateStratifiedPart=%s, useSortingGrid=%s, supportNegativeSumElements=%s]",
 				this.solverName, this.grounderName, this.noGoodStoreName, this.branchingHeuristic, this.rebootEnabled,
-				this.disableRebootRepeat, this.rebootStrategy, this.rebootStrategyInterval, this.seed, this.debugChecks,
-				this.grounderToleranceConstraints, this.grounderToleranceRules, this.disableInstanceRemoval,
-				this.evaluateStratifiedPart, this.encodeAggregatesUsingSortingGrid, this.supportNegativeSumElements);
+				this.disableRebootRepeat, this.rebootStrategy, this.rebootStrategyInterval, this.rebootStrategyBase,
+				this.rebootStrategyFactor, this.seed, this.debugChecks, this.grounderToleranceConstraints,
+				this.grounderToleranceRules, this.disableInstanceRemoval, this.evaluateStratifiedPart,
+				this.encodeAggregatesUsingSortingGrid, this.supportNegativeSumElements);
 	}
 }

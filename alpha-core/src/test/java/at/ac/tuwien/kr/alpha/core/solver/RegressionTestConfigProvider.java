@@ -20,6 +20,8 @@ public class RegressionTestConfigProvider {
 	private static final boolean DEFAULT_DISABLE_REBOOT_REPEAT = true;
 	private static final RebootStrategy DEFAULT_REBOOT_STRATEGY = RebootStrategy.FIXED;
 	private static final int DEFAULT_REBOOT_STRATEGY_ITERATIONS = 5;
+	private static final double DEFAULT_REBOOT_STRATEGY_BASE = 5;
+	private static final double DEFAULT_REBOOT_STRATEGY_FACTOR = 2;
 	private static final String DEFAULT_GROUNDER_TOLERANCE = "strict";
 	private static final boolean DEFAULT_DISABLE_INSTANCE_REMOVAL = false;
 	private static final boolean DEFAULT_ENABLE_DEBUG_CHECKS = false;
@@ -42,8 +44,13 @@ public class RegressionTestConfigProvider {
 		String[] atomStores = ci ? new String[]{DEFAULT_ATOM_STORE, "naive"} : new String[]{DEFAULT_ATOM_STORE};
 		String[] heuristics = ci ? nonDeprecatedHeuristics() : new String[]{"NAIVE", DEFAULT_BRANCHING_HEURISTIC};
 		boolean[] rebootEnabledValues = new boolean[]{DEFAULT_REBOOT_ENABLED, true};
-		RebootStrategy[] rebootStrategyValues = new RebootStrategy[]{DEFAULT_REBOOT_STRATEGY};
+		RebootStrategy[] rebootStrategyValues = ci ? new RebootStrategy[]{
+				RebootStrategy.FIXED, RebootStrategy.ANSWER, RebootStrategy.ASSIGN,
+				RebootStrategy.GEOM, RebootStrategy.LUBY
+		} : new RebootStrategy[]{DEFAULT_REBOOT_STRATEGY};
 		int[] rebootStrategyIterationsValues = new int[]{DEFAULT_REBOOT_STRATEGY_ITERATIONS};
+		double[] rebootStrategyBaseValues = new double[]{DEFAULT_REBOOT_STRATEGY_BASE};
+		double[] rebootStrategyFactorValues = new double[]{DEFAULT_REBOOT_STRATEGY_FACTOR};
 		boolean[] disableRebootRepeatValues = new boolean[]{DEFAULT_DISABLE_REBOOT_REPEAT};
 		String[] gtcValues = new String[]{DEFAULT_GROUNDER_TOLERANCE, "permissive"};
 		String gtrValue = DEFAULT_GROUNDER_TOLERANCE;
@@ -69,18 +76,22 @@ public class RegressionTestConfigProvider {
 						for (boolean disableRebootRepeat : disableRebootRepeatValues) {
 							for (RebootStrategy rebootStrategy : rebootStrategyValues) {
 								for (int rebootIterations : rebootStrategyIterationsValues) {
-									for (String grounderTolerance : gtcValues) {
-										for (boolean disableInstanceRemoval : disableInstanceRemovalValues) {
-											for (boolean evaluateStratified : evaluateStratifiedValues) {
-												for (boolean enableDebugChecks : enableDebugChecksValues) {
-													configsToTest.add(new RegressionTestConfig(
-															solverName, grounder, atomStoreName,
-															Heuristic.valueOf(branchingHeuristicName),
-															rebootEnabled, disableRebootRepeat, rebootStrategy,
-															rebootIterations, seed, enableDebugChecks,
-															grounderTolerance, gtrValue,
-															disableInstanceRemoval, evaluateStratified,
-															true, true));
+									for (double rebootStrategyBase : rebootStrategyBaseValues) {
+										for (double rebootStrategyFactor : rebootStrategyFactorValues) {
+											for (String grounderTolerance : gtcValues) {
+												for (boolean disableInstanceRemoval : disableInstanceRemovalValues) {
+													for (boolean evaluateStratified : evaluateStratifiedValues) {
+														for (boolean enableDebugChecks : enableDebugChecksValues) {
+															configsToTest.add(new RegressionTestConfig(
+																	solverName, grounder, atomStoreName,
+																	Heuristic.valueOf(branchingHeuristicName),
+																	rebootEnabled, disableRebootRepeat, rebootStrategy,
+																	rebootIterations, rebootStrategyBase, rebootStrategyFactor,
+																	seed, enableDebugChecks, grounderTolerance, gtrValue,
+																	disableInstanceRemoval, evaluateStratified,
+																	true, true));
+														}
+													}
 												}
 											}
 										}
@@ -117,8 +128,9 @@ public class RegressionTestConfigProvider {
 							new RegressionTestConfig(
 									DEFAULT_SOLVER_NAME, DEFAULT_GROUNDER_NAME, DEFAULT_ATOM_STORE,
 									Heuristic.valueOf(DEFAULT_BRANCHING_HEURISTIC),
-									DEFAULT_REBOOT_ENABLED,  DEFAULT_DISABLE_REBOOT_REPEAT, DEFAULT_REBOOT_STRATEGY,
-									DEFAULT_REBOOT_STRATEGY_ITERATIONS, 0, DEFAULT_ENABLE_DEBUG_CHECKS,
+									DEFAULT_REBOOT_ENABLED, DEFAULT_DISABLE_REBOOT_REPEAT, DEFAULT_REBOOT_STRATEGY,
+									DEFAULT_REBOOT_STRATEGY_ITERATIONS, DEFAULT_REBOOT_STRATEGY_BASE,
+									DEFAULT_REBOOT_STRATEGY_FACTOR, 0, DEFAULT_ENABLE_DEBUG_CHECKS,
 									DEFAULT_GROUNDER_TOLERANCE, DEFAULT_GROUNDER_TOLERANCE,
 									DEFAULT_DISABLE_INSTANCE_REMOVAL,
 									evalStratified, useSortingGrid, supportNegativeElements));
