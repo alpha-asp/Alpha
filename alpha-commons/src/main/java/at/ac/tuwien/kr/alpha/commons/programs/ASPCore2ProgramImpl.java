@@ -27,15 +27,16 @@
  */
 package at.ac.tuwien.kr.alpha.commons.programs;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.tests.TestCase;
+import at.ac.tuwien.kr.alpha.commons.util.Util;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Alpha-internal representation of an ASP program, i.e., a set of ASP rules.
@@ -44,14 +45,25 @@ import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
  */
 class ASPCore2ProgramImpl extends AbstractProgram<Rule<Head>> implements ASPCore2Program{
 
-	static final ASPCore2ProgramImpl EMPTY = new ASPCore2ProgramImpl(Collections.emptyList(), Collections.emptyList(), new InlineDirectivesImpl());
+	static final ASPCore2ProgramImpl EMPTY = new ASPCore2ProgramImpl(Collections.emptyList(), Collections.emptyList(), new InlineDirectivesImpl(), Collections.emptyList());
 
-	ASPCore2ProgramImpl(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
+	private final List<TestCase> testCases;
+
+	ASPCore2ProgramImpl(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives, List<TestCase> testCases) {
 		super(rules, facts, inlineDirectives);
+		this.testCases = testCases;
 	}
 
-	ASPCore2ProgramImpl() {
-		super(new ArrayList<>(), new ArrayList<>(), new InlineDirectivesImpl());
+	@Override
+	public List<TestCase> getTestCases() {
+		return testCases;
+	}
+
+	@Override
+	public String toString() {
+		String ls = System.lineSeparator();
+		final String testsString = testCases.isEmpty() ? "" : Util.join("", testCases, ls, ls);
+		return super.toString() + testsString;
 	}
 
 }

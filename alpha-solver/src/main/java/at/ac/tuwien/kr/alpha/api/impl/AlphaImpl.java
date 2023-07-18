@@ -27,25 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.api.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.channels.Channels;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.annotations.VisibleForTesting;
-
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
@@ -61,6 +42,7 @@ import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.tests.TestResult;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.reification.Reifier;
@@ -79,6 +61,23 @@ import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.channels.Channels;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AlphaImpl implements Alpha {
 
@@ -86,6 +85,8 @@ public class AlphaImpl implements Alpha {
 
 	private final SystemConfig config; // Config is initialized with default values.
 	private final ProgramParser parser = new ProgramParserImpl();
+
+	private final TestRunner testRunner;
 	private final Reifier reifier = new Reifier(() -> {
 		IdGenerator<Integer> idGen = new IntIdGenerator(0);
 		return () -> Terms.newConstant(idGen.getNextId());
@@ -94,10 +95,11 @@ public class AlphaImpl implements Alpha {
 
 	public AlphaImpl(SystemConfig cfg) {
 		this.config = cfg;
+		this.testRunner = new TestRunner(this);
 	}
 
 	public AlphaImpl() {
-		this.config = new SystemConfig();
+		this(new SystemConfig());
 	}
 
 	@Override
@@ -287,6 +289,7 @@ public class AlphaImpl implements Alpha {
 			public ComponentGraph getComponentGraph() {
 				return compGraph;
 			}
+
 		};
 	}
 
@@ -303,6 +306,11 @@ public class AlphaImpl implements Alpha {
 	@Override
 	public Set<BasicAtom> reify(ASPCore2Program program) {
 		return reifier.reifyProgram(program);
+	}
+
+	@Override
+	public TestResult test(ASPCore2Program program) {
+		return testRunner.test(program);
 	}
 
 }

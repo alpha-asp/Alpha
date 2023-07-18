@@ -13,6 +13,7 @@ import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.tests.TestResult;
 
 /**
  * Main API entry point for the Alpha ASP system. Provides facilities for parsing, normalizing and solving ASP programs.
@@ -155,5 +156,10 @@ public interface Alpha {
 	 * @return a set of {@link BasicAtom}s encoding the given program
 	 */
 	Set<BasicAtom> reify(ASPCore2Program program);
+
+	/**
+	 * Runs all test cases of the given program.
+	 */
+	TestResult test(ASPCore2Program program);
 
 }
