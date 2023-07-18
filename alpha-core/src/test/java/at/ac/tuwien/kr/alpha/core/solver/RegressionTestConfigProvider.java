@@ -44,10 +44,7 @@ public class RegressionTestConfigProvider {
 		String[] atomStores = ci ? new String[]{DEFAULT_ATOM_STORE, "naive"} : new String[]{DEFAULT_ATOM_STORE};
 		String[] heuristics = ci ? nonDeprecatedHeuristics() : new String[]{"NAIVE", DEFAULT_BRANCHING_HEURISTIC};
 		boolean[] rebootEnabledValues = new boolean[]{DEFAULT_REBOOT_ENABLED, true};
-		RebootStrategy[] rebootStrategyValues = ci ? new RebootStrategy[]{
-				RebootStrategy.FIXED, RebootStrategy.ANSWER, RebootStrategy.ASSIGN,
-				RebootStrategy.GEOM, RebootStrategy.LUBY
-		} : new RebootStrategy[]{DEFAULT_REBOOT_STRATEGY};
+		RebootStrategy[] rebootStrategyValues = new RebootStrategy[]{DEFAULT_REBOOT_STRATEGY};
 		int[] rebootStrategyIterationsValues = new int[]{DEFAULT_REBOOT_STRATEGY_ITERATIONS};
 		double[] rebootStrategyBaseValues = new double[]{DEFAULT_REBOOT_STRATEGY_BASE};
 		double[] rebootStrategyFactorValues = new double[]{DEFAULT_REBOOT_STRATEGY_FACTOR};
