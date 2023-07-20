@@ -168,9 +168,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 			} else if (rebootEnabled && rebootStrategy.isRebootScheduled()) {
 				reboot();
 				rebootStrategy.rebootPerformed();
-				if (disableRebootRepeat) {
-					rebootEnabled = false;
-				}
+				disableRebootIfNoRepeat();
 			} else if (choose()) {
 				LOGGER.debug("Did choice.");
 				rebootStrategy.decisionMade();
@@ -606,7 +604,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 	/**
 	 * Converts the given choice stack into one containing atom ids instead of atoms and applies
-	 * the choices on the resulting stack using the choice manager.
+	 * the choices to the resulting choice stack using the {@link DefaultSolver#choiceManager}.
 	 * Propagation is performed initially and after each choice.
 	 * @param atomizedChoiceStack the stack of choices containing atoms.
 	 */
@@ -622,22 +620,31 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		growForMaxAtomId();
 
 		for (AtomizedChoice atomizedChoice : atomizedChoiceStack) {
-			Atom atom = atomizedChoice.getAtom();
-			int atomId = atomStore.get(atom);
-			Choice choice = new Choice(atomId, atomizedChoice.getTruthValue(), atomizedChoice.isBacktracked());
+			replayAtomizedChoice(atomizedChoice);
+		}
+	}
 
-			choiceManager.addChoiceInformation(grounder.getChoiceAtoms(), grounder.getHeadsToBodies());
-			choiceManager.updateAssignments();
-			boolean activeChoice = choiceManager.replayChoice(choice);
+	/**
+	 * Applies a given {@link AtomizedChoice} to the current choice stack using the {@link DefaultSolver#choiceManager}.
+	 * Propagation and grounding are performed after the choice.
+	 * @param atomizedChoice the choice to apply.
+	 */
+	private void replayAtomizedChoice(AtomizedChoice atomizedChoice) {
+		Atom atom = atomizedChoice.getAtom();
+		int atomId = atomStore.get(atom);
+		Choice choice = new Choice(atomId, atomizedChoice.getTruthValue(), atomizedChoice.isBacktracked());
 
-			if (activeChoice) {
-				if (propagate() != null) {
-					throw oops("Conflict in replay during reboot");
-				}
-				syncWithGrounder();
-				if (propagate() != null) {
-					throw oops("Conflict in replay during reboot");
-				}
+		choiceManager.addChoiceInformation(grounder.getChoiceAtoms(), grounder.getHeadsToBodies());
+		choiceManager.updateAssignments();
+		boolean activeChoice = choiceManager.replayChoice(choice);
+
+		if (activeChoice) {
+			if (propagate() != null) {
+				throw oops("Conflict in replay during reboot");
+			}
+			syncWithGrounder();
+			if (propagate() != null) {
+				throw oops("Conflict in replay during reboot");
 			}
 		}
 	}
@@ -688,6 +695,12 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		}
 		if (!ingest(newNoGoods)) {
 			searchState.isSearchSpaceCompletelyExplored = true;
+		}
+	}
+
+	private void disableRebootIfNoRepeat() {
+		if (disableRebootRepeat) {
+			rebootEnabled = false;
 		}
 	}
 
