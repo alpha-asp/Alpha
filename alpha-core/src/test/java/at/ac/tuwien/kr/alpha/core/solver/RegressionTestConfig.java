@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.core.solver;
 
 import at.ac.tuwien.kr.alpha.api.config.Heuristic;
-import at.ac.tuwien.kr.alpha.api.config.RebootStrategy;
+import at.ac.tuwien.kr.alpha.api.config.RebootStrategyEnum;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 
 public class RegressionTestConfig {
@@ -16,7 +16,7 @@ public class RegressionTestConfig {
 
 	private final boolean rebootEnabled;
 	private final boolean disableRebootRepeat;
-	private final RebootStrategy rebootStrategy;
+	private final RebootStrategyEnum rebootStrategy;
 	private final int rebootStrategyInterval;
 	private final double rebootStrategyBase;
 	private final double rebootStrategyFactor;
@@ -39,7 +39,7 @@ public class RegressionTestConfig {
 
 	public RegressionTestConfig(
 			String solverName, String grounderName, String noGoodStoreName, Heuristic branchingHeuristic,
-			boolean rebootEnabled, boolean disableRebootRepeat, RebootStrategy rebootStrategy,
+			boolean rebootEnabled, boolean disableRebootRepeat, RebootStrategyEnum rebootStrategy,
 			int rebootStrategyInterval, double rebootStrategyBase, double rebootStrategyFactor, long seed,
 			boolean debugChecks, String grounderToleranceConstraints, String grounderToleranceRules,
 			boolean disableInstanceRemoval, boolean evaluateStratifiedPart, boolean useSortingGrid,

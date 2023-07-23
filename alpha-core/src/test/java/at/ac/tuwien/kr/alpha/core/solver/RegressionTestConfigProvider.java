@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import at.ac.tuwien.kr.alpha.api.config.RebootStrategy;
+import at.ac.tuwien.kr.alpha.api.config.RebootStrategyEnum;
 import org.junit.jupiter.params.provider.Arguments;
 
 import at.ac.tuwien.kr.alpha.api.config.Heuristic;
@@ -18,7 +18,7 @@ public class RegressionTestConfigProvider {
 	private static final String DEFAULT_BRANCHING_HEURISTIC = "VSIDS";
 	private static final boolean DEFAULT_REBOOT_ENABLED = false;
 	private static final boolean DEFAULT_DISABLE_REBOOT_REPEAT = true;
-	private static final RebootStrategy DEFAULT_REBOOT_STRATEGY = RebootStrategy.FIXED;
+	private static final RebootStrategyEnum DEFAULT_REBOOT_STRATEGY = RebootStrategyEnum.ANSWER;
 	private static final int DEFAULT_REBOOT_STRATEGY_ITERATIONS = 5;
 	private static final double DEFAULT_REBOOT_STRATEGY_BASE = 5;
 	private static final double DEFAULT_REBOOT_STRATEGY_FACTOR = 2;
@@ -44,7 +44,7 @@ public class RegressionTestConfigProvider {
 		String[] atomStores = ci ? new String[]{DEFAULT_ATOM_STORE, "naive"} : new String[]{DEFAULT_ATOM_STORE};
 		String[] heuristics = ci ? nonDeprecatedHeuristics() : new String[]{"NAIVE", DEFAULT_BRANCHING_HEURISTIC};
 		boolean[] rebootEnabledValues = new boolean[]{DEFAULT_REBOOT_ENABLED, true};
-		RebootStrategy[] rebootStrategyValues = new RebootStrategy[]{DEFAULT_REBOOT_STRATEGY};
+		RebootStrategyEnum[] rebootStrategyValues = new RebootStrategyEnum[]{DEFAULT_REBOOT_STRATEGY};
 		int[] rebootStrategyIterationsValues = new int[]{DEFAULT_REBOOT_STRATEGY_ITERATIONS};
 		double[] rebootStrategyBaseValues = new double[]{DEFAULT_REBOOT_STRATEGY_BASE};
 		double[] rebootStrategyFactorValues = new double[]{DEFAULT_REBOOT_STRATEGY_FACTOR};
@@ -71,7 +71,7 @@ public class RegressionTestConfigProvider {
 				for (String branchingHeuristicName : heuristics) {
 					for (boolean rebootEnabled : rebootEnabledValues) {
 						for (boolean disableRebootRepeat : disableRebootRepeatValues) {
-							for (RebootStrategy rebootStrategy : rebootStrategyValues) {
+							for (RebootStrategyEnum rebootStrategy : rebootStrategyValues) {
 								for (int rebootIterations : rebootStrategyIterationsValues) {
 									for (double rebootStrategyBase : rebootStrategyBaseValues) {
 										for (double rebootStrategyFactor : rebootStrategyFactorValues) {

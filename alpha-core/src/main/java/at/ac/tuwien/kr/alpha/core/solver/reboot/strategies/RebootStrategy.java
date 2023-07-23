@@ -48,7 +48,7 @@ public interface RebootStrategy {
 	default void newEnumerationNoGood(NoGood noGood) {
 	}
 
-	default void newJustificationNoGood(NoGood justification) {
+	default void newJustificationNoGood(NoGood noGood) {
 	}
 
 	default void newNoGood(NoGood noGood) {

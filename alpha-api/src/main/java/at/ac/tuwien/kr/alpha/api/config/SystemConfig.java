@@ -51,7 +51,7 @@ public class SystemConfig {
 	public static final BinaryNoGoodPropagationEstimationStrategy DEFAULT_MOMS_STRATEGY = BinaryNoGoodPropagationEstimationStrategy.CountBinaryWatches;
 	public static final boolean DEFAULT_REBOOT_ENABLED = false;
 	public static final boolean DEFAULT_DISABLE_REBOOT_REPEAT = false;
-	public static final RebootStrategy DEFAULT_REBOOT_STRATEGY = RebootStrategy.ANSWER;
+	public static final RebootStrategyEnum DEFAULT_REBOOT_STRATEGY = RebootStrategyEnum.ANSWER;
 	public static final int DEFAULT_REBOOT_STRATEGY_INTERVAL = 10000;
 	public static final double DEFAULT_REBOOT_STRATEGY_BASE = 1.5;
 	public static final double DEFAULT_REBOOT_STRATEGY_FACTOR = 2;
@@ -81,7 +81,7 @@ public class SystemConfig {
 	private BinaryNoGoodPropagationEstimationStrategy momsStrategy = DEFAULT_MOMS_STRATEGY;
 	private boolean rebootEnabled = DEFAULT_REBOOT_ENABLED;
 	private boolean disableRebootRepeat = DEFAULT_DISABLE_REBOOT_REPEAT;
-	private RebootStrategy rebootStrategy = DEFAULT_REBOOT_STRATEGY;
+	private RebootStrategyEnum rebootStrategy = DEFAULT_REBOOT_STRATEGY;
 	private int rebootStrategyInterval = DEFAULT_REBOOT_STRATEGY_INTERVAL;
 	private double rebootStrategyBase = DEFAULT_REBOOT_STRATEGY_BASE;
 	private double rebootStrategyFactor = DEFAULT_REBOOT_STRATEGY_FACTOR;
@@ -147,16 +147,16 @@ public class SystemConfig {
 		this.disableRebootRepeat = disableRebootRepeat;
 	}
 
-	public RebootStrategy getRebootStrategy() {
+	public RebootStrategyEnum getRebootStrategy() {
 		return this.rebootStrategy;
 	}
 
-	public void setRebootStrategy(RebootStrategy rebootStrategy) {
+	public void setRebootStrategy(RebootStrategyEnum rebootStrategy) {
 		this.rebootStrategy = rebootStrategy;
 	}
 
 	public void setRebootStrategyName(String rebootStrategyName) {
-		this.rebootStrategy = RebootStrategy.valueOf(rebootStrategyName.replace("-", "_").toUpperCase());
+		this.rebootStrategy = RebootStrategyEnum.valueOf(rebootStrategyName.replace("-", "_").toUpperCase());
 	}
 
 	public int getRebootStrategyInterval() {

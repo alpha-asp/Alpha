@@ -388,7 +388,7 @@ public class CommandLineParser {
 			cfg.setRebootStrategyName(rebootStrategyName);
 		} catch (IllegalArgumentException e) {
 			throw new ParseException(
-					"Unknown reboot strategy: " + rebootStrategyName + ". Please try one of the following: " + RebootStrategy.listAllowedValues());
+					"Unknown reboot strategy: " + rebootStrategyName + ". Please try one of the following: " + RebootStrategyEnum.listAllowedValues());
 		}
 	}
 

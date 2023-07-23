@@ -54,6 +54,7 @@ public class LubyLearnedRebootStrategy implements RebootStrategy {
 	@Override
 	public void rebootPerformed() {
 		rebootCount++;
+		learnedCount = 0;
 	}
 
 	private double luby(double i) {

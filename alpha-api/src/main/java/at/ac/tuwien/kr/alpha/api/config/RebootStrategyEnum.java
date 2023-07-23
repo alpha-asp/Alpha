@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 /**
  * The available reboot strategies.
  */
-public enum RebootStrategy {
+public enum RebootStrategyEnum {
 	FIXED,
 	GEOM,
 	LUBY,
@@ -17,6 +17,6 @@ public enum RebootStrategy {
 	 * @return a comma-separated list of names of known reboot strategies
 	 */
 	public static String listAllowedValues() {
-		return Arrays.stream(values()).map(RebootStrategy::toString).collect(Collectors.joining(", "));
+		return Arrays.stream(values()).map(RebootStrategyEnum::toString).collect(Collectors.joining(", "));
 	}
 }
