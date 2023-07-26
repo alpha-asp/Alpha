@@ -79,4 +79,9 @@ public class BerkMinLiteral extends BerkMin {
 			}
 		}
 	}
+
+	@Override
+	public void reset() {
+		activeLiterals = new LinkedList<>();
+	}
 }

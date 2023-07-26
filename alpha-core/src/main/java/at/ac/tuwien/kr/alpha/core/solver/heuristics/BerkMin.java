@@ -278,4 +278,12 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 	public String toString() {
 		return this.getClass().getSimpleName();
 	}
+
+	@Override
+	public void reset() {
+		activityCounters = new LinkedHashMap<>();
+		signCounters = new LinkedHashMap<>();
+		stackOfNoGoods = new ArrayDeque<>();
+		stepsSinceLastDecay = 0;
+	}
 }

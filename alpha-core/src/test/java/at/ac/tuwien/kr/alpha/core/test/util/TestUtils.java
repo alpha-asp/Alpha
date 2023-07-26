@@ -54,7 +54,7 @@ public class TestUtils {
 			atomStore.putIfAbsent(Atoms.newBasicAtom(predA, Terms.newConstant(i)));
 		}
 	}
-	
+
 	public static Atom atom(String predicateName, String... termStrings) {
 		Term[] terms = new Term[termStrings.length];
 		for (int i = 0; i < termStrings.length; i++) {
@@ -75,11 +75,11 @@ public class TestUtils {
 		}
 		return Atoms.newBasicAtom(Predicates.getPredicate(predicateName, terms.length), terms);
 	}
-	
+
 	public static void printNoGoods(AtomStore atomStore, Collection<NoGood> noGoods) {
 		System.out.println(noGoods.stream().map(atomStore::noGoodToString).collect(Collectors.toSet()));
 	}
-	
+
 	public static void assertAnswerSetsEqual(Set<AnswerSet> expected, Set<AnswerSet> actual) {
 		if (expected == null) {
 			if (actual != null) {
@@ -161,15 +161,15 @@ public class TestUtils {
 				: InternalProgram.fromNormalProgram(normalProg);
 		return SolverFactory.getInstance(cfg, atomStore, GrounderFactory.getInstance(cfg.getGrounderName(), preprocessed, atomStore, cfg.isDebugInternalChecks()));
 	}
-	
+
 	public static Solver buildSolverForRegressionTest(ASPCore2Program prog, RegressionTestConfig cfg) {
 		return buildSolverFromSystemConfig(prog, cfg.toSystemConfig());
 	}
-	
+
 	public static Solver buildSolverForRegressionTest(String prog, RegressionTestConfig cfg) {
 		return buildSolverFromSystemConfig(new ProgramParserImpl().parse(prog), cfg.toSystemConfig());
 	}
-	
+
 	public static Solver buildSolverForRegressionTest(AtomStore atomStore, Grounder grounder, RegressionTestConfig cfg) {
 		SystemConfig systemCfg = cfg.toSystemConfig();
 		return SolverFactory.getInstance(systemCfg, atomStore, grounder);
@@ -178,7 +178,7 @@ public class TestUtils {
 	public static Set<AnswerSet> collectRegressionTestAnswerSets(ASPCore2Program prog, RegressionTestConfig cfg) {
 		return buildSolverForRegressionTest(prog, cfg).collectSet();
 	}
-	
+
 	public static Set<AnswerSet> collectRegressionTestAnswerSets(String aspstr, RegressionTestConfig cfg) {
 		ASPCore2Program prog = new ProgramParserImpl().parse(aspstr);
 		return collectRegressionTestAnswerSets(prog, cfg);
@@ -188,30 +188,30 @@ public class TestUtils {
 		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
 		TestUtils.assertAnswerSetsEqual(answerSet, actualAnswerSets);
 	}
-	
+
 	public static void assertRegressionTestAnswerSets(RegressionTestConfig cfg, String program, String... answerSets) {
 		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
-		TestUtils.assertAnswerSetsEqual(answerSets, actualAnswerSets);		
+		TestUtils.assertAnswerSetsEqual(answerSets, actualAnswerSets);
 	}
-	
+
 	public static void assertRegressionTestAnswerSetsWithBase(RegressionTestConfig cfg, String program, String base, String... answerSets) {
 		Set<AnswerSet> actualAnswerSets = collectRegressionTestAnswerSets(program, cfg);
-		TestUtils.assertAnswerSetsEqualWithBase(base, answerSets, actualAnswerSets);		
+		TestUtils.assertAnswerSetsEqualWithBase(base, answerSets, actualAnswerSets);
 	}
-	
+
 	public static void runWithTimeout(RegressionTestConfig cfg, long baseTimeout, long timeoutFactor, Executable action) {
 		long timeout = cfg.isDebugChecks() ? timeoutFactor * baseTimeout : baseTimeout;
 		assertTimeoutPreemptively(Duration.ofMillis(timeout), action);
 	}
-	
+
 	public static void ignoreTestForNaiveSolver(RegressionTestConfig cfg) {
 		Assumptions.assumeFalse(cfg.getSolverName().equals("naive"));
 	}
-	
+
 	public static void ignoreTestForNonDefaultDomainIndependentHeuristics(RegressionTestConfig cfg) {
 		Assumptions.assumeTrue(cfg.getBranchingHeuristic() == Heuristic.VSIDS);
 	}
-	
+
 	public static void ignoreTestForSimplifiedSumAggregates(RegressionTestConfig cfg) {
 		Assumptions.assumeTrue(cfg.isSupportNegativeSumElements());
 	}
@@ -219,9 +219,4 @@ public class TestUtils {
 	public static void ignoreTestForRebootEnabled(RegressionTestConfig cfg) {
 		Assumptions.assumeFalse(cfg.isRebootEnabled());
 	}
-
-	public static void ignoreTestForRebootDisabled(RegressionTestConfig cfg) {
-		Assumptions.assumeTrue(cfg.isRebootEnabled());
-	}
-
 }
