@@ -220,4 +220,8 @@ public class TestUtils {
 		Assumptions.assumeFalse(cfg.isRebootEnabled());
 	}
 
+	public static void ignoreTestForRebootDisabled(RegressionTestConfig cfg) {
+		Assumptions.assumeTrue(cfg.isRebootEnabled());
+	}
+
 }
