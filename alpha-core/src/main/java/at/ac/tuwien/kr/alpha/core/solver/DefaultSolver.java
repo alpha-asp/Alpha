@@ -121,8 +121,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		this.disableRebootRepeat = config.isDisableRebootRepeat();
 		this.rebootStrategy = RebootStrategyFactory.getRebootStrategy(config);
 
-		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment,
-				store.getNoGoodCounter(), 1000);
+		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
 
 		if (this.rebootEnabled && !(grounder instanceof RebootableGrounder)) {
 			this.rebootEnabled = false;

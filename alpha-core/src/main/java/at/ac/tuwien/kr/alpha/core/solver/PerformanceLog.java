@@ -34,7 +34,6 @@ public class PerformanceLog {
 
 	private final ChoiceManager choiceManager;
 	private final TrailAssignment assignment;
-	private final NoGoodCounter noGoodCounter;
 	private final long msBetweenOutputs;
 
 	private Long timeFirstEntry;
@@ -44,11 +43,10 @@ public class PerformanceLog {
 	/**
 	 * @param msBetweenOutputs minimum number of milliseconds that have to pass between writing of performance logs.
 	 */
-	public PerformanceLog(ChoiceManager choiceManager, TrailAssignment assignment, NoGoodCounter noGoodCounter, long msBetweenOutputs) {
+	public PerformanceLog(ChoiceManager choiceManager, TrailAssignment assignment, long msBetweenOutputs) {
 		super();
 		this.choiceManager = choiceManager;
 		this.assignment = assignment;
-		this.noGoodCounter = noGoodCounter;
 		this.msBetweenOutputs = msBetweenOutputs;
 	}
 
@@ -65,13 +63,12 @@ public class PerformanceLog {
 		long currentTime = System.currentTimeMillis();
 		int currentNumberOfChoices = choiceManager.getChoices();
 		if (currentTime >= timeLastPerformanceLog + msBetweenOutputs) {
-			logger.debug("Decisions in {}s: {}", (currentTime - timeLastPerformanceLog) / 1000.0f, currentNumberOfChoices - numberOfChoicesLastPerformanceLog);
+			logger.info("Decisions in {}s: {}", (currentTime - timeLastPerformanceLog) / 1000.0f, currentNumberOfChoices - numberOfChoicesLastPerformanceLog);
 			timeLastPerformanceLog = currentTime;
 			numberOfChoicesLastPerformanceLog = currentNumberOfChoices;
 			float overallTime = (currentTime - timeFirstEntry) / 1000.0f;
 			float decisionsPerSec = currentNumberOfChoices / overallTime;
-			logger.debug("Overall performance: {} decisions in {}s or {} decisions per sec. Overall replayed assignments: {}.", currentNumberOfChoices, overallTime, decisionsPerSec, assignment.replayCounter);
-			logger.debug("Current nogood counts: {}", noGoodCounter.getStatsByType());
+			logger.info("Overall performance: {} decisions in {}s or {} decisions per sec. Overall replayed assignments: {}.", currentNumberOfChoices, overallTime, decisionsPerSec, assignment.replayCounter);
 		}
 	}
 }
