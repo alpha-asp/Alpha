@@ -6,12 +6,15 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.BasicLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.core.grounder.Unification;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
 
 import java.util.*;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Simplifies the input program by deleting redundant literals and rules, as well as identifying rule heads that can
@@ -33,13 +36,13 @@ public class SimplePreprocessing extends ProgramTransformation<NormalProgram, No
 		Set<NormalRule> newRules = new LinkedHashSet<>();
 		Set<Atom> facts = new LinkedHashSet<>(inputProgram.getFacts());
 
-		// Eliminate rules that will never fire, without regarding other rules.
+		// Check if the rules are redundant or will never fire, without taking other rules into consideration.
 		for (NormalRule rule: srcRules) {
-			if (checkForConflictingBodyLiterals(rule.getPositiveBody(), rule.getNegativeBody())) {
+			if (facts.contains(rule.getHeadAtom()) || containsConflictingBodyLiterals(rule) || containsHeadInPositiveBody(rule)) {
 				continue;
 			}
-			if (checkForHeadInBody(rule.getBody(), rule.getHeadAtom())) {
-				continue;
+			if (containsHeadInNegativeBody(rule)) {
+				newRules.add(new NormalRuleImpl(null, new ArrayList<>(rule.getBody())));
 			}
 			newRules.add(rule);
 		}
@@ -70,42 +73,28 @@ public class SimplePreprocessing extends ProgramTransformation<NormalProgram, No
 		return new NormalProgramImpl(new LinkedList<>(newRules), new LinkedList<>(facts), inputProgram.getInlineDirectives());
 	}
 
-	private static class RuleEvaluation {
-		public final static RuleEvaluation NO_FIRE = new RuleEvaluation(null, false, false);
-		private final NormalRule rule;
-		private final boolean isModified;
-		private final boolean isFact;
-
-		public RuleEvaluation(NormalRule rule, boolean isModified, boolean isFact) {
-			this.rule = rule;
-			this.isModified = isModified;
-			this.isFact = isFact;
-		}
-
-		public NormalRule getRule() {
-			return rule;
-		}
-
-		public boolean isModified() {
-			return isModified;
-		}
-
-		public boolean isFact() {
-			return isFact;
-		}
-	}
-
-	private boolean checkForConflictingBodyLiterals(Set<Literal> positiveBody, Set<Literal> negativeBody) {
-		for (Literal positiveLiteral : positiveBody) {
-			if (negativeBody.contains(positiveLiteral.negate())) {
+	private boolean containsConflictingBodyLiterals(NormalRule rule) {
+		for (Literal positiveLiteral : rule.getPositiveBody()) {
+			if (rule.getNegativeBody().contains(positiveLiteral.negate())) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	private boolean checkForHeadInBody(Set<Literal> body, Atom headAtom) {
-		for (Literal literal : body) {
+	private boolean containsHeadInPositiveBody(NormalRule rule) {
+		Atom headAtom = rule.getHeadAtom();
+		for (Literal literal : rule.getPositiveBody()) {
+			if (literal.getAtom().equals(headAtom)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean containsHeadInNegativeBody(NormalRule rule) {
+		Atom headAtom = rule.getHeadAtom();
+		for (Literal literal : rule.getNegativeBody()) {
 			if (literal.getAtom().equals(headAtom)) {
 				return true;
 			}
@@ -118,39 +107,36 @@ public class SimplePreprocessing extends ProgramTransformation<NormalProgram, No
 	 * @param rule the rule to be evaluated.
 	 * @param rules the rules from which literals could be derived from.
 	 * @param facts the facts from which literals could be derived from.
-	 * @return The ({@link RuleEvaluation})  contains the possibly simplified rule and indicates whether it was
+	 * @return The ({@link RuleEvaluation}) contains the possibly simplified rule and indicates whether it was
 	 * modified, is a fact or will never fire.
 	 */
 	private RuleEvaluation evaluateRule(NormalRule rule, List<NormalRule> rules, Set<Atom> facts) {
-		// Check if the rule head is already a fact, making the rule redundant.
-		if (facts.contains(rule.getHeadAtom())) {
-			return RuleEvaluation.NO_FIRE;
-		}
-
-		// Collect all literals that can be removed from the rule.
+		// Collect all literals that can be removed from the rule here.
 		Set<Literal> redundantLiterals = new LinkedHashSet<>();
 
 		// Check if body literals can be derived from facts or other rules. If a body literal is not derivable, the
 		// rule can never fire. If a literal is already proven within the program context, the rule will be simplified
-		// by removing it.
-		for (Literal literal : rule.getBody()) {
-			if (literal instanceof BasicLiteral) {
-				if (literal.isNegated()) {
-					if (facts.contains(literal.getAtom())) {
-						return RuleEvaluation.NO_FIRE;
-					}
-					if (isNonDerivable(literal.getAtom(), rules, facts)) {
-						redundantLiterals.add(literal);
-					}
-				} else {
-					if (facts.contains(literal.getAtom())) {
-						redundantLiterals.add(literal);
-					} else if (isNonDerivable(literal.getAtom(), rules, facts)) {
-						return RuleEvaluation.NO_FIRE;
-					}
-				}
+		// by removing the literal.
+		List<Literal> basicBodyLiterals = rule.getBody().stream().filter(BasicLiteral.class::isInstance).collect(toList());
+		for (Literal literal : basicBodyLiterals) {
+			if (literal.isNegated() && facts.contains(literal.getAtom())
+					|| !literal.isNegated() && isNonDerivable(literal.getAtom(), rules, facts)) {
+				return RuleEvaluation.NO_FIRE;
+			}
+			if (literal.isNegated() && isNonDerivable(literal.getAtom(), rules, facts)
+					|| !literal.isNegated() && facts.contains(literal.getAtom())) {
+				redundantLiterals.add(literal);
 			}
 		}
+
+		// Checks if a constraint has the same body, meaning the had of the rule cannot be derived by the rule.
+		List<NormalRule> constraints = rules.stream().filter(Rule::isConstraint).collect(toList());
+		for (NormalRule constraint : constraints) {
+			if (!rule.isConstraint() && rule.getBody().equals(constraint.getBody())) {
+				return RuleEvaluation.NO_FIRE;
+			}
+		}
+
 		if (redundantLiterals.isEmpty()) {
 			return new RuleEvaluation(rule, false, false);
 		} else {
@@ -162,10 +148,8 @@ public class SimplePreprocessing extends ProgramTransformation<NormalProgram, No
 	private boolean isNonDerivable(Atom atom, List<NormalRule> rules, Set<Atom> facts) {
 		Atom tempAtom = atom.renameVariables("Prep");
 		for (NormalRule rule : rules) {
-			if (!rule.isConstraint()) {
-				if (Unification.unifyAtoms(rule.getHeadAtom(), tempAtom) != null) {
-					return false;
-				}
+			if (!rule.isConstraint() && Unification.unifyAtoms(rule.getHeadAtom(), tempAtom) != null) {
+				return false;
 			}
 		}
 		for (Atom fact:facts) {
@@ -195,5 +179,34 @@ public class SimplePreprocessing extends ProgramTransformation<NormalProgram, No
 			return RuleEvaluation.NO_FIRE;
 		}
 		return new RuleEvaluation(newRule, !literals.isEmpty(), newBody.isEmpty() && !newRule.isConstraint());
+	}
+
+	/**
+	 * Internal helper class containing the possibly simplified rule and indicates whether it could
+	 * or could not be simplified, is a fact or will never fire.
+	 */
+	private static class RuleEvaluation {
+		public static final RuleEvaluation NO_FIRE = new RuleEvaluation(null, false, false);
+		private final NormalRule rule;
+		private final boolean isModified;
+		private final boolean isFact;
+
+		public RuleEvaluation(NormalRule rule, boolean isModified, boolean isFact) {
+			this.rule = rule;
+			this.isModified = isModified;
+			this.isFact = isFact;
+		}
+
+		public NormalRule getRule() {
+			return rule;
+		}
+
+		public boolean isModified() {
+			return isModified;
+		}
+
+		public boolean isFact() {
+			return isFact;
+		}
 	}
 }
