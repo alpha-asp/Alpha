@@ -17,10 +17,12 @@ java.targetCompatibility = JavaVersion.VERSION_11
 
 dependencies {
 	implementation("org.apache.commons:commons-collections4:4.4")
+	implementation("org.apache.commons:commons-compress:1.23.0")	// Explicitly depend on newer version than pulled-in by commons-lang3:3.12.0 to avoid several CVEs (cf. issue #362)
 	implementation("org.apache.commons:commons-lang3:3.12.0")
-	implementation("org.apache.commons:commons-text:1.9")
+	implementation("org.apache.commons:commons-text:1.10.0")
 
-	implementation("org.reflections:reflections:0.9.11")
+	implementation("org.reflections:reflections:0.10.2")
+	implementation("com.google.guava:guava:32.1.1-jre")
 	implementation("org.slf4j:slf4j-api:1.7.32")
 
 	// JUnit 5
