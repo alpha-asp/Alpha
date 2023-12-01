@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.api.impl;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.config.Heuristic;
 import at.ac.tuwien.kr.alpha.api.config.InputConfig;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
@@ -61,6 +62,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -434,6 +436,25 @@ public class AlphaImplTest {
 
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
+	}
+
+	/**
+	 * External atom definitons can be loaded from external jar files at runtime.
+	 * The jar referenced in the test has a predicate method "saySomethingCool" mapped to predicate name "something_cool"
+	 * that accepts an integer and returns the string "That is so cool!" for every input.
+	 */
+	@Test
+	public void withExternalFromJarfile() {
+		String aspString = "cool_stuff :- &something_cool[5](\"This is so cool!\").";
+		URL jarUrl = AlphaImplTest.class.getResource("/jarWithExternalPredicateFunctions.jar");
+		Map<String, PredicateInterpretation> scannedExternals = Externals.scan(jarUrl);
+		Alpha alpha = new AlphaImpl();
+		ASPCore2Program program = alpha.readProgramString(aspString, scannedExternals);
+		List<AnswerSet> result = alpha.solve(program).collect(Collectors.toList());
+		assertAll(
+				() -> assertEquals(1, result.size()),
+				() -> assertTrue(result.get(0).getPredicates().contains(Predicates.getPredicate("cool_stuff", 0)))
+		);
 	}
 
 	@Test

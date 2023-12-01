@@ -27,21 +27,16 @@ package at.ac.tuwien.kr.alpha.core.externals;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
-
-import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.externals.Predicate;
@@ -57,6 +52,8 @@ import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.LongPredicateInter
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.MethodPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.SuppliedPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.UnaryPredicateInterpretation;
+import org.reflections.Reflections;
+import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,13 +77,27 @@ public final class Externals {
 		return Externals.scan(AspStandardLibrary.class.getPackage());
 	}
 
-	public static Map<String, PredicateInterpretation> scan(Path jarFilePath) {
-		//new Reflections(ConfigurationBuilder.build())
-		return Collections.emptyMap();
+	/**
+	 * Scans predicate definitions from a jar file. Will scan for any method annotated with {@link Predicate} in the given jar.
+	 *
+	 * @param jarFileURL a URL that is expected to be of format "jar:file:" + absoluteFilePath + "!/" and point to a jar file
+	 */
+	public static Map<String, PredicateInterpretation> scan(URL jarFileURL) {
+		try (URLClassLoader urlClassLoader = URLClassLoader.newInstance(new URL[]{jarFileURL})) {
+			Reflections reflections = new Reflections(
+					new ConfigurationBuilder()
+							.setClassLoaders(new ClassLoader[]{urlClassLoader})
+							.setUrls(jarFileURL)
+							.setScanners(Scanners.SubTypes, Scanners.MethodsAnnotated));
+			return scanMethods(reflections.getMethodsAnnotatedWith(Predicate.class));
+		} catch (IOException ex) {
+			LOGGER.error("Failed loading predicate definitions from jar", ex);
+			throw new RuntimeException("Failed loading predicate definitions from jar: " + ex.getMessage());
+		}
 	}
 
 	public static Map<String, PredicateInterpretation> scan(Package basePackage) {
-		Reflections reflections = new Reflections(basePackage.getName(), new MethodAnnotationsScanner());
+		Reflections reflections = new Reflections(basePackage.getName(), Scanners.MethodsAnnotated);
 		Set<Method> methods = reflections.getMethodsAnnotatedWith(Predicate.class);
 		return Externals.scanMethods(methods);
 	}
@@ -116,6 +127,9 @@ public final class Externals {
 	}
 
 	public static PredicateInterpretation processPredicateMethod(Method method) {
+		if (!Modifier.isStatic(method.getModifiers())) {
+			throw new IllegalArgumentException("Only static methods may be used as external predicates!");
+		}
 		if (method.getReturnType().equals(boolean.class)) {
 			return new MethodPredicateInterpretation(method);
 		}
