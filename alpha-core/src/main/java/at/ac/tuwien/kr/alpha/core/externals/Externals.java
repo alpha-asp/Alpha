@@ -25,14 +25,20 @@
  */
 package at.ac.tuwien.kr.alpha.core.externals;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
 
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
@@ -51,8 +57,13 @@ import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.LongPredicateInter
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.MethodPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.SuppliedPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.UnaryPredicateInterpretation;
+import org.reflections.util.ConfigurationBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class Externals {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(Externals.class);
 
 	// Private constructor since this is a utility class.
 	private Externals() {
@@ -67,6 +78,11 @@ public final class Externals {
 	 */
 	public static Map<String, PredicateInterpretation> getStandardLibraryExternals() {
 		return Externals.scan(AspStandardLibrary.class.getPackage());
+	}
+
+	public static Map<String, PredicateInterpretation> scan(Path jarFilePath) {
+		//new Reflections(ConfigurationBuilder.build())
+		return Collections.emptyMap();
 	}
 
 	public static Map<String, PredicateInterpretation> scan(Package basePackage) {
