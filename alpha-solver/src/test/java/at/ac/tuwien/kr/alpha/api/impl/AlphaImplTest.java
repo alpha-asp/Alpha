@@ -35,6 +35,7 @@ import at.ac.tuwien.kr.alpha.api.config.InputConfig;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
@@ -455,6 +456,55 @@ public class AlphaImplTest {
 				() -> assertEquals(1, result.size()),
 				() -> assertTrue(result.get(0).getPredicates().contains(Predicates.getPredicate("cool_stuff", 0)))
 		);
+	}
+
+	/**
+	 * Use an external that references a class with no predicate methods from the loaded jar in order to make sure
+	 * everything from the external jar is loaded (and all necessary class definitions found).
+	 */
+	@Test
+	public void withMoreComplexExternalFromJarfile() {
+		String aspString = "more_stuff :- &something_from_another_class[5](\"another cool thing\").";
+		URL jarUrl = AlphaImplTest.class.getResource("/jarWithExternalPredicateFunctions.jar");
+		Map<String, PredicateInterpretation> scannedExternals = Externals.scan(jarUrl);
+		assertAll("verify loaded externals",
+				() -> assertEquals(3, scannedExternals.size()),
+				() -> assertTrue(scannedExternals.containsKey("something_from_another_class")));
+		Alpha alpha = new AlphaImpl();
+		ASPCore2Program program = alpha.readProgramString(aspString, scannedExternals);
+		List<AnswerSet> result = alpha.solve(program).collect(Collectors.toList());
+		assertAll(
+				() -> assertEquals(1, result.size()),
+				() -> assertTrue(result.get(0).getPredicates().contains(Predicates.getPredicate("more_stuff", 0)))
+		);
+	}
+
+	/**
+	 * One more test related to classloading - the referenced external uses the XStream library, which has to
+	 * be packaged with the jar containing the external.
+	 */
+	@Test
+	@SuppressWarnings("unchecked")
+	public void withExternalUsingPackagedLibraryFromJarfile() {
+		String aspString = "xml_stuff(XML) :- &as_xml[\"HelloWorld\"](XML).";
+		URL jarUrl = AlphaImplTest.class.getResource("/jarWithExternalPredicateFunctions.jar");
+		Map<String, PredicateInterpretation> scannedExternals = Externals.scan(jarUrl);
+		assertAll("verify loaded externals",
+				() -> assertEquals(3, scannedExternals.size()),
+				() -> assertTrue(scannedExternals.containsKey("as_xml")));
+		Alpha alpha = new AlphaImpl();
+		ASPCore2Program program = alpha.readProgramString(aspString, scannedExternals);
+		List<AnswerSet> result = alpha.solve(program).collect(Collectors.toList());
+		Predicate xmlStuff = Predicates.getPredicate("xml_stuff", 1);
+		assertAll(
+				() -> assertEquals(1, result.size()),
+				() -> assertTrue(result.get(0).getPredicates().contains(xmlStuff))
+		);
+		SortedSet<Atom> xmlAtoms = result.get(0).getPredicateInstances(xmlStuff);
+		assertEquals(1, xmlAtoms.size());
+		assertTrue(xmlAtoms.first().getTerms().get(0) instanceof ConstantTerm<?>);
+		ConstantTerm<String> helloTerm = (ConstantTerm<String>) xmlAtoms.first().getTerms().get(0);
+		assertEquals("HelloWorld", helloTerm.getObject());
 	}
 
 	@Test

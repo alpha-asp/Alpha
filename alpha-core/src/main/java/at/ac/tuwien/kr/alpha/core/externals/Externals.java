@@ -58,6 +58,8 @@ import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.reflections.scanners.Scanners.SubTypes;
+
 public final class Externals {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Externals.class);
@@ -83,12 +85,17 @@ public final class Externals {
 	 * @param jarFileURL a URL that is expected to be of format "jar:file:" + absoluteFilePath + "!/" and point to a jar file
 	 */
 	public static Map<String, PredicateInterpretation> scan(URL jarFileURL) {
+		Scanners unrestrictedSubtypes = SubTypes.filterResultsBy(c -> true);
 		try (URLClassLoader urlClassLoader = URLClassLoader.newInstance(new URL[]{jarFileURL})) {
 			Reflections reflections = new Reflections(
 					new ConfigurationBuilder()
 							.setClassLoaders(new ClassLoader[]{urlClassLoader})
 							.setUrls(jarFileURL)
-							.setScanners(Scanners.SubTypes, Scanners.MethodsAnnotated));
+							.setScanners(unrestrictedSubtypes, Scanners.MethodsAnnotated));
+			// We need to do this in order to have all classes from the jar loaded and usable
+			Set<Class<?>> allClassesInJar = reflections.get(unrestrictedSubtypes.of(Object.class).asClass(urlClassLoader)); // to make sure all classes are loaded
+			LOGGER.debug("Loaded total " + allClassesInJar.size() + " classes from jar");
+			allClassesInJar.forEach(clazz -> LOGGER.debug("loaded class " + clazz));
 			return scanMethods(reflections.getMethodsAnnotatedWith(Predicate.class));
 		} catch (IOException ex) {
 			LOGGER.error("Failed loading predicate definitions from jar", ex);
