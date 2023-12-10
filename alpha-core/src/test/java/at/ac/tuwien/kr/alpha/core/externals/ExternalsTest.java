@@ -29,7 +29,8 @@ public class ExternalsTest {
 		ClassPool pool = ClassPool.getDefault();
 		pool.insertClassPath(jarUrl.getPath());
 		pool.getImportedPackages().forEachRemaining(System.out::println);
-		pool.
+		//pool.
+		// TODO unfinished
 	}
 
 }
