@@ -9,6 +9,7 @@ import at.ac.tuwien.kr.alpha.api.rules.RuleInstantiator;
 import at.ac.tuwien.kr.alpha.api.rules.heads.ActionHead;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import org.apache.commons.lang3.StringUtils;
 
 class ActionHeadImpl implements ActionHead {
 
@@ -53,6 +54,10 @@ class ActionHeadImpl implements ActionHead {
 	@Override
 	public VariableTerm getActionOutputTerm() {
 		return actionOutputTerm;
+	}
+
+	public String toString() {
+		return atom.toString() + " : @" + actionName + "(" + StringUtils.join(actionInputTerms, ", ") + ") = " + actionOutputTerm;
 	}
 
 }
