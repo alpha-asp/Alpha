@@ -30,14 +30,8 @@ package at.ac.tuwien.kr.alpha.core.solver;
 import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomToLiteral;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.Stack;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -260,6 +254,40 @@ public class ChoiceManager implements Checkable {
 
 	public BinaryNoGoodPropagationEstimation getBinaryNoGoodPropagationEstimation() {
 		return bnpEstimation;
+	}
+
+	/**
+	 * Returns the current choice stack as a list of choices containing atom ids.
+	 * @return a list of the choices on the current choice stack ordered from oldest to newest.
+	 */
+	public List<Choice> getChoiceList() {
+		return new ArrayList<>(choiceStack);
+	}
+
+	/**
+	 * Reset the current choice influence manager. Then clear the current choice stack and mappings
+	 * between rule heads and bodies.
+	 */
+	public void reset() {
+		choicePointInfluenceManager.reset();
+		choiceStack.clear();
+		headsToBodies.clear();
+		bodiesToHeads.clear();
+	}
+
+	/**
+	 * Make the given choice if its atom is an active choice atom.
+	 *
+	 * @param choice the choice to make.
+	 * @return whether the atom of the given choice was an active choice atom.
+	 */
+	public boolean replayChoice(Choice choice) {
+		if (isActiveChoiceAtom(choice.getAtom())) {
+			choose(choice);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**

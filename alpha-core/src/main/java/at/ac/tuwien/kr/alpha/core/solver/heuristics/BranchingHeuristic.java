@@ -81,4 +81,10 @@ public interface BranchingHeuristic {
 
 	default void growForMaxAtomId(int maxAtomId) {
 	}
+
+	/**
+	 * Reset the state of the heuristic to its initial state.
+	 */
+	default void reset() {
+	}
 }

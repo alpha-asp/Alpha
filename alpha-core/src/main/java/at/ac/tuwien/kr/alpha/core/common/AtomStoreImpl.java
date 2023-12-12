@@ -129,4 +129,19 @@ public class AtomStoreImpl implements AtomStore {
 	public AtomCounter getAtomCounter() {
 		return atomCounter;
 	}
+
+	@Override
+	public void reset() {
+		atomIdsToInternalBasicAtoms.clear();
+		atomIdsToInternalBasicAtoms.add(null);
+
+		predicateInstancesToAtomIds.clear();
+
+		atomIdGenerator.resetGenerator();
+		atomIdGenerator.getNextId();
+
+		releasedAtomIds.clear();
+
+		atomCounter.reset();
+	}
 }

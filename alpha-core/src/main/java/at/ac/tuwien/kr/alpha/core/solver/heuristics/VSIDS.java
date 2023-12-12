@@ -253,4 +253,10 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 		return this.getClass().getSimpleName();
 	}
 
+	@Override
+	public void reset() {
+		heapOfActiveAtoms.reset();
+		signBalances = new int[0];
+		bufferedNoGoods.clear();
+	}
 }

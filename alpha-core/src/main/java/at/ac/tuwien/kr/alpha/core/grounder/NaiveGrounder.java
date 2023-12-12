@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -82,7 +83,7 @@ import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
  *
  * Copyright (c) 2016-2020, the Alpha Team.
  */
-public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGrounder {
+public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGrounder, RebootableGrounder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
 
 	private final WorkingMemory workingMemory = new WorkingMemory();
@@ -138,6 +139,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, this.program, uniqueGroundRulePerGroundHead);
 
 		this.debugInternalChecks = debugInternalChecks;
+
 
 		// Initialize RuleInstantiator and instantiation strategy. Note that the instantiation strategy also
 		// needs the current assignment, which is set with every call of getGroundInstantiations.
@@ -364,7 +366,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			modifiedWorkingMemory.markRecentlyAddedInstancesDone();
 		}
 
-		workingMemory.reset();
+		workingMemory.resetModified();
 		for (Atom removeAtom : removeAfterObtainingNewNoGoods) {
 			final IndexedInstanceStorage storage = workingMemory.get(removeAtom, true);
 			Instance instance = new Instance(removeAtom.getTerms());
@@ -412,6 +414,37 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return registry.register(noGood);
 	}
 
+	@Override
+	public void reboot(Assignment currentAssignment) {
+		workingMemory.reset();
+		registry.reset();
+		noGoodGenerator.reset();
+		choiceRecorder.reset();
+		analyzeUnjustified.reset();
+		rulesUsingPredicateWorkingMemory.clear();
+		removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
+		instantiationStrategy.setStaleWorkingMemoryEntries(removeAfterObtainingNewNoGoods);
+		instantiationStrategy.setCurrentAssignment(currentAssignment);
+		fixedRules = new ArrayList<>();
+		initializeFactsAndRules();
+	}
+
+	@Override
+	public Map<Integer, NoGood> forceRuleGrounding(RuleAtom atom) {
+		Map<Integer, NoGood> newNoGoods = new LinkedHashMap<>();
+
+		// Translate RuleAtom back to NonGroundRule + Substitution.
+		RuleAtom.RuleAtomData ruleAtomData = (RuleAtom.RuleAtomData) ((ConstantTerm<?>)(atom.getTerms().get(0))).getObject();
+		CompiledRule nonGroundRule = ruleAtomData.getNonGroundRule();
+		Substitution groundingSubstitution = ruleAtomData.getSubstitution();
+
+		// Generate the rules that correspond to the RuleAtom
+		List<NoGood> generatedNoGoods = noGoodGenerator.generateNoGoodsFromGroundSubstitution(
+				nonGroundRule, groundingSubstitution);
+		registry.register(generatedNoGoods, newNoGoods);
+		return newNoGoods;
+	}
+
 	// Ideally, this method should be private. It's only visible because NaiveGrounderTest needs to access it.
 	BindingResult getGroundInstantiations(CompiledRule rule, RuleGroundingOrder groundingOrder, Substitution partialSubstitution,
 			Assignment currentAssignment) {
@@ -438,7 +471,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	/**
-	 * Helper method used by {@link NaiveGrounder#bindNextAtomInRule(RuleGroundingOrderImpl, int, int, int, BasicSubstitution)}.
+	 * Helper method used by {@link NaiveGrounder#bindNextAtomInRule(RuleGroundingOrder, int, int, int, Substitution)}.
 	 *
 	 * Takes an <code>ImmutablePair</code> of a {@link BasicSubstitution} and an accompanying {@link AssignmentStatus} and calls
 	 * <code>bindNextAtomInRule</code> for the next literal in the grounding order.
@@ -620,7 +653,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	/**
 	 * Checks that every nogood not marked as {@link NoGoodInterface.Type#INTERNAL} contains only
-	 * atoms which are not {@link PredicateImpl#isSolverInternal()} (except {@link RuleAtom}s, which are allowed).
+	 * atoms which are not {@link Predicate#isSolverInternal()} (except {@link RuleAtom}s, which are allowed).
 	 *
 	 * @param newNoGoods
 	 */

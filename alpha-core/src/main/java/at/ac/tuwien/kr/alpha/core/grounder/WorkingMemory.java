@@ -27,10 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -104,11 +101,28 @@ public class WorkingMemory {
 		}
 	}
 
-	public void reset() {
+	/**
+	 * Resets the modified working memory entries.
+	 */
+	public void resetModified() {
 		modifiedWorkingMemories = new LinkedHashSet<>();
 	}
 
+	/**
+	 * Returns all recently modified working memory entries.
+	 * @return the set of working memory entries that were modified since the last call
+	 * to {@link WorkingMemory#resetModified}.
+	 */
 	public Set<IndexedInstanceStorage> modified() {
 		return modifiedWorkingMemories;
+	}
+
+	/**
+	 * Resets the modified working memory entries using {@link WorkingMemory#resetModified} and
+	 * clears the whole working memory.
+	 */
+	public void reset() {
+		resetModified();
+		workingMemory = new LinkedHashMap<>();
 	}
 }

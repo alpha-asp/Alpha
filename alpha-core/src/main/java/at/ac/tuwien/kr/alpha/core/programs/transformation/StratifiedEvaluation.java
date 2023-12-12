@@ -80,7 +80,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			}
 		}
 
-		workingMemory.reset();
+		workingMemory.resetModified();
 
 		// Set up literal instantiator.
 		literalInstantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(workingMemory));
@@ -150,7 +150,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	}
 
 	private void evaluateRules(Set<CompiledRule> rules, boolean isInitialRun) {
-		workingMemory.reset();
+		workingMemory.resetModified();
 		LOGGER.debug("Starting component evaluation run...");
 		for (CompiledRule r : rules) {
 			evaluateRule(r, !isInitialRun);

@@ -36,7 +36,7 @@ import at.ac.tuwien.kr.alpha.api.Alpha;
 
 /**
  * Config structure for {@link Alpha} instances.
- * 
+ *
  * Copyright (c) 2021, the Alpha Team.
  */
 public class SystemConfig {
@@ -49,6 +49,12 @@ public class SystemConfig {
 	public static final String DEFAULT_NOGOOD_STORE_NAME = "alphaRoaming";
 	public static final Heuristic DEFAULT_BRANCHING_HEURISTIC = Heuristic.VSIDS;
 	public static final BinaryNoGoodPropagationEstimationStrategy DEFAULT_MOMS_STRATEGY = BinaryNoGoodPropagationEstimationStrategy.CountBinaryWatches;
+	public static final boolean DEFAULT_REBOOT_ENABLED = false;
+	public static final boolean DEFAULT_DISABLE_REBOOT_REPEAT = false;
+	public static final RebootStrategyEnum DEFAULT_REBOOT_STRATEGY = RebootStrategyEnum.ANSWER;
+	public static final int DEFAULT_REBOOT_STRATEGY_INTERVAL = 10000;
+	public static final double DEFAULT_REBOOT_STRATEGY_BASE = 1.5;
+	public static final double DEFAULT_REBOOT_STRATEGY_FACTOR = 2;
 	public static final long DEFAULT_SEED = System.nanoTime();
 	public static final boolean DEFAULT_DETERMINISTIC = false;
 	public static final boolean DEFAULT_PRINT_STATS = false;
@@ -73,6 +79,12 @@ public class SystemConfig {
 	private boolean debugInternalChecks = DEFAULT_DEBUG_INTERNAL_CHECKS;
 	private Heuristic branchingHeuristic = DEFAULT_BRANCHING_HEURISTIC;
 	private BinaryNoGoodPropagationEstimationStrategy momsStrategy = DEFAULT_MOMS_STRATEGY;
+	private boolean rebootEnabled = DEFAULT_REBOOT_ENABLED;
+	private boolean disableRebootRepeat = DEFAULT_DISABLE_REBOOT_REPEAT;
+	private RebootStrategyEnum rebootStrategy = DEFAULT_REBOOT_STRATEGY;
+	private int rebootStrategyInterval = DEFAULT_REBOOT_STRATEGY_INTERVAL;
+	private double rebootStrategyBase = DEFAULT_REBOOT_STRATEGY_BASE;
+	private double rebootStrategyFactor = DEFAULT_REBOOT_STRATEGY_FACTOR;
 	private boolean quiet = DEFAULT_QUIET;
 	private boolean printStats = DEFAULT_PRINT_STATS;
 	private boolean disableJustificationSearch = DEFAULT_DISABLE_JUSTIFICATION_SEARCH;
@@ -117,6 +129,58 @@ public class SystemConfig {
 	 */
 	public void setNogoodStoreName(String nogoodStoreName) {
 		this.nogoodStoreName = nogoodStoreName;
+	}
+
+	public boolean isRebootEnabled() {
+		return this.rebootEnabled;
+	}
+
+	public void setRebootEnabled(boolean rebootEnabled) {
+		this.rebootEnabled = rebootEnabled;
+	}
+
+	public boolean isDisableRebootRepeat() {
+		return this.disableRebootRepeat;
+	}
+
+	public void setDisableRebootRepeat(boolean disableRebootRepeat) {
+		this.disableRebootRepeat = disableRebootRepeat;
+	}
+
+	public RebootStrategyEnum getRebootStrategy() {
+		return this.rebootStrategy;
+	}
+
+	public void setRebootStrategy(RebootStrategyEnum rebootStrategy) {
+		this.rebootStrategy = rebootStrategy;
+	}
+
+	public void setRebootStrategyName(String rebootStrategyName) {
+		this.rebootStrategy = RebootStrategyEnum.valueOf(rebootStrategyName.replace("-", "_").toUpperCase());
+	}
+
+	public int getRebootStrategyInterval() {
+		return this.rebootStrategyInterval;
+	}
+
+	public void setRebootStrategyInterval(int rebootStrategyInterval) {
+		this.rebootStrategyInterval = rebootStrategyInterval;
+	}
+
+	public double getRebootStrategyBase() {
+		return this.rebootStrategyBase;
+	}
+
+	public void setRebootStrategyBase(double rebootStrategyBase) {
+		this.rebootStrategyBase = rebootStrategyBase;
+	}
+
+	public double getRebootStrategyFactor() {
+		return this.rebootStrategyFactor;
+	}
+
+	public void setRebootStrategyFactor(double rebootStrategyFactor) {
+		this.rebootStrategyFactor = rebootStrategyFactor;
 	}
 
 	public boolean isDeterministic() {

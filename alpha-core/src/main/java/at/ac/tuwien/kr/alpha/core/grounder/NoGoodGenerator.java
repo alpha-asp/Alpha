@@ -63,6 +63,7 @@ public class NoGoodGenerator {
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private final CompiledProgram programAnalysis;
 	private final Set<CompiledRule> uniqueGroundRulePerGroundHead;
+	private final Set<RuleAtom> groundRuleAtoms;
 
 	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, CompiledProgram programAnalysis, Set<CompiledRule> uniqueGroundRulePerGroundHead) {
 		this.atomStore = atomStore;
@@ -70,6 +71,7 @@ public class NoGoodGenerator {
 		this.factsFromProgram = factsFromProgram;
 		this.programAnalysis = programAnalysis;
 		this.uniqueGroundRulePerGroundHead = uniqueGroundRulePerGroundHead;
+		this.groundRuleAtoms = new HashSet<>();
 	}
 
 	/**
@@ -103,14 +105,14 @@ public class NoGoodGenerator {
 		// Prepare atom representing the rule body.
 		final RuleAtom bodyAtom = new RuleAtom(nonGroundRule, substitution);
 
-		// Check uniqueness of ground rule by testing whether the
-		// body representing atom already has an id.
-		if (atomStore.contains(bodyAtom)) {
+		// Check uniqueness of ground rule.
+		if (groundRuleAtoms.contains(bodyAtom)) {
 			// The current ground instance already exists,
 			// therefore all nogoods have already been created.
 			return emptyList();
 		}
 
+		groundRuleAtoms.add(bodyAtom);
 		final int bodyRepresentingLiteral = atomToLiteral(atomStore.putIfAbsent(bodyAtom));
 		final int headLiteral = atomToLiteral(atomStore.putIfAbsent(nonGroundRule.getHeadAtom().substitute(substitution)));
 
@@ -160,6 +162,10 @@ public class NoGoodGenerator {
 			bodyLiteralsNegative.add(atomToLiteral(atomStore.putIfAbsent(groundAtom)));
 		}
 		return bodyLiteralsNegative;
+	}
+
+	void reset() {
+		groundRuleAtoms.clear();
 	}
 
 	private List<Integer> collectPosLiterals(final CompiledRule nonGroundRule, final Substitution substitution) {

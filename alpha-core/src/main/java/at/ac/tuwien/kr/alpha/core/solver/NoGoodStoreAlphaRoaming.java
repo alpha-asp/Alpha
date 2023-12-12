@@ -156,9 +156,17 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	}
 
 	@Override
+	public void reset() {
+		clear();
+		counter.reset();
+	}
+
+
+	@Override
 	public void cleanupLearnedNoGoods() {
 		if (learnedNoGoodDeletion.needToRunNoGoodDeletion()) {
 			learnedNoGoodDeletion.runNoGoodDeletion();
+			LOGGER.info("Nogood deletion performed.");
 		}
 	}
 
@@ -543,7 +551,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	}
 
 	private ConflictCause propagateStrongly(int literal, int currentDecisionLevel, boolean restrictToBinaryNoGoods) {
-
 		// Propagate binary watches.
 		ConflictCause conflictCause = binaryWatches[literal].propagateStrongly();
 		if (conflictCause != null || restrictToBinaryNoGoods) {

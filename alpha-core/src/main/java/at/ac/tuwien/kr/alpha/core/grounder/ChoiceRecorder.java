@@ -71,7 +71,6 @@ public class ChoiceRecorder {
 		return currentHeadsToBodies;
 	}
 
-	
 	public List<NoGood> generateChoiceNoGoods(final List<Integer> posLiterals, final List<Integer> negLiterals, final int bodyRepresentingLiteral) {
 		// Obtain an ID for this new choice.
 		final int choiceId = ID_GENERATOR.getNextId();
@@ -94,7 +93,7 @@ public class ChoiceRecorder {
 		return NoGood.fromBodyInternal(posLiterals, emptyList(), literalOn);
 	}
 
-	private List<NoGood> generateNeg(final int atomOff, List<Integer> negLiterals)  {
+	private List<NoGood> generateNeg(final int atomOff, List<Integer> negLiterals) {
 		final int negLiteralOff = negateLiteral(atomToLiteral(atomOff));
 
 		final List<NoGood> noGoods = new ArrayList<>(negLiterals.size() + 1);
@@ -113,6 +112,12 @@ public class ChoiceRecorder {
 			newHeadsToBodies.put(headId, existingBodies);
 		}
 		existingBodies.add(bodyId);
+	}
+
+	public void reset() {
+		ID_GENERATOR.resetGenerator();
+		newChoiceAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
+		newHeadsToBodies = new LinkedHashMap<>();
 	}
 
 	@Override

@@ -130,7 +130,7 @@ public class HeapOfActiveAtoms {
 	public void newNoGoods(Collection<NoGood> newNoGoods) {
 		for (NoGood newNoGood : newNoGoods) {
 			Type type = newNoGood.getType();
-			if (type != Type.LEARNT && type != Type.INTERNAL) {
+			if (type != Type.INTERNAL) {
 				analyzeNewNoGood(newNoGood);
 				initActivity(newNoGood);
 			}
@@ -279,6 +279,18 @@ public class HeapOfActiveAtoms {
 		if (moms != null) {
 			moms.setStrategy(momsStrategy);
 		}
+	}
+
+	/**
+	 * Reset the heap to its empty state.
+	 */
+	public void reset() {
+		incrementedActivityScores = new boolean[0];
+		activityScores = new double[0];
+		heap.clear();
+		stepsSinceLastDecay = 0;
+		currentActivityIncrement = 1.0;
+		numberOfNormalizations = 0;
 	}
 
 }

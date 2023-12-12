@@ -35,17 +35,15 @@ import static at.ac.tuwien.kr.alpha.core.solver.NoGoodStore.LBD_NO_VALUE;
 import static at.ac.tuwien.kr.alpha.core.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
 import static at.ac.tuwien.kr.alpha.core.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Set;
 import java.util.function.Consumer;
 
+import at.ac.tuwien.kr.alpha.core.common.Assignment;
+import at.ac.tuwien.kr.alpha.core.grounder.RebootableGrounder;
+import at.ac.tuwien.kr.alpha.core.solver.reboot.AtomizedChoice;
+import at.ac.tuwien.kr.alpha.core.solver.reboot.RebootManager;
+import at.ac.tuwien.kr.alpha.core.solver.reboot.strategies.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,9 +79,13 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 	private final NoGoodStore store;
 	private final ChoiceManager choiceManager;
+	private final RebootManager rebootManager;
 	private final WritableAssignment assignment;
 	private final GroundConflictNoGoodLearner learner;
 	private final BranchingHeuristic branchingHeuristic;
+	private final RebootStrategy rebootStrategy;
+	private boolean rebootEnabled;
+	private final boolean disableRebootRepeat;
 
 	private int mbtAtFixpoint;
 	private int conflictsAfterClosing;
@@ -101,7 +103,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	private final SearchState searchState = new SearchState();
 
 	private final PerformanceLog performanceLog;
-	
+
 	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, SystemConfig config, HeuristicsConfiguration heuristicsConfiguration) {
 		super(atomStore, grounder);
 
@@ -109,11 +111,22 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		this.store = store;
 		this.choiceManager = new ChoiceManager(assignment, store);
 		this.choiceManager.setChecksEnabled(config.isDebugInternalChecks());
+		this.rebootManager = new RebootManager(atomStore);
 		this.learner = new GroundConflictNoGoodLearner(assignment, atomStore);
 		this.branchingHeuristic = chainFallbackHeuristic(grounder, assignment, random, heuristicsConfiguration);
 		this.disableJustifications = config.isDisableJustificationSearch();
 		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();
+
+		this.rebootEnabled = config.isRebootEnabled();
+		this.disableRebootRepeat = config.isDisableRebootRepeat();
+		this.rebootStrategy = RebootStrategyFactory.getRebootStrategy(config);
+
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
+
+		if (this.rebootEnabled && !(grounder instanceof RebootableGrounder)) {
+			this.rebootEnabled = false;
+			LOGGER.warn("Reboot was disabled since grounder does not support it.");
+		}
 	}
 
 	private BranchingHeuristic chainFallbackHeuristic(Grounder grounder, WritableAssignment assignment, Random random, HeuristicsConfiguration heuristicsConfiguration) {
@@ -136,6 +149,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		}
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
+			rebootStrategy.nextIteration();
 			performanceLog.writeIfTimeForLogging(LOGGER);
 			if (searchState.isSearchSpaceCompletelyExplored) {
 				LOGGER.debug("Search space has been fully explored, there are no more answer-sets.");
@@ -146,19 +160,26 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 			if (conflictCause != null) {
 				LOGGER.debug("Conflict encountered, analyzing conflict.");
 				learnFromConflict(conflictCause);
+				rebootStrategy.conflictEncountered();
 			} else if (assignment.didChange()) {
 				LOGGER.debug("Updating grounder with new assignments and (potentially) obtaining new NoGoods.");
-				grounder.updateAssignment(assignment.getNewPositiveAssignmentsIterator());
-				getNoGoodsFromGrounderAndIngest();
+				syncWithGrounder();
+			} else if (rebootEnabled && rebootStrategy.isRebootScheduled()) {
+				reboot();
+				rebootStrategy.rebootPerformed();
+				disableRebootIfNoRepeat();
 			} else if (choose()) {
 				LOGGER.debug("Did choice.");
+				rebootStrategy.decisionMade();
 			} else if (close()) {
 				LOGGER.debug("Closed unassigned known atoms (assigning FALSE).");
 			} else if (assignment.getMBTCount() == 0) {
 				provideAnswerSet(action);
+				rebootStrategy.answerSetFound();
 				return true;
 			} else {
 				backtrackFromMBTsRemaining();
+				rebootStrategy.backtrackJustified();
 			}
 		}
 	}
@@ -168,6 +189,15 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		performanceLog.initialize();
 		getNoGoodsFromGrounderAndIngest();
 		searchState.hasBeenInitialized = true;
+	}
+
+	/**
+	 * Updates the assignment for the grounder and then gets new {@link NoGood}s from the grounder
+	 * by calling {@link DefaultSolver#getNoGoodsFromGrounderAndIngest()}.
+	 */
+	private void syncWithGrounder() {
+		grounder.updateAssignment(assignment.getNewPositiveAssignmentsIterator());
+		getNoGoodsFromGrounderAndIngest();
 	}
 
 	private void prepareForSubsequentAnswerSet() {
@@ -192,6 +222,8 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		// Backjump instead of backtrackSlow, enumerationNoGood will invert last choice.
 		choiceManager.backjump(backjumpLevel - 1);
 		LOGGER.debug("Adding enumeration nogood: {}", enumerationNoGood);
+		rebootManager.newEnumerationNoGood(enumerationNoGood);
+		rebootStrategy.newEnumerationNoGood(enumerationNoGood);
 		if (!addAndBackjumpIfNecessary(grounder.register(enumerationNoGood), enumerationNoGood, Integer.MAX_VALUE)) {
 			searchState.isSearchSpaceCompletelyExplored = true;
 		}
@@ -199,6 +231,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 	private void getNoGoodsFromGrounderAndIngest() {
 		Map<Integer, NoGood> obtained = grounder.getNoGoods(assignment);
+		rebootStrategy.newNoGoods(obtained.values());
 		if (!ingest(obtained)) {
 			searchState.isSearchSpaceCompletelyExplored = true;
 		}
@@ -266,7 +299,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 			}
 			choiceManager.backjump(backjumpLevel);
 			if (store.propagate() != null) {
-				throw  oops("Violated NoGood after backtracking.");
+				throw oops("Violated NoGood after backtracking.");
 			}
 		}
 		return true;
@@ -294,6 +327,8 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 
 		choiceManager.backjump(analysisResult.backjumpLevel);
 		final NoGood learnedNoGood = analysisResult.learnedNoGood;
+		rebootManager.newLearnedNoGood(learnedNoGood);
+		rebootStrategy.newLearnedNoGood(learnedNoGood);
 		int noGoodId = grounder.register(learnedNoGood);
 		return addAndBackjumpIfNecessary(noGoodId, learnedNoGood, analysisResult.lbd);
 	}
@@ -322,6 +357,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		int noGoodID = grounder.register(noGood);
 		Map<Integer, NoGood> obtained = new LinkedHashMap<>();
 		obtained.put(noGoodID, noGood);
+		rebootStrategy.newJustificationNoGood(noGood);
 		LOGGER.debug("Learned NoGood is: {}", atomStore.noGoodToString(noGood));
 		// Add NoGood and trigger backjumping.
 		if (!ingest(obtained)) {
@@ -379,8 +415,8 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 			// For RuleAtoms in toJustify the corresponding ground body contains BasicAtoms that have been assigned FALSE in the closing.
 			// First, get NonGroundRule + Substitution, stored in the RuleAtom's single term.
 			RuleAtom.RuleAtomData ruleAtomData = (RuleAtom.RuleAtomData) ((ConstantTerm<?>)(atom.getTerms().get(0))).getObject();
-			Substitution groundingSubstitution = ruleAtomData.getSubstitution();
 			CompiledRule nonGroundRule = ruleAtomData.getNonGroundRule();
+			Substitution groundingSubstitution = ruleAtomData.getSubstitution();
 			// Find ground literals in the body that have been assigned false and justify those.
 			for (Literal bodyLiteral : nonGroundRule.getBody()) {
 				Atom groundAtom = bodyLiteral.getAtom().substitute(groundingSubstitution);
@@ -412,7 +448,10 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 			return false;
 		}
 		// Add newly obtained noGoods.
-		if (!ingest(obtained)) {
+		boolean success = ingest(obtained);
+		rebootManager.newLearnedNoGoods(obtained.values());
+		rebootStrategy.newLearnedNoGoods(obtained.values());
+		if (!success) {
 			logStats();
 			return false;
 		}
@@ -458,11 +497,7 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 	}
 
 	private boolean ingest(Map<Integer, NoGood> obtained) {
-		assignment.growForMaxAtomId();
-		int maxAtomId = atomStore.getMaxAtomId();
-		store.growForMaxAtomId(maxAtomId);
-		choiceManager.growForMaxAtomId(maxAtomId);
-		branchingHeuristic.growForMaxAtomId(maxAtomId);
+		growForMaxAtomId();
 		branchingHeuristic.newNoGoods(obtained.values());
 
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
@@ -524,7 +559,150 @@ public class DefaultSolver extends AbstractSolver implements StatisticsReporting
 		choiceManager.choose(new Choice(literal, false));
 		return true;
 	}
-	
+
+	/**
+	 * Performs a reboot of the solving process while preserving the current assignment - and thus the progress made.
+	 * {@link NoGoodStore} and {@link Grounder} are reset. Then the {@link AtomStore} is emptied and the current
+	 * assignment is reconstructed.
+	 */
+	private void reboot() {
+		LOGGER.info("Performing solver and grounder reboot.");
+
+		RebootableGrounder rebootableGrounder = (RebootableGrounder) grounder;
+		Stack<AtomizedChoice> atomizedChoiceStack = getAtomizedChoiceStack();
+
+		store.reset();
+		branchingHeuristic.reset();
+		assignment.clear();
+		rebootableGrounder.reboot(assignment);
+		atomStore.reset();
+		choiceManager.reset();
+
+		syncWithGrounder();
+		ingestNoGoodCollection(rebootManager.getEnumerationNoGoods());
+		ingestNoGoodCollection(rebootManager.getLearnedNoGoods());
+		ingestNoGoodsFromRulesOfRuleAtoms(rebootManager.getDiscoveredRuleAtoms());
+		replayAtomizedChoiceStack(atomizedChoiceStack);
+
+		LOGGER.info("Solver and grounder reboot finished.");
+	}
+
+	/**
+	 * Extracts the current choice stack with atom ids replaced by the respective {@link Atom}s.
+	 * @return the choice stack containing {@link Atom}s instead of atom ids.
+	 */
+	private Stack<AtomizedChoice> getAtomizedChoiceStack() {
+		List<Choice> choiceList = choiceManager.getChoiceList();
+		Stack<AtomizedChoice> choiceStack = new Stack<>();
+		for (Choice choice : choiceList) {
+			Atom atom = atomStore.get(choice.getAtom());
+			choiceStack.push(new AtomizedChoice(atom, choice.getTruthValue(), choice.isBacktracked()));
+		}
+		return choiceStack;
+	}
+
+	/**
+	 * Converts the given choice stack into one containing atom ids instead of atoms and applies
+	 * the choices to the resulting choice stack using the {@link DefaultSolver#choiceManager}.
+	 * Propagation is performed initially and after each choice.
+	 * @param atomizedChoiceStack the stack of choices containing atoms.
+	 */
+	private void replayAtomizedChoiceStack(Stack<AtomizedChoice> atomizedChoiceStack) {
+		if (propagate() != null) {
+			throw oops("Conflict in replay during reboot");
+		}
+
+		for (AtomizedChoice atomizedChoice : atomizedChoiceStack) {
+			Atom atom = atomizedChoice.getAtom();
+			atomStore.putIfAbsent(atom);
+		}
+		growForMaxAtomId();
+
+		for (AtomizedChoice atomizedChoice : atomizedChoiceStack) {
+			replayAtomizedChoice(atomizedChoice);
+		}
+	}
+
+	/**
+	 * Applies a given {@link AtomizedChoice} to the current choice stack using the {@link DefaultSolver#choiceManager}.
+	 * Propagation and grounding are performed after the choice.
+	 * @param atomizedChoice the choice to apply.
+	 */
+	private void replayAtomizedChoice(AtomizedChoice atomizedChoice) {
+		Atom atom = atomizedChoice.getAtom();
+		int atomId = atomStore.get(atom);
+		Choice choice = new Choice(atomId, atomizedChoice.getTruthValue(), atomizedChoice.isBacktracked());
+
+		choiceManager.addChoiceInformation(grounder.getChoiceAtoms(), grounder.getHeadsToBodies());
+		choiceManager.updateAssignments();
+		boolean activeChoice = choiceManager.replayChoice(choice);
+
+		if (activeChoice) {
+			if (propagate() != null) {
+				throw oops("Conflict in replay during reboot");
+			}
+			syncWithGrounder();
+			if (propagate() != null) {
+				throw oops("Conflict in replay during reboot");
+			}
+		}
+	}
+
+	/**
+	 * Grows the current {@link Assignment}, {@link NoGoodStore}, {@link ChoiceManager} and {@link BranchingHeuristic}
+	 * by calling {@link Assignment#growForMaxAtomId()}, {@link NoGoodStore#growForMaxAtomId(int)},
+	 * {@link ChoiceManager#growForMaxAtomId(int)} and {@link BranchingHeuristic#growForMaxAtomId(int)} respectively.
+	 */
+	private void growForMaxAtomId() {
+		assignment.growForMaxAtomId();
+		int maxAtomId = atomStore.getMaxAtomId();
+		store.growForMaxAtomId(maxAtomId);
+		choiceManager.growForMaxAtomId(maxAtomId);
+		branchingHeuristic.growForMaxAtomId(maxAtomId);
+	}
+
+	/**
+	 * Registers the given collection of {@link NoGood}s at the {@link Grounder}
+	 * and calls {@link DefaultSolver#ingest(Map)} with the resulting ids as keys.
+	 * @param noGoods the {@link NoGood}s to register and ingest.
+	 */
+	private void ingestNoGoodCollection(Collection<NoGood> noGoods) {
+		Map<Integer, NoGood> newNoGoods = new LinkedHashMap<>();
+		for (NoGood noGood : noGoods) {
+			newNoGoods.put(grounder.register(noGood), noGood);
+		}
+		if (!ingest(newNoGoods)) {
+			searchState.isSearchSpaceCompletelyExplored = true;
+		}
+	}
+
+	/**
+	 * Forces the {@link RebootableGrounder} to ground all rules corresponding to the given list of
+	 * {@link RuleAtom}s. Then calls {@link DefaultSolver#ingest(Map)} with the {@link NoGood}s obtained this way.
+	 * This method must not be called if reboots are disabled.
+	 * @param ruleAtoms the {@link RuleAtom}s to ground and ingest the corresponding rules for.
+	 */
+	private void ingestNoGoodsFromRulesOfRuleAtoms(List<RuleAtom> ruleAtoms) {
+		if (!rebootEnabled) {
+			throw oops("Reboot is not enabled but nogood ingestion from rule atoms was called");
+		}
+		RebootableGrounder rebootableGrounder = (RebootableGrounder) grounder;
+		Map<Integer, NoGood> newNoGoods = new LinkedHashMap<>();
+		for (RuleAtom ruleAtom : ruleAtoms) {
+			Map<Integer, NoGood> obtained = rebootableGrounder.forceRuleGrounding(ruleAtom);
+			newNoGoods.putAll(obtained);
+		}
+		if (!ingest(newNoGoods)) {
+			searchState.isSearchSpaceCompletelyExplored = true;
+		}
+	}
+
+	private void disableRebootIfNoRepeat() {
+		if (disableRebootRepeat) {
+			rebootEnabled = false;
+		}
+	}
+
 	@Override
 	public int getNumberOfChoices() {
 		return choiceManager.getChoices();

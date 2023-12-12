@@ -34,7 +34,6 @@ import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomOf;
 
 /**
@@ -82,9 +81,10 @@ public class HeapOfActiveChoicePoints extends HeapOfActiveAtoms {
 			if (body == none && choiceManager.isAtomChoice(atom)) {
 				body = atom;
 			} else {
-				if (choiceManager.isChecksEnabled() && choiceManager.isAtomChoice(atom)) {
-					throw oops("More than one choice point in a nogood: " + body + ", " + atom);
-				}
+				// TODO: reevaluate assumption because of reboots
+//				if (choiceManager.isChecksEnabled() && choiceManager.isAtomChoice(atom)) {
+//					throw oops("More than one choice point in a nogood: " + body + ", " + atom);
+//				}
 				others.add(atom);
 			}
 		}

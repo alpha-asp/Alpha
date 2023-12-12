@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import at.ac.tuwien.kr.alpha.api.config.RebootStrategyEnum;
 import org.junit.jupiter.params.provider.Arguments;
 
 import at.ac.tuwien.kr.alpha.api.config.Heuristic;
@@ -15,6 +16,12 @@ public class RegressionTestConfigProvider {
 	private static final String DEFAULT_GROUNDER_NAME = "naive";
 	private static final String DEFAULT_ATOM_STORE = "alpharoaming";
 	private static final String DEFAULT_BRANCHING_HEURISTIC = "VSIDS";
+	private static final boolean DEFAULT_REBOOT_ENABLED = false;
+	private static final boolean DEFAULT_DISABLE_REBOOT_REPEAT = true;
+	private static final RebootStrategyEnum DEFAULT_REBOOT_STRATEGY = RebootStrategyEnum.ANSWER;
+	private static final int DEFAULT_REBOOT_STRATEGY_ITERATIONS = 5;
+	private static final double DEFAULT_REBOOT_STRATEGY_BASE = 5;
+	private static final double DEFAULT_REBOOT_STRATEGY_FACTOR = 2;
 	private static final String DEFAULT_GROUNDER_TOLERANCE = "strict";
 	private static final boolean DEFAULT_DISABLE_INSTANCE_REMOVAL = false;
 	private static final boolean DEFAULT_ENABLE_DEBUG_CHECKS = false;
@@ -24,7 +31,7 @@ public class RegressionTestConfigProvider {
 	 * "RegressionTest" annotation.
 	 * Exact number of combinations depends on the "CI" environment variable that can be used to signal that a test is being run in a CI
 	 * environment.
-	 * 
+	 *
 	 * @return
 	 */
 	private static List<RegressionTestConfig> buildConfigs() {
@@ -32,15 +39,21 @@ public class RegressionTestConfigProvider {
 		boolean ci = Boolean.valueOf(System.getenv("CI"));
 
 		//@formatter:off
-		String[] solvers = ci ? new String[]{DEFAULT_SOLVER_NAME, "naive" } : new String[]{DEFAULT_SOLVER_NAME };
+		String[] solvers = ci ? new String[]{DEFAULT_SOLVER_NAME, "naive"} : new String[]{DEFAULT_SOLVER_NAME};
 		String grounder = DEFAULT_GROUNDER_NAME;
-		String[] atomStores = ci ? new String[]{DEFAULT_ATOM_STORE, "naive" } : new String[]{DEFAULT_ATOM_STORE };
-		String[] heuristics = ci ? nonDeprecatedHeuristics() : new String[]{"NAIVE", DEFAULT_BRANCHING_HEURISTIC };
-		String[] gtcValues = new String[]{DEFAULT_GROUNDER_TOLERANCE, "permissive" };
+		String[] atomStores = ci ? new String[]{DEFAULT_ATOM_STORE, "naive"} : new String[]{DEFAULT_ATOM_STORE};
+		String[] heuristics = ci ? nonDeprecatedHeuristics() : new String[]{"NAIVE", DEFAULT_BRANCHING_HEURISTIC};
+		boolean[] rebootEnabledValues = new boolean[]{DEFAULT_REBOOT_ENABLED, true};
+		RebootStrategyEnum[] rebootStrategyValues = new RebootStrategyEnum[]{DEFAULT_REBOOT_STRATEGY};
+		int[] rebootStrategyIterationsValues = new int[]{DEFAULT_REBOOT_STRATEGY_ITERATIONS};
+		double[] rebootStrategyBaseValues = new double[]{DEFAULT_REBOOT_STRATEGY_BASE};
+		double[] rebootStrategyFactorValues = new double[]{DEFAULT_REBOOT_STRATEGY_FACTOR};
+		boolean[] disableRebootRepeatValues = new boolean[]{DEFAULT_DISABLE_REBOOT_REPEAT};
+		String[] gtcValues = new String[]{DEFAULT_GROUNDER_TOLERANCE, "permissive"};
 		String gtrValue = DEFAULT_GROUNDER_TOLERANCE;
-		boolean[] disableInstanceRemovalValues = ci ? new boolean[]{DEFAULT_DISABLE_INSTANCE_REMOVAL, true } : new boolean[]{DEFAULT_DISABLE_INSTANCE_REMOVAL };
-		boolean[] evaluateStratifiedValues = new boolean[]{false, true };
-		boolean[] enableDebugChecksValues = new boolean[]{DEFAULT_ENABLE_DEBUG_CHECKS, true };
+		boolean[] disableInstanceRemovalValues = ci ? new boolean[]{DEFAULT_DISABLE_INSTANCE_REMOVAL, true} : new boolean[]{DEFAULT_DISABLE_INSTANCE_REMOVAL};
+		boolean[] evaluateStratifiedValues = new boolean[]{false, true};
+		boolean[] enableDebugChecksValues = new boolean[]{DEFAULT_ENABLE_DEBUG_CHECKS, true};
 		//@formatter:on
 
 		// NOTE:
@@ -56,14 +69,30 @@ public class RegressionTestConfigProvider {
 		for (String solverName : solvers) {
 			for (String atomStoreName : atomStores) {
 				for (String branchingHeuristicName : heuristics) {
-					for (String grounderTolerance : gtcValues) {
-						for (boolean disableInstanceRemoval : disableInstanceRemovalValues) {
-							for (boolean evaluateStratified : evaluateStratifiedValues) {
-								for (boolean enableDebugChecks : enableDebugChecksValues) {
-									configsToTest.add(new RegressionTestConfig(
-											solverName, grounder, atomStoreName, Heuristic.valueOf(branchingHeuristicName),
-											seed, enableDebugChecks, grounderTolerance, gtrValue, disableInstanceRemoval, evaluateStratified,
-											true, true));
+					for (boolean rebootEnabled : rebootEnabledValues) {
+						for (boolean disableRebootRepeat : disableRebootRepeatValues) {
+							for (RebootStrategyEnum rebootStrategy : rebootStrategyValues) {
+								for (int rebootIterations : rebootStrategyIterationsValues) {
+									for (double rebootStrategyBase : rebootStrategyBaseValues) {
+										for (double rebootStrategyFactor : rebootStrategyFactorValues) {
+											for (String grounderTolerance : gtcValues) {
+												for (boolean disableInstanceRemoval : disableInstanceRemovalValues) {
+													for (boolean evaluateStratified : evaluateStratifiedValues) {
+														for (boolean enableDebugChecks : enableDebugChecksValues) {
+															configsToTest.add(new RegressionTestConfig(
+																	solverName, grounder, atomStoreName,
+																	Heuristic.valueOf(branchingHeuristicName),
+																	rebootEnabled, disableRebootRepeat, rebootStrategy,
+																	rebootIterations, rebootStrategyBase, rebootStrategyFactor,
+																	seed, enableDebugChecks, grounderTolerance, gtrValue,
+																	disableInstanceRemoval, evaluateStratified,
+																	true, true));
+														}
+													}
+												}
+											}
+										}
+									}
 								}
 							}
 						}
@@ -79,25 +108,29 @@ public class RegressionTestConfigProvider {
 	 * Provides {@link RegressionTestConfig}s specifically for tests concerned with AggregateRewriting.
 	 * All parameters fixed to default values except stratified evaluation, sorting grid encoding for count rewriting
 	 * and negative sum element support.
-	 * 
+	 *
 	 * @return
 	 */
 	private static List<RegressionTestConfig> buildConfigsForAggregateTests() {
 		List<RegressionTestConfig> configsToTest = new ArrayList<>();
 
-		boolean[] evaluateStratifiedValues = new boolean[] {true, false };
-		boolean[] useSortingGridValues = new boolean[] {true, false };
-		boolean[] supportNegativeSumElementsValues = new boolean[] {true, false };
+		boolean[] evaluateStratifiedValues = new boolean[]{true, false};
+		boolean[] useSortingGridValues = new boolean[]{true, false};
+		boolean[] supportNegativeSumElementsValues = new boolean[]{true, false};
 
 		for (boolean evalStratified : evaluateStratifiedValues) {
 			for (boolean useSortingGrid : useSortingGridValues) {
 				for (boolean supportNegativeElements : supportNegativeSumElementsValues) {
 					configsToTest.add(
 							new RegressionTestConfig(
-									DEFAULT_SOLVER_NAME, DEFAULT_GROUNDER_NAME, DEFAULT_ATOM_STORE, Heuristic.valueOf(DEFAULT_BRANCHING_HEURISTIC),
-									0, DEFAULT_ENABLE_DEBUG_CHECKS, DEFAULT_GROUNDER_TOLERANCE, DEFAULT_GROUNDER_TOLERANCE, DEFAULT_DISABLE_INSTANCE_REMOVAL,
-									evalStratified,
-									useSortingGrid, supportNegativeElements));
+									DEFAULT_SOLVER_NAME, DEFAULT_GROUNDER_NAME, DEFAULT_ATOM_STORE,
+									Heuristic.valueOf(DEFAULT_BRANCHING_HEURISTIC),
+									DEFAULT_REBOOT_ENABLED, DEFAULT_DISABLE_REBOOT_REPEAT, DEFAULT_REBOOT_STRATEGY,
+									DEFAULT_REBOOT_STRATEGY_ITERATIONS, DEFAULT_REBOOT_STRATEGY_BASE,
+									DEFAULT_REBOOT_STRATEGY_FACTOR, 0, DEFAULT_ENABLE_DEBUG_CHECKS,
+									DEFAULT_GROUNDER_TOLERANCE, DEFAULT_GROUNDER_TOLERANCE,
+									DEFAULT_DISABLE_INSTANCE_REMOVAL,
+									evalStratified, useSortingGrid, supportNegativeElements));
 				}
 			}
 		}
@@ -128,6 +161,6 @@ public class RegressionTestConfigProvider {
 				nonDeprecatedHeuristicsNames.add(field.getName());
 			}
 		}
-		return nonDeprecatedHeuristicsNames.toArray(new String[] {});
+		return nonDeprecatedHeuristicsNames.toArray(new String[]{});
 	}
 }
