@@ -1,37 +1,21 @@
 package at.ac.tuwien.kr.alpha;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static at.ac.tuwien.kr.alpha.test.AlphaAssertions.assertAnswerSetsEqual;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import at.ac.tuwien.kr.alpha.api.AnswerSetQuery;
-import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.actions.Action;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.terms.ActionResultTerm;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.commons.AnswerSets;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.AnswerSetQueryImpl;
 import at.ac.tuwien.kr.alpha.core.actions.ActionImplementationProvider;
 import at.ac.tuwien.kr.alpha.core.actions.OutputStreamHandle;
-import at.ac.tuwien.kr.alpha.test.AlphaAssertions;
-import at.ac.tuwien.kr.alpha.test.AnswerSetsParser;
-import com.ibm.icu.impl.Assert;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
