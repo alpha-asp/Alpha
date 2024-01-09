@@ -2,14 +2,35 @@ package at.ac.tuwien.kr.alpha;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static at.ac.tuwien.kr.alpha.test.AlphaAssertions.assertAnswerSetsEqual;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import at.ac.tuwien.kr.alpha.api.AnswerSetQuery;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.actions.Action;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.terms.ActionResultTerm;
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.AnswerSets;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.util.AnswerSetQueryImpl;
+import at.ac.tuwien.kr.alpha.core.actions.ActionImplementationProvider;
+import at.ac.tuwien.kr.alpha.core.actions.OutputStreamHandle;
+import at.ac.tuwien.kr.alpha.test.AlphaAssertions;
+import at.ac.tuwien.kr.alpha.test.AnswerSetsParser;
+import com.ibm.icu.impl.Assert;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -48,21 +69,54 @@ public class ActionsTest {
 	}
 
 	@Test
-	@Disabled
+	//@Disabled
+	@SuppressWarnings("unchecked")
 	public void writeToFile() {
 		Map<String, OutputStream> mockedFileOutputs = new HashMap<>();
 		ByteArrayOutputStream dummyFileContent = new ByteArrayOutputStream();
 		mockedFileOutputs.put("dummy.file", dummyFileContent);
 		MockedActionsAlphaFactory alphaFactory = new MockedActionsAlphaFactory();
 		alphaFactory.getActionImplementationMock().setMockedFileOutputs(mockedFileOutputs);
+		ActionImplementationProvider actionProvider = alphaFactory.getActionImplementationMock();
 		Alpha alpha = alphaFactory.newAlpha(new SystemConfig());
 		InputProgram program = alpha.readProgramString(WRITE_TO_FILE);
 		Set<AnswerSet> answerSets = alpha.solve(program).collect(Collectors.toSet());
 		LOGGER.debug("Got answer sets: {}", answerSets);
-		assertAnswerSetsEqual(
-				"outfile(\"dummy.file\"), outfile_open_result(\"dummy.file\", success(stream(outputStream_2))),"
-						+ " outfile_write_result(\"dummy.file\", success(ok)), outfile_close_result(\"dummy.file\", success(ok))",
-				answerSets);
+		assertEquals(1, answerSets.size());
+		AnswerSet answerSet = answerSets.stream().findFirst().get();
+		/*
+		 * Note: We have to check answer set content here because we have no way of constructing an equal instance for
+		 * the outputStreamHandle that is constructed when execution the "fileOutputStream" action.		 *
+		 */
+		assertEquals(1, answerSet.query(AnswerSetQueryImpl.forPredicate(Predicates.getPredicate("outfile_open_result", 2))
+				.withFilter(0, term -> term instanceof ConstantTerm<?> && ((ConstantTerm<String>) term).getObject().endsWith("dummy.file"))
+				.withFunctionTerm(1, "success", 1)
+				.withFilter(1, (term) -> {
+					FunctionTerm funcTerm = (FunctionTerm) term;
+					assertEquals(1, funcTerm.getTerms().size());
+					assertTrue(funcTerm.getTerms().get(0) instanceof FunctionTerm && ((FunctionTerm) funcTerm.getTerms().get(0)).getSymbol().equals("stream"));
+					ConstantTerm<?> streamTerm = (ConstantTerm<?>) ((FunctionTerm) funcTerm.getTerms().get(0)).getTerms().get(0);
+					return streamTerm.getObject() instanceof OutputStreamHandle;
+				})
+		).size());
+		assertEquals(1, answerSet.query(AnswerSetQueryImpl.forPredicate(Predicates.getPredicate("outfile_write_result", 2))
+				.withFilter(0, term -> term instanceof ConstantTerm<?> && ((ConstantTerm<String>) term).getObject().endsWith("dummy.file"))
+				.withFunctionTerm(1, "success", 1)
+				.withFilter(1, (term) -> {
+					FunctionTerm funcTerm = (FunctionTerm) term;
+					assertEquals(1, funcTerm.getTerms().size());
+					return funcTerm.getTerms().get(0) instanceof ConstantTerm<?> && ((ConstantTerm<String>) funcTerm.getTerms().get(0)).getObject().equals("ok");
+				})
+		).size());
+		assertEquals(1, answerSet.query(AnswerSetQueryImpl.forPredicate(Predicates.getPredicate("outfile_close_result", 2))
+				.withFilter(0, term -> term instanceof ConstantTerm<?> && ((ConstantTerm<String>) term).getObject().endsWith("dummy.file"))
+				.withFunctionTerm(1, "success", 1)
+				.withFilter(1, (term) -> {
+					FunctionTerm funcTerm = (FunctionTerm) term;
+					assertEquals(1, funcTerm.getTerms().size());
+					return funcTerm.getTerms().get(0) instanceof ConstantTerm<?> && ((ConstantTerm<String>) funcTerm.getTerms().get(0)).getObject().equals("ok");
+				})
+		).size());
 		assertEquals("Foo bar!", dummyFileContent.toString());
 	}
 

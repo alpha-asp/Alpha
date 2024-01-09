@@ -61,7 +61,7 @@ public class MockActionImplementationProvider extends AbstractActionImplementati
 	}
 
 	@Override
-	protected OutputStream getFileOutputStream(String path) throws IOException {
+	public OutputStream getFileOutputStream(String path) throws IOException {
 		if (mockedFileOutputs.containsKey(path)) {
 			return mockedFileOutputs.get(path);
 		}
@@ -69,7 +69,7 @@ public class MockActionImplementationProvider extends AbstractActionImplementati
 	}
 
 	@Override
-	protected InputStream getInputStream(String path) throws IOException {
+	public InputStream getInputStream(String path) throws IOException {
 		if (mockedFileInputs.containsKey(path)) {
 			return mockedFileInputs.get(path);
 		}

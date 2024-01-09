@@ -3,6 +3,8 @@ package at.ac.tuwien.kr.alpha.core.actions;
 import java.io.OutputStream;
 
 // TODO change this to wrap a PrintStream
+// TODO we have a problem when parsing answer sets from strings for testing - currently no praseable string representation
+// TODO of a ConstantTerm<OutputStreamHandle> or some such
 public class OutputStreamHandle implements Comparable<OutputStreamHandle> {
 
 	private final int id;
