@@ -35,7 +35,7 @@ import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRuleImpl;
 
 /**
  * Representation of the result of instantiating, i.e. finding ground instances for a literal, as performed by
@@ -43,7 +43,7 @@ import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
  * 
  * A {@link LiteralInstantiationResult} bundles obtained ground substitutions - or the lack thereof, if none exist for a given literal -
  * together with status information that can be used by a {@link Grounder} to determine how to proceed when grounding an
- * {@link InternalRule}.
+ * {@link CompiledRuleImpl}.
  * 
  * Copyright (c) 2020, the Alpha Team.
  */

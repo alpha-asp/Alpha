@@ -1,11 +1,13 @@
 package at.ac.tuwien.kr.alpha.commons.rules.heads;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.rules.RuleInstantiator;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 
 /**
  * Represents a normal head, i.e., a head that is an Atom.
- * Copyright (c) 2019, the Alpha Team.
+ * Copyright (c) 2019-2021, the Alpha Team.
  */
 class NormalHeadImpl implements NormalHead {
 
@@ -59,6 +61,11 @@ class NormalHeadImpl implements NormalHead {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	public BasicAtom instantiate(RuleInstantiator instantiator, Substitution substitution) {
+		return instantiator.instantiate(this, substitution);
 	}
 
 }

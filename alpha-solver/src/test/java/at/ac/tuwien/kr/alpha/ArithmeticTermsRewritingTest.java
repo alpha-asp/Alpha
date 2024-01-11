@@ -23,9 +23,9 @@ import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.externals.Externals;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.ArithmeticTermsRewriting;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.ArithmeticTermTransformer;
 
 /**
  * Copyright (c) 2021, the Alpha Team.
@@ -34,7 +34,7 @@ import at.ac.tuwien.kr.alpha.core.programs.transformation.ArithmeticTermsRewriti
 public class ArithmeticTermsRewritingTest {
 
 	private final Map<String, PredicateInterpretation> externalsOfThisClass = Externals.scan(ArithmeticTermsRewritingTest.class);
-	private final ProgramParser parser = new ProgramParserImpl(externalsOfThisClass);	// Create parser that knows an implementation of external atom &extArithTest[]().
+	private final ProgramParser parser = new ASPCore2ProgramParser(externalsOfThisClass);	// Create parser that knows an implementation of external atom &extArithTest[]().
 
 	@Predicate(name = "extArithTest")
 	public static Set<List<ConstantTerm<Integer>>> externalForArithmeticTermsRewriting(Integer in) {
@@ -47,8 +47,8 @@ public class ArithmeticTermsRewritingTest {
 	public void rewriteRule() {
 		NormalProgram inputProgram = NormalProgramImpl.fromInputProgram(parser.parse("p(X+1) :- q(Y/2), r(f(X*2),Y), X-2 = Y*3, X = 0..9."));
 		assertEquals(1, inputProgram.getRules().size());
-		ArithmeticTermsRewriting arithmeticTermsRewriting = new ArithmeticTermsRewriting();
-		NormalProgram rewrittenProgram = arithmeticTermsRewriting.apply(inputProgram);
+		ArithmeticTermTransformer arithmeticTermsRewriting = new ArithmeticTermTransformer();
+		NormalProgram rewrittenProgram = arithmeticTermsRewriting.transform(inputProgram);
 		// Expect the rewritten program to be one rule with: p(_A0) :- _A0 = X+1,  _A1 = Y/2, q(_A1), _A2 = X*2, r(f(_A2),Y), X-2 = Y*3, X = 0..9.
 		assertEquals(1, rewrittenProgram.getRules().size());
 		NormalRule rewrittenRule = rewrittenProgram.getRules().get(0);
@@ -60,8 +60,8 @@ public class ArithmeticTermsRewritingTest {
 	public void rewriteExternalAtom() {
 		NormalProgram inputProgram = NormalProgramImpl.fromInputProgram(parser.parse("p :- Y = 13, &extArithTest[Y*5](Y-4)."));
 		assertEquals(1, inputProgram.getRules().size());
-		ArithmeticTermsRewriting arithmeticTermsRewriting = new ArithmeticTermsRewriting();
-		NormalProgram rewrittenProgram = arithmeticTermsRewriting.apply(inputProgram);
+		ArithmeticTermTransformer arithmeticTermsRewriting = new ArithmeticTermTransformer();
+		NormalProgram rewrittenProgram = arithmeticTermsRewriting.transform(inputProgram);
 		assertEquals(1, rewrittenProgram.getRules().size());
 		NormalRule rewrittenRule = rewrittenProgram.getRules().get(0);
 		assertEquals(4, rewrittenRule.getBody().size());

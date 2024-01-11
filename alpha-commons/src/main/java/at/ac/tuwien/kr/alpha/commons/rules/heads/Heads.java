@@ -5,10 +5,12 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.heads.ActionHead;
 import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead;
 import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead.ChoiceElement;
 import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.rules.heads.ChoiceHeadImpl.ChoiceElementImpl;
 
 public final class Heads {
@@ -29,5 +31,8 @@ public final class Heads {
 	public static ChoiceElement newChoiceElement(BasicAtom choiceAtom, List<Literal> conditionLiterals) {
 		return new ChoiceElementImpl(choiceAtom, conditionLiterals);
 	}
-	
+
+	public static ActionHead newActionHead(BasicAtom atom, String actionName, List<Term> actionInputTerms, VariableTerm actionResult) {
+		return new ActionHeadImpl(atom, actionName, actionInputTerms, actionResult);
+	}
 }

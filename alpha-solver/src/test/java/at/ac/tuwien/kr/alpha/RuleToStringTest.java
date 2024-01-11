@@ -35,17 +35,17 @@ import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
+import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
-import at.ac.tuwien.kr.alpha.core.rules.NormalRuleImpl;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRuleImpl;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRules;
 
 /**
- * Tests {@link BasicRule#toString()} and {@link InternalRule#toString()}.
+ * Tests {@link BasicRule#toString()} and {@link CompiledRuleImpl#toString()}.
  */
 public class RuleToStringTest {
-	private final ProgramParser parser = new ProgramParserImpl();
+	private final ProgramParser parser = new ASPCore2ProgramParser();
 	
 	@Test
 	public void positiveRuleToString() {
@@ -93,7 +93,8 @@ public class RuleToStringTest {
 	}
 
 	private void constructNonGroundRuleAndCheckToString(String textualRule) {
-		CompiledRule nonGroundRule = InternalRule.fromNormalRule(NormalRuleImpl.fromBasicRule(parseSingleRule(textualRule)));
+		Rule<Head> parsedRule = parseSingleRule(textualRule);
+		CompiledRule nonGroundRule = CompiledRules.newCompiledRule((NormalHead) parsedRule.getHead(), parsedRule.getBody());
 		assertEquals(textualRule, nonGroundRule.toString());
 	}
 

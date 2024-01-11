@@ -18,13 +18,14 @@ import at.ac.tuwien.kr.alpha.commons.util.Util;
  * Copyright (c) 2016-2017, the Alpha Team.
  */
 class FunctionTermImpl extends AbstractTerm implements FunctionTerm {
+	
 	private static final Interner<FunctionTermImpl> INTERNER = new Interner<>();
 
 	private final String symbol;
 	private final List<Term> terms;
 	private final boolean ground;
 
-	private FunctionTermImpl(String symbol, List<Term> terms) {
+	FunctionTermImpl(String symbol, List<Term> terms) {
 		if (symbol == null) {
 			throw new IllegalArgumentException();
 		}
@@ -97,16 +98,19 @@ class FunctionTermImpl extends AbstractTerm implements FunctionTerm {
 		if (this == o) {
 			return true;
 		}
-		if (o == null || getClass() != o.getClass()) {
+		if (o == null) {
+			return false;
+		}
+		if (!(o instanceof FunctionTerm)) {
 			return false;
 		}
 
-		FunctionTermImpl that = (FunctionTermImpl) o;
+		FunctionTerm that = (FunctionTerm) o;
 
-		if (!symbol.equals(that.symbol)) {
+		if (!symbol.equals(that.getSymbol())) {
 			return false;
 		}
-		return terms.equals(that.terms);
+		return terms.equals(that.getTerms());
 	}
 
 	@Override
@@ -120,24 +124,24 @@ class FunctionTermImpl extends AbstractTerm implements FunctionTerm {
 			return 0;
 		}
 
-		if (!(o instanceof FunctionTermImpl)) {
+		if (!(o instanceof FunctionTerm)) {
 			return super.compareTo(o);
 		}
 
-		FunctionTermImpl other = (FunctionTermImpl) o;
+		FunctionTerm other = (FunctionTerm) o;
 
-		if (terms.size() != other.terms.size()) {
-			return terms.size() - other.terms.size();
+		if (terms.size() != other.getTerms().size()) {
+			return terms.size() - other.getTerms().size();
 		}
 
-		int result = symbol.compareTo(other.symbol);
+		int result = symbol.compareTo(other.getSymbol());
 
 		if (result != 0) {
 			return result;
 		}
 
 		for (int i = 0; i < terms.size(); i++) {
-			result = terms.get(i).compareTo(other.terms.get(i));
+			result = terms.get(i).compareTo(other.getTerms().get(i));
 			if (result != 0) {
 				return result;
 			}

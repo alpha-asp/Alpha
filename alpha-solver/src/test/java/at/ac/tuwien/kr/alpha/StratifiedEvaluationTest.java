@@ -27,10 +27,9 @@
  */
 package at.ac.tuwien.kr.alpha;
 
+import static at.ac.tuwien.kr.alpha.test.AlphaAssertions.assertAnswerSetsEqual;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import static at.ac.tuwien.kr.alpha.test.AlphaAssertions.assertAnswerSetsEqual;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -45,7 +44,6 @@ import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
@@ -56,13 +54,12 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.externals.Externals;
 import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.programs.Programs;
 
 // TODO This is an integration test and should be run in an extra suite
 public class StratifiedEvaluationTest {
 
 	// Alpha instance with default configuration (evolog support and stratified evaluation enabled)
-	private final Alpha alpha = AlphaFactory.newAlpha();
+	private final Alpha alpha = new AlphaFactory().newAlpha();
 
 	/**
 	 * Verifies that facts are not duplicated by stratified evaluation.
@@ -160,7 +157,7 @@ public class StratifiedEvaluationTest {
 	 */
 	@Test
 	public void testPartnerUnitsProblemTopologicalOrder() throws IOException {
-		InputProgram prg = Programs.fromInputStream(
+		InputProgram prg = alpha.readProgramStream(
 				StratifiedEvaluationTest.class.getResourceAsStream("/partial-eval/pup_topological_order.asp"),
 				new HashMap<>());
 		DebugSolvingContext dbgInfo = alpha.prepareDebugSolve(prg);
@@ -184,24 +181,13 @@ public class StratifiedEvaluationTest {
 				+ "inc_value(4), inc_value(5), inc_value(6), inc_value(7), "
 				+ "inc_value(8)";
 		//@formatter:on
-		InputProgram prog = Programs.fromInputStream(
+		InputProgram prog = alpha.readProgramStream(
 				StratifiedEvaluationTest.class.getResourceAsStream("/partial-eval/recursive_w_negated_condition.asp"),
 				new HashMap<>());
 
 		// Run stratified evaluation and solve
-		SystemConfig cfgWithStratEval = new SystemConfig();
-		cfgWithStratEval.setEvaluateStratifiedPart(true);
-		Alpha alphaStratEval = AlphaFactory.newAlpha(cfgWithStratEval);
-		DebugSolvingContext dbgWithStratEval = alphaStratEval.prepareDebugSolve(prog);
-		Set<AnswerSet> asStrat = dbgWithStratEval.getSolver().collectSet();
-		assertAnswerSetsEqual(expectedAnswerSet, asStrat);
-
-		// Solve without stratified evaluation
-		SystemConfig cfgNoStratEval = new SystemConfig();
-		cfgNoStratEval.setEvaluateStratifiedPart(false);
-		Alpha alphaNoStratEval = AlphaFactory.newAlpha(cfgNoStratEval);
-		DebugSolvingContext dbgNoStratEval = alphaNoStratEval.prepareDebugSolve(prog);
-		Set<AnswerSet> as = dbgNoStratEval.getSolver().collectSet();
+		DebugSolvingContext dbg = alpha.prepareDebugSolve(prog);
+		Set<AnswerSet> as = dbg.getSolver().collectSet();
 		assertAnswerSetsEqual(expectedAnswerSet, as);
 	}
 

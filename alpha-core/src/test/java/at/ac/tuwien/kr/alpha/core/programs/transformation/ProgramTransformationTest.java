@@ -16,7 +16,7 @@ import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.commons.externals.Externals;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 
 // TODO This is a functional test and should not be run with standard unit tests
@@ -26,10 +26,11 @@ public class ProgramTransformationTest {
 
 	private static final String TESTFILES_PATH = "/transform-test/";
 
-	private static final ProgramParser PARSER = new ProgramParserImpl();
+	// TODO should this always be an asp core2 parser?
+	private static final ProgramParser PARSER = new ASPCore2ProgramParser();
 
-	private ChoiceHeadToNormal choiceToNormal = new ChoiceHeadToNormal();
-	private IntervalTermToIntervalAtom intervalRewriting = new IntervalTermToIntervalAtom();
+	private ChoiceHeadNormalizer choiceToNormal = new ChoiceHeadNormalizer();
+	private IntervalTermTransformer intervalRewriting = new IntervalTermTransformer();
 
 	@SuppressWarnings("resource")
 	private static String readTestResource(String resource) throws IOException {
@@ -44,7 +45,7 @@ public class ProgramTransformationTest {
 		return bld.toString();
 	}
 
-	private <I extends Program<?>, O extends Program<?>> void genericTransformationTest(ProgramTransformation<I, O> transform,
+	private <I extends Program<?>, O extends Program<?>> void genericTransformationTest(ProgramTransformer<I, O> transform,
 			Function<InputProgram, I> prepareFunc, String resourceSet) {
 		try {
 			String inputCode = ProgramTransformationTest.readTestResource(resourceSet + ".in");
@@ -52,7 +53,7 @@ public class ProgramTransformationTest {
 			InputProgram inputProg = PARSER.parse(inputCode, Externals.scan(ProgramTransformationTest.class));
 			I transformInput = prepareFunc.apply(inputProg);
 			String beforeTransformProg = transformInput.toString();
-			O transformedProg = transform.apply(transformInput);
+			O transformedProg = transform.transform(transformInput);
 			assertEquals(expectedResult, transformedProg.toString(), "Transformation result doesn't match expected result");
 			assertEquals(beforeTransformProg, transformInput.toString(), "Transformation modified source program (breaks immutability!)");
 		} catch (Exception ex) {

@@ -50,7 +50,7 @@ import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRules;
 
 // TODO should this be part of an AtomStoreTest??
 public class AtomCounterTests {
@@ -124,8 +124,8 @@ public class AtomCounterTests {
 
 	private void createRuleAtom() {
 		BasicAtom atomAA = Atoms.newBasicAtom(Predicates.getPredicate("aa", 0));
-		CompiledRule ruleAA = new InternalRule(Heads.newNormalHead(atomAA),
-				Collections.singletonList(Atoms.newBasicAtom(Predicates.getPredicate("bb", 0)).toLiteral(false)));
+		CompiledRule ruleAA = CompiledRules.newCompiledRule(Heads.newNormalHead(atomAA),
+				Atoms.newBasicAtom(Predicates.getPredicate("bb", 0)).toLiteral(false));
 		atomStore.putIfAbsent(new RuleAtom(ruleAA, new BasicSubstitution()));
 	}
 

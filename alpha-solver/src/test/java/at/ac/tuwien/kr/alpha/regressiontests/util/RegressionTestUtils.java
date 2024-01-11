@@ -32,30 +32,30 @@ public final class RegressionTestUtils {
 	}
 
 	public static Solver buildSolverForRegressionTest(String programString, SystemConfig cfg) {
-		Alpha alpha = AlphaFactory.newAlpha(cfg);
+		Alpha alpha = new AlphaFactory().newAlpha(cfg);
 		InputProgram program = alpha.readProgramString(programString);
 		return alpha.prepareSolverFor(program, InputConfig.DEFAULT_FILTER);
 	}
 
 	public static Solver buildSolverForRegressionTest(InputProgram program, SystemConfig cfg) {
-		Alpha alpha = AlphaFactory.newAlpha(cfg);
+		Alpha alpha = new AlphaFactory().newAlpha(cfg);
 		return alpha.prepareSolverFor(program, InputConfig.DEFAULT_FILTER);
 	}
 
 	public static Set<AnswerSet> collectRegressionTestAnswerSets(String program, SystemConfig cfg) {
-		Alpha alpha = AlphaFactory.newAlpha(cfg);
+		Alpha alpha = new AlphaFactory().newAlpha(cfg);
 		InputProgram in = alpha.readProgramString(program);
 		return alpha.solve(in).collect(Collectors.toSet());
 	}
 
 	public static Set<AnswerSet> collectRegressionTestAnswerSets(InputProgram program, SystemConfig cfg) {
-		return AlphaFactory.newAlpha(cfg)
+		return new AlphaFactory().newAlpha(cfg)
 			.solve(program)
 			.collect(Collectors.toSet());
 	}
 
 	private static Set<AnswerSet> solveForConfig(String programString, SystemConfig cfg) {
-		Alpha alpha = AlphaFactory.newAlpha(cfg);
+		Alpha alpha = new AlphaFactory().newAlpha(cfg);
 		InputProgram program = alpha.readProgramString(programString);
 		return alpha.solve(program).collect(Collectors.toSet());
 	}

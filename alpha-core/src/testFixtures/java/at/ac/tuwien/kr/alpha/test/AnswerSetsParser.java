@@ -14,11 +14,11 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
-import at.ac.tuwien.kr.alpha.core.parser.ParseTreeVisitor;
+import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ParseTreeVisitor;
 
 public class AnswerSetsParser {
 	
-	private static final ParseTreeVisitor VISITOR = new ParseTreeVisitor(Collections.emptyMap(), false);
+	private static final ASPCore2ParseTreeVisitor VISITOR = new ASPCore2ParseTreeVisitor(Collections.emptyMap(), false);
 
 	public static Set<AnswerSet> parse(String s) {
 		try {

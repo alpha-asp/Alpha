@@ -21,10 +21,21 @@ import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.RuleInstantiator;
+import at.ac.tuwien.kr.alpha.api.rules.heads.ActionHead;
+import at.ac.tuwien.kr.alpha.api.rules.heads.InstantiableHead;
+import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
+import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.core.actions.ActionExecutionService;
+import at.ac.tuwien.kr.alpha.core.actions.ActionWitness;
 import at.ac.tuwien.kr.alpha.core.depgraph.StratificationAlgorithm;
 import at.ac.tuwien.kr.alpha.core.grounder.IndexedInstanceStorage;
 import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingInfo;
@@ -43,7 +54,7 @@ import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
  * 
  * Copyright (c) 2019-2020, the Alpha Team.
  */
-public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram, InternalProgram> {
+public class StratifiedEvaluation extends ProgramTransformer<AnalyzedProgram, InternalProgram> implements RuleInstantiator {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(StratifiedEvaluation.class);
 
@@ -56,11 +67,18 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	private Set<Integer> solvedRuleIds = new HashSet<>(); // Set of rules that have been completely evaluated.
 
 	private LiteralInstantiator literalInstantiator;
+	private ActionExecutionService actionExecutionService;
+	private final boolean generateActionWitnesses;
+
+	public StratifiedEvaluation(ActionExecutionService actionExecutionService, boolean generateActionWitnesses) {
+		this.actionExecutionService = actionExecutionService;
+		this.generateActionWitnesses = generateActionWitnesses;
+	}
 
 	@Override
 	// Note: ideally this returns a "PartiallyEvaluatedProgram" such that the grounder can directly use the working
 	// memories created here rather than re-initialize everything.
-	public InternalProgram apply(AnalyzedProgram inputProgram) {
+	public InternalProgram transform(AnalyzedProgram inputProgram) {
 		// Calculate a stratification and initialize the working memory.
 		ComponentGraph componentGraph = inputProgram.getComponentGraph();
 		List<ComponentGraph.SCComponent> strata = StratificationAlgorithm.calculateStratification(componentGraph);
@@ -84,7 +102,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 		// Set up set of facts to which we'll add everything derived during stratified evaluation.
 		outputFacts = new HashSet<>(inputProgram.getFacts());
-		
+
 		// Set up literal instantiator.
 		literalInstantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(workingMemory));
 
@@ -301,12 +319,76 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	}
 
 	private void fireRule(CompiledRule rule, Substitution substitution) {
-		Atom newAtom = rule.getHeadAtom().substitute(substitution);
+		// BasicAtom newAtom = this.instantiate(rule.getHead(), substitution);
+		BasicAtom newAtom;
+		if (rule.getHead() instanceof ActionHead) {
+			newAtom = instantiateActionHead((ActionHead) rule.getHead(), substitution, rule);
+		} else {
+			newAtom = instantiateNormalHead(rule.getHead(), substitution);
+		}
 		if (!newAtom.isGround()) {
 			throw new IllegalStateException("Trying to fire rule " + rule.toString() + " with incompatible substitution " + substitution.toString());
 		}
 		LOGGER.debug("Firing rule - got head atom: {}", newAtom);
 		workingMemory.addInstance(newAtom, true);
+	}
+
+	@Override
+	public BasicAtom instantiate(InstantiableHead ruleHead, Substitution substitution) {
+		return ruleHead.instantiate(this, substitution);
+	}
+
+	// FIXME should be dispatched via visitor pattern
+	public BasicAtom instantiateNormalHead(NormalHead head, Substitution substitution) {
+		return head.getAtom().substitute(substitution);
+	}
+
+	// FIXME should be dispatched via visitor pattern
+	public BasicAtom instantiateActionHead(ActionHead head, Substitution substitution, CompiledRule rule) {
+		List<Term> actionInput = head.getActionInputTerms();
+		List<Term> substitutedInput = new ArrayList<>();
+		// Substitute all variables in action input so that all input terms are ground.
+		for (Term inputTerm : actionInput) {
+			substitutedInput.add(inputTerm.substitute(substitution));
+		}
+		// Delegate action execution to respective backend.
+		ActionWitness witness = actionExecutionService.execute(head.getActionName(), rule.getRuleId(), substitution, substitutedInput);
+		// If the according debug flag is set, convert witness to atom and add to facts.
+		if (generateActionWitnesses) {
+			BasicAtom witnessAtom = buildActionWitnessAtom(witness, rule);
+			// Note that this is a rather "sneaky" side-effect,
+			// but seems like overkill to do this structurally proper just for a debug feature.
+			workingMemory.addInstance(witnessAtom, true);
+		}
+		// We have an action result. Add it to the substitution as the substitute for the variable bound to the action so we're able to obtain the
+		// ground BasicAtom derived by the rule
+		substitution.put(head.getActionOutputTerm(), witness.getActionResult());
+		return head.getAtom().substitute(substitution);
+	}
+
+	private BasicAtom buildActionWitnessAtom(ActionWitness witness, CompiledRule rule) {
+		// Note that this methods should only ever be used for debugging!
+		// While action witnesses are used as a semantic concept in the evolog specification,
+		// they normally only exist implicitly.
+
+		// Construct state term: create function terms from ground body literals.
+		List<Term> functionalizedBody = new ArrayList<>();
+		for (Literal lit : rule.getBody()) {
+			Literal groundLit = lit.substitute(witness.getGroundSubstitution());
+			FunctionTerm functionalizedLiteral = Terms.newFunctionTerm(groundLit.getPredicate().getName(), groundLit.getTerms());
+			functionalizedBody.add(functionalizedLiteral);
+		}
+		FunctionTerm stateTerm = Terms.newFunctionTerm("state", functionalizedBody);
+
+		// Construct input term: wrap action input terms into one function term.
+		FunctionTerm inputTerm = Terms.newFunctionTerm("input", witness.getActionInput());
+
+		// Return witness atom: put state and input terms together.
+		return Atoms.newBasicAtom(Predicates.getPredicate("action_witness", 4),
+				Terms.newConstant(witness.getActionName()),
+				stateTerm,
+				inputTerm,
+				witness.getActionResult());
 	}
 
 	private ComponentEvaluationInfo getRulesToEvaluate(ComponentGraph.SCComponent comp) {

@@ -7,7 +7,7 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
  * 
  * Copyright (c) 2021, the Alpha Team.
  */
-public interface NormalHead extends Head {
+public interface NormalHead extends InstantiableHead {
 
 	BasicAtom getAtom();
 

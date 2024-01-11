@@ -51,7 +51,7 @@ public class DependencyGraphWriterTest {
 				"n6 -> n4 [xlabel=\"+\" labeldistance=0.1]" + LS +
 				"n6 -> n5 [xlabel=\"+\" labeldistance=0.1]" + LS +
 				"}" + LS;
-		Alpha alpha = AlphaFactory.newAlpha();
+		Alpha alpha = new AlphaFactory().newAlpha();
 		DebugSolvingContext dbgResult = alpha.prepareDebugSolve(alpha.readProgramString(asp));
 		DependencyGraph depgraph = dbgResult.getDependencyGraph();
 		DependencyGraphWriter writer = new DependencyGraphWriter();

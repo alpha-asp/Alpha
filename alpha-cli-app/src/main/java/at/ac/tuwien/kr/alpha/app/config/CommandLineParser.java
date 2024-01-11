@@ -122,9 +122,6 @@ public class CommandLineParser {
 	private static final Option OPT_AGGREGATES_NO_NEGATIVE_INTEGERS = Option.builder("dni").longOpt("disableNegativeIntegers")
 			.desc("use simplified encodings without netagive integer support for #sum aggregates (default: " + !AggregateRewritingConfig.DEFAULT_SUPPORT_NEGATIVE_INTEGERS + ")")
 			.build();
-	private static final Option OPT_NO_EVAL_STRATIFIED = Option.builder("dse").longOpt("disableStratifiedEvaluation")
-			.desc("Disable stratified evaluation")
-			.build();
 	private static final Option OPT_NO_NOGOOD_DELETION = Option.builder("dnd").longOpt("disableNoGoodDeletion")
 			.desc("disable the deletion of (learned, little active) nogoods (default: " 
 					+ SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION + ")")
@@ -177,7 +174,6 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_AGGREGATES_NO_SORTING_GRID);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_AGGREGATES_NO_NEGATIVE_INTEGERS);
 
-		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_EVAL_STRATIFIED);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_NOGOOD_DELETION);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES);
@@ -232,7 +228,6 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), this::handleNoJustification);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_AGGREGATES_NO_SORTING_GRID.getOpt(), this::handleDisableSortingGrid);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_AGGREGATES_NO_NEGATIVE_INTEGERS.getOpt(), this::handleDisableNegativeSumElements);
-		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_EVAL_STRATIFIED.getOpt(), this::handleDisableStratifedEval);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS.getOpt(), this::handleGrounderToleranceConstraints);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES.getOpt(), this::handleGrounderToleranceRules);
@@ -349,10 +344,6 @@ public class CommandLineParser {
 		cfg.setSortAnswerSets(true);
 	}
 
-	private void handleDeterministic(Option opt, SystemConfig cfg) {
-		cfg.setSeed(0);
-	}
-
 	private void handleSeed(Option opt, SystemConfig cfg) {
 		String optVal = opt.getValue();
 		long seed;
@@ -425,10 +416,6 @@ public class CommandLineParser {
 	
 	private void handleDisableNegativeSumElements(Option opt, SystemConfig cfg) {
 		cfg.getAggregateRewritingConfig().setSupportNegativeValuesInSums(false);
-	}
-
-	private void handleDisableStratifedEval(Option opt, SystemConfig cfg) {
-		cfg.setEvaluateStratifiedPart(false);
 	}
 
 	private void handleDebugPreprocessing(Option opt, InputConfig cfg) {

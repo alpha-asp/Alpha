@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
@@ -28,6 +29,17 @@ public class TermsTest {
 		assertEquals(2, terms.size());
 		assertEquals("\"bla\"", terms.get(0).toString());
 		assertEquals("\"blubb\"", terms.get(1).toString());
+	}
+
+	/**
+	 * Reproduction test for an error observed while testing evolog actions.
+	 */
+	@Test
+	public void functionTermVsActionSuccessTermHash() {
+		FunctionTerm funcTerm = Terms.newFunctionTerm("success", Terms.newFunctionTerm("stream", Terms.newConstant("outputStream_2")));
+		FunctionTerm actionSuccessTerm = Terms.actionSuccess(Terms.newFunctionTerm("stream", Terms.newConstant("outputStream_2")));
+		assertEquals(funcTerm, actionSuccessTerm);
+		assertEquals(funcTerm.hashCode(), actionSuccessTerm.hashCode());
 	}
 
 }

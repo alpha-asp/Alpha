@@ -19,4 +19,8 @@ public final class AnswerSets {
 		return new BasicAnswerSet(predicates, predicateInstances);
 	}
 
+	public static AnswerSetBuilder builder() {
+		return new AnswerSetBuilder();
+	}
+
 }

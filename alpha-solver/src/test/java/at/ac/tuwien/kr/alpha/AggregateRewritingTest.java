@@ -79,7 +79,7 @@ public class AggregateRewritingTest {
 	//@formatter:on
 
 	// Use an alpha instance with default config for all test cases
-	private final Alpha alpha = AlphaFactory.newAlpha();
+	private final Alpha alpha = new AlphaFactory().newAlpha();
 	private final Function<String, List<AnswerSet>> solve = (asp) -> {
 		InputProgram prog = alpha.readProgramString(asp);
 		return alpha.solve(prog).collect(Collectors.toList());

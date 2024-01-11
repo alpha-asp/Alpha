@@ -33,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,12 +41,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
@@ -62,10 +62,15 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2021, the Alpha Team.
  */
-public class ParserTest {
-	private final ProgramParserImpl parser = new ProgramParserImpl();
+public abstract class ParserTest {
+
+	private final ProgramParser parser;
+
+	protected ParserTest(ProgramParser parser) {
+		this.parser = parser;
+	}
 
 	@Test
 	public void parseFact() {
@@ -167,7 +172,7 @@ public class ParserTest {
 				"",
 				"Test!")));
 
-		final String actual = new ProgramParserImpl().parse(CharStreams.fromChannel(input)).toString();
+		final String actual = parser.parse(Channels.newInputStream(input)).toString();
 		final String expected = "p(a)." + System.lineSeparator();
 
 		assertEquals(expected, actual);
@@ -221,8 +226,7 @@ public class ParserTest {
 
 	@Test
 	public void stringWithEscapedQuotes() throws IOException {
-		CharStream stream = CharStreams.fromStream(ParserTest.class.getResourceAsStream("/escaped_quotes.asp"));
-		InputProgram prog = parser.parse(stream);
+		InputProgram prog = parser.parse(ParserTest.class.getResourceAsStream("/escaped_quotes.asp"));
 		assertEquals(1, prog.getFacts().size());
 		Atom stringAtom = prog.getFacts().get(0);
 		String stringWithQuotes = stringAtom.getTerms().get(0).toString();

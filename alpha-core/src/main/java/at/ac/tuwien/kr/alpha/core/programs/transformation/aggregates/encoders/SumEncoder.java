@@ -37,11 +37,11 @@ public final class SumEncoder extends StringtemplateBasedAggregateEncoder {
 		super(parser, AggregateFunctionSymbol.SUM, acceptedOperator, encodingTemplate);
 	}
 
-	public static SumEncoder buildSumLessOrEqualEncoder(ProgramParser parser, boolean supportNegativeIntegers) {
+	static SumEncoder buildSumLessOrEqualEncoder(ProgramParser parser, boolean supportNegativeIntegers) {
 		return new SumEncoder(parser, ComparisonOperators.LE, supportNegativeIntegers ? SUM_LE_TEMPLATE : NON_NEG_ELEMENTS_SUM_LE_TEMPLATE);
 	}
 
-	public static SumEncoder buildSumEqualsEncoder(ProgramParser parser, boolean supportNegativeIntegers) {
+	static SumEncoder buildSumEqualsEncoder(ProgramParser parser, boolean supportNegativeIntegers) {
 		return new SumEncoder(parser, ComparisonOperators.EQ, supportNegativeIntegers ? SUM_EQ_TEMPLATE : NON_NEG_ELEMENTS_SUM_EQ_TEMPLATE);
 	}
 

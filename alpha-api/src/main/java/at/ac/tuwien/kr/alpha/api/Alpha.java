@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.api;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +62,16 @@ public interface Alpha {
 	InputProgram readProgramString(String aspString);
 
 	/**
+	 * Parses an ASP program from an input stream.
+	 */
+	InputProgram readProgramStream(InputStream is) throws IOException;
+
+	/**
+	 * Parses an ASP program from an input stream.
+	 */
+	InputProgram readProgramStream(InputStream is, Map<String, PredicateInterpretation> externals) throws IOException;
+
+	/**
 	 * Prepares a {@link DebugSolvingContext} for the given {@link ASPCore2Program} to debug program preprocessing.
 	 * 
 	 * @return a {@link DebugSolvingContext} holding debug information for the given program
@@ -92,6 +103,7 @@ public interface Alpha {
 
 	/**
 	 * Solves the given {@link ASPCore2Program}.
+	 * 
 	 * @param program an input program
 	 * @return a {@link Stream} of {@link AnswerSet}s of the given program
 	 */
@@ -99,14 +111,16 @@ public interface Alpha {
 
 	/**
 	 * Solves the given {@link ASPCore2Program}.
+	 * 
 	 * @param program an input program
-	 * @param filter a {@link java.util.function.Predicate} against which {@link Predicate}s of answer sets are tested.
+	 * @param filter  a {@link java.util.function.Predicate} against which {@link Predicate}s of answer sets are tested.
 	 * @return a {@link Stream} of {@link AnswerSet}s of the given program
 	 */
 	Stream<AnswerSet> solve(InputProgram program, java.util.function.Predicate<Predicate> filter);
 
 	/**
 	 * Solves the given {@link NormalProgram}.
+	 * 
 	 * @param program an input program
 	 * @return a {@link Stream} of {@link AnswerSet}s of the given program
 	 */
@@ -114,34 +128,39 @@ public interface Alpha {
 
 	/**
 	 * Solves the given {@link NormalProgram}.
+	 * 
 	 * @param program an input program
-	 * @param filter a {@link java.util.function.Predicate} against which {@link Predicate}s of answer sets are tested.
+	 * @param filter  a {@link java.util.function.Predicate} against which {@link Predicate}s of answer sets are tested.
 	 * @return a {@link Stream} of {@link AnswerSet}s of the given program
 	 */
 	Stream<AnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter);
 
 	/**
-	 * Normalizes a program, i.e. rewrites all syntax constructs not natively supported by Alphas back-end into semantically equivalent ASP code.
+	 * Normalizes a program, i.e. rewrites all syntax constructs not natively supported by Alphas back-end into semantically equivalent ASP
+	 * code.
 	 * See {@link NormalProgram},
+	 * 
 	 * @param program An {@link ASPCore2Program} to normalize
 	 * @return a {@link NormalProgram} that is a semantic equivalent to the given input program
 	 */
 	NormalProgram normalizeProgram(InputProgram program);
 
 	/**
-	 * Constructs a @{link Solver} pre-loaded with the given {@link ASPCore2Program} from which {@link AnswerSet}s can be obtained via {@link Solver#stream()}.
+	 * Constructs a @{link Solver} pre-loaded with the given {@link ASPCore2Program} from which {@link AnswerSet}s can be obtained via
+	 * {@link Solver#stream()}.
 	 * 
 	 * @param program the program to solve
-	 * @param filter a {@link java.util.function.Predicate} against which {@link Predicate}s of answer sets are tested.
+	 * @param filter  a {@link java.util.function.Predicate} against which {@link Predicate}s of answer sets are tested.
 	 * @return a {@link Solver} pre-loaded withthe given program
 	 */
 	Solver prepareSolverFor(InputProgram program, java.util.function.Predicate<Predicate> filter);
 
 	/**
-	 * Constructs a @{link Solver} pre-loaded with the given {@link NormalProgram} from which {@link AnswerSet}s can be obtained via {@link Solver#stream()}.
+	 * Constructs a @{link Solver} pre-loaded with the given {@link NormalProgram} from which {@link AnswerSet}s can be obtained via
+	 * {@link Solver#stream()}.
 	 * 
 	 * @param program the program to solve
-	 * @param filter a {@link java.util.function.Predicate} against which {@link Predicate}s of answer sets are tested.
+	 * @param filter  a {@link java.util.function.Predicate} against which {@link Predicate}s of answer sets are tested.
 	 * @return a {@link Solver} pre-loaded withthe given program
 	 */
 	Solver prepareSolverFor(NormalProgram program, java.util.function.Predicate<Predicate> filter);

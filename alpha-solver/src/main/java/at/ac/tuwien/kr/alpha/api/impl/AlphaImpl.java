@@ -40,11 +40,11 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
@@ -67,7 +67,7 @@ import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformer;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
 
@@ -75,24 +75,25 @@ public class AlphaImpl implements Alpha {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlphaImpl.class);
 
-	private final Supplier<ProgramParser> parserFactory;
-	private final Supplier<ProgramTransformation<InputProgram, NormalProgram>> programNormalizationFactory;
+	private final ProgramParser parser;
+	private final ProgramTransformer<InputProgram, NormalProgram> programNormalizer;
 
+	private final Supplier<StratifiedEvaluation> stratifiedEvaluationFactory;
 	private final GrounderFactory grounderFactory;
 	private final SolverFactory solverFactory;
 
-	private final boolean enableStratifiedEvaluation;
+
 	private final boolean sortAnswerSets;
 
-	AlphaImpl(Supplier<ProgramParser> parserFactory, Supplier<ProgramTransformation<InputProgram, NormalProgram>> programNormalizationFactory,
+	AlphaImpl(ProgramParser parser, ProgramTransformer<InputProgram, NormalProgram> programNormalizer,
+			Supplier<StratifiedEvaluation> stratifiedEvaluationFactory,
 			GrounderFactory grounderFactory,
-			SolverFactory solverFactory,
-			boolean enableStratifiedEvaluation, boolean sortAnswerSets) {
-		this.parserFactory = parserFactory;
-		this.programNormalizationFactory = programNormalizationFactory;
+			SolverFactory solverFactory, boolean sortAnswerSets) {
+		this.parser = parser;
+		this.programNormalizer = programNormalizer;
+		this.stratifiedEvaluationFactory = stratifiedEvaluationFactory;
 		this.grounderFactory = grounderFactory;
 		this.solverFactory = solverFactory;
-		this.enableStratifiedEvaluation = enableStratifiedEvaluation;
 		this.sortAnswerSets = sortAnswerSets;
 	}
 
@@ -119,7 +120,6 @@ public class AlphaImpl implements Alpha {
 	@Override
 	@SuppressWarnings("resource")
 	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
-		ProgramParser parser = parserFactory.get();
 		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder();
 		InputProgram tmpProg;
 		for (Path path : paths) {
@@ -137,7 +137,7 @@ public class AlphaImpl implements Alpha {
 
 	@Override
 	public InputProgram readProgramString(String aspString, Map<String, PredicateInterpretation> externals) {
-		return parserFactory.get().parse(aspString, externals);
+		return parser.parse(aspString, externals);
 	}
 
 	@Override
@@ -146,18 +146,26 @@ public class AlphaImpl implements Alpha {
 	}
 
 	@Override
+	public InputProgram readProgramStream(InputStream is) throws IOException {
+		return parser.parse(is);
+	}
+
+	@Override
+	public InputProgram readProgramStream(InputStream is, Map<String, PredicateInterpretation> externals) throws IOException {
+		return parser.parse(is, externals);
+	}
+
+	@Override
 	public NormalProgram normalizeProgram(InputProgram program) {
-		return programNormalizationFactory.get().apply(program);
+		return programNormalizer.transform(program);
 	}
 
 	@VisibleForTesting
 	InternalProgram performProgramPreprocessing(NormalProgram program) {
 		LOGGER.debug("Preprocessing InternalProgram!");
 		InternalProgram retVal = InternalProgram.fromNormalProgram(program);
-		if (enableStratifiedEvaluation) {
-			AnalyzedProgram analyzed = new AnalyzedProgram(retVal.getRules(), retVal.getFacts());
-			retVal = new StratifiedEvaluation().apply(analyzed);
-		}
+		AnalyzedProgram analyzed = new AnalyzedProgram(retVal.getRules(), retVal.getFacts());
+		retVal = stratifiedEvaluationFactory.get().transform(analyzed);
 		return retVal;
 	}
 
@@ -243,11 +251,7 @@ public class AlphaImpl implements Alpha {
 		final ComponentGraph compGraph;
 		final AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(program);
 		final NormalProgram preprocessed;
-		if (enableStratifiedEvaluation) {
-			preprocessed = new StratifiedEvaluation().apply(analyzed).toNormalProgram();
-		} else {
-			preprocessed = program;
-		}
+		preprocessed = stratifiedEvaluationFactory.get().transform(analyzed).toNormalProgram();
 		depGraph = analyzed.getDependencyGraph();
 		compGraph = analyzed.getComponentGraph();
 		final Solver solver = prepareSolverFor(analyzed, filter);

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.terms.ActionResultTerm;
 import at.ac.tuwien.kr.alpha.api.terms.ArithmeticOperator;
 import at.ac.tuwien.kr.alpha.api.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
@@ -68,6 +69,14 @@ public final class Terms {
 
 	public static IntervalTerm newIntervalTerm(Term lowerBound, Term upperBound) {
 		return IntervalTermImpl.getInstance(lowerBound, upperBound);
+	}
+
+	public static <T extends Term> ActionResultTerm<T> actionSuccess(T value) {
+		return ActionSuccessTerm.getInstance(value);
+	}
+
+	public static ActionResultTerm<ConstantTerm<String>> actionError(String errMsg) {
+		return ActionErrorTerm.getInstance(Terms.newConstant(errMsg));
 	}
 
 	@SafeVarargs

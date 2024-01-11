@@ -27,9 +27,13 @@ package at.ac.tuwien.kr.alpha.commons.externals;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.externals.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
@@ -46,6 +50,8 @@ import at.ac.tuwien.kr.alpha.commons.terms.Terms;
  * Copyright (c) 2020, the Alpha Team.
  */
 public final class AspStandardLibrary {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(AspStandardLibrary.class);
 
 	private AspStandardLibrary() {
 		throw new AssertionError(this.getClass().getSimpleName() + " is a non-instantiable utility class!");
@@ -209,6 +215,49 @@ public final class AspStandardLibrary {
 	@Predicate(name = "stdlib_string_concat")
 	public static Set<List<ConstantTerm<String>>> stringConcat(String s1, String s2) {
 		return Collections.singleton(Terms.asTermList(s1 + s2));
+	}
+
+	/**
+	 * Converts the given string to an integer
+	 */
+	@Predicate(name = "string_parse_integer")
+	public static Set<List<ConstantTerm<Integer>>> stringParseInteger(String str) {
+		try {
+			return Collections.singleton(Collections.singletonList(Terms.newConstant(Integer.valueOf(str))));
+		} catch (NumberFormatException ex) {
+			LOGGER.warn("Not a valid integer value: {}", str);
+			return Collections.emptySet();
+		}
+	}
+
+	@Predicate(name = "string_is_empty")
+	public static boolean isStringEmpty(String str) {
+		return str.isEmpty();
+	}
+
+	@Predicate(name = "string_substring")
+	public static Set<List<ConstantTerm<String>>> substringOfString(String str, int startIdx, int endIdx) {
+		try {
+			return Collections.singleton(Collections.singletonList(Terms.newConstant(str.substring(startIdx, endIdx))));
+		} catch (StringIndexOutOfBoundsException ex) {
+			LOGGER.warn("Invalid range for substring: {}, start {}, end {}", str, startIdx, endIdx);
+			return Collections.emptySet();
+		}
+	}
+
+	@Predicate(name = "str_x_xs")
+	public static Set<List<ConstantTerm<String>>> stringHeadRemainder(String str) {
+		List<ConstantTerm<String>> xXs = new ArrayList<>();
+		if (str.isEmpty()) {
+			return Collections.emptySet();
+		} else if (str.length() == 1) {
+			xXs.add(Terms.newConstant(str));
+			xXs.add(Terms.newConstant(""));
+		} else {
+			xXs.add(Terms.newConstant(str.substring(0, 1)));
+			xXs.add(Terms.newConstant(str.substring(1, str.length())));
+		}
+		return Collections.singleton(xXs);
 	}
 
 }

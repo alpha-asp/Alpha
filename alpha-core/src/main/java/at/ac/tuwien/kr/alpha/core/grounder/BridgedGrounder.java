@@ -8,7 +8,7 @@ import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.grounder.bridges.Bridge;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRuleImpl;
 
 public abstract class BridgedGrounder extends AbstractGrounder {
 	protected final Bridge[] bridges;
@@ -23,8 +23,8 @@ public abstract class BridgedGrounder extends AbstractGrounder {
 		this.bridges = bridges;
 	}
 
-	protected Set<InternalRule> collectExternalRules(Assignment assignment, AtomStore atomStore, IntIdGenerator intIdGenerator) {
-		Set<InternalRule> collectedRules = new HashSet<>();
+	protected Set<CompiledRuleImpl> collectExternalRules(Assignment assignment, AtomStore atomStore, IntIdGenerator intIdGenerator) {
+		Set<CompiledRuleImpl> collectedRules = new HashSet<>();
 
 		for (Bridge bridge : bridges) {
 			collectedRules.addAll(bridge.getRules(assignment, atomStore, intIdGenerator));
