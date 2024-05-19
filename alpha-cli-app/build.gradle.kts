@@ -40,6 +40,10 @@ tasks.create<Jar>("bundledJar") {
 	archiveFileName.set("${project.name}-${project.version}-bundled.jar")
 
 	exclude("META-INF/DEPENDENCIES")
+
+	filesMatching("META-INF/build.properties") {
+		duplicatesStrategy = DuplicatesStrategy.INCLUDE
+	}
 	
 	/*
 	 * In order to make sure we don"t overwrite NOTICE and LICENSE files coming from dependency
