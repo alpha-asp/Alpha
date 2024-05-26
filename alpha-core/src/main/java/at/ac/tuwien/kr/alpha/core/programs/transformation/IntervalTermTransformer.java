@@ -29,10 +29,8 @@ package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -40,17 +38,17 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.api.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.rules.Rules;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.IntervalAtom;
-import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
+import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.IntervalAtom;
 
 /**
  * Rewrites all interval terms in a rule into a new variable and an IntervalAtom.
@@ -58,8 +56,7 @@ import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
  *
  * Copyright (c) 2017-2021, the Alpha Team.
  */
-public class IntervalTermTransformer extends ProgramTransformer<NormalProgram, NormalProgram> {
-
+public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProgram, NormalProgram> {
 	private static final String INTERVAL_VARIABLE_PREFIX = "_Interval";
 
 	/**
@@ -71,7 +68,7 @@ public class IntervalTermTransformer extends ProgramTransformer<NormalProgram, N
 		// Collect all intervals and replace them with variables.
 		Map<VariableTerm, IntervalTerm> intervalReplacements = new LinkedHashMap<>();
 
-		Set<Literal> rewrittenBody = new LinkedHashSet<>();
+		List<Literal> rewrittenBody = new ArrayList<>();
 
 		for (Literal literal : rule.getBody()) {
 			Literal rewrittenLiteral = rewriteLiteral(literal, intervalReplacements);
@@ -81,7 +78,6 @@ public class IntervalTermTransformer extends ProgramTransformer<NormalProgram, N
 		}
 		// Note that this cast is safe: NormalHead can only have a BasicAtom, so literalizing and getting back the Atom destroys type information,
 		// but should never yield anything other than a BasicAtom
-		// TODO what about intervals in action heads?
 		NormalHead rewrittenHead = rule.isConstraint() ? null
 				: Heads.newNormalHead((BasicAtom) rewriteLiteral(rule.getHead().getAtom().toLiteral(), intervalReplacements).getAtom());
 
@@ -170,7 +166,7 @@ public class IntervalTermTransformer extends ProgramTransformer<NormalProgram, N
 	}
 
 	@Override
-	public NormalProgram transform(NormalProgram inputProgram) {
+	public NormalProgram apply(NormalProgram inputProgram) {
 		boolean didChange = false;
 		List<NormalRule> rewrittenRules = new ArrayList<>();
 		for (NormalRule rule : inputProgram.getRules()) {
@@ -186,6 +182,6 @@ public class IntervalTermTransformer extends ProgramTransformer<NormalProgram, N
 		if (!didChange) {
 			return inputProgram;
 		}
-		return new NormalProgramImpl(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+		return Programs.newNormalProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
 	}
 }

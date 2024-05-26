@@ -10,8 +10,8 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 
 /**
  * A variable substitution allowing variables to occur on the right-hand side. Chains of variable substitutions are

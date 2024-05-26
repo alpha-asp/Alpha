@@ -11,7 +11,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.core.atoms.Literals;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.Literals;
 
 public class NoGoodTest {
 	/**

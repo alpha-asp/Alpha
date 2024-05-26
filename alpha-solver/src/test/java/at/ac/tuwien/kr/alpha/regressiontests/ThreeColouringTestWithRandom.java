@@ -23,10 +23,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.regressiontests;
+package at.ac.tuwien.kr.alpha.core.solver;
 
-import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.buildSolverForRegressionTest;
-import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.runWithTimeout;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.runWithTimeout;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,17 +38,16 @@ import org.junit.jupiter.api.Disabled;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
-import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
 /**
  * Tests {@link AbstractSolver} using some three-coloring test cases, as described in: 
@@ -57,143 +56,142 @@ import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
  * In Theory and Practice of Logic Programming, pp. 1-45. DOI:
  * 10.1017/S1471068416000569
  */
-// TODO This is a functional test and should not be run with standard unit tests
 public class ThreeColouringTestWithRandom {
 	
 	private static final long DEBUG_TIMEOUT_FACTOR = 5;
 	
 	@RegressionTest
-	public void testN3(SystemConfig cfg) {
+	public void testN3(RegressionTestConfig cfg) {
 		long timeout = 3000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(3, false, 0, cfg));
 	}
 
 	@RegressionTest
-	public void testN4(SystemConfig cfg) {
+	public void testN4(RegressionTestConfig cfg) {
 		long timeout = 4000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(4, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN5(SystemConfig cfg) {
+	public void testN5(RegressionTestConfig cfg) {
 		long timeout = 5000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(5, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN6(SystemConfig cfg) {
+	public void testN6(RegressionTestConfig cfg) {
 		long timeout = 6000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(6, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN7(SystemConfig cfg) {
+	public void testN7(RegressionTestConfig cfg) {
 		long timeout = 7000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(7, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN8(SystemConfig cfg) {
+	public void testN8(RegressionTestConfig cfg) {
 		long timeout = 8000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(8, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN9(SystemConfig cfg) {
+	public void testN9(RegressionTestConfig cfg) {
 		long timeout = 9000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(9, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN10(SystemConfig cfg) {
+	public void testN10(RegressionTestConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(10, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN10Random0(SystemConfig cfg) {
+	public void testN10Random0(RegressionTestConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(10, true, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN10Random1(SystemConfig cfg) {
+	public void testN10Random1(RegressionTestConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(10, true, 1, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN10Random2(SystemConfig cfg) {
+	public void testN10Random2(RegressionTestConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(10, true, 2, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN10Random3(SystemConfig cfg) {
+	public void testN10Random3(RegressionTestConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(10, true, 3, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN19(SystemConfig cfg) {
+	public void testN19(RegressionTestConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(19, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN19Random0(SystemConfig cfg) {
+	public void testN19Random0(RegressionTestConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(19, true, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN19Random1(SystemConfig cfg) {
+	public void testN19Random1(RegressionTestConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(19, true, 1, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN19Random2(SystemConfig cfg) {
+	public void testN19Random2(RegressionTestConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(19, true, 2, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN19Random3(SystemConfig cfg) {
+	public void testN19Random3(RegressionTestConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(19, true, 3, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN101(SystemConfig cfg) {
+	public void testN101(RegressionTestConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(101, false, 0, cfg));
 	}
 
-	private void testThreeColouring(int n, boolean shuffle, int seed, SystemConfig cfg) {
-		InputProgram tmpPrg = new ASPCore2ProgramParser()
+	private void testThreeColouring(int n, boolean shuffle, int seed, RegressionTestConfig cfg) {
+		ASPCore2Program tmpPrg = new ProgramParserImpl()
 				.parse("col(V,C) :- v(V), c(C), not ncol(V,C)." + "ncol(V,C) :- col(V,D), c(C), C != D." + ":- e(V,U), col(V,C), col(U,C).");
-		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder().accumulate(tmpPrg);
+		ASPCore2ProgramBuilder prgBuilder = Programs.builder().accumulate(tmpPrg);
 		prgBuilder.addFacts(createColors("1", "2", "3"));
 		prgBuilder.addFacts(createVertices(n));
 		prgBuilder.addFacts(createEdges(n, shuffle, seed));
-		InputProgram program = prgBuilder.build();
+		ASPCore2Program program = prgBuilder.build();
 
 		Solver solver = buildSolverForRegressionTest(program, cfg);
 		@SuppressWarnings("unused")

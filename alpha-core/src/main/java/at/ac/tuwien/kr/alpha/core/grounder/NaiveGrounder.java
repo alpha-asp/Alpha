@@ -28,7 +28,7 @@
 package at.ac.tuwien.kr.alpha.core.grounder;
 
 import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomOf;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,14 +54,12 @@ import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.AnswerSets;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
-import at.ac.tuwien.kr.alpha.core.atoms.ChoiceAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.IntIterator;
@@ -75,7 +73,9 @@ import at.ac.tuwien.kr.alpha.core.grounder.instantiation.LiteralInstantiationRes
 import at.ac.tuwien.kr.alpha.core.grounder.instantiation.LiteralInstantiator;
 import at.ac.tuwien.kr.alpha.core.grounder.structure.AnalyzeUnjustified;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.ChoiceAtom;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
 
 /**
  * A semi-naive grounder.

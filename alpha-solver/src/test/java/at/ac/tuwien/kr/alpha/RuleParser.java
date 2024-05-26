@@ -1,16 +1,16 @@
-package at.ac.tuwien.kr.alpha;
+package at.ac.tuwien.kr.alpha.core.test.util;
 
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
 public class RuleParser {
 
 	public static Rule<Head> parse(String str) {
-		ProgramParser parser = new ASPCore2ProgramParser();
-		InputProgram prog = parser.parse(str);
+		ProgramParser parser = new ProgramParserImpl();
+		ASPCore2Program prog = parser.parse(str);
 		if (!prog.getFacts().isEmpty()) {
 			throw new IllegalArgumentException("Expected exactly one rule and no facts!");
 		}

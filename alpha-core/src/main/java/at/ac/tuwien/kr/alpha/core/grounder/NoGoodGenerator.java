@@ -27,9 +27,9 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.negateLiteral;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.negateLiteral;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
@@ -46,12 +46,12 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
-import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.EnumerationAtom;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
 
 /**
  * Class to generate ground NoGoods out of non-ground rules and grounding substitutions.

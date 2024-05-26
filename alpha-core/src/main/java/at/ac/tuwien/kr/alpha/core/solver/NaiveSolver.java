@@ -27,9 +27,9 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isNegated;
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.isPositive;
 import static java.lang.Math.abs;
 
 import java.util.ArrayList;

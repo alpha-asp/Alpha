@@ -1,29 +1,27 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
-
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.BasicLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.rules.Rules;
-import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
-import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.util.Util;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.EnumerationAtom;
 
 /**
  * Rewrites the ordinary atom whose name is given in the input program by the enumeration directive #enum_atom_is into
@@ -32,19 +30,19 @@ import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
  * Copyright (c) 2017-2020, the Alpha Team.
  */
 // TODO this should happen during/after internalization
-public class EnumerationTransformer extends ProgramTransformer<InputProgram, InputProgram> {
+public class EnumerationRewriting extends ProgramTransformation<ASPCore2Program, ASPCore2Program> {
 
 	@Override
-	public InputProgram transform(InputProgram inputProgram) {
+	public ASPCore2Program apply(ASPCore2Program inputProgram) {
 		// Read enumeration predicate from directive.
-		String enumDirective = inputProgram.getInlineDirectives().getDirectiveValue(InlineDirectivesImpl.DIRECTIVE.enum_predicate_is);
+		String enumDirective = inputProgram.getInlineDirectives().getDirectiveValue(InlineDirectives.DIRECTIVE.enum_predicate_is);
 		if (enumDirective == null) {
 			// Directive not set, nothing to rewrite.
 			return inputProgram;
 		}
 		Predicate enumPredicate = Predicates.getPredicate(enumDirective, 3);
 
-		InputProgramImpl.Builder programBuilder = InputProgramImpl.builder().addInlineDirectives(inputProgram.getInlineDirectives());
+		ASPCore2ProgramBuilder programBuilder = Programs.builder().addInlineDirectives(inputProgram.getInlineDirectives());
 
 		checkFactsAreEnumerationFree(inputProgram.getFacts(), enumPredicate);
 		programBuilder.addFacts(inputProgram.getFacts());
@@ -57,7 +55,7 @@ public class EnumerationTransformer extends ProgramTransformer<InputProgram, Inp
 	private void checkFactsAreEnumerationFree(List<Atom> srcFacts, Predicate enumPredicate) {
 		for (Atom fact : srcFacts) {
 			if (fact.getPredicate().equals(enumPredicate)) {
-				throw oops("Atom declared as enumeration atom by directive occurs in a fact: " + fact);
+				throw Util.oops("Atom declared as enumeration atom by directive occurs in a fact: " + fact);
 			}
 		}
 	}
@@ -66,12 +64,12 @@ public class EnumerationTransformer extends ProgramTransformer<InputProgram, Inp
 		List<Rule<Head>> rewrittenRules = new ArrayList<>();
 		for (Rule<Head> rule : srcRules) {
 			if (rule.getHead() != null && !(rule.getHead() instanceof NormalHead)) {
-				throw oops("Encountered rule whose head is not normal: " + rule);
+				throw Util.oops("Encountered rule whose head is not normal: " + rule);
 			}
 			if (rule.getHead() != null && ((NormalHead) rule.getHead()).getAtom().getPredicate().equals(enumPredicate)) {
-				throw oops("Atom declared as enumeration atom by directive occurs in head of the rule: " + rule);
+				throw Util.oops("Atom declared as enumeration atom by directive occurs in head of the rule: " + rule);
 			}
-			Set<Literal> modifiedBodyLiterals = new LinkedHashSet<>(rule.getBody());
+			List<Literal> modifiedBodyLiterals = new ArrayList<>(rule.getBody());
 			Iterator<Literal> rit = modifiedBodyLiterals.iterator();
 			LinkedList<Literal> rewrittenLiterals = new LinkedList<>();
 			while (rit.hasNext()) {

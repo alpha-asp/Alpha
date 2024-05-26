@@ -31,7 +31,7 @@ package at.ac.tuwien.kr.alpha.core.test.util;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
 
 public class SubstitutionTestUtil {
 

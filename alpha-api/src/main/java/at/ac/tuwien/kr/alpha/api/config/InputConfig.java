@@ -26,6 +26,8 @@ public class InputConfig {
 	public static final String DEFAULT_PREPROC_TARGET_FILE = "input.preproc.asp";
 	public static final boolean DEFAULT_WRITE_XLSX = false;
 	public static final String DEFAULT_XLSX_OUTFILE_PATH = "alphaAnswerSet"; // current directory, files named "alphaAnswerSet.{num}.{ext}"
+	public static final boolean DEFAULT_REIFY_INPUT = false;
+	public static final boolean DEFAULT_RUN_TESTS = false;
 
 	private List<String> aspStrings = new ArrayList<>();
 	private List<String> files = new ArrayList<>();
@@ -37,11 +39,13 @@ public class InputConfig {
 	private String compgraphPath = InputConfig.DEFAULT_COMPGRAPH_TARGET_FILE;
 	private String normalizedPath = InputConfig.DEFAULT_NORMALIZED_TARGET_FILE;
 	private String preprocessedPath = InputConfig.DEFAULT_PREPROC_TARGET_FILE;
-
-	private Map<String, PredicateInterpretation> predicateMethods = new HashMap<>();
 	private boolean writeAnswerSetsAsXlsx = InputConfig.DEFAULT_WRITE_XLSX;
 	private String answerSetFileOutputPath;
+	private boolean reifyInput = InputConfig.DEFAULT_REIFY_INPUT;
+	private boolean runTests = InputConfig.DEFAULT_RUN_TESTS;
 
+	private Map<String, PredicateInterpretation> predicateMethods = new HashMap<>();
+	
 	public static InputConfig forString(String str) {
 		InputConfig retVal = new InputConfig();
 		retVal.aspStrings.add(str);
@@ -207,6 +211,22 @@ public class InputConfig {
 	 */
 	public void setDebugPreprocessing(boolean debugPreprocessing) {
 		this.debugPreprocessing = debugPreprocessing;
+	}
+
+	public boolean isReifyInput() {
+		return reifyInput;
+	}
+
+	public void setReifyInput(boolean reifyInput) {
+		this.reifyInput = reifyInput;
+	}
+
+	public boolean isRunTests() {
+		return runTests;
+	}
+
+	public void setRunTests(boolean runTests) {
+		this.runTests = runTests;
 	}
 
 }

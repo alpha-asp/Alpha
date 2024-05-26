@@ -43,7 +43,7 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.mapper.AnswerSetToObjectMapper;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 
 /**
  * Implementation of {@link AnswerSetToObjectMapper} that generates an office open xml workbook ("excel file") from a given answer set.

@@ -25,27 +25,26 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collection;
-import java.util.Collections;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
-import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRules;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
 
 public class ChoiceManagerTests {
 	private Grounder grounder;
@@ -54,19 +53,11 @@ public class ChoiceManagerTests {
 
 	@BeforeEach
 	public void setUp() {
-		/*
-		 * program :=
-		 *     h :- b1, b2, not b3, not b4.
-		 */
-		CompiledProgram program = new InternalProgram(Collections.singletonList(
-			CompiledRules.newCompiledRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("h", 0))),
-						Atoms.newBasicAtom(Predicates.getPredicate("b1", 0)).toLiteral(),
-						Atoms.newBasicAtom(Predicates.getPredicate("b2", 0)).toLiteral(),
-						Atoms.newBasicAtom(Predicates.getPredicate("b3", 0)).toLiteral(false),
-						Atoms.newBasicAtom(Predicates.getPredicate("b4", 0)).toLiteral(false))
-				), Collections.emptyList());
+		String testProgram = "h :- b1, b2, not b3, not b4.";
+		ASPCore2Program parsedProgram = new ProgramParserImpl().parse(testProgram);
+		CompiledProgram internalProgram = InternalProgram.fromNormalProgram(new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG).apply(parsedProgram));
 		atomStore = new AtomStoreImpl();
-		grounder = new NaiveGrounder(program, atomStore, true);
+		grounder = new NaiveGrounder(internalProgram, atomStore, true);
 		WritableAssignment assignment = new TrailAssignment(atomStore);
 		NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment);
 		choiceManager = new ChoiceManager(assignment, store);

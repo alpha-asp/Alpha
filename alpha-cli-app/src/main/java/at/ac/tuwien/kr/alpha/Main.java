@@ -33,11 +33,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import at.ac.tuwien.kr.alpha.api.programs.tests.Assertion;
+import at.ac.tuwien.kr.alpha.api.programs.tests.TestResult;
 import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +60,7 @@ import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.util.AnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.app.ComponentGraphWriter;
 import at.ac.tuwien.kr.alpha.app.DependencyGraphWriter;
@@ -92,19 +98,33 @@ public class Main {
 		}
 
 		InputConfig inputCfg = cfg.getInputConfig();
-		Solver solver;
-		if (inputCfg.isDebugPreprocessing()) {
-			DebugSolvingContext dbgCtx = alpha.prepareDebugSolve(program);
-			Main.writeNormalProgram(dbgCtx.getNormalizedProgram(), inputCfg.getNormalizedPath());
-			Main.writeNormalProgram(dbgCtx.getPreprocessedProgram(), inputCfg.getPreprocessedPath());
-			Main.writeDependencyGraph(dbgCtx.getDependencyGraph(), inputCfg.getDepgraphPath());
-			Main.writeComponentGraph(dbgCtx.getComponentGraph(), inputCfg.getCompgraphPath());
-			solver = dbgCtx.getSolver();
+
+		// Note: We might potentially want to get the reified program as an AnswerSet and
+		// apply all the formatting we can do on answer sets also on reified programs.
+		if (inputCfg.isReifyInput()) {
+			Set<BasicAtom> reified = alpha.reify(program);
+			for (BasicAtom atom : reified) {
+				System.out.println(atom + ".");
+			}
+		} else if (inputCfg.isRunTests()) {
+			TestResult result = alpha.test(program);
+			printTestResult(result);
 		} else {
-			solver = alpha.prepareSolverFor(program, inputCfg.getFilter());
+			Solver solver;
+			if (inputCfg.isDebugPreprocessing()) {
+				DebugSolvingContext dbgCtx = alpha.prepareDebugSolve(program);
+				Main.writeNormalProgram(dbgCtx.getNormalizedProgram(), inputCfg.getNormalizedPath());
+				Main.writeNormalProgram(dbgCtx.getPreprocessedProgram(), inputCfg.getPreprocessedPath());
+				Main.writeDependencyGraph(dbgCtx.getDependencyGraph(), inputCfg.getDepgraphPath());
+				Main.writeComponentGraph(dbgCtx.getComponentGraph(), inputCfg.getCompgraphPath());
+				solver = dbgCtx.getSolver();
+			} else {
+				solver = alpha.prepareSolverFor(program, inputCfg.getFilter());
+			}
+			Main.computeAndConsumeAnswerSets(solver, cfg);
 		}
-		Main.computeAndConsumeAnswerSets(solver, cfg);
 	}
+
 
 	/**
 	 * Writes the given {@link DependencyGraph} to the destination passed as the second parameter
@@ -152,6 +172,30 @@ public class Main {
 		} catch (IOException ex) {
 			LOGGER.error("Failed writing program file", ex);
 			Main.bailOut("Failed writing program file " + ex.getMessage());
+		}
+	}
+
+	private static void printTestResult(TestResult result) {
+		if (result.isSuccess()) {
+			System.out.println("TEST SUCCESSFUL");
+		} else {
+			System.out.println("TESTS FAILED!");
+		}
+		for (TestResult.TestCaseResult tcResult : result.getTestCaseResults()) {
+			System.out.println("Test case: " + tcResult.getTestCaseName() + " " + (tcResult.isSuccess() ? "PASSED" : "FAILED") +
+					", assertions passed: " + tcResult.getAssertionsPassed() +
+					", assertions failed: " + tcResult.getAssertionsFailed());
+			if (!tcResult.isSuccess()) {
+				System.out.println("Assertion failures:");
+				if (tcResult.answerSetCountVerificationResult().isPresent()) {
+					System.out.println(tcResult.answerSetCountVerificationResult().get());
+				}
+				for (Map.Entry<Assertion, List<String>> assertionError : tcResult.getAssertionErrors().entrySet()) {
+					for (String errMsg : assertionError.getValue()) {
+						System.out.println("Assertion failed: " + assertionError.getKey() + ", error = " + errMsg);
+					}
+				}
+			}
 		}
 	}
 

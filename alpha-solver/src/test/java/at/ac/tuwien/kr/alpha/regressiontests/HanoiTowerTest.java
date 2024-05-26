@@ -23,12 +23,9 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.regressiontests;
+package at.ac.tuwien.kr.alpha.core.solver;
 
-import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.buildSolverForRegressionTest;
-import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.ignoreTestForNaiveSolver;
-import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.ignoreTestForNonDefaultDomainIndependentHeuristics;
-import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.runWithTimeout;
+import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.runWithTimeout;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -42,22 +39,20 @@ import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
-import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 /**
  * Tests {@link AbstractSolver} using some hanoi tower test cases (see https://en.wikipedia.org/wiki/Tower_of_Hanoi).
  *
  */
-// TODO This is a functional test and should not be run with standard unit tests
 public class HanoiTowerTest {
 
 	@SuppressWarnings("unused")
@@ -67,51 +62,49 @@ public class HanoiTowerTest {
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testInstance1(SystemConfig cfg) {
+	public void testInstance1(RegressionTestConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower(1, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testInstance2(SystemConfig cfg) {
+	public void testInstance2(RegressionTestConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower(2, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testInstance3(SystemConfig cfg) {
+	public void testInstance3(RegressionTestConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower(3, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testInstance4(SystemConfig cfg) {
+	public void testInstance4(RegressionTestConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower(4, cfg));
 	}
 
 	@RegressionTest
-	public void testSimple(SystemConfig cfg) {
-		ignoreTestForNaiveSolver(cfg);
-		ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
+	public void testSimple(RegressionTestConfig cfg) {
+		TestUtils.ignoreTestForNaiveSolver(cfg);
+		TestUtils.ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower("simple", cfg));
 	}
 
-	private void testHanoiTower(int instance, SystemConfig cfg) throws IOException {
+	private void testHanoiTower(int instance, RegressionTestConfig cfg) throws IOException {
 		testHanoiTower(String.valueOf(instance), cfg);
 	}
 
-	private void testHanoiTower(String instance, SystemConfig cfg) throws IOException {
-		// TODO should be read by the Alpha instance constructed in buildSolverForRegressionTest,
-		// do not instantiate parsers "free-style"!
-		InputProgram prog = new ASPCore2ProgramParser().parse(
+	private void testHanoiTower(String instance, RegressionTestConfig cfg) throws IOException {
+		ASPCore2Program prog = new ProgramParserImpl().parse(
 				Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp"),
 				Paths.get("src", "test", "resources", "HanoiTower_instances", instance + ".asp"));
-		Solver solver = buildSolverForRegressionTest(prog, cfg);
+		Solver solver = TestUtils.buildSolverForRegressionTest(prog, cfg);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		assertTrue(answerSet.isPresent());
 		checkGoal(prog, answerSet.get());
@@ -122,7 +115,7 @@ public class HanoiTowerTest {
 	 * for every goal/3
 	 * fact in the input there is a corresponding on/3 atom in the output.
 	 */
-	private void checkGoal(InputProgram parsedProgram, AnswerSet answerSet) {
+	private void checkGoal(ASPCore2Program parsedProgram, AnswerSet answerSet) {
 		Predicate ongoal = Predicates.getPredicate("ongoal", 2);
 		Predicate on = Predicates.getPredicate("on", 3);
 		int steps = getSteps(parsedProgram);
@@ -138,7 +131,7 @@ public class HanoiTowerTest {
 		}
 	}
 
-	private int getSteps(InputProgram parsedProgram) {
+	private int getSteps(ASPCore2Program parsedProgram) {
 		Predicate steps = Predicates.getPredicate("steps", 1);
 		for (Atom atom : parsedProgram.getFacts()) {
 			if (atom.getPredicate().getName().equals(steps.getName()) && atom.getPredicate().getArity() == steps.getArity()) {

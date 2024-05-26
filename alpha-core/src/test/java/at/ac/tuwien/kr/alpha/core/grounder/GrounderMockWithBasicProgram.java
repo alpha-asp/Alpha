@@ -51,26 +51,28 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.commons.AnswerSets;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
-import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.IntIterator;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRules;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.core.programs.rules.InternalRule;
 
 /**
  * Represents a small ASP program {@code { c :- a, b.  a.  b. }}.
  *
  * Copyright (c) 2016, the Alpha Team.
  */
-public class GrounderMockWithBasicProgram implements Grounder {
+public class DummyGrounder implements Grounder {
 	public static final Set<AnswerSet> EXPECTED = new HashSet<>(singletonList(new AnswerSetBuilder()
 		.predicate("a")
 		.predicate("b")
@@ -93,15 +95,15 @@ public class GrounderMockWithBasicProgram implements Grounder {
 	private static Atom atomAA = Atoms.newBasicAtom(Predicates.getPredicate("a", 0));
 	private static Atom atomBB = Atoms.newBasicAtom(Predicates.getPredicate("b", 0));
 	private static BasicAtom atomCC = Atoms.newBasicAtom(Predicates.getPredicate("c", 0));
-	private static CompiledRule ruleABC = CompiledRules.newCompiledRule(Heads.newNormalHead(atomCC), atomAA.toLiteral(), atomBB.toLiteral());
-	private static Atom rule1 = new RuleAtom(ruleABC, new BasicSubstitution());
+	private static Rule<Head> ruleABC = Rules.newRule(Heads.newNormalHead(atomCC), Arrays.asList(atomAA.toLiteral(), atomBB.toLiteral()));
+	private static Atom rule1 = new RuleAtom(InternalRule.fromNormalRule(Rules.toNormalRule(ruleABC)), new BasicSubstitution());
 	private Set<Integer> returnedNogoods = new HashSet<>();
 
-	public GrounderMockWithBasicProgram(AtomStore atomStore) {
+	public DummyGrounder(AtomStore atomStore) {
 		this(atomStore, p -> true);
 	}
 
-	public GrounderMockWithBasicProgram(AtomStore atomStore, java.util.function.Predicate<Predicate> filter) {
+	public DummyGrounder(AtomStore atomStore, java.util.function.Predicate<Predicate> filter) {
 		this.atomStore = atomStore;
 		this.filter = filter;
 		Arrays.asList(atomAA, atomBB, rule1, atomCC).forEach(atomStore::putIfAbsent);

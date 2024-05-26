@@ -6,7 +6,6 @@ import ASPLexer;
  * https://www.mat.unical.it/aspcomp2013/files/ASP-CORE-2.01c.pdf
  * (sections 4 and 5, pages 10-12).
  * It is extended a bit to parse widespread syntax (e.g. used by gringo/clasp).
- * Furthermore, syntax features specific to Alpha's Evolog extension (action rules, asp modules) are included.
  */
 
 program : statements? query? EOF;
@@ -21,9 +20,7 @@ statement : head DOT                     # statement_fact
           | WCONS body? DOT SQUARE_OPEN weight_at_level SQUARE_CLOSE # statement_weightConstraint
           | directive                    # statement_directive;   // NOT Core2 syntax.
 
-head : disjunction | choice | action;
-
-action: classical_literal COLON AT ID SQUARE_OPEN terms SQUARE_CLOSE EQUAL variable_term; // NOT Core2 syntax
+head : disjunction | choice;
 
 body : ( naf_literal | aggregate ) (COMMA body)?;
 
@@ -49,7 +46,11 @@ naf_literals : naf_literal (COMMA naf_literals)?;
 
 naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
 
-classical_literal : MINUS? ID (PAREN_OPEN terms PAREN_CLOSE)?;
+id : ID | TEST_EXPECT | TEST_UNSAT | TEST_GIVEN | TEST_ASSERT_ALL | TEST_ASSERT_SOME | DIRECTIVE_ENUM | DIRECTIVE_TEST;
+
+basic_atom : id (PAREN_OPEN terms PAREN_CLOSE)?;
+
+classical_literal : MINUS? basic_atom;
 
 builtin_atom : term binop term;
 
@@ -57,8 +58,8 @@ binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
 
 terms : term (COMMA terms)?;
 
-term : ID                                   # term_const
-     | ID (PAREN_OPEN terms? PAREN_CLOSE)   # term_func
+term : id                                   # term_const
+     | id (PAREN_OPEN terms? PAREN_CLOSE)   # term_func
      | numeral                              # term_number
      | QUOTED_STRING                        # term_string
      | VARIABLE                             # term_variable
@@ -78,20 +79,34 @@ interval : lower = interval_bound DOT DOT upper = interval_bound; // NOT Core2 s
 
 interval_bound : numeral | VARIABLE;
 
-external_atom : MINUS? AMPERSAND ID (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?; // NOT Core2 syntax.
+external_atom : MINUS? AMPERSAND id (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?; // NOT Core2 syntax.
 
-directive : directive_enumeration;  // NOT Core2 syntax, allows solver specific directives. Further directives shall be added here.
+directive : directive_enumeration | directive_test;  // NOT Core2 syntax, allows solver specific directives. Further directives shall be added here.
 
-directive_enumeration : SHARP 'enumeration_predicate_is' ID DOT;  // NOT Core2 syntax, used for aggregate translation.
+directive_enumeration :  SHARP DIRECTIVE_ENUM id DOT;  // NOT Core2 syntax, used for aggregate translation.
+
+// Alpha-specific language extension: Unit Tests (-> https://github.com/alpha-asp/Alpha/issues/237)
+directive_test : SHARP DIRECTIVE_TEST id PAREN_OPEN test_satisfiability_condition PAREN_CLOSE CURLY_OPEN test_input test_assert* CURLY_CLOSE;
 
 basic_terms : basic_term (COMMA basic_terms)? ;
 
 basic_term : ground_term | variable_term;
 
-ground_term : /*SYMBOLIC_CONSTANT*/ ID | QUOTED_STRING | numeral;
+ground_term : /*SYMBOLIC_CONSTANT*/ id | QUOTED_STRING | numeral;
 
 variable_term : VARIABLE | ANONYMOUS_VARIABLE;
 
 answer_set : CURLY_OPEN classical_literal? (COMMA classical_literal)* CURLY_CLOSE;
 
-answer_sets: answer_set* EOF;
+answer_sets : answer_set* EOF;
+
+test_satisfiability_condition : TEST_EXPECT COLON (TEST_UNSAT | (binop? NUMBER));
+
+test_input : TEST_GIVEN CURLY_OPEN (basic_atom DOT)* CURLY_CLOSE;
+
+test_assert : test_assert_all | test_assert_some;
+
+test_assert_all : TEST_ASSERT_ALL CURLY_OPEN statements? CURLY_CLOSE;
+
+test_assert_some : TEST_ASSERT_SOME CURLY_OPEN statements? CURLY_CLOSE;
+

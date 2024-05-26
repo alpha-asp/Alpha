@@ -12,25 +12,23 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
-import at.ac.tuwien.kr.alpha.commons.externals.Externals;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
-import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.core.externals.Externals;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
-// TODO This is a functional test and should not be run with standard unit tests
 public class ProgramTransformationTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ProgramTransformationTest.class);
 
 	private static final String TESTFILES_PATH = "/transform-test/";
 
-	// TODO should this always be an asp core2 parser?
-	private static final ProgramParser PARSER = new ASPCore2ProgramParser();
+	private static final ProgramParser PARSER = new ProgramParserImpl();
 
-	private ChoiceHeadNormalizer choiceToNormal = new ChoiceHeadNormalizer();
-	private IntervalTermTransformer intervalRewriting = new IntervalTermTransformer();
+	private ChoiceHeadToNormal choiceToNormal = new ChoiceHeadToNormal();
+	private IntervalTermToIntervalAtom intervalRewriting = new IntervalTermToIntervalAtom();
 
 	@SuppressWarnings("resource")
 	private static String readTestResource(String resource) throws IOException {
@@ -45,15 +43,15 @@ public class ProgramTransformationTest {
 		return bld.toString();
 	}
 
-	private <I extends Program<?>, O extends Program<?>> void genericTransformationTest(ProgramTransformer<I, O> transform,
-			Function<InputProgram, I> prepareFunc, String resourceSet) {
+	private <I extends Program<?>, O extends Program<?>> void genericTransformationTest(ProgramTransformation<I, O> transform,
+			Function<ASPCore2Program, I> prepareFunc, String resourceSet) {
 		try {
 			String inputCode = ProgramTransformationTest.readTestResource(resourceSet + ".in");
 			String expectedResult = ProgramTransformationTest.readTestResource(resourceSet + ".out");
-			InputProgram inputProg = PARSER.parse(inputCode, Externals.scan(ProgramTransformationTest.class));
+			ASPCore2Program inputProg = PARSER.parse(inputCode, Externals.scan(ProgramTransformationTest.class));
 			I transformInput = prepareFunc.apply(inputProg);
 			String beforeTransformProg = transformInput.toString();
-			O transformedProg = transform.transform(transformInput);
+			O transformedProg = transform.apply(transformInput);
 			assertEquals(expectedResult, transformedProg.toString(), "Transformation result doesn't match expected result");
 			assertEquals(beforeTransformProg, transformInput.toString(), "Transformation modified source program (breaks immutability!)");
 		} catch (Exception ex) {
@@ -69,17 +67,17 @@ public class ProgramTransformationTest {
 
 	@Test
 	public void intervalTermToIntervalAtomSimpleTest() {
-		genericTransformationTest(intervalRewriting, NormalProgramImpl::fromInputProgram, "interval.1");
+		genericTransformationTest(intervalRewriting, Programs::toNormalProgram, "interval.1");
 	}
 
 	@Test
 	public void intervalTermToIntervalAtomExternalAtomTest() {
-		genericTransformationTest(intervalRewriting, NormalProgramImpl::fromInputProgram, "interval-external_atom");
+		genericTransformationTest(intervalRewriting, Programs::toNormalProgram, "interval-external_atom");
 	}
 
 	@Test
 	public void intervalTermToIntervalAtomComparisonAtomTest() {
-		genericTransformationTest(intervalRewriting, NormalProgramImpl::fromInputProgram, "interval-comparison_atom");
+		genericTransformationTest(intervalRewriting, Programs::toNormalProgram, "interval-comparison_atom");
 	}
 
 	@SuppressWarnings("unused")

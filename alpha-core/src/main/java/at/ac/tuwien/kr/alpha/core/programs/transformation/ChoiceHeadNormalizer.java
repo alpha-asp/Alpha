@@ -29,37 +29,36 @@ package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead;
-import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead.ChoiceElement;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead.ChoiceElement;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.rules.Rules;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 
 /**
  * Copyright (c) 2017-2021, the Alpha Team.
  */
 // TODO this could already give NormalProgram as result type
-public class ChoiceHeadNormalizer extends ProgramTransformer<InputProgram, InputProgram> {
+public class ChoiceHeadToNormal extends ProgramTransformation<ASPCore2Program, ASPCore2Program> {
 	private final static String PREDICATE_NEGATION_PREFIX = "_n";
 
 	@Override
-	public InputProgram transform(InputProgram inputProgram) {
-		InputProgramImpl.Builder programBuilder = InputProgramImpl.builder();
+	public ASPCore2Program apply(ASPCore2Program inputProgram) {
+		ASPCore2ProgramBuilder programBuilder = Programs.builder();
 		List<Rule<Head>> additionalRules = new ArrayList<>();
 
 		List<Rule<Head>> srcRules = new ArrayList<>(inputProgram.getRules());
@@ -88,7 +87,7 @@ public class ChoiceHeadNormalizer extends ProgramTransformer<InputProgram, Input
 
 				// Construct common body to both rules.
 				BasicAtom head = choiceElement.getChoiceAtom();
-				Set<Literal> ruleBody = new LinkedHashSet<>(rule.getBody());
+				List<Literal> ruleBody = new ArrayList<>(rule.getBody());
 				ruleBody.addAll(choiceElement.getConditionLiterals());
 
 				if (containsIntervalTerms(head)) {
@@ -105,11 +104,11 @@ public class ChoiceHeadNormalizer extends ProgramTransformer<InputProgram, Input
 				BasicAtom negHead = Atoms.newBasicAtom(negPredicate, headTerms);
 
 				// Construct two guessing rules.
-				Set<Literal> guessingRuleBodyWithNegHead = new LinkedHashSet<>(ruleBody);
+				List<Literal> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithNegHead.add(Atoms.newBasicAtom(head.getPredicate(), head.getTerms()).toLiteral(false));
 				additionalRules.add(Rules.newRule(Heads.newNormalHead(negHead), guessingRuleBodyWithNegHead));
 
-				Set<Literal> guessingRuleBodyWithHead = new LinkedHashSet<>(ruleBody);
+				List<Literal> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithHead.add(Atoms.newBasicAtom(negPredicate, headTerms).toLiteral(false));
 				additionalRules.add(Rules.newRule(Heads.newNormalHead(head), guessingRuleBodyWithHead));
 

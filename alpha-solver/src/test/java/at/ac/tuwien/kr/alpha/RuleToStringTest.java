@@ -23,7 +23,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha;
+package at.ac.tuwien.kr.alpha.core.grounder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -31,21 +31,20 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRuleImpl;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRules;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.programs.rules.InternalRule;
 
 /**
- * Tests {@link BasicRule#toString()} and {@link CompiledRuleImpl#toString()}.
+ * Tests {@link BasicRule#toString()} and {@link InternalRule#toString()}.
  */
 public class RuleToStringTest {
-	private final ProgramParser parser = new ASPCore2ProgramParser();
+	private final ProgramParser parser = new ProgramParserImpl();
 	
 	@Test
 	public void positiveRuleToString() {
@@ -93,13 +92,12 @@ public class RuleToStringTest {
 	}
 
 	private void constructNonGroundRuleAndCheckToString(String textualRule) {
-		Rule<Head> parsedRule = parseSingleRule(textualRule);
-		CompiledRule nonGroundRule = CompiledRules.newCompiledRule((NormalHead) parsedRule.getHead(), parsedRule.getBody());
+		CompiledRule nonGroundRule = InternalRule.fromNormalRule(Rules.toNormalRule(parseSingleRule(textualRule)));
 		assertEquals(textualRule, nonGroundRule.toString());
 	}
 
 	private Rule<Head> parseSingleRule(String rule) {
-		InputProgram program = parser.parse(rule);
+		ASPCore2Program program = parser.parse(rule);
 		List<Rule<Head>> rules = program.getRules();
 		assertEquals(1, rules.size(), "Number of rules");
 		return rules.get(0);

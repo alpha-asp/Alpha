@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha;
+package at.ac.tuwien.kr.alpha.api.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -17,17 +17,15 @@ import org.junit.jupiter.api.Test;
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.externals.AspStandardLibrary;
-import at.ac.tuwien.kr.alpha.commons.externals.Externals;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import at.ac.tuwien.kr.alpha.core.externals.AspStandardLibrary;
+import at.ac.tuwien.kr.alpha.core.externals.Externals;
 
-// // TODO This is a functional test and should not be run with standard unit tests
 public class FixedInterpretationLiteralsTest {
 
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate
@@ -81,7 +79,7 @@ public class FixedInterpretationLiteralsTest {
 	private Map<String, PredicateInterpretation> externals;
 
 	public FixedInterpretationLiteralsTest() {
-		this.alpha = new AlphaFactory().newAlpha();
+		this.alpha = new AlphaImpl();
 		this.externals = new HashMap<>();
 		this.externals.putAll(Externals.scan(AspStandardLibrary.class));
 		this.externals.putAll(Externals.scan(FixedInterpretationLiteralsTest.class));

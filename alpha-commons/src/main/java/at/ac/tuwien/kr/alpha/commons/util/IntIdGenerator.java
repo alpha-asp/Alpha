@@ -6,7 +6,7 @@ import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
  * Generates unique, sequential integers starting at 0, i.e., it maintains a counter that is incremented for each getNextId().
  * Copyright (c) 2016, the Alpha Team.
  */
-public class IntIdGenerator {
+public class IntIdGenerator implements IdGenerator<Integer> {
 	private int highestId;
 
 	public IntIdGenerator() {
@@ -17,7 +17,7 @@ public class IntIdGenerator {
 		this.highestId = initial;
 	}
 
-	public int getNextId() {
+	public Integer getNextId() {
 		if (highestId == Integer.MAX_VALUE) {
 			throw oops("Ran out of IDs (integer overflow)");
 		}

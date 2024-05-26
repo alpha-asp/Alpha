@@ -33,10 +33,10 @@ import java.util.Set;
 import org.apache.commons.lang3.tuple.Pair;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.IntIterator;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.RuleAtom;
 
 public interface Grounder {
 	/**

@@ -36,38 +36,36 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.ActionHead;
-import at.ac.tuwien.kr.alpha.api.rules.heads.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.rules.Rules;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 
 /**
  * Removes variable equalities from rules by replacing one variable with the other.
  *
  * Copyright (c) 2017-2021, the Alpha Team.
  */
-public class VariableEqualityTransformer extends ProgramTransformer<InputProgram, InputProgram> {
+public class VariableEqualityRemoval extends ProgramTransformation<ASPCore2Program, ASPCore2Program> {
 
 	@Override
-	public InputProgram transform(InputProgram inputProgram) {
+	public ASPCore2Program apply(ASPCore2Program inputProgram) {
 		List<Rule<Head>> rewrittenRules = new ArrayList<>();
 		for (Rule<Head> rule : inputProgram.getRules()) {
 			rewrittenRules.add(findAndReplaceVariableEquality(rule));
 		}
-		return new InputProgramImpl(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+		return Programs.newASPCore2Program(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
 	}
 
 	private Rule<Head> findAndReplaceVariableEquality(Rule<Head> rule) {
@@ -114,22 +112,11 @@ public class VariableEqualityTransformer extends ProgramTransformer<InputProgram
 			return rule;
 		}
 
-		Set<Literal> rewrittenBody = new LinkedHashSet<>(rule.getBody());
+		List<Literal> rewrittenBody = new ArrayList<>(rule.getBody());
 		if (!rule.isConstraint() && rule.getHead() instanceof DisjunctiveHead) {
 			throw new UnsupportedOperationException("VariableEqualityRemoval cannot be applied to rule with DisjunctiveHead, yet.");
 		}
-
-		NormalHead head = (NormalHead) rule.getHead();
-		NormalHead rewrittenHead = null;
-		// TODO can this be done nicer?
-		if (!rule.isConstraint()) {
-			if (rule.getHead() instanceof ActionHead) {
-				ActionHead actHead = (ActionHead) head;
-				rewrittenHead = Heads.newActionHead(actHead.getAtom(), actHead.getActionName(), actHead.getActionInputTerms(), actHead.getActionOutputTerm());
-			} else {
-				rewrittenHead = Heads.newNormalHead(((NormalHead) rule.getHead()).getAtom());
-			}
-		}
+		NormalHead rewrittenHead = rule.isConstraint() ? null : Heads.newNormalHead(((NormalHead)rule.getHead()).getAtom());
 
 		// Use substitution for actual replacement.
 		Unifier replacementSubstitution = new Unifier();

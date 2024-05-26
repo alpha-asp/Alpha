@@ -24,7 +24,7 @@ possibilities to interface with the ecosystem built around the Java Virtual Mach
 
 ## Getting Started
 
-Download a current version of `alpha.jar` from [Releases](https://github.com/alpha-asp/Alpha/releases).
+Download a current version of the distribution jar (`alpha-cli-app-${version}-bundled.jar`) from [Releases](https://github.com/alpha-asp/Alpha/releases) and save it as `alpha.jar` for convenience.
 
 Running Alpha is as simple as running any other JAR:
 
@@ -52,19 +52,19 @@ Alpha uses the [Gradle build automation system](https://gradle.org). Executing
 $ ./gradlew build
 ```
 
-will automatically fetch all dependencies (declared in [`build.gradle`](build.gradle)) and compile the project.
+will automatically fetch all dependencies (declared in [`build.gradle.kts`](build.gradle.kts)) and compile the project.
 
-Artifacts generated will be placed in `build/`. Most notably you'll find files ready for distribution at
-`build/distributions/`. They contain archives which in turn contain a `bin/` directory with scripts to run Alpha on Linux
+Artifacts generated will be placed in the `build/` subfolder of the respective module. Most notably you'll find files ready for distribution at
+`alpha-cli-app/build/distributions/`. They contain archives which in turn contain a `bin/` directory with scripts to run Alpha on Linux
 and Windows.
 
 If you want to generate a JAR file to be run standalone, execute
 
 ```bash
-$ ./gradlew bundledJar
+$ ./gradlew alpha-cli-app:bundledJar
 ```
 
-and pick up `build/libs/alpha-bundled.jar`.
+and pick up `alpha-cli-app/build/libs/alpha-cli-app-${version}-bundled.jar`.
 
 ### A Note on IDEs
 

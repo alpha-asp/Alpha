@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
@@ -12,6 +13,8 @@ import at.ac.tuwien.kr.alpha.api.config.InputConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.tests.TestResult;
 
 /**
  * Main API entry point for the Alpha ASP system. Provides facilities for parsing, normalizing and solving ASP programs.
@@ -164,5 +167,18 @@ public interface Alpha {
 	 * @return a {@link Solver} pre-loaded withthe given program
 	 */
 	Solver prepareSolverFor(NormalProgram program, java.util.function.Predicate<Predicate> filter);
+
+	/**
+	 * Reifies, i.e. re-expresses as a set of ASP facts, the given input program.
+	 * 
+	 * @param program an ASP program to reify
+	 * @return a set of {@link BasicAtom}s encoding the given program
+	 */
+	Set<BasicAtom> reify(ASPCore2Program program);
+
+	/**
+	 * Runs all test cases of the given program.
+	 */
+	TestResult test(ASPCore2Program program);
 
 }

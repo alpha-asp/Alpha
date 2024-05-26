@@ -1,13 +1,13 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.collections4.SetUtils;
 import org.stringtemplate.v4.ST;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
@@ -16,20 +16,22 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionS
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
-import at.ac.tuwien.kr.alpha.commons.literals.Literals;
-import at.ac.tuwien.kr.alpha.commons.rules.Rules;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.literals.Literals;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 
 public class MinMaxEncoder extends AbstractAggregateEncoder {
@@ -60,18 +62,17 @@ public class MinMaxEncoder extends AbstractAggregateEncoder {
 			);
 	//@formatter:on
 
-	private final ProgramParser parser;
+	private final ProgramParser parser = new ProgramParserImpl();
 
-	MinMaxEncoder(ProgramParser parser, AggregateFunctionSymbol func) {
+	public MinMaxEncoder(AggregateFunctionSymbol func) {
 		super(func, SetUtils.hashSet(ComparisonOperators.operators()));
 		if (!(func == AggregateFunctionSymbol.MAX || func == AggregateFunctionSymbol.MIN)) {
 			throw new IllegalArgumentException("Encoder " + this.getClass().getSimpleName() + " can only encode min/max aggregates!");
 		}
-		this.parser = parser;
 	}
 
 	@Override
-	protected InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode) {
+	protected ASPCore2Program encodeAggregateResult(AggregateInfo aggregateToEncode) {
 		ST encodingTemplate = null;
 		if (this.getAggregateFunctionToEncode() == AggregateFunctionSymbol.MAX) {
 			encodingTemplate = new ST(MAX_LITERAL_ENCODING);
@@ -111,7 +112,7 @@ public class MinMaxEncoder extends AbstractAggregateEncoder {
 			 */
 			NormalHead resultRuleHead = Heads.newNormalHead(
 					Atoms.newBasicAtom(Predicates.getPredicate(resultName, 2), aggregateToEncode.getAggregateArguments(), atom.getLowerBoundTerm()));
-			Set<Literal> resultRuleBody = new LinkedHashSet<>();
+			List<Literal> resultRuleBody = new ArrayList<>();
 			VariableTerm aggregateValue = Terms.newVariable("_AGG_VAL");
 			ComparisonLiteral aggregateValueComparison = Literals.fromAtom(Atoms.newComparisonAtom(atom.getLowerBoundTerm(), aggregateValue, cmpOp), true);
 			Literal aggregateResult = Atoms.newBasicAtom(Predicates.getPredicate(
@@ -120,7 +121,7 @@ public class MinMaxEncoder extends AbstractAggregateEncoder {
 			resultRuleBody.add(aggregateResult);
 			resultRuleBody.add(aggregateValueComparison);
 			resultRuleBody.addAll(aggregateToEncode.getDependencies());
-			InputProgramImpl.Builder bld = InputProgramImpl.builder(parser.parse(encodingTemplate.render()));
+			ASPCore2ProgramBuilder bld = Programs.builder(parser.parse(encodingTemplate.render()));
 			Rule<Head> resultRule = Rules.newRule(resultRuleHead, resultRuleBody);
 			bld.addRule(resultRule);
 			return bld.build();

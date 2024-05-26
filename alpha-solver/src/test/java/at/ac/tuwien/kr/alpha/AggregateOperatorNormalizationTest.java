@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha;
+package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -10,16 +10,15 @@ import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.api.terms.ArithmeticOperator;
-import at.ac.tuwien.kr.alpha.api.terms.ArithmeticTerm;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ArithmeticOperator;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ArithmeticTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateOperatorNormalization;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import at.ac.tuwien.kr.alpha.core.test.util.RuleParser;
 
-// TODO This is a functional test and should not be run with standard unit tests
 public class AggregateOperatorNormalizationTest {
 
 	//@formatter:off
@@ -39,7 +38,6 @@ public class AggregateOperatorNormalizationTest {
 			"bla :- dom(X), not X > #count{N : thing(N)}.";
 	public static final String OPERATOR_NORMALIZATION_GE_NEG_ASP =
 			"bla :- dom(X), not X >= #count{N : thing(N)}.";
-	
 	/**
 	 * Operator normalization must also make sure that literals with only a right-hand term
 	 * are normalized to left-hand term only (and then operator-normalized if necessary) 
@@ -177,7 +175,9 @@ public class AggregateOperatorNormalizationTest {
 		ArithmeticTerm incrementTerm = (ArithmeticTerm) comparisonRightHandTerm;
 		assertEquals(ArithmeticOperator.PLUS, incrementTerm.getOperator());
 		assertEquals(Terms.newConstant(1), incrementTerm.getRightOperand());
-		assertEquals(sourceAggregate.getAtom().getLowerBoundTerm(), incrementTerm.getLeftOperand());
+		Term sourceBound = sourceAggregate.getAtom().getLowerBoundTerm() != null ? sourceAggregate.getAtom().getLowerBoundTerm()
+				: sourceAggregate.getAtom().getUpperBoundTerm();
+		assertEquals(sourceBound, incrementTerm.getLeftOperand());
 	}
 
 }

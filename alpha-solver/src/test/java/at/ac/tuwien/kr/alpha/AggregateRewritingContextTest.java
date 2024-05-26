@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha;
+package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,18 +11,16 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 
-// TODO This is a functional test and should not be run with standard unit tests
 public class AggregateRewritingContextTest {
 
 	//@formatter:off
@@ -60,7 +58,7 @@ public class AggregateRewritingContextTest {
 	//@formatter:on
 
 	private static final AggregateRewritingContext rewritingContextForAspString(String asp) {
-		InputProgram program = new ASPCore2ProgramParser().parse(asp);
+		ASPCore2Program program = new ProgramParserImpl().parse(asp);
 		AggregateRewritingContext ctx = new AggregateRewritingContext();
 		for (Rule<Head> rule : program.getRules()) {
 			ctx.registerRule(rule);
