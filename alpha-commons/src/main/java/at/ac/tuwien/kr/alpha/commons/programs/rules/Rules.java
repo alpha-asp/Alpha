@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.commons.programs.rules;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
@@ -23,10 +24,7 @@ public final class Rules {
 	}
 
 	public static Rule<Head> newRule(Head head, Literal... body) {
-		List<Literal> bodyLst = new ArrayList<>();
-		for (Literal lit : body) {
-			bodyLst.add(lit);
-		}
+        List<Literal> bodyLst = new ArrayList<>(Arrays.asList(body));
 		return new BasicRule(head, bodyLst);
 	}
 
@@ -35,10 +33,7 @@ public final class Rules {
 	}
 
 	public static NormalRule newNormalRule(NormalHead head, Literal... body) {
-		List<Literal> bodyLst = new ArrayList<>();
-		for (Literal lit : body) {
-			bodyLst.add(lit);
-		}
+        List<Literal> bodyLst = new ArrayList<>(Arrays.asList(body));
 		return new NormalRuleImpl(head, bodyLst);
 	}
 

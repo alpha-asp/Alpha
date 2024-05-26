@@ -28,18 +28,18 @@ public interface Alpha {
 	 * 
 	 * @param cfg and {@link InputConfig} specifying program sources (strings, files) as well as config metadata (e.g. literate program,
 	 *            external atoms, etc)
-	 * @return an {@link ASPCore2Program} representing the parsed ASP code from all sources referenced in the given {@link InputConfig}
+	 * @return an {@link InputProgram} representing the parsed ASP code from all sources referenced in the given {@link InputConfig}
 	 * @throws IOException in case one or more program sources (e.g. files) cannot be read, or parsing fails
 	 */
 	InputProgram readProgram(InputConfig cfg) throws IOException;
 
 	/**
-	 * Reads and parses an {@link ASPCore2Program} from a list of {@link String}s representing paths.
+	 * Reads and parses an {@link InputProgram} from a list of {@link String}s representing paths.
 	 * 
 	 * @param literate  flag indicating whether ASP code should be treated as "literate".
 	 * @param externals Custom {@link PredicateInterpretation}s for user-defined external atoms
 	 * @param paths     a list of {@link String}s representing paths containing all sources from which ASP code should be read
-	 * @return an {@link ASPCore2Program} representing the parsed ASP code from all given path strings
+	 * @return an {@link InputProgram} representing the parsed ASP code from all given path strings
 	 * @throws IOException in case one or more program sources cannot be read, or parsing fails
 	 */
 	InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException;
@@ -50,12 +50,12 @@ public interface Alpha {
 	InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException;
 
 	/**
-	 * Parses a given String into an {@link ASPCore2Program}, using a map of custom {@link PredicateInterpretation}s to resolve external atoms
+	 * Parses a given String into an {@link InputProgram}, using a map of custom {@link PredicateInterpretation}s to resolve external atoms
 	 * in ASP code.
 	 * 
 	 * @param aspString a string representing a valid ASP-Core2 program
 	 * @param externals a map of custom {@link PredicateInterpretation}s against which external atoms in the given code are resolved
-	 * @return an {@link ASPCore2Program} representing the parsed ASP code
+	 * @return an {@link InputProgram} representing the parsed ASP code
 	 */
 	InputProgram readProgramString(String aspString, Map<String, PredicateInterpretation> externals);
 
@@ -75,7 +75,7 @@ public interface Alpha {
 	InputProgram readProgramStream(InputStream is, Map<String, PredicateInterpretation> externals) throws IOException;
 
 	/**
-	 * Prepares a {@link DebugSolvingContext} for the given {@link ASPCore2Program} to debug program preprocessing.
+	 * Prepares a {@link DebugSolvingContext} for the given {@link InputProgram} to debug program preprocessing.
 	 * 
 	 * @return a {@link DebugSolvingContext} holding debug information for the given program
 	 */
@@ -89,7 +89,7 @@ public interface Alpha {
 	DebugSolvingContext prepareDebugSolve(final NormalProgram program);
 
 	/**
-	 * Prepares a {@link DebugSolvingContext} for the given {@link ASPCore2Program} to debug program preprocessing.
+	 * Prepares a {@link DebugSolvingContext} for the given {@link InputProgram} to debug program preprocessing.
 	 * 
 	 * @param filter a {@link java.util.function.Predicate} against which {@link Predicate}s of answer sets are tested.
 	 * @return a {@link DebugSolvingContext} holding debug information for the given program
@@ -105,7 +105,7 @@ public interface Alpha {
 	DebugSolvingContext prepareDebugSolve(final NormalProgram program, java.util.function.Predicate<Predicate> filter);
 
 	/**
-	 * Solves the given {@link ASPCore2Program}.
+	 * Solves the given {@link InputProgram}.
 	 * 
 	 * @param program an input program
 	 * @return a {@link Stream} of {@link AnswerSet}s of the given program
@@ -113,7 +113,7 @@ public interface Alpha {
 	Stream<AnswerSet> solve(InputProgram program);
 
 	/**
-	 * Solves the given {@link ASPCore2Program}.
+	 * Solves the given {@link InputProgram}.
 	 * 
 	 * @param program an input program
 	 * @param filter  a {@link java.util.function.Predicate} against which {@link Predicate}s of answer sets are tested.
@@ -143,13 +143,13 @@ public interface Alpha {
 	 * code.
 	 * See {@link NormalProgram},
 	 * 
-	 * @param program An {@link ASPCore2Program} to normalize
+	 * @param program An {@link InputProgram} to normalize
 	 * @return a {@link NormalProgram} that is a semantic equivalent to the given input program
 	 */
 	NormalProgram normalizeProgram(InputProgram program);
 
 	/**
-	 * Constructs a @{link Solver} pre-loaded with the given {@link ASPCore2Program} from which {@link AnswerSet}s can be obtained via
+	 * Constructs a @{link Solver} pre-loaded with the given {@link InputProgram} from which {@link AnswerSet}s can be obtained via
 	 * {@link Solver#stream()}.
 	 * 
 	 * @param program the program to solve
@@ -174,11 +174,11 @@ public interface Alpha {
 	 * @param program an ASP program to reify
 	 * @return a set of {@link BasicAtom}s encoding the given program
 	 */
-	Set<BasicAtom> reify(ASPCore2Program program);
+	Set<BasicAtom> reify(InputProgram program);
 
 	/**
 	 * Runs all test cases of the given program.
 	 */
-	TestResult test(ASPCore2Program program);
+	TestResult test(InputProgram program);
 
 }

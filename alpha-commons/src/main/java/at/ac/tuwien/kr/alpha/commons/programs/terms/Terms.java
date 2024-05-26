@@ -5,13 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.programs.terms.ArithmeticOperator;
-import at.ac.tuwien.kr.alpha.api.programs.terms.ArithmeticTerm;
-import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.api.programs.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
-import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.*;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.ArithmeticTermImpl.MinusTerm;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 
@@ -69,6 +63,15 @@ public final class Terms {
 	public static IntervalTerm newIntervalTerm(Term lowerBound, Term upperBound) {
 		return IntervalTermImpl.getInstance(lowerBound, upperBound);
 	}
+
+	public static <T extends Term> ActionResultTerm<T> actionSuccess(T value) {
+		return ActionSuccessTerm.getInstance(value);
+	}
+
+	public static ActionResultTerm<ConstantTerm<String>> actionError(String errMsg) {
+		return ActionErrorTerm.getInstance(Terms.newConstant(errMsg));
+	}
+
 
 	@SafeVarargs
 	public static <T extends Comparable<T>> List<ConstantTerm<T>> asTermList(T... values) {

@@ -25,37 +25,18 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-<<<<<<<< HEAD:alpha-core/src/main/java/at/ac/tuwien/kr/alpha/core/rules/CompiledRuleImpl.java
-package at.ac.tuwien.kr.alpha.core.rules;
-
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
-import com.google.common.annotations.VisibleForTesting;
-========
 package at.ac.tuwien.kr.alpha.core.programs.rules;
->>>>>>>> master:alpha-core/src/main/java/at/ac/tuwien/kr/alpha/core/programs/rules/InternalRule.java
 
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-<<<<<<<< HEAD:alpha-core/src/main/java/at/ac/tuwien/kr/alpha/core/rules/CompiledRuleImpl.java
-import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.rules.Rules;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
-========
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.AbstractRule;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
->>>>>>>> master:alpha-core/src/main/java/at/ac/tuwien/kr/alpha/core/programs/rules/InternalRule.java
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingInfoImpl;
@@ -70,23 +51,15 @@ import java.util.List;
  *
  * {@link InternalRule}s are assumed to be uniquely identified by an ID.
  */
-<<<<<<<< HEAD:alpha-core/src/main/java/at/ac/tuwien/kr/alpha/core/rules/CompiledRuleImpl.java
-public class CompiledRuleImpl implements CompiledRule {
-========
 public class InternalRule extends AbstractRule<NormalHead> implements CompiledRule {
->>>>>>>> master:alpha-core/src/main/java/at/ac/tuwien/kr/alpha/core/programs/rules/InternalRule.java
 
 	private static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
 
-	private final NormalRule wrappedRule;
-
 	private final int ruleId;
+
 	private final List<Predicate> occurringPredicates;
+
 	private final RuleGroundingInfoImpl groundingOrders;
-<<<<<<<< HEAD:alpha-core/src/main/java/at/ac/tuwien/kr/alpha/core/rules/CompiledRuleImpl.java
-	
-	CompiledRuleImpl(NormalHead head, Set<Literal> body) {
-========
 
 	/**
 	 * Creates a new {@link InternalRule} with the given head plus body and a fresh identifier.
@@ -96,13 +69,11 @@ public class InternalRule extends AbstractRule<NormalHead> implements CompiledRu
 	 */
 	public InternalRule(NormalHead head, List<Literal> body) {
 		super(head, body);
->>>>>>>> master:alpha-core/src/main/java/at/ac/tuwien/kr/alpha/core/programs/rules/InternalRule.java
 		if (body.isEmpty()) {
 			throw new IllegalArgumentException(
 					"Empty bodies are not supported for InternalRule! (Head = " + (head == null ? "NULL" : head.getAtom().toString()) + ")");
 		}
-		this.ruleId = CompiledRuleImpl.ID_GENERATOR.getNextId();
-		this.wrappedRule = Rules.newNormalRule(head, body);
+		this.ruleId = InternalRule.ID_GENERATOR.getNextId();
 
 		this.occurringPredicates = new ArrayList<>();
 		if (!isConstraint()) {
@@ -116,24 +87,32 @@ public class InternalRule extends AbstractRule<NormalHead> implements CompiledRu
 			this.occurringPredicates.add(literal.getPredicate());
 		}
 
+		// not needed, done in AbstractRule! Leaving it commented out for future reference since this might actually be the
+		// proper place to put it
+		// this.checkSafety();
+
 		this.groundingOrders = new RuleGroundingInfoImpl(this);
 		this.groundingOrders.computeGroundingOrders();
 	}
 
 	@VisibleForTesting
 	public static void resetIdGenerator() {
-		CompiledRuleImpl.ID_GENERATOR.resetGenerator();
+		InternalRule.ID_GENERATOR.resetGenerator();
+	}
+
+	public static CompiledRule fromNormalRule(Rule<NormalHead> rule) {
+		return new InternalRule(rule.isConstraint() ? null : Heads.newNormalHead(rule.getHead().getAtom()), new ArrayList<>(rule.getBody()));
 	}
 
 	/**
 	 * Returns a new Rule that is equal to this one except that all variables are renamed to have the newVariablePostfix
 	 * appended.
-	 * 
+	 *
 	 * @param newVariablePostfix
 	 * @return
 	 */
 	@Override
-	public CompiledRuleImpl renameVariables(String newVariablePostfix) {
+	public InternalRule renameVariables(String newVariablePostfix) {
 		// TODO handle action heads!
 		List<VariableTerm> occurringVariables = new ArrayList<>();
 		BasicAtom headAtom = this.getHeadAtom();
@@ -147,13 +126,13 @@ public class InternalRule extends AbstractRule<NormalHead> implements CompiledRu
 			variableReplacement.put(occurringVariable, Terms.newVariable(newVariableName));
 		}
 		BasicAtom renamedHeadAtom = headAtom.substitute(variableReplacement);
-		Set<Literal> renamedBody = new LinkedHashSet<>(this.getBody().size());
+		ArrayList<Literal> renamedBody = new ArrayList<>(this.getBody().size());
 		for (Literal literal : this.getBody()) {
 			renamedBody.add(literal.substitute(variableReplacement));
 		}
 		// TODO action heads!
 		// TODO we want to pull renameVariables down to atom, term, etc level
-		return new CompiledRuleImpl(Heads.newNormalHead(renamedHeadAtom), renamedBody);
+		return new InternalRule(Heads.newNormalHead(renamedHeadAtom), renamedBody);
 	}
 
 	/**
@@ -175,46 +154,6 @@ public class InternalRule extends AbstractRule<NormalHead> implements CompiledRu
 		return this.ruleId;
 	}
 
-	@Override
-<<<<<<<< HEAD:alpha-core/src/main/java/at/ac/tuwien/kr/alpha/core/rules/CompiledRuleImpl.java
-	public BasicAtom getHeadAtom() {
-		return wrappedRule.getHeadAtom();
-	}
-
-	@Override
-	public NormalHead getHead() {
-		return wrappedRule.getHead();
-	}
-
-	@Override
-	public Set<Literal> getBody() {
-		return wrappedRule.getBody();
-	}
-
-	@Override
-	public boolean isConstraint() {
-		return wrappedRule.isConstraint();
-	}
-
-	@Override
-	public Set<Literal> getPositiveBody() {
-		return wrappedRule.getPositiveBody();
-	}
-
-	@Override
-	public Set<Literal> getNegativeBody() {
-		return wrappedRule.getNegativeBody();
-	}
-
-	@Override
-	public boolean isGround() {
-		return wrappedRule.isGround();
-	}
-
-	@Override
-	public String toString() {
-		return wrappedRule.toString();
-========
 	public boolean isGround() {
 		if (!isConstraint() && !getHead().isGround()) {
 			return false;
@@ -225,14 +164,10 @@ public class InternalRule extends AbstractRule<NormalHead> implements CompiledRu
 			}
 		}
 		return true;
->>>>>>>> master:alpha-core/src/main/java/at/ac/tuwien/kr/alpha/core/programs/rules/InternalRule.java
 	}
 
 	@Override
 	public boolean equals(Object o) {
-<<<<<<<< HEAD:alpha-core/src/main/java/at/ac/tuwien/kr/alpha/core/rules/CompiledRuleImpl.java
-		return wrappedRule.equals(o);
-========
 		if (this == o) {
 			return true;
 		}
@@ -241,17 +176,12 @@ public class InternalRule extends AbstractRule<NormalHead> implements CompiledRu
 		}
 		InternalRule that = (InternalRule) o;
 		return getRuleId() == that.getRuleId();
->>>>>>>> master:alpha-core/src/main/java/at/ac/tuwien/kr/alpha/core/programs/rules/InternalRule.java
 	}
 
 	@Override
 	public int hashCode() {
-<<<<<<<< HEAD:alpha-core/src/main/java/at/ac/tuwien/kr/alpha/core/rules/CompiledRuleImpl.java
-		return wrappedRule.hashCode();
-	}
-
-========
 		return Integer.hashCode(getRuleId());
 	}
->>>>>>>> master:alpha-core/src/main/java/at/ac/tuwien/kr/alpha/core/programs/rules/InternalRule.java
+
 }
+

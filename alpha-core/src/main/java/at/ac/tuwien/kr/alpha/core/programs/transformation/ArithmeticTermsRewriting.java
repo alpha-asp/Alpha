@@ -22,6 +22,7 @@ import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 /**
@@ -32,8 +33,12 @@ import at.ac.tuwien.kr.alpha.commons.util.Util;
  * Copyright (c) 2020-2021, the Alpha Team.
  */
 public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgram, NormalProgram> {
-	private static final String ARITHMETIC_VARIABLES_PREFIX = "_A";
-	private int numArithmeticVariables;
+	/**
+	 private int numArithmeticVariables;
+	 * The prefix with which to begin names of internal variables created by this transformation.
+	 */
+	private final String generatedVariablesPrefix = "_A";
+	private final IntIdGenerator variableNumberGenerator = new IntIdGenerator();
 
 	@Override
 	public NormalProgram apply(NormalProgram inputProgram) {
@@ -57,19 +62,20 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 
 	/**
 	 * Takes a normal rule and rewrites it such that {@link ArithmeticTerm}s only appear inside
-	 * {@link at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral}s.
+	 * {@link at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral}s.
 	 *
 	 * @param inputProgramRule the rule to rewrite.
 	 * @return the rewritten rule. Note that a new {@link NormalRule} is returned for every call of this method.
 	 */
 	private NormalRule rewriteRule(NormalRule inputProgramRule) {
-		numArithmeticVariables = 0; // Reset number of introduced variables for each rule.
+		variableNumberGenerator.resetGenerator(); // Reset number of introduced variables for each rule.
 		NormalHead rewrittenHead = null;
 		List<Literal> rewrittenBodyLiterals = new ArrayList<>();
 		// Rewrite head.
 		if (!inputProgramRule.isConstraint()) {
 			BasicAtom headAtom = inputProgramRule.getHeadAtom();
 			if (containsArithmeticTermsToRewrite(headAtom)) {
+				// TODO handle action heads
 				rewrittenHead = Heads.newNormalHead((BasicAtom) rewriteAtom(headAtom, rewrittenBodyLiterals));
 			} else {
 				rewrittenHead = inputProgramRule.getHead();
@@ -89,11 +95,11 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 
 	/**
 	 * Checks whether a normal rule contains an {@link ArithmeticTerm} outside of a
-	 * {@link at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral}.
+	 * {@link at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral}.
 	 *
 	 * @param inputProgramRule the rule to check for presence of arithmetic terms outside comparison literals.
 	 * @return true if the inputProgramRule contains an {@link ArithmeticTerm} outside of a
-	 *         {@link at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral}.
+	 *         {@link at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral}.
 	 */
 	private boolean containsArithmeticTermsToRewrite(NormalRule inputProgramRule) {
 		if (!inputProgramRule.isConstraint()) {
@@ -118,7 +124,7 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 		}
 		// Switch on term type.
 		if (term instanceof ArithmeticTerm) {
-			VariableTerm replacementVariable = Terms.newVariable(ARITHMETIC_VARIABLES_PREFIX + numArithmeticVariables++);
+			VariableTerm replacementVariable = Terms.newVariable(generatedVariablesPrefix + variableNumberGenerator.getNextId());
 			bodyLiterals.add(Atoms.newComparisonAtom(replacementVariable, term, ComparisonOperators.EQ).toLiteral());
 			return replacementVariable;
 		} else if (term instanceof VariableTerm || term instanceof ConstantTerm) {

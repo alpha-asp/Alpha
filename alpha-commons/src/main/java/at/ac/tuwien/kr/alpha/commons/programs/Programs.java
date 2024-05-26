@@ -6,6 +6,7 @@ import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
@@ -20,15 +21,17 @@ public final class Programs {
 		throw new AssertionError("Cannot instantiate utility class!");
 	}
 
-	public static ASPCore2Program emptyProgram() {
+	public static InputProgram emptyProgram() {
 		return ASPCore2ProgramImpl.EMPTY;
 	}
 
-	public static ASPCore2Program newASPCore2Program(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives, List<TestCase> testCases) {
+	// TODO rename method
+	public static InputProgram newASPCore2Program(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives, List<TestCase> testCases) {
 		return new ASPCore2ProgramImpl(rules, facts, inlineDirectives, testCases);
 	}
 
-	public static ASPCore2Program newASPCore2Program(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
+	// TODO rename method
+	public static InputProgram newASPCore2Program(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
 		return new ASPCore2ProgramImpl(rules, facts, inlineDirectives, Collections.emptyList());
 	}
 
@@ -36,7 +39,7 @@ public final class Programs {
 		return new ASPCore2ProgramBuilder();
 	}
 
-	public static ASPCore2ProgramBuilder builder(ASPCore2Program program) {
+	public static ASPCore2ProgramBuilder builder(InputProgram program) {
 		return new ASPCore2ProgramBuilder(program);
 	}
 
@@ -44,7 +47,7 @@ public final class Programs {
 		return new NormalProgramImpl(rules, facts, inlineDirectives);
 	}
 
-	public static NormalProgram toNormalProgram(ASPCore2Program inputProgram) {
+	public static NormalProgram toNormalProgram(InputProgram inputProgram) {
 		List<NormalRule> normalRules = new ArrayList<>();
 		for (Rule<Head> r : inputProgram.getRules()) {
 			normalRules.add(Rules.toNormalRule(r));
@@ -57,8 +60,9 @@ public final class Programs {
 	}
 
 	/**
-	 * Builder for more complex program construction scenarios, ensuring that an {@link AspCore2ProgramImpl} is immutable
+	 * Builder for more complex program construction scenarios, ensuring that an {@link ASPCore2ProgramImpl} is immutable
 	 */
+	// TODO maybe rename
 	public static class ASPCore2ProgramBuilder {
 
 		private List<Rule<Head>> rules = new ArrayList<>();
@@ -67,7 +71,7 @@ public final class Programs {
 
 		private List<TestCase> testCases = new ArrayList<>();
 
-		public ASPCore2ProgramBuilder(ASPCore2Program prog) {
+		public ASPCore2ProgramBuilder(InputProgram prog) {
 			this.addRules(prog.getRules());
 			this.addFacts(prog.getFacts());
 			this.addInlineDirectives(prog.getInlineDirectives());
@@ -113,11 +117,11 @@ public final class Programs {
 			return this;
 		}
 
-		public ASPCore2ProgramBuilder accumulate(ASPCore2Program prog) {
+		public ASPCore2ProgramBuilder accumulate(InputProgram prog) {
 			return this.addRules(prog.getRules()).addFacts(prog.getFacts()).addInlineDirectives(prog.getInlineDirectives()).addTestCases(prog.getTestCases());
 		}
 
-		public ASPCore2Program build() {
+		public InputProgram build() {
 			return Programs.newASPCore2Program(this.rules, this.facts, this.inlineDirectives, this.testCases);
 		}
 

@@ -27,8 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha.commons.programs;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
@@ -43,7 +43,8 @@ import java.util.List;
  * <p>
  * Copyright (c) 2017-2019, the Alpha Team.
  */
-class ASPCore2ProgramImpl extends AbstractProgram<Rule<Head>> implements ASPCore2Program{
+// TODO rename this to InputProgramImpl or some such
+class ASPCore2ProgramImpl extends AbstractProgram<Rule<Head>> implements InputProgram {
 
 	static final ASPCore2ProgramImpl EMPTY = new ASPCore2ProgramImpl(Collections.emptyList(), Collections.emptyList(), new InlineDirectivesImpl(), Collections.emptyList());
 

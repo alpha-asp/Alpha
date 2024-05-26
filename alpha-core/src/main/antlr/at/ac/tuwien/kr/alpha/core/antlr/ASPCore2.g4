@@ -20,7 +20,9 @@ statement : head DOT                     # statement_fact
           | WCONS body? DOT SQUARE_OPEN weight_at_level SQUARE_CLOSE # statement_weightConstraint
           | directive                    # statement_directive;   // NOT Core2 syntax.
 
-head : disjunction | choice;
+head : disjunction | choice | action;
+
+action: classical_literal COLON AT ID SQUARE_OPEN terms SQUARE_CLOSE EQUAL variable_term; // NOT Core2 syntax
 
 body : ( naf_literal | aggregate ) (COMMA body)?;
 

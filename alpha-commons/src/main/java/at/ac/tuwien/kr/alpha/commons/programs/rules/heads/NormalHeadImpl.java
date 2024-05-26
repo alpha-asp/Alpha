@@ -1,6 +1,8 @@
 package at.ac.tuwien.kr.alpha.commons.programs.rules.heads;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.rules.RuleInstantiator;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
 
 /**
@@ -24,6 +26,11 @@ class NormalHeadImpl implements NormalHead {
 	@Override
 	public BasicAtom getAtom() {
 		return atom;
+	}
+
+	@Override
+	public BasicAtom instantiate(RuleInstantiator instantiator, Substitution substitution) {
+		return instantiator.instantiate(this, substitution);
 	}
 
 	@Override
