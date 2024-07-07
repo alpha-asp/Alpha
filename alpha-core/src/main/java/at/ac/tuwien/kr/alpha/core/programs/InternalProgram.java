@@ -104,7 +104,7 @@ public class InternalProgram extends AbstractProgram<CompiledRule> implements Co
 	public NormalProgram toNormalProgram() {
 		List<NormalRule> normalRules = new ArrayList<>();
 		for (CompiledRule rule : getRules()) {
-			normalRules.add(Rules.newNormalRule(rule.getHead(), new ArrayList<>(rule.getBody())));
+			normalRules.add(Rules.newNormalRule(rule.getHead(), new LinkedHashSet<>(rule.getBody())));
 		}
 		return Programs.newNormalProgram(normalRules, getFacts(), getInlineDirectives());
 	}

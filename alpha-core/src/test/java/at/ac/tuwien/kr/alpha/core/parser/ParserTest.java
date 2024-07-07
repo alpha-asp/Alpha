@@ -46,7 +46,7 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -91,7 +91,7 @@ public class ParserTest {
 
 	@Test
 	public void parseFact() {
-		ASPCore2Program parsedProgram = parser.parse("p(a,b).");
+		InputProgram parsedProgram = parser.parse("p(a,b).");
 
 		assertEquals(1, parsedProgram.getFacts().size(), "Program contains one fact.");
 		assertEquals("p", parsedProgram.getFacts().get(0).getPredicate().getName(), "Predicate name of fact is p.");
@@ -102,7 +102,7 @@ public class ParserTest {
 
 	@Test
 	public void parseFactWithFunctionTerms() {
-		ASPCore2Program parsedProgram = parser.parse("p(f(a),g(h(Y))).");
+		InputProgram parsedProgram = parser.parse("p(f(a),g(h(Y))).");
 
 		assertEquals(1, parsedProgram.getFacts().size(), "Program contains one fact.");
 		assertEquals("p", parsedProgram.getFacts().get(0).getPredicate().getName(), "Predicate name of fact is p.");
@@ -113,7 +113,7 @@ public class ParserTest {
 
 	@Test
 	public void parseSmallProgram() {
-		ASPCore2Program parsedProgram = parser.parse(
+		InputProgram parsedProgram = parser.parse(
 				"a :- b, not d." + System.lineSeparator() +
 						"c(X) :- p(X,a,_), q(Xaa,xaa)." + System.lineSeparator() +
 						":- f(Y).");
@@ -130,7 +130,7 @@ public class ParserTest {
 
 	@Test
 	public void parseBuiltinAtom() {
-		ASPCore2Program parsedProgram = parser.parse("a :- p(X), X != Y, q(Y).");
+		InputProgram parsedProgram = parser.parse("a :- p(X), X != Y, q(Y).");
 		assertEquals(1, parsedProgram.getRules().size());
 		assertEquals(3, parsedProgram.getRules().get(0).getBody().size());
 	}
@@ -145,7 +145,7 @@ public class ParserTest {
 
 	@Test
 	public void parseInterval() {
-		ASPCore2Program parsedProgram = parser.parse("fact(2..5). p(X) :- q(a, 3 .. X).");
+		InputProgram parsedProgram = parser.parse("fact(2..5). p(X) :- q(a, 3 .. X).");
 		IntervalTerm factInterval = (IntervalTerm) parsedProgram.getFacts().get(0).getTerms().get(0);
 		assertTrue(factInterval.equals(Terms.newIntervalTerm(Terms.newConstant(2), Terms.newConstant(5))));
 		IntervalTerm bodyInterval = (IntervalTerm) parsedProgram.getRules().get(0).getBody().stream().findFirst().get().getTerms().get(1);
@@ -154,7 +154,7 @@ public class ParserTest {
 
 	@Test
 	public void parseChoiceRule() {
-		ASPCore2Program parsedProgram = parser.parse("dom(1). dom(2). { a ; b } :- dom(X).");
+		InputProgram parsedProgram = parser.parse("dom(1). dom(2). { a ; b } :- dom(X).");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
 		assertEquals(2, choiceHead.getChoiceElements().size());
 		assertTrue(choiceHead.getChoiceElements().get(0).getChoiceAtom().toString().equals("a"));
@@ -165,7 +165,7 @@ public class ParserTest {
 
 	@Test
 	public void parseChoiceRuleBounded() {
-		ASPCore2Program parsedProgram = parser.parse("dom(1). dom(2). 1 < { a: p(v,w), not r; b } <= 13 :- dom(X). foo.");
+		InputProgram parsedProgram = parser.parse("dom(1). dom(2). 1 < { a: p(v,w), not r; b } <= 13 :- dom(X). foo.");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
 		assertEquals(2, choiceHead.getChoiceElements().size());
 		assertTrue(choiceHead.getChoiceElements().get(0).getChoiceAtom().toString().equals("a"));
@@ -215,7 +215,7 @@ public class ParserTest {
 
 	@Test
 	public void parseEnumerationDirective() {
-		ASPCore2Program parsedProgram = parser.parse("p(a,1)." +
+		InputProgram parsedProgram = parser.parse("p(a,1)." +
 				"# enumeration_predicate_is mune." +
 				"r(X) :- p(X), mune(X)." +
 				"p(b,2).");
@@ -225,7 +225,7 @@ public class ParserTest {
 
 	@Test
 	public void cardinalityAggregate() {
-		ASPCore2Program parsedProgram = parser.parse("num(K) :-  K <= #count {X,Y,Z : p(X,Y,Z) }, dom(K).");
+		InputProgram parsedProgram = parser.parse("num(K) :-  K <= #count {X,Y,Z : p(X,Y,Z) }, dom(K).");
 		Optional<Literal> optionalBodyElement = parsedProgram.getRules().get(0).getBody().stream().filter((lit) -> lit instanceof AggregateLiteral).findFirst();
 		assertTrue(optionalBodyElement.isPresent());
 		Literal bodyElement = optionalBodyElement.get();
@@ -244,7 +244,7 @@ public class ParserTest {
 	@Test
 	public void stringWithEscapedQuotes() throws IOException {
 		CharStream stream = CharStreams.fromStream(ParserTest.class.getResourceAsStream("/escaped_quotes.asp"));
-		ASPCore2Program prog = parser.parse(stream);
+		InputProgram prog = parser.parse(stream);
 		assertEquals(1, prog.getFacts().size());
 		Atom stringAtom = prog.getFacts().get(0);
 		String stringWithQuotes = stringAtom.getTerms().get(0).toString();
@@ -253,7 +253,7 @@ public class ParserTest {
 
 	@Test
 	public void unitTestExpectUnsat() {
-		ASPCore2Program prog = parser.parse(UNIT_TEST_EXPECT_UNSAT);
+		InputProgram prog = parser.parse(UNIT_TEST_EXPECT_UNSAT);
 		assertEquals(1, prog.getTestCases().size());
 		TestCase tc = prog.getTestCases().get(0);
 		assertEquals("expected_unsat", tc.getName());
@@ -263,7 +263,7 @@ public class ParserTest {
 
 	@Test
 	public void unitTestBasicTest() {
-		ASPCore2Program prog = parser.parse(UNIT_TEST_BASIC_TEST);
+		InputProgram prog = parser.parse(UNIT_TEST_BASIC_TEST);
 		assertEquals(1, prog.getTestCases().size());
 		TestCase tc = prog.getTestCases().get(0);
 		assertEquals("ensure_a", tc.getName());
@@ -274,7 +274,7 @@ public class ParserTest {
 
 	@Test
 	public void unitTestMultipleAsserts() {
-		ASPCore2Program prog = parser.parse(UNIT_TEST_MORE_ASSERTIONS);
+		InputProgram prog = parser.parse(UNIT_TEST_MORE_ASSERTIONS);
 		assertEquals(1, prog.getTestCases().size());
 		TestCase tc = prog.getTestCases().get(0);
 		assertEquals("ensure_a", tc.getName());
@@ -286,7 +286,7 @@ public class ParserTest {
 
 	@Test
 	public void unitTestMoreTCs() {
-		ASPCore2Program prog = parser.parse(UNIT_TEST_MORE_TCS);
+		InputProgram prog = parser.parse(UNIT_TEST_MORE_TCS);
 		assertEquals(2, prog.getTestCases().size());
 		TestCase tc1 = prog.getTestCases().get(0);
 		assertEquals("ensure_a", tc1.getName());
@@ -296,7 +296,7 @@ public class ParserTest {
 
 	@Test
 	public void unitTestKeywordsAsIds() {
-		ASPCore2Program prog = parser.parse(UNIT_TEST_KEYWORDS_AS_IDS);
+		InputProgram prog = parser.parse(UNIT_TEST_KEYWORDS_AS_IDS);
 		assertEquals(1, prog.getTestCases().size());
 		TestCase tc = prog.getTestCases().get(0);
 		assertEquals("test", tc.getName());

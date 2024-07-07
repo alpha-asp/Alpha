@@ -44,13 +44,13 @@ import java.util.List;
  * Copyright (c) 2017-2019, the Alpha Team.
  */
 // TODO rename this to InputProgramImpl or some such
-class ASPCore2ProgramImpl extends AbstractProgram<Rule<Head>> implements InputProgram {
+class InputProgramImpl extends AbstractProgram<Rule<Head>> implements InputProgram {
 
-	static final ASPCore2ProgramImpl EMPTY = new ASPCore2ProgramImpl(Collections.emptyList(), Collections.emptyList(), new InlineDirectivesImpl(), Collections.emptyList());
+	static final InputProgramImpl EMPTY = new InputProgramImpl(Collections.emptyList(), Collections.emptyList(), new InlineDirectivesImpl(), Collections.emptyList());
 
 	private final List<TestCase> testCases;
 
-	ASPCore2ProgramImpl(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives, List<TestCase> testCases) {
+	InputProgramImpl(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives, List<TestCase> testCases) {
 		super(rules, facts, inlineDirectives);
 		this.testCases = testCases;
 	}

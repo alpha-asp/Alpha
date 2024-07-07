@@ -1,12 +1,9 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.BasicLiteral;
@@ -18,7 +15,7 @@ import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
-import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.InputProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 import at.ac.tuwien.kr.alpha.core.programs.atoms.EnumerationAtom;
@@ -30,10 +27,10 @@ import at.ac.tuwien.kr.alpha.core.programs.atoms.EnumerationAtom;
  * Copyright (c) 2017-2020, the Alpha Team.
  */
 // TODO this should happen during/after internalization
-public class EnumerationRewriting extends ProgramTransformation<ASPCore2Program, ASPCore2Program> {
+public class EnumerationRewriting extends ProgramTransformation<InputProgram, InputProgram> {
 
 	@Override
-	public ASPCore2Program apply(ASPCore2Program inputProgram) {
+	public InputProgram apply(InputProgram inputProgram) {
 		// Read enumeration predicate from directive.
 		String enumDirective = inputProgram.getInlineDirectives().getDirectiveValue(InlineDirectives.DIRECTIVE.enum_predicate_is);
 		if (enumDirective == null) {
@@ -42,7 +39,7 @@ public class EnumerationRewriting extends ProgramTransformation<ASPCore2Program,
 		}
 		Predicate enumPredicate = Predicates.getPredicate(enumDirective, 3);
 
-		ASPCore2ProgramBuilder programBuilder = Programs.builder().addInlineDirectives(inputProgram.getInlineDirectives());
+		InputProgramBuilder programBuilder = Programs.builder().addInlineDirectives(inputProgram.getInlineDirectives());
 
 		checkFactsAreEnumerationFree(inputProgram.getFacts(), enumPredicate);
 		programBuilder.addFacts(inputProgram.getFacts());
@@ -69,7 +66,7 @@ public class EnumerationRewriting extends ProgramTransformation<ASPCore2Program,
 			if (rule.getHead() != null && ((NormalHead) rule.getHead()).getAtom().getPredicate().equals(enumPredicate)) {
 				throw Util.oops("Atom declared as enumeration atom by directive occurs in head of the rule: " + rule);
 			}
-			List<Literal> modifiedBodyLiterals = new ArrayList<>(rule.getBody());
+			Set<Literal> modifiedBodyLiterals = new LinkedHashSet<>(rule.getBody());
 			Iterator<Literal> rit = modifiedBodyLiterals.iterator();
 			LinkedList<Literal> rewrittenLiterals = new LinkedList<>();
 			while (rit.hasNext()) {

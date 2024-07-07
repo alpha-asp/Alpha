@@ -44,7 +44,7 @@ import java.util.SortedSet;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
@@ -79,7 +79,7 @@ public class SolverTests {
 
 		final Atom fact = Atoms.newBasicAtom(Predicates.getPredicate("foo", 1), Terms.newConstant(thingy));
 
-		final ASPCore2Program program = Programs.newASPCore2Program(
+		final InputProgram program = Programs.newInputProgram(
 			Collections.emptyList(),
 			Collections.singletonList(fact),
 			Programs.newInlineDirectives()

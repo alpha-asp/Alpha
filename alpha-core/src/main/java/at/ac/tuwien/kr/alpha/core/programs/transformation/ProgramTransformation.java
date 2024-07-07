@@ -6,8 +6,8 @@ import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 /**
  * Copyright (c) 2017-2019, the Alpha Team.
  */
-public abstract class ProgramTransformer<I extends Program<? extends Rule<?>>, O extends Program<? extends Rule<?>>> {
+public abstract class ProgramTransformation<I extends Program<? extends Rule<?>>, O extends Program<? extends Rule<?>>> {
 
-	public abstract O transform(I inputProgram);
+	public abstract O apply(I inputProgram);
 
 }

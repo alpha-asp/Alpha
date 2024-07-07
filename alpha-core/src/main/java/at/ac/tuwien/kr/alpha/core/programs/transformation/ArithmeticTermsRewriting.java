@@ -1,7 +1,9 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -70,7 +72,7 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 	private NormalRule rewriteRule(NormalRule inputProgramRule) {
 		variableNumberGenerator.resetGenerator(); // Reset number of introduced variables for each rule.
 		NormalHead rewrittenHead = null;
-		List<Literal> rewrittenBodyLiterals = new ArrayList<>();
+		Set<Literal> rewrittenBodyLiterals = new LinkedHashSet<>();
 		// Rewrite head.
 		if (!inputProgramRule.isConstraint()) {
 			BasicAtom headAtom = inputProgramRule.getHeadAtom();
@@ -117,7 +119,7 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 		return false;
 	}
 
-	private Term rewriteArithmeticSubterms(Term term, List<Literal> bodyLiterals) {
+	private Term rewriteArithmeticSubterms(Term term, Set<Literal> bodyLiterals) {
 		// Keep term as-is if it contains no ArithmeticTerm.
 		if (!containsArithmeticTerm(term)) {
 			return term;
@@ -141,7 +143,7 @@ public class ArithmeticTermsRewriting extends ProgramTransformation<NormalProgra
 		}
 	}
 
-	private Atom rewriteAtom(Atom atomToRewrite, List<Literal> bodyLiterals) {
+	private Atom rewriteAtom(Atom atomToRewrite, Set<Literal> bodyLiterals) {
 		if (atomToRewrite instanceof ComparisonAtom) {
 			throw Util.oops("Trying to rewrite ComparisonAtom.");
 		}

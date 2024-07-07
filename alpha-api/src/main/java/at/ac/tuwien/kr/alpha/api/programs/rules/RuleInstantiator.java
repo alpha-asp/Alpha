@@ -6,6 +6,6 @@ import at.ac.tuwien.kr.alpha.api.programs.rules.heads.InstantiableHead;
 
 public interface RuleInstantiator {
 
-    BasicAtom instantiate(InstantiableHead ruleHead, Substitution substitution);
+	BasicAtom instantiate(InstantiableHead ruleHead, Substitution substitution);
 
 }

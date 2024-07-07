@@ -27,10 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -68,7 +65,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		// Collect all intervals and replace them with variables.
 		Map<VariableTerm, IntervalTerm> intervalReplacements = new LinkedHashMap<>();
 
-		List<Literal> rewrittenBody = new ArrayList<>();
+		Set<Literal> rewrittenBody = new LinkedHashSet<>();
 
 		for (Literal literal : rule.getBody()) {
 			Literal rewrittenLiteral = rewriteLiteral(literal, intervalReplacements);

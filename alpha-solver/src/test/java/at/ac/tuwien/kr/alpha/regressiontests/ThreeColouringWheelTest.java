@@ -36,13 +36,13 @@ import org.junit.jupiter.api.Disabled;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
-import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.InputProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
@@ -99,15 +99,15 @@ public class ThreeColouringWheelTest {
 	}
 
 	private void testThreeColouring(int n, RegressionTestConfig cfg) {
-		ASPCore2Program tmpPrg = new ProgramParserImpl().parse(
+		InputProgram tmpPrg = new ProgramParserImpl().parse(
 				"col(V,C) :- v(V), c(C), not ncol(V,C)." +
 				"ncol(V,C) :- col(V,D), c(C), C != D." +
 				":- e(V,U), col(V,C), col(U,C).");
-		ASPCore2ProgramBuilder prgBuilder = Programs.builder(tmpPrg);
+		InputProgramBuilder prgBuilder = Programs.builder(tmpPrg);
 		prgBuilder.addFacts(createColors("red", "blue", "green"));
 		prgBuilder.addFacts(createVertices(n));
 		prgBuilder.addFacts(createEdges(n));
-		ASPCore2Program program = prgBuilder.build();
+		InputProgram program = prgBuilder.build();
 
 		maybeShuffle(program);
 
@@ -121,7 +121,7 @@ public class ThreeColouringWheelTest {
 	}
 
 	@SuppressWarnings("unused")
-	private void maybeShuffle(ASPCore2Program program) {
+	private void maybeShuffle(InputProgram program) {
 		// FIXME since InputProgram is immutable this needs to be reworked a bit if used
 		// No shuffling here.
 	}

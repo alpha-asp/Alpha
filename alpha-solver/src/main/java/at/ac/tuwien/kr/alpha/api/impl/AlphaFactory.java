@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.api.impl;
 
+import java.util.Collections;
 import java.util.function.Supplier;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
@@ -9,43 +10,26 @@ import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
+import at.ac.tuwien.kr.alpha.commons.programs.reification.Reifier;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.util.IdGenerator;
+import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.core.actions.ActionExecutionServiceImpl;
 import at.ac.tuwien.kr.alpha.core.actions.ActionImplementationProvider;
 import at.ac.tuwien.kr.alpha.core.actions.DefaultActionImplementationProvider;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.ASPCore2ProgramParser;
-import at.ac.tuwien.kr.alpha.core.parser.evolog.EvologProgramParser;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.ArithmeticTermTransformer;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.ChoiceHeadNormalizer;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.EnumerationTransformer;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.IntervalTermTransformer;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramNormalizer;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformer;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.VariableEqualityTransformer;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateTransformer;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.AggregateEncoders;
 import at.ac.tuwien.kr.alpha.core.solver.SolverConfig;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.core.solver.heuristics.HeuristicsConfiguration;
 
 public class AlphaFactory {
 
-	protected ProgramTransformer<InputProgram, NormalProgram> newProgramNormalizer(ProgramParser parser,
-			AggregateRewritingConfig aggregateCfg) {
-		return new ProgramNormalizer(
-				new VariableEqualityTransformer(),
-				new ChoiceHeadNormalizer(),
-				new AggregateTransformer(
-						AggregateEncoders.newCountEqualsEncoder(parser),
-						AggregateEncoders.newCountLessOrEqualEncoder(parser, aggregateCfg.isUseSortingGridEncoding()),
-						AggregateEncoders.newSumEqualsEncoder(parser, aggregateCfg.isSupportNegativeValuesInSums()),
-						AggregateEncoders.newSumLessOrEqualEncoder(parser, aggregateCfg.isSupportNegativeValuesInSums()),
-						AggregateEncoders.newMinEncoder(parser),
-						AggregateEncoders.newMaxEncoder(parser)),
-				new EnumerationTransformer(),
-				new IntervalTermTransformer(),
-				new ArithmeticTermTransformer());
+	protected ProgramTransformation<InputProgram, NormalProgram> newProgramNormalizer(AggregateRewritingConfig aggregateCfg) {
+		return new NormalizeProgramTransformation(aggregateCfg);
 	}
 
 	protected Supplier<StratifiedEvaluation> newStratifiedEvaluationFactory(ActionImplementationProvider actionImplementationProvider,
@@ -83,15 +67,8 @@ public class AlphaFactory {
 
 	public Alpha newAlpha(SystemConfig cfg) {
 		ActionImplementationProvider actionImplementationProvider = newActionImplementationProvider();
-		ProgramParser parser;
-		if (cfg.isAcceptEvologPrograms()) {
-			parser = new EvologProgramParser(actionImplementationProvider); // TODO need to give stdin/stdout definitions to parser (pass in implementation
-																			// provider)
-		} else {
-			parser = new ASPCore2ProgramParser();
-		}
-		ProgramTransformer<InputProgram, NormalProgram> programNormalizer = newProgramNormalizer(parser,
-				cfg.getAggregateRewritingConfig());
+		ProgramParser parser = new ProgramParserImpl(actionImplementationProvider, Collections.emptyMap());
+		ProgramTransformation<InputProgram, NormalProgram> programNormalizer = new NormalizeProgramTransformation(cfg.getAggregateRewritingConfig());
 
 		// Stratified evaluation factory - since every instance of stratified evaluation is only good for one program, we need a factory.
 		Supplier<StratifiedEvaluation> stratifiedEvaluationFactory = newStratifiedEvaluationFactory(actionImplementationProvider, cfg.isDebugInternalChecks());
@@ -103,7 +80,10 @@ public class AlphaFactory {
 		SolverFactory solverFactory = newSolverFactory(cfg);
 
 		// Now that all dependencies are taken care of, build new Alpha instance.
-		return new AlphaImpl(parser, programNormalizer, stratifiedEvaluationFactory, grounderFactory, solverFactory, cfg.isSortAnswerSets());
+		return new AlphaImpl(parser, programNormalizer, stratifiedEvaluationFactory, grounderFactory, solverFactory, new Reifier(() -> {
+			IdGenerator<Integer> idGen = new IntIdGenerator(0);
+			return () -> Terms.newConstant(idGen.getNextId());
+		}), cfg.isSortAnswerSets());
 	}
 
 	// Create Alpha instance with default config.

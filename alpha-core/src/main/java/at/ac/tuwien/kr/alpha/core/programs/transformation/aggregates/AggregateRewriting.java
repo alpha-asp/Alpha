@@ -1,14 +1,7 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
@@ -16,22 +9,23 @@ import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
-import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.InputProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.literals.Literals;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.AbstractAggregateEncoder;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.CountEncoder;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.MinMaxEncoder;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.SumEncoder;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.AggregateEncoders;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
+import java.util.*;
 
 /**
  * Rewrites {@link AggregateLiteral}s in programs to semantically equivalent, aggregate-free sub-programs.
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
-public class AggregateRewriting extends ProgramTransformation<ASPCore2Program, ASPCore2Program> {
+public class AggregateRewriting extends ProgramTransformation<InputProgram, InputProgram> {
 
 	private final AbstractAggregateEncoder countEqualsEncoder;
 	private final AbstractAggregateEncoder countLessOrEqualEncoder;
@@ -51,12 +45,12 @@ public class AggregateRewriting extends ProgramTransformation<ASPCore2Program, A
 	 *                                their simpler counterparts that only support positive integers (eused when flag set to false)
 	 */
 	public AggregateRewriting(boolean useSortingCircuit, boolean supportNegativeIntegers) {
-		this.countLessOrEqualEncoder = CountEncoder.buildCountLessOrEqualEncoder(useSortingCircuit);
-		this.sumLessOrEqualEncoder = SumEncoder.buildSumLessOrEqualEncoder(supportNegativeIntegers);
-		this.sumEqualsEncoder = SumEncoder.buildSumEqualsEncoder(supportNegativeIntegers);
-		this.countEqualsEncoder = CountEncoder.buildCountEqualsEncoder();
-		this.minEncoder = new MinMaxEncoder(AggregateFunctionSymbol.MIN);
-		this.maxEncoder = new MinMaxEncoder(AggregateFunctionSymbol.MAX);
+		this.countLessOrEqualEncoder = AggregateEncoders.newCountLessOrEqualEncoder(useSortingCircuit);
+		this.sumLessOrEqualEncoder = AggregateEncoders.newSumLessOrEqualEncoder(supportNegativeIntegers);
+		this.sumEqualsEncoder = AggregateEncoders.newSumEqualsEncoder(supportNegativeIntegers);
+		this.countEqualsEncoder = AggregateEncoders.newCountEqualsEncoder();
+		this.minEncoder = AggregateEncoders.newMinEncoder();
+		this.maxEncoder = AggregateEncoders.newMaxEncoder();
 	}
 
 	/**
@@ -72,7 +66,7 @@ public class AggregateRewriting extends ProgramTransformation<ASPCore2Program, A
 	 * deriving the result literal is added that is semantically equivalent to the replaced aggregate literal.
 	 */
 	@Override
-	public ASPCore2Program apply(ASPCore2Program inputProgram) {
+	public InputProgram apply(InputProgram inputProgram) {
 		AggregateRewritingContext ctx = new AggregateRewritingContext();
 		List<Rule<Head>> outputRules = new ArrayList<>();
 		for (Rule<Head> inputRule : inputProgram.getRules()) {
@@ -89,7 +83,7 @@ public class AggregateRewriting extends ProgramTransformation<ASPCore2Program, A
 		}
 		// Substitute AggregateLiterals with generated result literals.
 		outputRules.addAll(rewriteRulesWithAggregates(ctx));
-		ASPCore2ProgramBuilder resultBuilder = Programs.builder().addRules(outputRules).addFacts(inputProgram.getFacts())
+		InputProgramBuilder resultBuilder = Programs.builder().addRules(outputRules).addFacts(inputProgram.getFacts())
 				.addInlineDirectives(inputProgram.getInlineDirectives());
 		// Add sub-programs deriving respective aggregate literals.
 		for (Map.Entry<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateInfo>> aggToRewrite : ctx.getAggregateFunctionsToRewrite()
@@ -138,7 +132,7 @@ public class AggregateRewriting extends ProgramTransformation<ASPCore2Program, A
 	private static List<Rule<Head>> rewriteRulesWithAggregates(AggregateRewritingContext ctx) {
 		List<Rule<Head>> rewrittenRules = new ArrayList<>();
 		for (Rule<Head> rule : ctx.getRulesWithAggregates()) {
-			List<Literal> rewrittenBody = new ArrayList<>();
+			Set<Literal> rewrittenBody = new LinkedHashSet<>();
 			for (Literal lit : rule.getBody()) {
 				if (lit instanceof AggregateLiteral) {
 					AggregateInfo aggregateInfo = ctx.getAggregateInfo((AggregateLiteral) lit);

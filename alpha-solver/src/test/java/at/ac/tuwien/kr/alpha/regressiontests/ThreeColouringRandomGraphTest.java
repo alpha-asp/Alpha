@@ -36,12 +36,12 @@ import java.util.Random;
 import org.junit.jupiter.api.Disabled;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
-import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.InputProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
@@ -99,17 +99,17 @@ public class ThreeColouringRandomGraphTest {
 	}
 
 	private void testThreeColouring(int nVertices, int nEdges, RegressionTestConfig cfg) {
-		ASPCore2Program tmpPrg = new ProgramParserImpl().parse(
+		InputProgram tmpPrg = new ProgramParserImpl().parse(
 				"blue(N) :- v(N), not red(N), not green(N)." +
 				"red(N) :- v(N), not blue(N), not green(N)." +
 				"green(N) :- v(N), not red(N), not blue(N)." +
 				":- e(N1,N2), blue(N1), blue(N2)." +
 				":- e(N1,N2), red(N1), red(N2)." +
 				":- e(N1,N2), green(N1), green(N2).");
-		ASPCore2ProgramBuilder prgBuilder = Programs.builder(tmpPrg);
+		InputProgramBuilder prgBuilder = Programs.builder(tmpPrg);
 		prgBuilder.addFacts(createVertices(nVertices));
 		prgBuilder.addFacts(createEdges(nVertices, nEdges));
-		ASPCore2Program program = prgBuilder.build();
+		InputProgram program = prgBuilder.build();
 		maybeShuffle(program);
 
 		@SuppressWarnings("unused")
@@ -120,7 +120,7 @@ public class ThreeColouringRandomGraphTest {
 	}
 
 	@SuppressWarnings("unused")
-	private void maybeShuffle(ASPCore2Program program) {
+	private void maybeShuffle(InputProgram program) {
 
 		// TODO: switch on if different rule orderings in the encoding are desired (e.g. for benchmarking purposes)
 		// FIXME since InputProgram is immutable this needs to be reworked a bit if used

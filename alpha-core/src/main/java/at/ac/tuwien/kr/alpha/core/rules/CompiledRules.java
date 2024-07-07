@@ -4,7 +4,9 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.programs.rules.InternalRule;
 
 public final class CompiledRules {
 
@@ -13,7 +15,7 @@ public final class CompiledRules {
 	}
 
 	public static CompiledRule newCompiledRule(NormalHead head, Set<Literal> body) {
-		return new CompiledRuleImpl(head, body);
+		return new InternalRule(head, body);
 	}
 
 	public static CompiledRule newCompiledRule(NormalHead head, Literal... body) {

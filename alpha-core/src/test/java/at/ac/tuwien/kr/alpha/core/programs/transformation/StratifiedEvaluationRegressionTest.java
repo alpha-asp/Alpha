@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
@@ -105,7 +105,7 @@ public class StratifiedEvaluationRegressionTest {
 	public void runTest(String aspString, Consumer<CompiledProgram> programVerifier, Consumer<Set<AnswerSet>> resultVerifier) {
 		// Parse and pre-evaulate program
 		ProgramParser parser = new ProgramParserImpl();
-		ASPCore2Program prog = parser.parse(aspString);
+		InputProgram prog = parser.parse(aspString);
 		AnalyzedProgram analyzed = AnalyzedProgram
 				.analyzeNormalProgram(new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG).apply(prog));
 		CompiledProgram evaluated = new StratifiedEvaluation().apply(analyzed);

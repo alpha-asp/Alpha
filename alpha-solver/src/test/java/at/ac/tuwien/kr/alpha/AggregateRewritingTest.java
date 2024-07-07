@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
@@ -34,7 +34,7 @@ public class AggregateRewritingTest {
 	private static final ProgramParser PARSER = new ProgramParserImpl();
 	private static final Function<String, List<AnswerSet>> NORMALIZE_AND_SOLVE = (str) -> {
 		SystemConfig cfg = new SystemConfig();
-		ASPCore2Program prog = PARSER.parse(str);
+		InputProgram prog = PARSER.parse(str);
 		NormalProgram normalized = new NormalizeProgramTransformation(cfg.getAggregateRewritingConfig()).apply(prog);
 		CompiledProgram compiled = InternalProgram.fromNormalProgram(normalized);
 		AtomStore atomStore = new AtomStoreImpl();

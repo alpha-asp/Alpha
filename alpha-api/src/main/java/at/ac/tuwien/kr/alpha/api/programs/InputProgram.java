@@ -8,9 +8,9 @@ import java.util.List;
 
 public interface InputProgram extends Program<Rule<Head>> {
 
-    /**
-     * The test cases associated with this program.
-     */
-    List<TestCase> getTestCases();
+	/**
+	 * The test cases associated with this program.
+	 */
+	List<TestCase> getTestCases();
 
 }

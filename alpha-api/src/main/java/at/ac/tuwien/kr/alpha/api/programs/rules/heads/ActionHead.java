@@ -7,10 +7,10 @@ import java.util.List;
 
 public interface ActionHead extends NormalHead {
 
-    String getActionName();
+	String getActionName();
 
-    List<Term> getActionInputTerms();
+	List<Term> getActionInputTerms();
 
-    VariableTerm getActionOutputTerm();
+	VariableTerm getActionOutputTerm();
 
 }

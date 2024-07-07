@@ -9,28 +9,28 @@ public final class AggregateEncoders {
 		throw new AssertionError("Cannot instantiate utility class!");
 	}
 
-	public static CountEncoder newCountEqualsEncoder(ProgramParser parser) {
-		return CountEncoder.buildCountEqualsEncoder(parser);
+	public static CountEncoder newCountEqualsEncoder() {
+		return CountEncoder.buildCountEqualsEncoder();
 	}
 	
-	public static CountEncoder newCountLessOrEqualEncoder(ProgramParser parser, boolean useSortingGridEncoding) {
-		return CountEncoder.buildCountLessOrEqualEncoder(parser, useSortingGridEncoding);
+	public static CountEncoder newCountLessOrEqualEncoder(boolean useSortingGridEncoding) {
+		return CountEncoder.buildCountLessOrEqualEncoder(useSortingGridEncoding);
 	}
 	
-	public static SumEncoder newSumEqualsEncoder(ProgramParser parser, boolean supportNegativeSumElements) {
-		return SumEncoder.buildSumEqualsEncoder(parser, supportNegativeSumElements);
+	public static SumEncoder newSumEqualsEncoder(boolean supportNegativeSumElements) {
+		return SumEncoder.buildSumEqualsEncoder(supportNegativeSumElements);
 	}
 	
-	public static SumEncoder newSumLessOrEqualEncoder(ProgramParser parser, boolean supportNegativeSumElements) {
-		return SumEncoder.buildSumLessOrEqualEncoder(parser, supportNegativeSumElements);
+	public static SumEncoder newSumLessOrEqualEncoder(boolean supportNegativeSumElements) {
+		return SumEncoder.buildSumLessOrEqualEncoder(supportNegativeSumElements);
 	}
 	
-	public static MinMaxEncoder newMinEncoder(ProgramParser parser) {
-		return new MinMaxEncoder(parser, AggregateFunctionSymbol.MIN);
+	public static MinMaxEncoder newMinEncoder() {
+		return new MinMaxEncoder(AggregateFunctionSymbol.MIN);
 	}
 	
-	public static MinMaxEncoder newMaxEncoder(ProgramParser parser) {
-		return new MinMaxEncoder(parser, AggregateFunctionSymbol.MAX);
+	public static MinMaxEncoder newMaxEncoder() {
+		return new MinMaxEncoder(AggregateFunctionSymbol.MAX);
 	}
 
 }

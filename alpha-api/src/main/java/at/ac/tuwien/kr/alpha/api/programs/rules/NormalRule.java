@@ -14,4 +14,6 @@ public interface NormalRule extends Rule<NormalHead> {
 		return this.isConstraint() ? null : this.getHead().getAtom();
 	}
 
+	boolean isGround();
+
 }

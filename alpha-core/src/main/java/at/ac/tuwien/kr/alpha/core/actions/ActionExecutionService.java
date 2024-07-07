@@ -1,9 +1,9 @@
 package at.ac.tuwien.kr.alpha.core.actions;
 
-import java.util.List;
-
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+
+import java.util.List;
 
 public interface ActionExecutionService {
 

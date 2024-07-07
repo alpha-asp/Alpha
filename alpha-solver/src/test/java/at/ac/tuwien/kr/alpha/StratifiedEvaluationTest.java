@@ -43,7 +43,7 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -179,7 +179,7 @@ public class StratifiedEvaluationTest {
 	 */
 	@Test
 	public void testPartnerUnitsProblemTopologicalOrder() throws IOException {
-		ASPCore2Program prg = parser.parse(StratifiedEvaluationTest.class.getResourceAsStream("/partial-eval/pup_topological_order.asp"));
+		InputProgram prg = parser.parse(StratifiedEvaluationTest.class.getResourceAsStream("/partial-eval/pup_topological_order.asp"));
 		CompiledProgram evaluated = new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normalizer.apply(prg)));
 		assertTrue(evaluated.getRules().isEmpty(), "Not all rules eliminated by stratified evaluation");
 		assertEquals(57, evaluated.getFacts().size());
@@ -200,7 +200,7 @@ public class StratifiedEvaluationTest {
 				+ "inc_value(4), inc_value(5), inc_value(6), inc_value(7), "
 				+ "inc_value(8)";
 		//@formatter:on
-		ASPCore2Program prog = new ProgramParserImpl().parse(
+		InputProgram prog = new ProgramParserImpl().parse(
 				StratifiedEvaluationTest.class.getResourceAsStream("/partial-eval/recursive_w_negated_condition.asp"),
 				new HashMap<>());
 

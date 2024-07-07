@@ -23,19 +23,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.externals;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
+package at.ac.tuwien.kr.alpha.commons.externals;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.externals.Predicate;
@@ -44,13 +32,11 @@ import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.BinaryPredicateInterpretation;
-import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.BindingMethodPredicateInterpretation;
-import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.IntPredicateInterpretation;
-import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.LongPredicateInterpretation;
-import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.MethodPredicateInterpretation;
-import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.SuppliedPredicateInterpretation;
-import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.UnaryPredicateInterpretation;
+import org.reflections.Reflections;
+import org.reflections.scanners.MethodAnnotationsScanner;
+
+import java.lang.reflect.Method;
+import java.util.*;
 
 public final class Externals {
 

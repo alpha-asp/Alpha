@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
@@ -71,7 +71,7 @@ public class NoGoodGeneratorTest {
 	 */
 	@Test
 	public void collectNeg_ContainsOnlyPositiveLiterals() {
-		ASPCore2Program input = PARSER.parse("p(a,b). "
+		InputProgram input = PARSER.parse("p(a,b). "
 				+ "q(a,b) :- not nq(a,b). "
 				+ "nq(a,b) :- not q(a,b).");
 		NormalProgram normal = NORMALIZE_TRANSFORM.apply(input);

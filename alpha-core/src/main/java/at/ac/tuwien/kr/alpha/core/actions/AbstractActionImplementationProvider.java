@@ -1,22 +1,18 @@
 package at.ac.tuwien.kr.alpha.core.actions;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.api.programs.actions.Action;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ActionResultTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
+
+import java.io.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.programs.actions.Action;
-import at.ac.tuwien.kr.alpha.api.terms.ActionResultTerm;
-import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 
 public abstract class AbstractActionImplementationProvider implements ActionImplementationProvider {
 

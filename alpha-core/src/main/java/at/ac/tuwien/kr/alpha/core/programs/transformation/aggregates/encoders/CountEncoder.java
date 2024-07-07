@@ -18,16 +18,16 @@ public final class CountEncoder extends StringtemplateBasedAggregateEncoder {
 	private static final ST CNT_EQ_TEMPLATE = AGGREGATE_ENCODINGS.getInstanceOf("cnt_eq");
 	private static final ST CNT_LE_COUNTING_GRID_TEMPLATE = AGGREGATE_ENCODINGS.getInstanceOf("cnt_le_counting_grid");
 	
-	private CountEncoder(ProgramParser parser, ComparisonOperator acceptedOperator, ST encodingTemplate) {
-		super(parser, AggregateFunctionSymbol.COUNT, acceptedOperator, encodingTemplate);
+	private CountEncoder(ComparisonOperator acceptedOperator, ST encodingTemplate) {
+		super(AggregateFunctionSymbol.COUNT, acceptedOperator, encodingTemplate);
 	}
 
-	static CountEncoder buildCountLessOrEqualEncoder(ProgramParser parser, boolean useSortingGrid) {
-		return new CountEncoder(parser, ComparisonOperators.LE, useSortingGrid ? CNT_LE_SORTING_GRID_TEMPLATE : CNT_LE_COUNTING_GRID_TEMPLATE);
+	static CountEncoder buildCountLessOrEqualEncoder(boolean useSortingGrid) {
+		return new CountEncoder(ComparisonOperators.LE, useSortingGrid ? CNT_LE_SORTING_GRID_TEMPLATE : CNT_LE_COUNTING_GRID_TEMPLATE);
 	}
 
-	static CountEncoder buildCountEqualsEncoder(ProgramParser parser) {
-		return new CountEncoder(parser, ComparisonOperators.EQ, CNT_EQ_TEMPLATE);
+	static CountEncoder buildCountEqualsEncoder() {
+		return new CountEncoder(ComparisonOperators.EQ, CNT_EQ_TEMPLATE);
 	}
 
 }

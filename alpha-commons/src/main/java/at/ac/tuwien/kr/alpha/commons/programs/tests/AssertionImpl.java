@@ -1,14 +1,14 @@
 package at.ac.tuwien.kr.alpha.commons.programs.tests;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.tests.Assertion;
 
 class AssertionImpl implements Assertion {
 
 	private final Mode mode;
-	private final ASPCore2Program verifier;
+	private final InputProgram verifier;
 
-	AssertionImpl(final Mode mode, final ASPCore2Program verifier) {
+	AssertionImpl(final Mode mode, final InputProgram verifier) {
 		this.mode = mode;
 		this.verifier = verifier;
 	}
@@ -19,7 +19,7 @@ class AssertionImpl implements Assertion {
 	}
 
 	@Override
-	public ASPCore2Program getVerifier() {
+	public InputProgram getVerifier() {
 		return verifier;
 	}
 

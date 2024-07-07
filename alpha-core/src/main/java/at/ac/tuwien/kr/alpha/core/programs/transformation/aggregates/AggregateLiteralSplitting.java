@@ -1,8 +1,6 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -66,17 +64,17 @@ public final class AggregateLiteralSplitting {
 			}
 		}
 		// Second, compute rule bodies of splitting result.
-		List<Literal> commonBody = new ArrayList<>(commonBodyLiterals);
+		Set<Literal> commonBody = new LinkedHashSet<>(commonBodyLiterals);
 		commonBody.addAll(twoLiteralsSplitAggregates);
-		List<List<Literal>> rewrittenBodies = new ArrayList<>();
+		List<Set<Literal>> rewrittenBodies = new ArrayList<>();
 		rewrittenBodies.add(commonBody); // Initialize list of rules with the common body.
 		// For n twoRulesSplitAggregates we need 2^n rules, so
 		// for each of the n pairs in twoRulesSplitAggregates we duplicate the list of rewritten bodies.
 		for (ImmutablePair<Literal, Literal> ruleSplitAggregate : twoRulesSplitAggregates) {
 			int numBodiesBeforeDuplication = rewrittenBodies.size();
 			for (int i = 0; i < numBodiesBeforeDuplication; i++) {
-				List<Literal> originalBody = rewrittenBodies.get(i);
-				List<Literal> duplicatedBody = new ArrayList<>(originalBody);
+				Set<Literal> originalBody = rewrittenBodies.get(i);
+				Set<Literal> duplicatedBody = new LinkedHashSet<>(originalBody);
 				// Extend bodies of original and duplicate with splitting results.
 				originalBody.add(ruleSplitAggregate.left);
 				duplicatedBody.add(ruleSplitAggregate.right);
@@ -85,7 +83,7 @@ public final class AggregateLiteralSplitting {
 		}
 		// Third, turn computed bodies into rules again.
 		List<Rule<Head>> rewrittenRules = new ArrayList<>();
-		for (List<Literal> rewrittenBody : rewrittenBodies) {
+		for (Set<Literal> rewrittenBody : rewrittenBodies) {
 			rewrittenRules.add(Rules.newRule(sourceRule.getHead(), rewrittenBody));
 		}
 		return rewrittenRules;

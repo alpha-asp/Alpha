@@ -1,8 +1,6 @@
 package at.ac.tuwien.kr.alpha.commons.programs.rules;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
@@ -19,21 +17,21 @@ public final class Rules {
 		throw new AssertionError("Cannot instantiate utility class!");
 	}
 
-	public static Rule<Head> newRule(Head head, List<Literal> body) {
+	public static Rule<Head> newRule(Head head, Set<Literal> body) {
 		return new BasicRule(head, body);
 	}
 
 	public static Rule<Head> newRule(Head head, Literal... body) {
-        List<Literal> bodyLst = new ArrayList<>(Arrays.asList(body));
+        Set<Literal> bodyLst = new LinkedHashSet<>(Arrays.asList(body));
 		return new BasicRule(head, bodyLst);
 	}
 
-	public static NormalRule newNormalRule(NormalHead head, List<Literal> body) {
+	public static NormalRule newNormalRule(NormalHead head, Set<Literal> body) {
 		return new NormalRuleImpl(head, body);
 	}
 
 	public static NormalRule newNormalRule(NormalHead head, Literal... body) {
-        List<Literal> bodyLst = new ArrayList<>(Arrays.asList(body));
+        Set<Literal> bodyLst = new LinkedHashSet<>(Arrays.asList(body));
 		return new NormalRuleImpl(head, bodyLst);
 	}
 
@@ -45,7 +43,7 @@ public final class Rules {
 			}
 			headAtom = ((NormalHead) rule.getHead()).getAtom();
 		}
-		return new NormalRuleImpl(headAtom != null ? Heads.newNormalHead(headAtom) : null, new ArrayList<>(rule.getBody()));
+		return new NormalRuleImpl(headAtom != null ? Heads.newNormalHead(headAtom) : null, new LinkedHashSet<>(rule.getBody()));
 	}
 
 }

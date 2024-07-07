@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.commons.programs.rules;
 
 import java.util.List;
+import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
@@ -38,7 +39,7 @@ import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
  */
 class BasicRule extends AbstractRule<Head> {
 
-	BasicRule(Head head, List<Literal> body) {
+	BasicRule(Head head, Set<Literal> body) {
 		super(head, body);
 	}
 

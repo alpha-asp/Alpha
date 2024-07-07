@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
@@ -35,11 +35,11 @@ public class RuleTest {
 
 	@Test
 	public void testRulesEqual() {
-		ASPCore2Program p1 = parser.parse("p(X, Y) :- bla(X), blub(Y), foo(X, Y), not bar(X).");
+		InputProgram p1 = parser.parse("p(X, Y) :- bla(X), blub(Y), foo(X, Y), not bar(X).");
 		Rule<Head> r1 = p1.getRules().get(0);
-		ASPCore2Program p2 = parser.parse("p(X, Y) :- bla(X), blub(Y), foo(X, Y), not bar(X).");
+		InputProgram p2 = parser.parse("p(X, Y) :- bla(X), blub(Y), foo(X, Y), not bar(X).");
 		Rule<Head> r2 = p2.getRules().get(0);
-		ASPCore2Program p3 = parser.parse("p(X, Y) :- bla(X), blub(X), foo(X, X), not bar(X).");
+		InputProgram p3 = parser.parse("p(X, Y) :- bla(X), blub(X), foo(X, X), not bar(X).");
 		Rule<Head> r3 = p3.getRules().get(0);
 		assertTrue(r1.equals(r2));
 		assertTrue(r2.equals(r1));

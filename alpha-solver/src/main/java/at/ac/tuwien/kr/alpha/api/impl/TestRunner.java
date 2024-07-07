@@ -2,7 +2,7 @@ package at.ac.tuwien.kr.alpha.api.impl;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.tests.Assertion;
@@ -27,7 +27,7 @@ class TestRunner {
 		this.alpha = alpha;
 	}
 
-	TestResult test(ASPCore2Program program) {
+	TestResult test(InputProgram program) {
 		LOGGER.info("Running unit tests..");
 		NormalProgram programUnderTest = alpha.normalizeProgram(program);
 		List<TestResult.TestCaseResult> testCaseResults = program.getTestCases().stream()
@@ -103,7 +103,7 @@ class TestRunner {
 	}
 
 	private boolean answerSetSatisfiesAssertion(AnswerSet as, Assertion assertion) {
-		ASPCore2Program verifierWithInput = Programs.builder(assertion.getVerifier()).addFacts(new ArrayList<>(as.asFacts())).build();
+		InputProgram verifierWithInput = Programs.builder(assertion.getVerifier()).addFacts(new ArrayList<>(as.asFacts())).build();
 		return alpha.solve(verifierWithInput).findAny().isPresent();
 	}
 

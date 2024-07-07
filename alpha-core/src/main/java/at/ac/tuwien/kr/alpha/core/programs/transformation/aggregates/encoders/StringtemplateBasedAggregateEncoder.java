@@ -1,13 +1,7 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
-import org.apache.commons.collections4.ListUtils;
-import org.stringtemplate.v4.ST;
-
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
@@ -23,6 +17,12 @@ import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.EnumerationRewriting;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
+import org.apache.commons.collections4.ListUtils;
+import org.stringtemplate.v4.ST;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 
 /**
  * Abstract base class for aggregate encoders making use of stringtemplates in their rewriting workflow.
@@ -53,7 +53,7 @@ public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggreg
 	}
 
 	@Override
-	protected ASPCore2Program encodeAggregateResult(AggregateInfo aggregateToEncode) {
+	protected InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode) {
 		String aggregateId = aggregateToEncode.getId();
 
 		/*
@@ -81,10 +81,10 @@ public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggreg
 		String coreEncodingAsp = coreEncodingTemplate.render();
 
 		// Create the basic program
-		ASPCore2Program coreEncoding = new EnumerationRewriting().apply(parser.parse(coreEncodingAsp));
+		InputProgram coreEncoding = new EnumerationRewriting().apply(parser.parse(coreEncodingAsp));
 
 		// Add the programatically created bound rule and return
-		return Programs.newASPCore2Program(ListUtils.union(coreEncoding.getRules(), Collections.singletonList(boundRule)), coreEncoding.getFacts(),
+		return Programs.newInputProgram(ListUtils.union(coreEncoding.getRules(), Collections.singletonList(boundRule)), coreEncoding.getFacts(),
 				Programs.newInlineDirectives());
 	}
 
@@ -95,13 +95,13 @@ public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggreg
 	private Rule<Head> buildZeroBoundRule(AggregateInfo aggregateToEncode) {
 		BasicAtom bound = Atoms.newBasicAtom(Predicates.getPredicate(getBoundPredicateName(aggregateToEncode.getId()), 2),
 				aggregateToEncode.getAggregateArguments(), Terms.newConstant(0));
-		return Rules.newRule(Heads.newNormalHead(bound), new ArrayList<>(aggregateToEncode.getDependencies()));
+		return Rules.newRule(Heads.newNormalHead(bound), new LinkedHashSet<>(aggregateToEncode.getDependencies()));
 	}
 
 	private Rule<Head> buildBoundRule(AggregateInfo aggregateToEncode) {
 		BasicAtom bound = Atoms.newBasicAtom(Predicates.getPredicate(getBoundPredicateName(aggregateToEncode.getId()), 2),
 				aggregateToEncode.getAggregateArguments(), aggregateToEncode.getLiteral().getAtom().getLowerBoundTerm());
-		return Rules.newRule(Heads.newNormalHead(bound), new ArrayList<>(aggregateToEncode.getDependencies()));
+		return Rules.newRule(Heads.newNormalHead(bound), new LinkedHashSet<>(aggregateToEncode.getDependencies()));
 	}
 
 }

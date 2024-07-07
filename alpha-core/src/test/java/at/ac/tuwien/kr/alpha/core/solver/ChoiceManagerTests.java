@@ -34,7 +34,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
@@ -54,7 +54,7 @@ public class ChoiceManagerTests {
 	@BeforeEach
 	public void setUp() {
 		String testProgram = "h :- b1, b2, not b3, not b4.";
-		ASPCore2Program parsedProgram = new ProgramParserImpl().parse(testProgram);
+		InputProgram parsedProgram = new ProgramParserImpl().parse(testProgram);
 		CompiledProgram internalProgram = InternalProgram.fromNormalProgram(new NormalizeProgramTransformation(SystemConfig.DEFAULT_AGGREGATE_REWRITING_CONFIG).apply(parsedProgram));
 		atomStore = new AtomStoreImpl();
 		grounder = new NaiveGrounder(internalProgram, atomStore, true);

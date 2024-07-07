@@ -4,9 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
-import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
@@ -22,25 +21,25 @@ public final class Programs {
 	}
 
 	public static InputProgram emptyProgram() {
-		return ASPCore2ProgramImpl.EMPTY;
+		return InputProgramImpl.EMPTY;
 	}
 
 	// TODO rename method
-	public static InputProgram newASPCore2Program(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives, List<TestCase> testCases) {
-		return new ASPCore2ProgramImpl(rules, facts, inlineDirectives, testCases);
+	public static InputProgram newInputProgram(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives, List<TestCase> testCases) {
+		return new InputProgramImpl(rules, facts, inlineDirectives, testCases);
 	}
 
 	// TODO rename method
-	public static InputProgram newASPCore2Program(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
-		return new ASPCore2ProgramImpl(rules, facts, inlineDirectives, Collections.emptyList());
+	public static InputProgram newInputProgram(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
+		return new InputProgramImpl(rules, facts, inlineDirectives, Collections.emptyList());
 	}
 
-	public static ASPCore2ProgramBuilder builder() {
-		return new ASPCore2ProgramBuilder();
+	public static InputProgramBuilder builder() {
+		return new InputProgramBuilder();
 	}
 
-	public static ASPCore2ProgramBuilder builder(InputProgram program) {
-		return new ASPCore2ProgramBuilder(program);
+	public static InputProgramBuilder builder(InputProgram program) {
+		return new InputProgramBuilder(program);
 	}
 
 	public static NormalProgram newNormalProgram(List<NormalRule> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
@@ -60,10 +59,10 @@ public final class Programs {
 	}
 
 	/**
-	 * Builder for more complex program construction scenarios, ensuring that an {@link ASPCore2ProgramImpl} is immutable
+	 * Builder for more complex program construction scenarios, ensuring that an {@link InputProgramImpl} is immutable
 	 */
 	// TODO maybe rename
-	public static class ASPCore2ProgramBuilder {
+	public static class InputProgramBuilder {
 
 		private List<Rule<Head>> rules = new ArrayList<>();
 		private List<Atom> facts = new ArrayList<>();
@@ -71,58 +70,58 @@ public final class Programs {
 
 		private List<TestCase> testCases = new ArrayList<>();
 
-		public ASPCore2ProgramBuilder(InputProgram prog) {
+		public InputProgramBuilder(InputProgram prog) {
 			this.addRules(prog.getRules());
 			this.addFacts(prog.getFacts());
 			this.addInlineDirectives(prog.getInlineDirectives());
 			this.addTestCases(prog.getTestCases());
 		}
 
-		public ASPCore2ProgramBuilder() {
+		public InputProgramBuilder() {
 
 		}
 
-		public ASPCore2ProgramBuilder addRules(List<Rule<Head>> rules) {
+		public InputProgramBuilder addRules(List<Rule<Head>> rules) {
 			this.rules.addAll(rules);
 			return this;
 		}
 
-		public ASPCore2ProgramBuilder addRule(Rule<Head> r) {
+		public InputProgramBuilder addRule(Rule<Head> r) {
 			this.rules.add(r);
 			return this;
 		}
 
-		public ASPCore2ProgramBuilder addFacts(List<Atom> facts) {
+		public InputProgramBuilder addFacts(List<Atom> facts) {
 			this.facts.addAll(facts);
 			return this;
 		}
 
-		public ASPCore2ProgramBuilder addFact(Atom fact) {
+		public InputProgramBuilder addFact(Atom fact) {
 			this.facts.add(fact);
 			return this;
 		}
 
-		public ASPCore2ProgramBuilder addInlineDirectives(InlineDirectives inlineDirectives) {
+		public InputProgramBuilder addInlineDirectives(InlineDirectives inlineDirectives) {
 			this.inlineDirectives.accumulate(inlineDirectives);
 			return this;
 		}
 
-		public ASPCore2ProgramBuilder addTestCase(TestCase testCase) {
+		public InputProgramBuilder addTestCase(TestCase testCase) {
 			this.testCases.add(testCase);
 			return this;
 		}
 
-		public ASPCore2ProgramBuilder addTestCases(List<TestCase> testCases) {
+		public InputProgramBuilder addTestCases(List<TestCase> testCases) {
 			this.testCases.addAll(testCases);
 			return this;
 		}
 
-		public ASPCore2ProgramBuilder accumulate(InputProgram prog) {
+		public InputProgramBuilder accumulate(InputProgram prog) {
 			return this.addRules(prog.getRules()).addFacts(prog.getFacts()).addInlineDirectives(prog.getInlineDirectives()).addTestCases(prog.getTestCases());
 		}
 
 		public InputProgram build() {
-			return Programs.newASPCore2Program(this.rules, this.facts, this.inlineDirectives, this.testCases);
+			return Programs.newInputProgram(this.rules, this.facts, this.inlineDirectives, this.testCases);
 		}
 
 	}

@@ -1,9 +1,9 @@
 package at.ac.tuwien.kr.alpha.api.programs.actions;
 
-import java.util.List;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ActionResultTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 
-import at.ac.tuwien.kr.alpha.api.terms.ActionResultTerm;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+import java.util.List;
 
 /**
  * An action that gets executed as part of an action rule in an evolog program firing.
