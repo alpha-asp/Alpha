@@ -2,7 +2,6 @@ package at.ac.tuwien.kr.alpha.test;
 
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.impl.AnswerSetsParser;
 import at.ac.tuwien.kr.alpha.api.programs.Program;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 

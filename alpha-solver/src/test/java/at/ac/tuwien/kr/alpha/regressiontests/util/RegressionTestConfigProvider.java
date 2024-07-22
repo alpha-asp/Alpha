@@ -21,7 +21,7 @@ public class RegressionTestConfigProvider {
 	private static final boolean DEFAULT_ENABLE_DEBUG_CHECKS = false;
 
 	/**
-	 * Creates a list of {@link RegressionTestConfig}s with all config combinations that are to be tested im methods tagged using
+	 * Creates a list of {@link SystemConfig}s with all config combinations that are to be tested im methods tagged using
 	 * "RegressionTest" annotation.
 	 * Exact number of combinations depends on the "CI" environment variable that can be used to signal that a test is being run in a CI
 	 * environment.
@@ -80,7 +80,7 @@ public class RegressionTestConfigProvider {
 	}
 
 	/**
-	 * Provides {@link RegressionTestConfig}s specifically for tests concerned with AggregateRewriting.
+	 * Provides {@link SystemConfig}s specifically for tests concerned with AggregateRewriting.
 	 * All parameters fixed to default values except stratified evaluation, sorting grid encoding for count rewriting
 	 * and negative sum element support.
 	 * 
@@ -135,7 +135,7 @@ public class RegressionTestConfigProvider {
 		return retVal;
 	}
 
-	private static final String[] nonDeprecatedHeuristics() {
+	private static String[] nonDeprecatedHeuristics() {
 		final List<String> nonDeprecatedHeuristicsNames = new ArrayList<>();
 		for (Field field : Heuristic.class.getFields()) {
 			if (field.getAnnotation(Deprecated.class) == null) {

@@ -36,13 +36,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import org.junit.jupiter.api.Disabled;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.InputProgramParser;
 import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 /**
  * Tests rule transformations described in the following research paper, and their effects on performance:
@@ -246,7 +246,7 @@ public class HeadBodyTransformationTests {
 	private InputProgram checkNumberOfRulesAndParse(List<String> strRules, int numberOfRules) {
 		assertEquals(numberOfRules, strRules.size());
 		String strProgram = strRules.stream().collect(Collectors.joining(System.lineSeparator()));
-		InputProgram parsedProgram = new InputProgramParser().parse(strProgram);
+		InputProgram parsedProgram = new ProgramParserImpl().parse(strProgram);
 		assertEquals(numberOfRules, parsedProgram.getRules().size());
 		return parsedProgram;
 	}

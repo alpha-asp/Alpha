@@ -43,7 +43,7 @@ import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
 
 /**
- * A parser that, in contrast to {@link ProgramParser}, does not parse full programs but only program parts like
+ * A parser that, in contrast to {@link at.ac.tuwien.kr.alpha.api.programs.ProgramParser}, does not parse full programs but only program parts like
  * atoms, terms and such.
  */
 // TODO adapt this and create evolog version

@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Optional;
 
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.junit.jupiter.api.Disabled;
@@ -39,11 +40,10 @@ import org.junit.jupiter.api.Disabled;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.core.parser.aspcore2.InputProgramParser;
 import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 
 /**
- * Tests {@link AbstractSolver} using a racks configuration problem.
+ * Tests {@link Solver} using a racks configuration problem.
  *
  */
 // TODO This is a functional test and should not be run with standard unit tests
@@ -61,7 +61,7 @@ public class RacksTest {
 	private void test(SystemConfig cfg) throws IOException {
 		CharStream programInputStream = CharStreams.fromPath(
 				Paths.get("benchmarks", "siemens", "racks", "racks.lp"));
-		Solver solver = buildSolverForRegressionTest(new InputProgramParser().parse(programInputStream), cfg);
+		Solver solver = buildSolverForRegressionTest(new ProgramParserImpl().parse(programInputStream), cfg);
 		@SuppressWarnings("unused")
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		// System.out.println(answerSet);

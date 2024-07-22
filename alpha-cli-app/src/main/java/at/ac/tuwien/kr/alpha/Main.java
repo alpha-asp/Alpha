@@ -86,7 +86,7 @@ public class Main {
 			Main.exitWithMessage(commandLineParser.getUsageMessage(), 1);
 		}
 
-		Alpha alpha = new AlphaFactory().newAlpha(cfg.getSystemConfig());
+		Alpha alpha = AlphaFactory.newAlpha(cfg.getSystemConfig());
 
 		InputProgram program = null;
 		try {

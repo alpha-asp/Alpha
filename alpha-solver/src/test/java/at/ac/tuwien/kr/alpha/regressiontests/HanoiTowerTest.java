@@ -23,9 +23,9 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.solver;
+package at.ac.tuwien.kr.alpha.regressiontests;
 
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.runWithTimeout;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -33,6 +33,8 @@ import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.SortedSet;
 
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,10 +49,9 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.test.util.TestUtils;
 
 /**
- * Tests {@link AbstractSolver} using some hanoi tower test cases (see https://en.wikipedia.org/wiki/Tower_of_Hanoi).
+ * Tests {@link Solver} using some hanoi tower test cases (see <a href="https://en.wikipedia.org/wiki/Tower_of_Hanoi">Towers of Hanoi</a>).
  *
  */
 public class HanoiTowerTest {
@@ -62,49 +63,49 @@ public class HanoiTowerTest {
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testInstance1(RegressionTestConfig cfg) {
+	public void testInstance1(SystemConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower(1, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testInstance2(RegressionTestConfig cfg) {
+	public void testInstance2(SystemConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower(2, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testInstance3(RegressionTestConfig cfg) {
+	public void testInstance3(SystemConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower(3, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testInstance4(RegressionTestConfig cfg) {
+	public void testInstance4(SystemConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower(4, cfg));
 	}
 
 	@RegressionTest
-	public void testSimple(RegressionTestConfig cfg) {
-		TestUtils.ignoreTestForNaiveSolver(cfg);
-		TestUtils.ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
+	public void testSimple(SystemConfig cfg) {
+		ignoreTestForNaiveSolver(cfg);
+		ignoreTestForNonDefaultDomainIndependentHeuristics(cfg);
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testHanoiTower("simple", cfg));
 	}
 
-	private void testHanoiTower(int instance, RegressionTestConfig cfg) throws IOException {
+	private void testHanoiTower(int instance, SystemConfig cfg) throws IOException {
 		testHanoiTower(String.valueOf(instance), cfg);
 	}
 
-	private void testHanoiTower(String instance, RegressionTestConfig cfg) throws IOException {
+	private void testHanoiTower(String instance, SystemConfig cfg) throws IOException {
 		InputProgram prog = new ProgramParserImpl().parse(
 				Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp"),
 				Paths.get("src", "test", "resources", "HanoiTower_instances", instance + ".asp"));
-		Solver solver = TestUtils.buildSolverForRegressionTest(prog, cfg);
+		Solver solver = buildSolverForRegressionTest(prog, cfg);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		assertTrue(answerSet.isPresent());
 		checkGoal(prog, answerSet.get());
@@ -135,7 +136,7 @@ public class HanoiTowerTest {
 		Predicate steps = Predicates.getPredicate("steps", 1);
 		for (Atom atom : parsedProgram.getFacts()) {
 			if (atom.getPredicate().getName().equals(steps.getName()) && atom.getPredicate().getArity() == steps.getArity()) {
-				return Integer.valueOf(atom.getTerms().get(0).toString());
+				return Integer.parseInt(atom.getTerms().get(0).toString());
 			}
 		}
 		throw new IllegalArgumentException("No steps atom found in input program.");

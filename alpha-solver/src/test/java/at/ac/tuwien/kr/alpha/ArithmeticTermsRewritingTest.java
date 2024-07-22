@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.programs.transformation;
+package at.ac.tuwien.kr.alpha;
 
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import at.ac.tuwien.kr.alpha.core.programs.transformation.ArithmeticTermsRewriting;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
@@ -23,7 +24,7 @@ import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.externals.Externals;
+import at.ac.tuwien.kr.alpha.commons.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
 /**

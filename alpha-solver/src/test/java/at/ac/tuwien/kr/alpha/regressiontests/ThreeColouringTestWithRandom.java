@@ -23,10 +23,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.solver;
-
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.buildSolverForRegressionTest;
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.runWithTimeout;
+package at.ac.tuwien.kr.alpha.regressiontests;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +31,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 import org.junit.jupiter.api.Disabled;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
@@ -49,8 +48,11 @@ import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.runWithTimeout;
+
 /**
- * Tests {@link AbstractSolver} using some three-coloring test cases, as described in: 
+ * Tests {@link Solver} using some three-coloring test cases, as described in:
  * Lefèvre, Claire; Béatrix, Christopher; Stéphan, Igor; Garcia, Laurent (2017): 
  * ASPeRiX, a first-order forward chaining approach for answer set computing. 
  * In Theory and Practice of Logic Programming, pp. 1-45. DOI:
@@ -61,130 +63,130 @@ public class ThreeColouringTestWithRandom {
 	private static final long DEBUG_TIMEOUT_FACTOR = 5;
 	
 	@RegressionTest
-	public void testN3(RegressionTestConfig cfg) {
+	public void testN3(SystemConfig cfg) {
 		long timeout = 3000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(3, false, 0, cfg));
 	}
 
 	@RegressionTest
-	public void testN4(RegressionTestConfig cfg) {
+	public void testN4(SystemConfig cfg) {
 		long timeout = 4000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(4, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN5(RegressionTestConfig cfg) {
+	public void testN5(SystemConfig cfg) {
 		long timeout = 5000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(5, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN6(RegressionTestConfig cfg) {
+	public void testN6(SystemConfig cfg) {
 		long timeout = 6000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(6, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN7(RegressionTestConfig cfg) {
+	public void testN7(SystemConfig cfg) {
 		long timeout = 7000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(7, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN8(RegressionTestConfig cfg) {
+	public void testN8(SystemConfig cfg) {
 		long timeout = 8000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(8, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN9(RegressionTestConfig cfg) {
+	public void testN9(SystemConfig cfg) {
 		long timeout = 9000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(9, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN10(RegressionTestConfig cfg) {
+	public void testN10(SystemConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(10, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN10Random0(RegressionTestConfig cfg) {
+	public void testN10Random0(SystemConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(10, true, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN10Random1(RegressionTestConfig cfg) {
+	public void testN10Random1(SystemConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(10, true, 1, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN10Random2(RegressionTestConfig cfg) {
+	public void testN10Random2(SystemConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(10, true, 2, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN10Random3(RegressionTestConfig cfg) {
+	public void testN10Random3(SystemConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(10, true, 3, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN19(RegressionTestConfig cfg) {
+	public void testN19(SystemConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(19, false, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN19Random0(RegressionTestConfig cfg) {
+	public void testN19Random0(SystemConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(19, true, 0, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN19Random1(RegressionTestConfig cfg) {
+	public void testN19Random1(SystemConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(19, true, 1, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN19Random2(RegressionTestConfig cfg) {
+	public void testN19Random2(SystemConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(19, true, 2, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN19Random3(RegressionTestConfig cfg) {
+	public void testN19Random3(SystemConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(19, true, 3, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testN101(RegressionTestConfig cfg) {
+	public void testN101(SystemConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(101, false, 0, cfg));
 	}
 
-	private void testThreeColouring(int n, boolean shuffle, int seed, RegressionTestConfig cfg) {
+	private void testThreeColouring(int n, boolean shuffle, int seed, SystemConfig cfg) {
 		InputProgram tmpPrg = new ProgramParserImpl()
 				.parse("col(V,C) :- v(V), c(C), not ncol(V,C)." + "ncol(V,C) :- col(V,D), c(C), C != D." + ":- e(V,U), col(V,C), col(U,C).");
 		InputProgramBuilder prgBuilder = Programs.builder().accumulate(tmpPrg);

@@ -23,16 +23,15 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.solver;
-
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.buildSolverForRegressionTest;
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.runWithTimeout;
+package at.ac.tuwien.kr.alpha.regressiontests;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 import org.junit.jupiter.api.Disabled;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
@@ -46,59 +45,62 @@ import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.buildSolverForRegressionTest;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.runWithTimeout;
+
 public class ThreeColouringRandomGraphTest {
 	
 	private static final long DEBUG_TIMEOUT_FACTOR = 5;
 	
 	@RegressionTest
-	public void testV3E3(RegressionTestConfig cfg) {
+	public void testV3E3(SystemConfig cfg) {
 		long timeout = 1000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(3, 3, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testV10E18(RegressionTestConfig cfg) {
+	public void testV10E18(SystemConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(10, 18, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testV20E38(RegressionTestConfig cfg) {
+	public void testV20E38(SystemConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(20, 38, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testV30E48(RegressionTestConfig cfg) {
+	public void testV30E48(SystemConfig cfg) {
 		long timeout = 10000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(30, 48, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testV200E300(RegressionTestConfig cfg) {
+	public void testV200E300(SystemConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(200, 300, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testV300E200(RegressionTestConfig cfg) {
+	public void testV300E200(SystemConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(300, 200, cfg));
 	}
 
 	@RegressionTest
 	@Disabled("disabled to save resources during CI")
-	public void testV300E300(RegressionTestConfig cfg) {
+	public void testV300E300(SystemConfig cfg) {
 		long timeout = 60000L;
 		runWithTimeout(cfg, timeout, DEBUG_TIMEOUT_FACTOR, () -> testThreeColouring(300, 300, cfg));
 	}
 
-	private void testThreeColouring(int nVertices, int nEdges, RegressionTestConfig cfg) {
+	private void testThreeColouring(int nVertices, int nEdges, SystemConfig cfg) {
 		InputProgram tmpPrg = new ProgramParserImpl().parse(
 				"blue(N) :- v(N), not red(N), not green(N)." +
 				"red(N) :- v(N), not blue(N), not green(N)." +

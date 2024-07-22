@@ -65,7 +65,7 @@ public class AlphaFactory {
 		return new DefaultActionImplementationProvider();
 	}
 
-	public Alpha newAlpha(SystemConfig cfg) {
+	protected Alpha buildInstance(SystemConfig cfg) {
 		ActionImplementationProvider actionImplementationProvider = newActionImplementationProvider();
 		ProgramParser parser = new ProgramParserImpl(actionImplementationProvider, Collections.emptyMap());
 		ProgramTransformation<InputProgram, NormalProgram> programNormalizer = new NormalizeProgramTransformation(cfg.getAggregateRewritingConfig());
@@ -87,8 +87,13 @@ public class AlphaFactory {
 	}
 
 	// Create Alpha instance with default config.
-	public Alpha newAlpha() {
-		return newAlpha(new SystemConfig());
+	public static Alpha newAlpha() {
+		return AlphaFactory.newAlpha(new SystemConfig());
+	}
+
+	public static Alpha newAlpha(SystemConfig cfg) {
+		AlphaFactory factory = new AlphaFactory();
+		return factory.buildInstance(cfg);
 	}
 
 }

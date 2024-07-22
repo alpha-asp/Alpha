@@ -1,11 +1,14 @@
-package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
+package at.ac.tuwien.kr.alpha;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -30,18 +33,6 @@ import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransf
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
 
 public class AggregateRewritingTest {
-
-	private static final ProgramParser PARSER = new ProgramParserImpl();
-	private static final Function<String, List<AnswerSet>> NORMALIZE_AND_SOLVE = (str) -> {
-		SystemConfig cfg = new SystemConfig();
-		InputProgram prog = PARSER.parse(str);
-		NormalProgram normalized = new NormalizeProgramTransformation(cfg.getAggregateRewritingConfig()).apply(prog);
-		CompiledProgram compiled = InternalProgram.fromNormalProgram(normalized);
-		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", compiled, atomStore, cfg.isDebugInternalChecks());
-		Solver solver = SolverFactory.getInstance(cfg, atomStore, grounder);
-		return solver.collectList();
-	};
 
 	//@formatter:off
 	// Smoke-test case for "X <= #count{...}" aggregate
@@ -99,9 +90,16 @@ public class AggregateRewritingTest {
 			+ "	Y = #count { X : p( X ) }, 1 <= #count { X : p( X ) }, Z = #max { W : p( W ) }.";
 	//@formatter:on
 
+	// Use an alpha instance with default config for all test cases
+	private final Alpha alpha = AlphaFactory.newAlpha();
+	private final Function<String, List<AnswerSet>> solve = (asp) -> {
+		InputProgram prog = alpha.readProgramString(asp);
+		return alpha.solve(prog).collect(Collectors.toList());
+	};
+
 	@Test
 	public void countLeSortingGridSimple() {
-		List<AnswerSet> answerSets = NORMALIZE_AND_SOLVE.apply(CNT_LE1_ASP);
+		List<AnswerSet> answerSets = solve.apply(CNT_LE1_ASP);
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate thing = Predicates.getPredicate("thing", 1);
@@ -123,7 +121,7 @@ public class AggregateRewritingTest {
 
 	@Test
 	public void countEqSimple() {
-		List<AnswerSet> answerSets = NORMALIZE_AND_SOLVE.apply(CNT_EQ1_ASP);
+		List<AnswerSet> answerSets = solve.apply(CNT_EQ1_ASP);
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate thing = Predicates.getPredicate("thing", 1);
@@ -141,7 +139,7 @@ public class AggregateRewritingTest {
 
 	@Test
 	public void countLeCountingGridSimple() {
-		List<AnswerSet> answerSets = NORMALIZE_AND_SOLVE.apply(CNT_LE1_ASP);
+		List<AnswerSet> answerSets = solve.apply(CNT_LE1_ASP);
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate thing = Predicates.getPredicate("thing", 1);
@@ -163,7 +161,7 @@ public class AggregateRewritingTest {
 
 	@Test
 	public void countEqGlobalVars() {
-		List<AnswerSet> answerSets = NORMALIZE_AND_SOLVE.apply(VERTEX_DEGREE_ASP);
+		List<AnswerSet> answerSets = solve.apply(VERTEX_DEGREE_ASP);
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate vertexDegree = Predicates.getPredicate("graph_vertex_degree", 3);
@@ -182,7 +180,7 @@ public class AggregateRewritingTest {
 	@Test
 	// Test "count eq" and "max eq" together with global vars
 	public void graphVerticesOfMaxDegree() {
-		List<AnswerSet> answerSets = NORMALIZE_AND_SOLVE.apply(NUM_MAX_DEGREE_VERTICES_ASP);
+		List<AnswerSet> answerSets = solve.apply(NUM_MAX_DEGREE_VERTICES_ASP);
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate maxDegreeVertices = Predicates.getPredicate("graph_max_degree_vertices", 3);
@@ -196,7 +194,7 @@ public class AggregateRewritingTest {
 
 	@Test
 	public void greaterMin() {
-		List<AnswerSet> answerSets = NORMALIZE_AND_SOLVE.apply(MIN_GT1_ASP);
+		List<AnswerSet> answerSets = solve.apply(MIN_GT1_ASP);
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate greaterMin = Predicates.getPredicate("greater_min_acceptable", 1);
@@ -210,7 +208,7 @@ public class AggregateRewritingTest {
 
 	@Test
 	public void sumEquals1() {
-		List<AnswerSet> answerSets = NORMALIZE_AND_SOLVE.apply(SUM_EQ1_ASP);
+		List<AnswerSet> answerSets = solve.apply(SUM_EQ1_ASP);
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate sumThings = Predicates.getPredicate("sum_things", 1);
@@ -224,7 +222,7 @@ public class AggregateRewritingTest {
 
 	@Test
 	public void sumLessOrEqual1() {
-		List<AnswerSet> answerSets = NORMALIZE_AND_SOLVE.apply(SUM_LE1_ASP);
+		List<AnswerSet> answerSets = solve.apply(SUM_LE1_ASP);
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate boundLe = Predicates.getPredicate("bound_le_sum", 1);
@@ -238,7 +236,7 @@ public class AggregateRewritingTest {
 	@Test
 	@Disabled("Open issue, as dependency analysis includes cyclic output-dependency, which it should not.")
 	public void setComplexEqualityWithGlobals() {
-		List<AnswerSet> answerSets = NORMALIZE_AND_SOLVE.apply(COMPLEX_EQUALITY_WITH_GLOBALS);
+		List<AnswerSet> answerSets = solve.apply(COMPLEX_EQUALITY_WITH_GLOBALS);
 		assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate q = Predicates.getPredicate("q", 0);

@@ -33,7 +33,7 @@ import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
  */
 public class ReificationTest {
 
-	private final Alpha alpha = new AlphaImpl();
+	private final Alpha alpha = AlphaFactory.newAlpha();
 
 	private static final Map<ComparisonOperator, ConstantTerm<?>> CMP_OP_IDS;
 	

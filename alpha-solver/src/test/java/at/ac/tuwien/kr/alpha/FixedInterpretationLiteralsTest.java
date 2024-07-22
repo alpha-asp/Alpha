@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.api.impl;
+package at.ac.tuwien.kr.alpha;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
@@ -23,8 +24,8 @@ import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.externals.AspStandardLibrary;
-import at.ac.tuwien.kr.alpha.core.externals.Externals;
+import at.ac.tuwien.kr.alpha.commons.externals.Externals;
+import at.ac.tuwien.kr.alpha.commons.externals.AspStandardLibrary;
 
 public class FixedInterpretationLiteralsTest {
 
@@ -79,7 +80,7 @@ public class FixedInterpretationLiteralsTest {
 	private Map<String, PredicateInterpretation> externals;
 
 	public FixedInterpretationLiteralsTest() {
-		this.alpha = new AlphaImpl();
+		this.alpha = AlphaFactory.newAlpha();
 		this.externals = new HashMap<>();
 		this.externals.putAll(Externals.scan(AspStandardLibrary.class));
 		this.externals.putAll(Externals.scan(FixedInterpretationLiteralsTest.class));

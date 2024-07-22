@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha;
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
@@ -45,7 +46,7 @@ public class ActionsTest {
 	@Test
 	public void helloWorld() {
 		MockedActionsAlphaFactory alphaFactory = new MockedActionsAlphaFactory();
-		Alpha alpha = alphaFactory.newAlpha(new SystemConfig());
+		Alpha alpha = AlphaFactory.newAlpha();
 		InputProgram program = alpha.readProgramString(HELLO_WORLD);
 		alpha.solve(program);
 		assertEquals("Hello World!", alphaFactory.getActionImplementationMock().getStdoutContent());
@@ -61,7 +62,7 @@ public class ActionsTest {
 		MockedActionsAlphaFactory alphaFactory = new MockedActionsAlphaFactory();
 		alphaFactory.getActionImplementationMock().setMockedFileOutputs(mockedFileOutputs);
 		ActionImplementationProvider actionProvider = alphaFactory.getActionImplementationMock();
-		Alpha alpha = alphaFactory.newAlpha(new SystemConfig());
+		Alpha alpha = AlphaFactory.newAlpha();
 		InputProgram program = alpha.readProgramString(WRITE_TO_FILE);
 		Set<AnswerSet> answerSets = alpha.solve(program).collect(Collectors.toSet());
 		LOGGER.debug("Got answer sets: {}", answerSets);
