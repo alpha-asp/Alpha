@@ -23,13 +23,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.grounder;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.List;
-
-import org.junit.jupiter.api.Test;
+package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
@@ -39,10 +33,12 @@ import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.programs.rules.InternalRule;
+import org.junit.jupiter.api.Test;
 
-/**
- * Tests {@link BasicRule#toString()} and {@link InternalRule#toString()}.
- */
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class RuleToStringTest {
 	private final ProgramParser parser = new ProgramParserImpl();
 	

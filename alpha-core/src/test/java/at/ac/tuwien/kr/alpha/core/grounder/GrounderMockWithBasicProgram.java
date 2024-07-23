@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
- * 
+ *
  * Additional changes made by Siemens.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -44,6 +44,9 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -51,43 +54,38 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.commons.AnswerSets;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
-import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.IntIterator;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
-import at.ac.tuwien.kr.alpha.core.programs.atoms.RuleAtom;
-import at.ac.tuwien.kr.alpha.core.programs.rules.InternalRule;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRules;
 
 /**
  * Represents a small ASP program {@code { c :- a, b.  a.  b. }}.
  *
  * Copyright (c) 2016, the Alpha Team.
  */
-public class DummyGrounder implements Grounder {
+public class GrounderMockWithBasicProgram implements Grounder {
 	public static final Set<AnswerSet> EXPECTED = new HashSet<>(singletonList(new AnswerSetBuilder()
-		.predicate("a")
-		.predicate("b")
-		.predicate("c")
-		.build()
+			.predicate("a")
+			.predicate("b")
+			.predicate("c")
+			.build()
 	));
 	private static final int FACT_A = 11; // { -a }
 	private static final int FACT_B = 12; // { -b }
 	private static final int RULE_B = 13; // { -_br1, a, b }
 	private static final int RULE_H = 14; // { -c, _br1 }
 	private static final Map<Integer, NoGood> NOGOODS = Stream.of(
-		entry(FACT_A, headFirst(fromOldLiterals(-1))),
-		entry(FACT_B, headFirst(fromOldLiterals(-2))),
-		entry(RULE_B, headFirst(fromOldLiterals(-3, 1, 2))),
-		entry(RULE_H, headFirst(fromOldLiterals(-4, 3)))
+			entry(FACT_A, headFirst(fromOldLiterals(-1))),
+			entry(FACT_B, headFirst(fromOldLiterals(-2))),
+			entry(RULE_B, headFirst(fromOldLiterals(-3, 1, 2))),
+			entry(RULE_H, headFirst(fromOldLiterals(-4, 3)))
 	).collect(entriesToMap());
 	private final AtomStore atomStore;
 	private final java.util.function.Predicate<Predicate> filter;
@@ -95,15 +93,15 @@ public class DummyGrounder implements Grounder {
 	private static Atom atomAA = Atoms.newBasicAtom(Predicates.getPredicate("a", 0));
 	private static Atom atomBB = Atoms.newBasicAtom(Predicates.getPredicate("b", 0));
 	private static BasicAtom atomCC = Atoms.newBasicAtom(Predicates.getPredicate("c", 0));
-	private static Rule<Head> ruleABC = Rules.newRule(Heads.newNormalHead(atomCC), Arrays.asList(atomAA.toLiteral(), atomBB.toLiteral()));
-	private static Atom rule1 = new RuleAtom(InternalRule.fromNormalRule(Rules.toNormalRule(ruleABC)), new BasicSubstitution());
+	private static CompiledRule ruleABC = CompiledRules.newCompiledRule(Heads.newNormalHead(atomCC), atomAA.toLiteral(), atomBB.toLiteral());
+	private static Atom rule1 = new RuleAtom(ruleABC, new BasicSubstitution());
 	private Set<Integer> returnedNogoods = new HashSet<>();
 
-	public DummyGrounder(AtomStore atomStore) {
+	public GrounderMockWithBasicProgram(AtomStore atomStore) {
 		this(atomStore, p -> true);
 	}
 
-	public DummyGrounder(AtomStore atomStore, java.util.function.Predicate<Predicate> filter) {
+	public GrounderMockWithBasicProgram(AtomStore atomStore, java.util.function.Predicate<Predicate> filter) {
 		this.atomStore = atomStore;
 		this.filter = filter;
 		Arrays.asList(atomAA, atomBB, rule1, atomCC).forEach(atomStore::putIfAbsent);
@@ -172,7 +170,7 @@ public class DummyGrounder implements Grounder {
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
 		return new ImmutablePair<>(new HashMap<>(), new HashMap<>());
 	}
-	
+
 	@Override
 	public Map<Integer, Set<Integer>> getHeadsToBodies() {
 		return Collections.emptyMap();
@@ -191,4 +189,5 @@ public class DummyGrounder implements Grounder {
 			returnedNogoods.add(idNoGood);
 		}
 	}
+
 }

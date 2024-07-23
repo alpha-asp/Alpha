@@ -20,7 +20,6 @@ import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRe
 import org.apache.commons.collections4.ListUtils;
 import org.stringtemplate.v4.ST;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 

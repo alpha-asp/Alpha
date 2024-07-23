@@ -1,9 +1,5 @@
 package at.ac.tuwien.kr.alpha.core.programs.atoms;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,8 +18,10 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.externals.Externals;
+import at.ac.tuwien.kr.alpha.commons.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test for basic functionality of various implementations of {@link Atom}.
@@ -91,12 +89,12 @@ public class AtomsTest {
 		Atom a8 = p4.getFacts().get(1);
 		assertEquals(a7, a8);
 
-		assertFalse(a1.equals(a3));
-		assertFalse(a3.equals(a1));
-		assertFalse(a1.equals(a5));
-		assertFalse(a5.equals(a1));
-		assertFalse(a1.equals(a7));
-		assertFalse(a7.equals(a1));
+		assertNotEquals(a1, a3);
+		assertNotEquals(a3, a1);
+		assertNotEquals(a1, a5);
+		assertNotEquals(a5, a1);
+		assertNotEquals(a1, a7);
+		assertNotEquals(a7, a1);
 	}
 
 	@Test
@@ -122,9 +120,9 @@ public class AtomsTest {
 		assertEquals(ext1, ext2);
 		assertEquals(ext2, ext1);
 
-		assertFalse(ext1.equals(null));
-		assertFalse(ext1.equals("bla"));
-		assertTrue(ext1.hashCode() == ext2.hashCode());
+		assertNotEquals(null, ext1);
+		assertNotEquals("bla", ext1);
+		assertEquals(ext1.hashCode(), ext2.hashCode());
 	}
 
 	@Test

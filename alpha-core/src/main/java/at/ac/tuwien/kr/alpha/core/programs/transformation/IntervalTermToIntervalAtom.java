@@ -75,6 +75,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		}
 		// Note that this cast is safe: NormalHead can only have a BasicAtom, so literalizing and getting back the Atom destroys type information,
 		// but should never yield anything other than a BasicAtom
+		// TODO handle action headS!
 		NormalHead rewrittenHead = rule.isConstraint() ? null
 				: Heads.newNormalHead((BasicAtom) rewriteLiteral(rule.getHead().getAtom().toLiteral(), intervalReplacements).getAtom());
 

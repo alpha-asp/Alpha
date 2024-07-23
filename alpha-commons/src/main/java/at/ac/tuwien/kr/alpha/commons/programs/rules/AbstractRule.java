@@ -1,17 +1,15 @@
 package at.ac.tuwien.kr.alpha.commons.programs.rules;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
-import org.apache.commons.collections4.SetUtils;
-
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
+import org.apache.commons.collections4.SetUtils;
+
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * An abstract representation of a rule with a specific type of @{link Head} (type parameter H)

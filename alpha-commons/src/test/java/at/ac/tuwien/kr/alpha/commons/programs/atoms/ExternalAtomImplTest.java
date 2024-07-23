@@ -1,27 +1,18 @@
-package at.ac.tuwien.kr.alpha.commons.atoms;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.junit.jupiter.api.Test;
+package at.ac.tuwien.kr.alpha.commons.programs.atoms;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.externals.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
-import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.externals.Externals;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import org.junit.jupiter.api.Test;
+
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ExternalAtomImplTest {
 
@@ -83,9 +74,9 @@ public class ExternalAtomImplTest {
 		assertEquals(ext1, ext2);
 		assertEquals(ext2, ext1);
 
-		assertFalse(ext1.equals(null));
-		assertFalse(ext1.equals("bla"));
-		assertTrue(ext1.hashCode() == ext2.hashCode());
+		assertNotEquals(null, ext1);
+		assertNotEquals("bla", ext1);
+		assertEquals(ext1.hashCode(), ext2.hashCode());
 	}
 
 	@Test

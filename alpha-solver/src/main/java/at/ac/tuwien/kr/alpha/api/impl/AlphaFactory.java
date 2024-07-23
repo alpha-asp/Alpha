@@ -65,7 +65,7 @@ public class AlphaFactory {
 		return new DefaultActionImplementationProvider();
 	}
 
-	protected Alpha buildInstance(SystemConfig cfg) {
+	public Alpha buildInstance(SystemConfig cfg) {
 		ActionImplementationProvider actionImplementationProvider = newActionImplementationProvider();
 		ProgramParser parser = new ProgramParserImpl(actionImplementationProvider, Collections.emptyMap());
 		ProgramTransformation<InputProgram, NormalProgram> programNormalizer = new NormalizeProgramTransformation(cfg.getAggregateRewritingConfig());

@@ -8,6 +8,7 @@ public class MockedActionsAlphaFactory extends AlphaFactory {
 
 	private MockActionImplementationProvider actionImplementationMock = new MockActionImplementationProvider("");
 
+
 	public MockActionImplementationProvider getActionImplementationMock() {
 		return actionImplementationMock;
 	}
@@ -16,6 +17,7 @@ public class MockedActionsAlphaFactory extends AlphaFactory {
 		this.actionImplementationMock = actionImplementationMock;
 	}
 
+	@Override
 	protected ActionImplementationProvider newActionImplementationProvider() {
 		return actionImplementationMock;
 	}

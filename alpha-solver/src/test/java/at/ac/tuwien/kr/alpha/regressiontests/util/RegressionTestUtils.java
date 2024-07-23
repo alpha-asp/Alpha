@@ -1,16 +1,5 @@
 package at.ac.tuwien.kr.alpha.regressiontests.util;
 
-import static at.ac.tuwien.kr.alpha.test.AlphaAssertions.assertAnswerSetsEqual;
-import static at.ac.tuwien.kr.alpha.test.AlphaAssertions.assertAnswerSetsEqualWithBase;
-import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
-
-import java.time.Duration;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.function.Executable;
-
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
@@ -19,6 +8,16 @@ import at.ac.tuwien.kr.alpha.api.config.InputConfig;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.function.Executable;
+
+import java.time.Duration;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static at.ac.tuwien.kr.alpha.test.AlphaAssertions.assertAnswerSetsEqual;
+import static at.ac.tuwien.kr.alpha.test.AlphaAssertions.assertAnswerSetsEqualWithBase;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 public final class RegressionTestUtils {
 
@@ -38,7 +37,7 @@ public final class RegressionTestUtils {
 	}
 
 	public static Solver buildSolverForRegressionTest(InputProgram program, SystemConfig cfg) {
-		Alpha alpha =AlphaFactory.newAlpha(cfg);
+		Alpha alpha = AlphaFactory.newAlpha(cfg);
 		return alpha.prepareSolverFor(program, InputConfig.DEFAULT_FILTER);
 	}
 

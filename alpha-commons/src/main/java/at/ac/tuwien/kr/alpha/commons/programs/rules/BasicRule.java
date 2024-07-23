@@ -27,11 +27,10 @@
  */
 package at.ac.tuwien.kr.alpha.commons.programs.rules;
 
-import java.util.List;
-import java.util.Set;
-
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+
+import java.util.Set;
 
 /**
  * Represents a non-ground rule or a constraint. A {@link BasicRule} has a general {@link Head}, meaning both choice heads and disjunctive

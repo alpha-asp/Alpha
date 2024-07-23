@@ -25,12 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.List;
-
-import org.junit.jupiter.api.Test;
-
+import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
@@ -47,8 +42,12 @@ import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.atoms.Literals;
 import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
-import at.ac.tuwien.kr.alpha.core.programs.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests {@link NoGoodGenerator}
@@ -66,7 +65,7 @@ public class NoGoodGeneratorTest {
 	private static final VariableTerm Y = Terms.newVariable("Y");
 
 	/**
-	 * Calls {@link NoGoodGenerator#collectNegLiterals(InternalRule, Substitution)}, which puts the atom occurring
+	 * Calls {@link NoGoodGenerator#collectNegLiterals(CompiledRule, Substitution)}, which puts the atom occurring
 	 * negatively in a rule into the atom store. It is then checked whether the atom in the atom store is positive.
 	 */
 	@Test
@@ -79,7 +78,7 @@ public class NoGoodGeneratorTest {
 
 		CompiledRule rule = program.getRules().get(1);
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
+		Grounder grounder = new GrounderFactory(new GrounderHeuristicsConfiguration(), true).createGrounder(program, atomStore);
 		NoGoodGenerator noGoodGenerator = ((NaiveGrounder) grounder).noGoodGenerator;
 		Substitution substitution = new BasicSubstitution();
 		substitution.put(X, A);

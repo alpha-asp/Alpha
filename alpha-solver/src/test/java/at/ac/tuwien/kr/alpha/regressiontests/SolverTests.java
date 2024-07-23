@@ -27,16 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.regressiontests;
 
-import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.*;
-import static java.util.Collections.singleton;
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
-
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
@@ -49,10 +39,14 @@ import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 import at.ac.tuwien.kr.alpha.test.AnswerSetsParser;
+
+import java.util.*;
+
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.*;
+import static java.util.Collections.singleton;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SolverTests {
 	

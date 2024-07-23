@@ -1,10 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import org.junit.jupiter.api.Test;
+package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
@@ -17,7 +11,11 @@ import at.ac.tuwien.kr.alpha.api.programs.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.test.util.RuleParser;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateOperatorNormalization;
+import at.ac.tuwien.kr.alpha.test.RuleParser;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AggregateOperatorNormalizationTest {
 

@@ -163,7 +163,7 @@ public class AlphaImplTest {
 		List<Thingy> things = asList(a, b);
 		InputProgram program = Programs.builder().addFacts(Externals.asFacts(Thingy.class, things)).build();
 		Set<AnswerSet> actual = system.solve(program).collect(Collectors.toSet());
-		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("thingy").instance(a).instance(b).build()));
+		Set<AnswerSet> expected = Set.of(new AnswerSetBuilder().predicate("thingy").instance(a).instance(b).build());
 		assertEquals(expected, actual);
 	}
 
@@ -678,6 +678,7 @@ public class AlphaImplTest {
 
 	// Detailed reproduction test-case for github issue #239.
 	@Test
+	@Disabled("This test relies on stratified evaluation being disabled, which is not supported anymore.")
 	public void testLearnedUnaryNoGoodCausingOutOfOrderLiteralsConflict() throws IOException {
 		final ProgramParser parser = new ProgramParserImpl();
 		InputProgramBuilder bld = Programs.builder();

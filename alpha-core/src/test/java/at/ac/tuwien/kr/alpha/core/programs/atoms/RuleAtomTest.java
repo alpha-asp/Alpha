@@ -1,7 +1,10 @@
-package at.ac.tuwien.kr.alpha.core.atoms;
+package at.ac.tuwien.kr.alpha.core.programs.atoms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.programs.rules.InternalRule;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
@@ -18,17 +21,13 @@ import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.atoms.RuleAtom;
-import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
-import at.ac.tuwien.kr.alpha.core.programs.rules.InternalRule;
 
 /**
  * Copyright (c) 2022, the Alpha Team.
  */
 public class RuleAtomTest {
-	private static final ProgramParser PARSER = new ProgramParserImpl();
 
+	private static final ProgramParser PARSER = new ProgramParserImpl();
 	private static final VariableTerm X = Terms.newVariable("X");
 	private static final VariableTerm Y = Terms.newVariable("Y");
 	private static final Predicate PREDICATE = Predicates.getPredicate("p", 1);

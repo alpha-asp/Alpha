@@ -13,51 +13,51 @@ import java.util.List;
 
 class ActionHeadImpl implements ActionHead {
 
-    private final BasicAtom atom;
-    private final String actionName;
-    private final List<Term> actionInputTerms;
-    private final VariableTerm actionOutputTerm;
+	private final BasicAtom atom;
+	private final String actionName;
+	private final List<Term> actionInputTerms;
+	private final VariableTerm actionOutputTerm;
 
-    ActionHeadImpl(BasicAtom atom, String actionName, List<Term> actionInputTerms, VariableTerm actionOutputTerm) {
-        this.atom = atom;
-        this.actionName = actionName;
-        this.actionInputTerms = Collections.unmodifiableList(actionInputTerms);
-        this.actionOutputTerm = actionOutputTerm;
-    }
+	ActionHeadImpl(BasicAtom atom, String actionName, List<Term> actionInputTerms, VariableTerm actionOutputTerm) {
+		this.atom = atom;
+		this.actionName = actionName;
+		this.actionInputTerms = Collections.unmodifiableList(actionInputTerms);
+		this.actionOutputTerm = actionOutputTerm;
+	}
 
-    @Override
-    public BasicAtom getAtom() {
-        return atom;
-    }
+	@Override
+	public BasicAtom getAtom() {
+		return atom;
+	}
 
-    @Override
-    public boolean isGround() {
-        // TODO: an action head is conceptually a basic one with an (interpreted) function term
-        return false;
-    }
+	@Override
+	public boolean isGround() {
+		// TODO: an action head is conceptually a basic one with an (interpreted) function term
+		return false;
+	}
 
-    @Override
-    public BasicAtom instantiate(RuleInstantiator instantiator, Substitution substitution) {
-        return instantiator.instantiate(this, substitution);
-    }
+	@Override
+	public BasicAtom instantiate(RuleInstantiator instantiator, Substitution substitution) {
+		return instantiator.instantiate(this, substitution);
+	}
 
-    @Override
-    public String getActionName() {
-        return actionName;
-    }
+	@Override
+	public String getActionName() {
+		return actionName;
+	}
 
-    @Override
-    public List<Term> getActionInputTerms() {
-        return actionInputTerms;
-    }
+	@Override
+	public List<Term> getActionInputTerms() {
+		return actionInputTerms;
+	}
 
-    @Override
-    public VariableTerm getActionOutputTerm() {
-        return actionOutputTerm;
-    }
+	@Override
+	public VariableTerm getActionOutputTerm() {
+		return actionOutputTerm;
+	}
 
-    public String toString() {
-        return atom.toString() + " : @" + actionName + "(" + StringUtils.join(actionInputTerms, ", ") + ") = " + actionOutputTerm;
-    }
+	public String toString() {
+		return atom.toString() + " : @" + actionName + "(" + StringUtils.join(actionInputTerms, ", ") + ") = " + actionOutputTerm;
+	}
 
 }

@@ -1,14 +1,11 @@
-package at.ac.tuwien.kr.alpha.commons.atoms;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import org.junit.jupiter.api.Test;
+package at.ac.tuwien.kr.alpha.commons.programs.atoms;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test for basic functionality of various implementations of {@link Atom}.
@@ -56,12 +53,12 @@ public class BasicAtomImplTest {
 				Terms.newFunctionTerm("r", Terms.newConstant("bla"), Terms.newVariable("BLUBB")));
 		assertEquals(a7, a8);
 
-		assertFalse(a1.equals(a3));
-		assertFalse(a3.equals(a1));
-		assertFalse(a1.equals(a5));
-		assertFalse(a5.equals(a1));
-		assertFalse(a1.equals(a7));
-		assertFalse(a7.equals(a1));
+		assertNotEquals(a1, a3);
+		assertNotEquals(a3, a1);
+		assertNotEquals(a1, a5);
+		assertNotEquals(a5, a1);
+		assertNotEquals(a1, a7);
+		assertNotEquals(a7, a1);
 	}
 
 }

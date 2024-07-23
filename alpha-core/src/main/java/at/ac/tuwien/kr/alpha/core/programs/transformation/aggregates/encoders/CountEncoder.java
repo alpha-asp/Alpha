@@ -1,13 +1,11 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders;
 
-import org.stringtemplate.v4.ST;
-import org.stringtemplate.v4.STGroup;
-
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
+import org.stringtemplate.v4.ST;
+import org.stringtemplate.v4.STGroup;
 
 public final class CountEncoder extends StringtemplateBasedAggregateEncoder {
 

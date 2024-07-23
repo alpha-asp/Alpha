@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.test.util;
+package at.ac.tuwien.kr.alpha.test;
 
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;

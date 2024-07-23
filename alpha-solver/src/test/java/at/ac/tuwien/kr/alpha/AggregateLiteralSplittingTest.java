@@ -1,15 +1,15 @@
-package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.List;
-
-import org.junit.jupiter.api.Test;
+package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.core.test.util.RuleParser;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateLiteralSplitting;
+import at.ac.tuwien.kr.alpha.test.RuleParser;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AggregateLiteralSplittingTest {
 

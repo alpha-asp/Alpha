@@ -23,39 +23,25 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-<<<<<<<< HEAD:alpha-commons/src/test/java/at/ac/tuwien/kr/alpha/commons/literals/LiteralBindingNonBindingVariablesTest.java
-package at.ac.tuwien.kr.alpha.commons.literals;
-========
-package at.ac.tuwien.kr.alpha.core.programs.atoms;
->>>>>>>> master:alpha-core/src/test/java/at/ac/tuwien/kr/alpha/core/programs/atoms/LiteralBindingNonBindingVariablesTest.java
+package at.ac.tuwien.kr.alpha.commons.programs.literals;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-<<<<<<<< HEAD:alpha-commons/src/test/java/at/ac/tuwien/kr/alpha/commons/literals/LiteralBindingNonBindingVariablesTest.java
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-========
-import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
->>>>>>>> master:alpha-core/src/test/java/at/ac/tuwien/kr/alpha/core/programs/atoms/LiteralBindingNonBindingVariablesTest.java
+import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.externals.IntPredicateInterpretation;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests the behaviour of {@link Literal#getBindingVariables()} and {@link Literal#getNonBindingVariables()}
@@ -68,7 +54,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	public void testPositiveBasicLiteral() {
 		// literal := q(X, Y)
 		Literal literal = Literals.fromAtom(Atoms.newBasicAtom(Predicates.getPredicate("q", 2), Terms.newVariable("X"), Terms.newVariable("Y")), true);
-		assertEquals(false, literal.isNegated());
+		assertFalse(literal.isNegated());
 		expectVariables(literal.getBindingVariables(), "X", "Y");
 		expectVariables(literal.getNonBindingVariables());
 	}
@@ -77,7 +63,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	public void testNegativeBasicLiteral() {
 		// literal := not r(X, Y)
 		Literal literal = Literals.fromAtom(Atoms.newBasicAtom(Predicates.getPredicate("r", 2), Terms.newVariable("X"), Terms.newVariable("Y")), false);
-		assertEquals(true, literal.isNegated());
+		assertTrue(literal.isNegated());
 		expectVariables(literal.getBindingVariables());
 		expectVariables(literal.getNonBindingVariables(), "X", "Y");
 	}
@@ -86,7 +72,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	public void testPositiveComparisonLiteral_EQ_LeftAssigning() {
 		// literal := Y = 5
 		Literal literal = Literals.fromAtom(Atoms.newComparisonAtom(Terms.newVariable("Y"), Terms.newConstant(5), ComparisonOperators.EQ), true);
-		assertEquals(false, literal.isNegated());
+		assertFalse(literal.isNegated());
 		expectVariables(literal.getBindingVariables(), "Y");
 		expectVariables(literal.getNonBindingVariables());
 	}
@@ -95,7 +81,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	public void testNegativeComparisonLiteral_EQ_LeftAssigning() {
 		// literal := not Y = 5
 		Literal literal = Literals.fromAtom(Atoms.newComparisonAtom(Terms.newVariable("Y"), Terms.newConstant(5), ComparisonOperators.EQ), false);
-		assertEquals(true, literal.isNegated());
+		assertTrue(literal.isNegated());
 		expectVariables(literal.getBindingVariables());
 		expectVariables(literal.getNonBindingVariables(), "Y");
 	}
@@ -104,7 +90,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	public void testPositiveComparisonLiteral_EQ_RightAssigning() {
 		// literal := 5 = Y
 		Literal literal = Literals.fromAtom(Atoms.newComparisonAtom(Terms.newConstant(5), Terms.newVariable("Y"), ComparisonOperators.EQ), true);
-		assertEquals(false, literal.isNegated());
+		assertFalse(literal.isNegated());
 		expectVariables(literal.getBindingVariables(), "Y");
 		expectVariables(literal.getNonBindingVariables());
 	}
@@ -113,7 +99,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	public void testNegativeComparisonLiteral_EQ_RightAssigning() {
 		// literal := 5 = Y
 		Literal literal = Literals.fromAtom(Atoms.newComparisonAtom(Terms.newConstant(5), Terms.newVariable("Y"), ComparisonOperators.EQ), false);
-		assertEquals(true, literal.isNegated());
+		assertTrue(literal.isNegated());
 		expectVariables(literal.getBindingVariables());
 		expectVariables(literal.getNonBindingVariables(), "Y");
 	}
@@ -122,7 +108,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	public void testNegativeComparisonLiteral_EQ_Bidirectional() {
 		// literal := not X = Y
 		Literal literal = Literals.fromAtom(Atoms.newComparisonAtom(Terms.newVariable("X"), Terms.newVariable("Y"), ComparisonOperators.EQ), false);
-		assertEquals(true, literal.isNegated());
+		assertTrue(literal.isNegated());
 		expectVariables(literal.getBindingVariables());
 		expectVariables(literal.getNonBindingVariables(), "X", "Y");
 	}
@@ -131,7 +117,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	public void testPositiveComparisonLiteral_NEQ_LeftAssigning() {
 		// literal := Y != 5
 		Literal literal = Literals.fromAtom(Atoms.newComparisonAtom(Terms.newVariable("Y"), Terms.newConstant(5), ComparisonOperators.NE), true);
-		assertEquals(false, literal.isNegated());
+		assertFalse(literal.isNegated());
 		expectVariables(literal.getBindingVariables());
 		expectVariables(literal.getNonBindingVariables(), "Y");
 	}
@@ -140,7 +126,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	public void testNegativeComparisonLiteral_NEQ_LeftAssigning() {
 		// literal := not Y != 5
 		Literal literal = Literals.fromAtom(Atoms.newComparisonAtom(Terms.newVariable("Y"), Terms.newConstant(5), ComparisonOperators.NE), false);
-		assertEquals(true, literal.isNegated());
+		assertTrue(literal.isNegated());
 		expectVariables(literal.getBindingVariables(), "Y");
 		expectVariables(literal.getNonBindingVariables());
 	}
@@ -149,7 +135,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	public void testPositiveComparisonLiteral_NEQ_RightAssigning() {
 		// literal := 5 != Y
 		Literal literal = Literals.fromAtom(Atoms.newComparisonAtom(Terms.newConstant(5), Terms.newVariable("Y"), ComparisonOperators.NE), true);
-		assertEquals(false, literal.isNegated());
+		assertFalse(literal.isNegated());
 		expectVariables(literal.getBindingVariables());
 		expectVariables(literal.getNonBindingVariables(), "Y");
 	}
@@ -158,7 +144,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	public void testNegativeComparisonLiteral_NEQ_RightAssigning() {
 		// literal := not 5 != Y
 		Literal literal = Literals.fromAtom(Atoms.newComparisonAtom(Terms.newConstant(5), Terms.newVariable("Y"), ComparisonOperators.NE), false);
-		assertEquals(true, literal.isNegated());
+		assertTrue(literal.isNegated());
 		expectVariables(literal.getBindingVariables(), "Y");
 		expectVariables(literal.getNonBindingVariables());
 	}
@@ -167,7 +153,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	public void testPositiveComparisonLiteral_NEQ_Bidirectional() {
 		// literal := X != Y
 		Literal literal = Literals.fromAtom(Atoms.newComparisonAtom(Terms.newVariable("X"), Terms.newVariable("Y"), ComparisonOperators.NE), true);
-		assertEquals(false, literal.isNegated());
+		assertFalse(literal.isNegated());
 		expectVariables(literal.getBindingVariables());
 		expectVariables(literal.getNonBindingVariables(), "X", "Y");
 	}
@@ -177,7 +163,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	public void testNegativeComparisonLiteral_NEQ_Bidirectional() {
 		// literal := not X != Y
 		Literal literal = Literals.fromAtom(Atoms.newComparisonAtom(Terms.newVariable("X"), Terms.newVariable("Y"), ComparisonOperators.NE), false);
-		assertEquals(true, literal.isNegated());
+		assertTrue(literal.isNegated());
 		expectVariables(literal.getBindingVariables(), "X", "Y");
 		expectVariables(literal.getNonBindingVariables());
 	}
@@ -190,7 +176,7 @@ public class LiteralBindingNonBindingVariablesTest {
 		extInput.add(Terms.newVariable("Y"));
 		extOutput.add(Terms.newVariable("X"));
 		Literal literal = Literals.fromAtom(Atoms.newExternalAtom(Predicates.getPredicate("ext", 2), new IntPredicateInterpretation(i -> i > 0), extInput, extOutput), true);
-		assertEquals(false, literal.isNegated());
+		assertFalse(literal.isNegated());
 		expectVariables(literal.getBindingVariables(), "X");
 		expectVariables(literal.getNonBindingVariables(), "Y");
 	}
@@ -203,7 +189,7 @@ public class LiteralBindingNonBindingVariablesTest {
 		extInput.add(Terms.newVariable("Y"));
 		extOutput.add(Terms.newVariable("X"));
 		Literal literal = Literals.fromAtom(Atoms.newExternalAtom(Predicates.getPredicate("ext", 2), new IntPredicateInterpretation(i -> i > 0), extInput, extOutput), false);
-		assertEquals(true, literal.isNegated());
+		assertTrue(literal.isNegated());
 		expectVariables(literal.getBindingVariables());
 		expectVariables(literal.getNonBindingVariables(), "X", "Y");
 	}

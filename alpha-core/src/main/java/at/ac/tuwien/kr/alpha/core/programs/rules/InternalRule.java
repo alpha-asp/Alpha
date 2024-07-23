@@ -103,7 +103,7 @@ public class InternalRule extends AbstractRule<NormalHead> implements CompiledRu
 	}
 
 	public static CompiledRule fromNormalRule(Rule<NormalHead> rule) {
-		return new InternalRule(rule.isConstraint() ? null : Heads.newNormalHead(rule.getHead().getAtom()), new LinkedHashSet<>(rule.getBody()));
+		return new InternalRule(rule.isConstraint() ? null : rule.getHead(), new LinkedHashSet<>(rule.getBody()));
 	}
 
 	/**

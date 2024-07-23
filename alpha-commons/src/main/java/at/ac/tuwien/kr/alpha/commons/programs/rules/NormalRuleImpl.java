@@ -1,11 +1,10 @@
 package at.ac.tuwien.kr.alpha.commons.programs.rules;
 
-import java.util.List;
-import java.util.Set;
-
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
+
+import java.util.Set;
 
 /**
  * A rule that has a normal head, i.e. just one head atom, no disjunction or choice heads allowed.

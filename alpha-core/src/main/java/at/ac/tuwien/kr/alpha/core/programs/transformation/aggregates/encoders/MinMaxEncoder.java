@@ -1,13 +1,5 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.collections4.SetUtils;
-import org.stringtemplate.v4.ST;
-
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
@@ -35,6 +27,11 @@ import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
+import org.apache.commons.collections4.SetUtils;
+import org.stringtemplate.v4.ST;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class MinMaxEncoder extends AbstractAggregateEncoder {
 

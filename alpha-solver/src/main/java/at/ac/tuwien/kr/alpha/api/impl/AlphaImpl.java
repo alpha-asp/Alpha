@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
- * 
+ * <p>
  * Additional changes made by Siemens.
- * 
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ * <p>
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 
+ * list of conditions and the following disclaimer.
+ * <p>
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- * 
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -79,9 +79,7 @@ public class AlphaImpl implements Alpha {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlphaImpl.class);
 
 	private final ProgramParser parser;
-
 	private final ProgramTransformation<InputProgram, NormalProgram> programNormalization;
-
 	private final Supplier<StratifiedEvaluation> stratifiedEvaluationFactory;
 	private final GrounderFactory grounderFactory;
 	private final SolverFactory solverFactory;
@@ -90,11 +88,11 @@ public class AlphaImpl implements Alpha {
 	private final boolean sortAnswerSets;
 
 	AlphaImpl(ProgramParser parser, ProgramTransformation<InputProgram, NormalProgram> programNormalization,
-			  Supplier<StratifiedEvaluation> stratifiedEvaluationFactory,
-			  GrounderFactory grounderFactory,
-			  SolverFactory solverFactory,
-			  Reifier reifier,
-			  boolean sortAnswerSets) {
+			Supplier<StratifiedEvaluation> stratifiedEvaluationFactory,
+			GrounderFactory grounderFactory,
+			SolverFactory solverFactory,
+			Reifier reifier,
+			boolean sortAnswerSets) {
 		this.parser = parser;
 		this.programNormalization = programNormalization;
 		this.stratifiedEvaluationFactory = stratifiedEvaluationFactory;
@@ -122,7 +120,7 @@ public class AlphaImpl implements Alpha {
 
 	@Override
 	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException {
-		return readProgramFiles(literate, externals, paths.stream().map(Paths::get).collect(Collectors.toList()).toArray(new Path[] {}));
+		return readProgramFiles(literate, externals, paths.stream().map(Paths::get).collect(Collectors.toList()).toArray(new Path[]{}));
 	}
 
 	@Override
@@ -213,7 +211,7 @@ public class AlphaImpl implements Alpha {
 
 	/**
 	 * Solves the given program and filters answer sets based on the passed predicate.
-	 * 
+	 *
 	 * @param program an {@link InternalProgram} to solve
 	 * @param filter  {@link Predicate} filtering {@link at.ac.tuwien.kr.alpha.api.programs.Predicate}s in the returned answer sets
 	 * @return a Stream of answer sets representing stable models of the given program
@@ -226,7 +224,7 @@ public class AlphaImpl implements Alpha {
 	/**
 	 * Prepares a solver (and accompanying grounder) instance pre-loaded with the given program. Use this if the
 	 * solver is needed after reading answer sets (e.g. for obtaining statistics).
-	 * 
+	 *
 	 * @param program the program to solve.
 	 * @param filter  a (java util) predicate that filters (asp-)predicates which should be contained in the answer
 	 *                set stream from the solver.

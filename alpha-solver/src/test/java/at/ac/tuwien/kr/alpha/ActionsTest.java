@@ -3,7 +3,6 @@ package at.ac.tuwien.kr.alpha;
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
@@ -46,7 +45,7 @@ public class ActionsTest {
 	@Test
 	public void helloWorld() {
 		MockedActionsAlphaFactory alphaFactory = new MockedActionsAlphaFactory();
-		Alpha alpha = AlphaFactory.newAlpha();
+		Alpha alpha = alphaFactory.buildInstance(new SystemConfig());
 		InputProgram program = alpha.readProgramString(HELLO_WORLD);
 		alpha.solve(program);
 		assertEquals("Hello World!", alphaFactory.getActionImplementationMock().getStdoutContent());
@@ -62,7 +61,7 @@ public class ActionsTest {
 		MockedActionsAlphaFactory alphaFactory = new MockedActionsAlphaFactory();
 		alphaFactory.getActionImplementationMock().setMockedFileOutputs(mockedFileOutputs);
 		ActionImplementationProvider actionProvider = alphaFactory.getActionImplementationMock();
-		Alpha alpha = AlphaFactory.newAlpha();
+		Alpha alpha = alphaFactory.buildInstance(new SystemConfig());
 		InputProgram program = alpha.readProgramString(WRITE_TO_FILE);
 		Set<AnswerSet> answerSets = alpha.solve(program).collect(Collectors.toSet());
 		LOGGER.debug("Got answer sets: {}", answerSets);
@@ -70,7 +69,7 @@ public class ActionsTest {
 		AnswerSet answerSet = answerSets.stream().findFirst().get();
 		/*
 		 * Note: We have to check answer set content here because we have no way of constructing an equal instance for
-		 * the outputStreamHandle that is constructed when execution the "fileOutputStream" action.		 *
+		 * the outputStreamHandle that is constructed when executing the "fileOutputStream" action.		 *
 		 */
 		assertEquals(1, answerSet.query(Atoms.query(Predicates.getPredicate("outfile_open_result", 2))
 				.withFilter(0, term -> term instanceof ConstantTerm<?> && ((ConstantTerm<String>) term).getObject().endsWith("dummy.file"))
