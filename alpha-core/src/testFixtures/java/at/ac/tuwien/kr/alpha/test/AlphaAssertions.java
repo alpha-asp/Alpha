@@ -1,18 +1,18 @@
 package at.ac.tuwien.kr.alpha.test;
 
 
-import static java.util.Collections.emptySet;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.programs.Program;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.programs.Program;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import static java.util.Collections.emptySet;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AlphaAssertions {
 

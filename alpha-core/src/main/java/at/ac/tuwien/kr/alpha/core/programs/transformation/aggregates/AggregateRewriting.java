@@ -1,29 +1,24 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
-import at.ac.tuwien.kr.alpha.commons.literals.Literals;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.InputProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.literals.Literals;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.AbstractAggregateEncoder;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.CountEncoder;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.MinMaxEncoder;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.SumEncoder;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders.AggregateEncoders;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
+import java.util.*;
 
 /**
  * Rewrites {@link AggregateLiteral}s in programs to semantically equivalent, aggregate-free sub-programs.
@@ -49,14 +44,13 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	 *                                (including negative) integers. Note that these encodings are less performant than
 	 *                                their simpler counterparts that only support positive integers (eused when flag set to false)
 	 */
-	public AggregateRewriting(CountEncoder countEqualsEncoder, CountEncoder countLessOrEqualEncoder, SumEncoder sumEqualsEncoder,
-			SumEncoder sumLessOrEqualEncoder, MinMaxEncoder minEncoder, MinMaxEncoder maxEncoder) {
-		this.countLessOrEqualEncoder = countLessOrEqualEncoder;
-		this.sumLessOrEqualEncoder = sumLessOrEqualEncoder;
-		this.sumEqualsEncoder = sumEqualsEncoder;
-		this.countEqualsEncoder = countEqualsEncoder;
-		this.minEncoder = minEncoder;
-		this.maxEncoder = maxEncoder;
+	public AggregateRewriting(boolean useSortingCircuit, boolean supportNegativeIntegers) {
+		this.countLessOrEqualEncoder = AggregateEncoders.newCountLessOrEqualEncoder(useSortingCircuit);
+		this.sumLessOrEqualEncoder = AggregateEncoders.newSumLessOrEqualEncoder(supportNegativeIntegers);
+		this.sumEqualsEncoder = AggregateEncoders.newSumEqualsEncoder(supportNegativeIntegers);
+		this.countEqualsEncoder = AggregateEncoders.newCountEqualsEncoder();
+		this.minEncoder = AggregateEncoders.newMinEncoder();
+		this.maxEncoder = AggregateEncoders.newMaxEncoder();
 	}
 
 	/**
@@ -89,7 +83,7 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 		}
 		// Substitute AggregateLiterals with generated result literals.
 		outputRules.addAll(rewriteRulesWithAggregates(ctx));
-		InputProgramImpl.Builder resultBuilder = InputProgramImpl.builder().addRules(outputRules).addFacts(inputProgram.getFacts())
+		InputProgramBuilder resultBuilder = Programs.builder().addRules(outputRules).addFacts(inputProgram.getFacts())
 				.addInlineDirectives(inputProgram.getInlineDirectives());
 		// Add sub-programs deriving respective aggregate literals.
 		for (Map.Entry<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<AggregateInfo>> aggToRewrite : ctx.getAggregateFunctionsToRewrite()
@@ -138,7 +132,7 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	private static List<Rule<Head>> rewriteRulesWithAggregates(AggregateRewritingContext ctx) {
 		List<Rule<Head>> rewrittenRules = new ArrayList<>();
 		for (Rule<Head> rule : ctx.getRulesWithAggregates()) {
-			List<Literal> rewrittenBody = new ArrayList<>();
+			Set<Literal> rewrittenBody = new LinkedHashSet<>();
 			for (Literal lit : rule.getBody()) {
 				if (lit instanceof AggregateLiteral) {
 					AggregateInfo aggregateInfo = ctx.getAggregateInfo((AggregateLiteral) lit);
@@ -147,7 +141,7 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 					rewrittenBody.add(lit);
 				}
 			}
-			rewrittenRules.add(new BasicRule(rule.getHead(), rewrittenBody));
+			rewrittenRules.add(Rules.newRule(rule.getHead(), rewrittenBody));
 		}
 		return rewrittenRules;
 	}

@@ -1,19 +1,5 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
 
-import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.stringtemplate.v4.ST;
-
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
@@ -21,13 +7,19 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.stringtemplate.v4.ST;
+
+import java.util.*;
+
+import static at.ac.tuwien.kr.alpha.commons.util.Util.oops;
 
 /**
  * Holds all information about aggregate literals that need to be rewritten within a program.

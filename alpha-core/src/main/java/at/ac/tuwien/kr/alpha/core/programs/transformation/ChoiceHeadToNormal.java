@@ -27,26 +27,25 @@
  */
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead;
-import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead.ChoiceElement;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead.ChoiceElement;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.InputProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 
 /**
  * Copyright (c) 2017-2021, the Alpha Team.
@@ -57,7 +56,7 @@ public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, Inpu
 
 	@Override
 	public InputProgram apply(InputProgram inputProgram) {
-		InputProgramImpl.Builder programBuilder = InputProgramImpl.builder();
+		InputProgramBuilder programBuilder = Programs.builder();
 		List<Rule<Head>> additionalRules = new ArrayList<>();
 
 		List<Rule<Head>> srcRules = new ArrayList<>(inputProgram.getRules());
@@ -103,13 +102,13 @@ public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, Inpu
 				BasicAtom negHead = Atoms.newBasicAtom(negPredicate, headTerms);
 
 				// Construct two guessing rules.
-				List<Literal> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
+				Set<Literal> guessingRuleBodyWithNegHead = new LinkedHashSet<>(ruleBody);
 				guessingRuleBodyWithNegHead.add(Atoms.newBasicAtom(head.getPredicate(), head.getTerms()).toLiteral(false));
-				additionalRules.add(new BasicRule(Heads.newNormalHead(negHead), guessingRuleBodyWithNegHead));
+				additionalRules.add(Rules.newRule(Heads.newNormalHead(negHead), guessingRuleBodyWithNegHead));
 
-				List<Literal> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
+				Set<Literal> guessingRuleBodyWithHead = new LinkedHashSet<>(ruleBody);
 				guessingRuleBodyWithHead.add(Atoms.newBasicAtom(negPredicate, headTerms).toLiteral(false));
-				additionalRules.add(new BasicRule(Heads.newNormalHead(head), guessingRuleBodyWithHead));
+				additionalRules.add(Rules.newRule(Heads.newNormalHead(head), guessingRuleBodyWithHead));
 
 				// TODO: when cardinality constraints are possible, process the boundaries by adding a constraint with a cardinality check.
 			}

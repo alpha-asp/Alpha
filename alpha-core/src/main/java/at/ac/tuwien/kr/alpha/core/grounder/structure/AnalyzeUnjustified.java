@@ -21,17 +21,17 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.grounder.Unification;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
 
 /**

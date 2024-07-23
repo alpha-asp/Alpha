@@ -29,7 +29,7 @@ package at.ac.tuwien.kr.alpha.commons.externals;
 
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 
 public class BinaryPredicateInterpretation<T, U> extends NonBindingPredicateInterpretation {
 	private final java.util.function.BiPredicate<T, U> predicate;

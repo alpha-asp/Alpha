@@ -35,17 +35,18 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Optional;
 
+import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 
 /**
- * Tests {@link AbstractSolver} using Omiga benchmark problems.
+ * Tests {@link Solver} using Omiga benchmark problems.
  *
  */
 // TODO This is actually a performance benchmark and should not be run with standard unit tests

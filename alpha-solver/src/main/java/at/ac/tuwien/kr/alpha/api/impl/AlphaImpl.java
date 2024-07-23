@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
- * 
+ * <p>
  * Additional changes made by Siemens.
- * 
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ * <p>
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 
+ * list of conditions and the following disclaimer.
+ * <p>
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- * 
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -27,25 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.api.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.channels.Channels;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import com.google.common.annotations.VisibleForTesting;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
@@ -58,6 +39,11 @@ import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.tests.TestResult;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.InputProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.reification.Reifier;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
@@ -65,40 +51,61 @@ import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.channels.Channels;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AlphaImpl implements Alpha {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlphaImpl.class);
 
-	private final Supplier<ProgramParser> parserFactory;
-	private final Supplier<ProgramTransformation<InputProgram, NormalProgram>> programNormalizationFactory;
-
+	private final ProgramParser parser;
+	private final ProgramTransformation<InputProgram, NormalProgram> programNormalization;
+	private final Supplier<StratifiedEvaluation> stratifiedEvaluationFactory;
 	private final GrounderFactory grounderFactory;
 	private final SolverFactory solverFactory;
-
-	private final boolean enableStratifiedEvaluation;
+	private final TestRunner testRunner;
+	private final Reifier reifier;
 	private final boolean sortAnswerSets;
 
-	AlphaImpl(Supplier<ProgramParser> parserFactory, Supplier<ProgramTransformation<InputProgram, NormalProgram>> programNormalizationFactory,
+	AlphaImpl(ProgramParser parser, ProgramTransformation<InputProgram, NormalProgram> programNormalization,
+			Supplier<StratifiedEvaluation> stratifiedEvaluationFactory,
 			GrounderFactory grounderFactory,
 			SolverFactory solverFactory,
-			boolean enableStratifiedEvaluation, boolean sortAnswerSets) {
-		this.parserFactory = parserFactory;
-		this.programNormalizationFactory = programNormalizationFactory;
+			Reifier reifier,
+			boolean sortAnswerSets) {
+		this.parser = parser;
+		this.programNormalization = programNormalization;
+		this.stratifiedEvaluationFactory = stratifiedEvaluationFactory;
 		this.grounderFactory = grounderFactory;
 		this.solverFactory = solverFactory;
-		this.enableStratifiedEvaluation = enableStratifiedEvaluation;
+		this.reifier = reifier;
+		this.testRunner = new TestRunner(this);
 		this.sortAnswerSets = sortAnswerSets;
 	}
 
 	@Override
 	public InputProgram readProgram(InputConfig cfg) throws IOException {
-		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder();
+		InputProgramBuilder prgBuilder = Programs.builder();
 		InputProgram tmpProg;
 		if (!cfg.getFiles().isEmpty()) {
 			tmpProg = readProgramFiles(cfg.isLiterate(), cfg.getPredicateMethods(), cfg.getFiles());
@@ -113,14 +120,12 @@ public class AlphaImpl implements Alpha {
 
 	@Override
 	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException {
-		return readProgramFiles(literate, externals, paths.stream().map(Paths::get).collect(Collectors.toList()).toArray(new Path[] {}));
+		return readProgramFiles(literate, externals, paths.stream().map(Paths::get).collect(Collectors.toList()).toArray(new Path[]{}));
 	}
 
 	@Override
-	@SuppressWarnings("resource")
 	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
-		ProgramParser parser = parserFactory.get();
-		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder();
+		InputProgramBuilder prgBuilder = Programs.builder();
 		InputProgram tmpProg;
 		for (Path path : paths) {
 			InputStream stream;
@@ -137,7 +142,7 @@ public class AlphaImpl implements Alpha {
 
 	@Override
 	public InputProgram readProgramString(String aspString, Map<String, PredicateInterpretation> externals) {
-		return parserFactory.get().parse(aspString, externals);
+		return parser.parse(aspString, externals);
 	}
 
 	@Override
@@ -146,18 +151,27 @@ public class AlphaImpl implements Alpha {
 	}
 
 	@Override
+	public InputProgram readProgramStream(InputStream is) throws IOException {
+		return parser.parse(is);
+	}
+
+	@Override
+	public InputProgram readProgramStream(InputStream is, Map<String, PredicateInterpretation> externals) throws IOException {
+		return parser.parse(is, externals);
+	}
+
+	@Override
 	public NormalProgram normalizeProgram(InputProgram program) {
-		return programNormalizationFactory.get().apply(program);
+		return programNormalization.apply(program);
 	}
 
 	@VisibleForTesting
 	InternalProgram performProgramPreprocessing(NormalProgram program) {
 		LOGGER.debug("Preprocessing InternalProgram!");
+		LOGGER.debug("Preprocessing InternalProgram!");
 		InternalProgram retVal = InternalProgram.fromNormalProgram(program);
-		if (enableStratifiedEvaluation) {
-			AnalyzedProgram analyzed = new AnalyzedProgram(retVal.getRules(), retVal.getFacts());
-			retVal = new StratifiedEvaluation().apply(analyzed);
-		}
+		AnalyzedProgram analyzed = new AnalyzedProgram(retVal.getRules(), retVal.getFacts());
+		retVal = stratifiedEvaluationFactory.get().apply(analyzed);
 		return retVal;
 	}
 
@@ -197,9 +211,9 @@ public class AlphaImpl implements Alpha {
 
 	/**
 	 * Solves the given program and filters answer sets based on the passed predicate.
-	 * 
+	 *
 	 * @param program an {@link InternalProgram} to solve
-	 * @param filter  {@link Predicate} filtering {@at.ac.tuwien.kr.alpha.common.Predicate}s in the returned answer sets
+	 * @param filter  {@link Predicate} filtering {@link at.ac.tuwien.kr.alpha.api.programs.Predicate}s in the returned answer sets
 	 * @return a Stream of answer sets representing stable models of the given program
 	 */
 	private Stream<AnswerSet> solve(CompiledProgram program, java.util.function.Predicate<Predicate> filter) {
@@ -210,7 +224,7 @@ public class AlphaImpl implements Alpha {
 	/**
 	 * Prepares a solver (and accompanying grounder) instance pre-loaded with the given program. Use this if the
 	 * solver is needed after reading answer sets (e.g. for obtaining statistics).
-	 * 
+	 *
 	 * @param program the program to solve.
 	 * @param filter  a (java util) predicate that filters (asp-)predicates which should be contained in the answer
 	 *                set stream from the solver.
@@ -243,11 +257,7 @@ public class AlphaImpl implements Alpha {
 		final ComponentGraph compGraph;
 		final AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(program);
 		final NormalProgram preprocessed;
-		if (enableStratifiedEvaluation) {
-			preprocessed = new StratifiedEvaluation().apply(analyzed).toNormalProgram();
-		} else {
-			preprocessed = program;
-		}
+		preprocessed = stratifiedEvaluationFactory.get().apply(analyzed).toNormalProgram();
 		depGraph = analyzed.getDependencyGraph();
 		compGraph = analyzed.getComponentGraph();
 		final Solver solver = prepareSolverFor(analyzed, filter);
@@ -277,6 +287,7 @@ public class AlphaImpl implements Alpha {
 			public ComponentGraph getComponentGraph() {
 				return compGraph;
 			}
+
 		};
 	}
 
@@ -288,6 +299,16 @@ public class AlphaImpl implements Alpha {
 	@Override
 	public Solver prepareSolverFor(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
 		return prepareSolverFor(performProgramPreprocessing(program), filter);
+	}
+
+	@Override
+	public Set<BasicAtom> reify(InputProgram program) {
+		return reifier.reifyProgram(program);
+	}
+
+	@Override
+	public TestResult test(InputProgram program) {
+		return testRunner.test(program);
 	}
 
 }

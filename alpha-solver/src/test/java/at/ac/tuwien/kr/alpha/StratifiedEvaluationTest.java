@@ -27,10 +27,21 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import static at.ac.tuwien.kr.alpha.test.AlphaAssertions.assertAnswerSetsEqual;
+import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
+import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.externals.Externals;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -39,26 +50,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Test;
+import static at.ac.tuwien.kr.alpha.test.AlphaAssertions.assertAnswerSetsEqual;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import at.ac.tuwien.kr.alpha.api.Alpha;
-import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
-import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
-import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.externals.Externals;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.programs.Programs;
-
-// TODO This is an integration test and should be run in an extra suite
 public class StratifiedEvaluationTest {
 
 	// Alpha instance with default configuration (evolog support and stratified evaluation enabled)
@@ -105,6 +100,7 @@ public class StratifiedEvaluationTest {
 		assertAnswerSetsEqual("p(a), q(a,b)", answerSets);
 	}
 
+
 	@Test
 	public void testCountAggregate() {
 		String asp = "a. b :- 1 <= #count { 1 : a }.";
@@ -145,6 +141,7 @@ public class StratifiedEvaluationTest {
 		return true;
 	}
 
+
 	@Test
 	public void testNegatedExternalLiteral() throws Exception {
 		String asp = "claimedTruth(bla). truth(X) :- claimedTruth(X), &sayTrue[X]. lie(X) :- claimedTruth(X), not &sayTrue[X].";
@@ -160,7 +157,7 @@ public class StratifiedEvaluationTest {
 	 */
 	@Test
 	public void testPartnerUnitsProblemTopologicalOrder() throws IOException {
-		InputProgram prg = Programs.fromInputStream(
+		InputProgram prg = alpha.readProgramStream(
 				StratifiedEvaluationTest.class.getResourceAsStream("/partial-eval/pup_topological_order.asp"),
 				new HashMap<>());
 		DebugSolvingContext dbgInfo = alpha.prepareDebugSolve(prg);
@@ -175,6 +172,12 @@ public class StratifiedEvaluationTest {
 	 * 
 	 * @throws IOException
 	 */
+	/**
+	 * Verifies correct handling of negated basic literals in StratifiedEvaluation.
+	 * For details, see comments in test program
+	 *
+	 * @throws IOException
+	 */
 	@Test
 	public void testNegatedLiteralInRecursiveRule() throws IOException {
 		//@formatter:off
@@ -184,54 +187,44 @@ public class StratifiedEvaluationTest {
 				+ "inc_value(4), inc_value(5), inc_value(6), inc_value(7), "
 				+ "inc_value(8)";
 		//@formatter:on
-		InputProgram prog = Programs.fromInputStream(
+		InputProgram prog = alpha.readProgramStream(
 				StratifiedEvaluationTest.class.getResourceAsStream("/partial-eval/recursive_w_negated_condition.asp"),
 				new HashMap<>());
 
 		// Run stratified evaluation and solve
-		SystemConfig cfgWithStratEval = new SystemConfig();
-		cfgWithStratEval.setEvaluateStratifiedPart(true);
-		Alpha alphaStratEval = AlphaFactory.newAlpha(cfgWithStratEval);
-		DebugSolvingContext dbgWithStratEval = alphaStratEval.prepareDebugSolve(prog);
-		Set<AnswerSet> asStrat = dbgWithStratEval.getSolver().collectSet();
-		assertAnswerSetsEqual(expectedAnswerSet, asStrat);
-
-		// Solve without stratified evaluation
-		SystemConfig cfgNoStratEval = new SystemConfig();
-		cfgNoStratEval.setEvaluateStratifiedPart(false);
-		Alpha alphaNoStratEval = AlphaFactory.newAlpha(cfgNoStratEval);
-		DebugSolvingContext dbgNoStratEval = alphaNoStratEval.prepareDebugSolve(prog);
-		Set<AnswerSet> as = dbgNoStratEval.getSolver().collectSet();
+		DebugSolvingContext dbg = alpha.prepareDebugSolve(prog);
+		Set<AnswerSet> as = dbg.getSolver().collectSet();
 		assertAnswerSetsEqual(expectedAnswerSet, as);
 	}
+
 
 	@Test
 	public void testRecursiveRanking() {
 		//@formatter:off
-		String asp = "thing(a).\n" + 
-				"thing(b).\n" + 
-				"thing(c).\n" + 
-				"thing_before(a, b).\n" + 
-				"thing_before(b, c).\n" + 
-				"has_prev_thing(X) :- thing(X), thing_succ(_, X).\n" + 
-				"first_thing(X) :- thing(X), not has_prev_thing(X).\n" + 
-				"thing_not_succ(X, Y) :-\n" + 
-				"	thing(X),\n" + 
-				"	thing(Y),\n" + 
-				"	thing(INTM),\n" + 
-				"	thing_before(X, Y),\n" + 
-				"	thing_before(X, INTM),\n" + 
-				"	thing_before(INTM, X).\n" + 
-				"thing_succ(X, Y) :-\n" + 
-				"	thing(X),\n" + 
-				"	thing(Y),\n" + 
-				"	thing_before(X, Y),\n" + 
-				"	not thing_not_succ(X, Y).\n" + 
-				"thing_rank(X, 1) :- first_thing(X).\n" + 
-				"thing_rank(X, R) :-\n" + 
-				"	thing(X),\n" + 
-				"	thing_succ(Y, X),\n" + 
-				"	thing_rank(Y, K),\n" + 
+		String asp = "thing(a).\n" +
+				"thing(b).\n" +
+				"thing(c).\n" +
+				"thing_before(a, b).\n" +
+				"thing_before(b, c).\n" +
+				"has_prev_thing(X) :- thing(X), thing_succ(_, X).\n" +
+				"first_thing(X) :- thing(X), not has_prev_thing(X).\n" +
+				"thing_not_succ(X, Y) :-\n" +
+				"	thing(X),\n" +
+				"	thing(Y),\n" +
+				"	thing(INTM),\n" +
+				"	thing_before(X, Y),\n" +
+				"	thing_before(X, INTM),\n" +
+				"	thing_before(INTM, X).\n" +
+				"thing_succ(X, Y) :-\n" +
+				"	thing(X),\n" +
+				"	thing(Y),\n" +
+				"	thing_before(X, Y),\n" +
+				"	not thing_not_succ(X, Y).\n" +
+				"thing_rank(X, 1) :- first_thing(X).\n" +
+				"thing_rank(X, R) :-\n" +
+				"	thing(X),\n" +
+				"	thing_succ(Y, X),\n" +
+				"	thing_rank(Y, K),\n" +
 				"	R = K + 1.";
 		//@formatter:on
 		DebugSolvingContext dbgInfo = alpha.prepareDebugSolve(alpha.readProgramString(asp));

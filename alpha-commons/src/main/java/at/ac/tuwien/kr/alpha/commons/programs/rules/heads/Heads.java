@@ -1,0 +1,39 @@
+package at.ac.tuwien.kr.alpha.commons.programs.rules.heads;
+
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ActionHead;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead.ChoiceElement;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.ChoiceHeadImpl.ChoiceElementImpl;
+
+import java.util.List;
+
+public final class Heads {
+
+	private Heads() {
+		throw new AssertionError("Cannot instantiate utility class");
+	}
+
+	public static NormalHead newNormalHead(BasicAtom atom) {
+		return new NormalHeadImpl(atom);
+	}
+
+	public static ChoiceHead newChoiceHead(List<ChoiceElement> choiceElements, Term lowerBound, ComparisonOperator lowerOp, Term upperBound,
+			ComparisonOperator upperOp) {
+		return new ChoiceHeadImpl(choiceElements, lowerBound, lowerOp, upperBound, upperOp);
+	}
+
+	public static ChoiceElement newChoiceElement(BasicAtom choiceAtom, List<Literal> conditionLiterals) {
+		return new ChoiceElementImpl(choiceAtom, conditionLiterals);
+	}
+
+	public static ActionHead newActionHead(BasicAtom atom, String actionName, List<Term> actionInputTerms, VariableTerm actionResult) {
+		return new ActionHeadImpl(atom, actionName, actionInputTerms, actionResult);
+	}
+	
+}

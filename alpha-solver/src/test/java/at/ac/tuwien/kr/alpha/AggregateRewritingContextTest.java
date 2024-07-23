@@ -1,28 +1,26 @@
 package at.ac.tuwien.kr.alpha;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
-
-// TODO This is a functional test and should not be run with standard unit tests
 public class AggregateRewritingContextTest {
 
 	//@formatter:off

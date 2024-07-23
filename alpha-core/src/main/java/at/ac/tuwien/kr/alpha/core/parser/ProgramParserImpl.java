@@ -7,6 +7,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.actions.ActionImplementationProvider;
+import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Lexer;
+import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
 import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -17,12 +21,10 @@ import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.InputProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.externals.Externals;
-import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Lexer;
-import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 
 public class ProgramParserImpl implements ProgramParser {
 
@@ -35,6 +37,12 @@ public class ProgramParserImpl implements ProgramParser {
 	public ProgramParserImpl(Map<String, PredicateInterpretation> externals) {
 		this();
 		this.preloadedExternals.putAll(externals);
+	}
+
+	public ProgramParserImpl(ActionImplementationProvider actionImplementationProvider, Map<String, PredicateInterpretation> externals) {
+		this(externals);
+		this.preloadedExternals.put("stdin", actionImplementationProvider.getStdinTerm());
+		this.preloadedExternals.put("stdout", actionImplementationProvider.getStdoutTerm());
 	}
 	
 	@Override
@@ -142,7 +150,7 @@ public class ProgramParserImpl implements ProgramParser {
 
 	@Override
 	public InputProgram parse(Map<String, PredicateInterpretation> externalPredicateDefinitions, Path... programSources) throws IOException {
-		InputProgramImpl.Builder bld = InputProgramImpl.builder();
+		InputProgramBuilder bld = Programs.builder();
 		for (Path src : programSources) {
 			bld.accumulate(parse(src, externalPredicateDefinitions));
 		}
@@ -151,7 +159,7 @@ public class ProgramParserImpl implements ProgramParser {
 
 	@Override
 	public InputProgram parse(Iterable<Path> programSources, Map<String, PredicateInterpretation> externalPredicateDefinitions) throws IOException {
-		InputProgramImpl.Builder bld = InputProgramImpl.builder();
+		InputProgramBuilder bld = Programs.builder();
 		for (Path src : programSources) {
 			bld.accumulate(parse(src, externalPredicateDefinitions));
 		}

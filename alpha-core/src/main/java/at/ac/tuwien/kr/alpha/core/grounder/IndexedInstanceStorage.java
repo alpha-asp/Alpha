@@ -38,7 +38,7 @@ import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
 
 /**
@@ -112,7 +112,8 @@ public class IndexedInstanceStorage {
 	 * @return true if the instance is already contained in the storage.
 	 */
 	public boolean containsInstance(Instance instance) {
-		return instances.contains(instance);
+		boolean contains = instances.contains(instance);
+		return contains; // TODO remove extra variable, debugging only
 	}
 
 	public void addInstance(Instance instance) {

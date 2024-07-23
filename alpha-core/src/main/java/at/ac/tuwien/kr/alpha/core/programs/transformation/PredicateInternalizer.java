@@ -1,22 +1,23 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.BasicLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.InputProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  *
@@ -27,7 +28,7 @@ import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 public class PredicateInternalizer {
 
 	public static InputProgram makePrefixedPredicatesInternal(InputProgram program, String prefix) {
-		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder();
+		InputProgramBuilder prgBuilder = Programs.builder();
 		for (Atom atom : program.getFacts()) {
 			if (atom.getPredicate().getName().startsWith(prefix)) {
 				prgBuilder.addFact(PredicateInternalizer.makePredicateInternal((BasicAtom) atom));
@@ -55,7 +56,7 @@ public class PredicateInternalizer {
 				newHead = head;
 			}
 		}
-		List<Literal> newBody = new ArrayList<>();
+		Set<Literal> newBody = new LinkedHashSet<>();
 		for (Literal bodyElement : rule.getBody()) {
 			// Only rewrite BasicAtoms.
 			if (bodyElement instanceof BasicLiteral) {
@@ -69,7 +70,7 @@ public class PredicateInternalizer {
 				newBody.add(bodyElement);
 			}
 		}
-		return new BasicRule(newHead, newBody);
+		return Rules.newRule(newHead, newBody);
 	}
 
 	private static BasicAtom makePredicateInternal(BasicAtom atom) {

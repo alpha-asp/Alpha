@@ -31,10 +31,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.core.atoms.Literals;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.Literals;
 import at.ac.tuwien.kr.alpha.core.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.core.solver.NoGoodStoreAlphaRoaming;
 import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;

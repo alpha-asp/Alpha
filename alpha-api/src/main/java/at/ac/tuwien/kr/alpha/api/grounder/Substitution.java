@@ -2,8 +2,8 @@ package at.ac.tuwien.kr.alpha.api.grounder;
 
 import java.util.TreeMap;
 
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 
 /**
  * A mapping from {@link VariableTerm}s to {@link Term}s used during grounding to represent ground instances of terms, literals and rules.

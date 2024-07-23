@@ -27,30 +27,23 @@
  */
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ActionHead;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 /**
  * Removes variable equalities from rules by replacing one variable with the other.
@@ -65,7 +58,7 @@ public class VariableEqualityRemoval extends ProgramTransformation<InputProgram,
 		for (Rule<Head> rule : inputProgram.getRules()) {
 			rewrittenRules.add(findAndReplaceVariableEquality(rule));
 		}
-		return new InputProgramImpl(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+		return Programs.newInputProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
 	}
 
 	private Rule<Head> findAndReplaceVariableEquality(Rule<Head> rule) {
@@ -112,11 +105,20 @@ public class VariableEqualityRemoval extends ProgramTransformation<InputProgram,
 			return rule;
 		}
 
-		List<Literal> rewrittenBody = new ArrayList<>(rule.getBody());
+		Set<Literal> rewrittenBody = new LinkedHashSet<>(rule.getBody());
 		if (!rule.isConstraint() && rule.getHead() instanceof DisjunctiveHead) {
 			throw new UnsupportedOperationException("VariableEqualityRemoval cannot be applied to rule with DisjunctiveHead, yet.");
 		}
-		NormalHead rewrittenHead = rule.isConstraint() ? null : Heads.newNormalHead(((NormalHead)rule.getHead()).getAtom());
+		// TODO can this be done nicer?
+		NormalHead rewrittenHead = null;
+		if (!rule.isConstraint()) {
+			if (rule.getHead() instanceof ActionHead) {
+				ActionHead actHead = (ActionHead) rule.getHead();
+				rewrittenHead = Heads.newActionHead(actHead.getAtom(), actHead.getActionName(), actHead.getActionInputTerms(), actHead.getActionOutputTerm());
+			} else {
+				rewrittenHead = Heads.newNormalHead(((NormalHead) rule.getHead()).getAtom());
+			}
+		}
 
 		// Use substitution for actual replacement.
 		Unifier replacementSubstitution = new Unifier();
@@ -149,6 +151,6 @@ public class VariableEqualityRemoval extends ProgramTransformation<InputProgram,
 				headAtom.getTerms().set(i, replaced);
 			}
 		}
-		return new BasicRule(rewrittenHead, rewrittenBody);
+		return Rules.newRule(rewrittenHead, rewrittenBody);
 	}
 }

@@ -1,0 +1,7 @@
+prompt_text("Hello user, what's your name? ").
+write_prompt_res(R) : @streamWrite[STDOUT, PROMPT] = R :- prompt_text(PROMPT), &stdout(STDOUT).
+usr_input_res(INP) : @streamReadLine[STDIN] = INP :- write_prompt_res(success(_)), &stdin(STDIN).
+write_greeting_res(R) : @streamWrite[STDOUT, GREETING] = R :- 
+	usr_input_res(success(line(NAME))), 
+	&stdlib_string_concat["Hello, it is the utmost pleasure to finally greet you from an Evolog program, ", NAME](GREETING),
+	&stdout(STDOUT).

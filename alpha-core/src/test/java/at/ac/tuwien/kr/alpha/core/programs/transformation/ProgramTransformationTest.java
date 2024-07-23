@@ -15,11 +15,10 @@ import org.slf4j.LoggerFactory;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
 import at.ac.tuwien.kr.alpha.commons.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 
-// TODO This is a functional test and should not be run with standard unit tests
 public class ProgramTransformationTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ProgramTransformationTest.class);
@@ -68,17 +67,17 @@ public class ProgramTransformationTest {
 
 	@Test
 	public void intervalTermToIntervalAtomSimpleTest() {
-		genericTransformationTest(intervalRewriting, NormalProgramImpl::fromInputProgram, "interval.1");
+		genericTransformationTest(intervalRewriting, Programs::toNormalProgram, "interval.1");
 	}
 
 	@Test
 	public void intervalTermToIntervalAtomExternalAtomTest() {
-		genericTransformationTest(intervalRewriting, NormalProgramImpl::fromInputProgram, "interval-external_atom");
+		genericTransformationTest(intervalRewriting, Programs::toNormalProgram, "interval-external_atom");
 	}
 
 	@Test
 	public void intervalTermToIntervalAtomComparisonAtomTest() {
-		genericTransformationTest(intervalRewriting, NormalProgramImpl::fromInputProgram, "interval-comparison_atom");
+		genericTransformationTest(intervalRewriting, Programs::toNormalProgram, "interval-comparison_atom");
 	}
 
 	@SuppressWarnings("unused")

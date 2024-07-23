@@ -27,65 +27,54 @@
  */
 package at.ac.tuwien.kr.alpha.api.impl;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.config.Heuristic;
 import at.ac.tuwien.kr.alpha.api.config.InputConfig;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.programs.tests.TestResult;
 import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.externals.AspStandardLibrary;
 import at.ac.tuwien.kr.alpha.commons.externals.Externals;
 import at.ac.tuwien.kr.alpha.commons.externals.MethodPredicateInterpretation;
-import at.ac.tuwien.kr.alpha.commons.literals.Literals;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.InputProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.literals.Literals;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 import at.ac.tuwien.kr.alpha.test.AnswerSetsParser;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-// TODO This is a functional test and should not be run with standard unit tests
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 public class AlphaImplTest {
-	
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(AspStandardLibrary.class);
-	
+
 	//@formatter:off
 	private static final String STRINGSTUFF_ASP =
 			"string(\"bla\")."
@@ -114,8 +103,30 @@ public class AlphaImplTest {
 			+ ":- not has_resultstring.";
 	//@formatter:on
 
+	private static final String UNIT_TEST_EXPECT_UNSAT =
+			"p(1). p(2). "
+			+ ":- p(X), p(Y), X + Y = 3."
+			+ "#test expected_unsat(expect: unsat) {"
+			+ "given {}"
+			+ "}";
+
+	private static final String UNIT_TEST_BASIC_TEST =
+			"a :- b. #test ensure_a(expect: 1) { given { b. } assertForAll { :- not a. } }";
+	private static final String UNIT_TEST_MORE_ASSERTIONS =
+			"a :- b. #test ensure_a(expect: 1) { given { b. } assertForAll { :- not a. } assertForSome { :- not a.} }";
+
+	private static final String UNIT_TEST_MORE_TCS =
+			"a :- b. #test ensure_a(expect: 1) { given { b. } assertForAll { :- not a. }} " +
+					"#test ensure_not_c (expect: 1) { given { b.} assertForAll { :- c. }}";
+
+	private static final String UNIT_TEST_FAILING_ASSERTION =
+			"a :- b. #test ensure_c(expect: 1) { given { b. } assertForAll { :- not c. } }";
+
+	private static final String UNIT_TEST_FAILING_COUNT =
+			"a :- b. #test ensure_a(expect: 2) { given { b. } assertForAll { :- not a. } }";
+
 	private static int invocations;
-	
+
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static boolean isOne(int term) {
 		invocations++;
@@ -150,22 +161,22 @@ public class AlphaImplTest {
 		Thingy a = new Thingy();
 		Thingy b = new Thingy();
 		List<Thingy> things = asList(a, b);
-		InputProgram program = InputProgramImpl.builder().addFacts(Externals.asFacts(Thingy.class, things)).build();
+		InputProgram program = Programs.builder().addFacts(Externals.asFacts(Thingy.class, things)).build();
 		Set<AnswerSet> actual = system.solve(program).collect(Collectors.toSet());
-		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("thingy").instance(a).instance(b).build()));
+		Set<AnswerSet> expected = Set.of(new AnswerSetBuilder().predicate("thingy").instance(a).instance(b).build());
 		assertEquals(expected, actual);
 	}
 
 	@Test
 	public void withExternalTypeConflict() {
 		assertThrows(IllegalArgumentException.class, () -> {
-		Alpha system = AlphaFactory.newAlpha();
-		InputConfig inputCfg = InputConfig.forString("a :- &isFoo[\"adsfnfdsf\"].");
-		inputCfg.addPredicateMethod("isFoo", Externals.processPredicateMethod(this.getClass().getMethod("isFoo", Integer.class)));
-		Set<AnswerSet> actual = system.solve(system.readProgram(inputCfg)).collect(Collectors.toSet());
-		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
-		assertEquals(expected, actual);
-});
+			Alpha system = AlphaFactory.newAlpha();
+			InputConfig inputCfg = InputConfig.forString("a :- &isFoo[\"adsfnfdsf\"].");
+			inputCfg.addPredicateMethod("isFoo", Externals.processPredicateMethod(this.getClass().getMethod("isFoo", Integer.class)));
+			Set<AnswerSet> actual = system.solve(system.readProgram(inputCfg)).collect(Collectors.toSet());
+			Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
+			assertEquals(expected, actual);
+		});
 	}
 
 	@Test
@@ -225,12 +236,12 @@ public class AlphaImplTest {
 	@Test
 	public void smallGraphWithWrongType() {
 		assertThrows(IllegalArgumentException.class, () -> {
-		Alpha system = AlphaFactory.newAlpha();
-		InputConfig cfg = InputConfig.forString("a :- &connected[\"hello\",2].");
-		cfg.addPredicateMethod("connected", Externals.processPredicate((Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3)));
-		InputProgram prog = system.readProgram(cfg);
+			Alpha system = AlphaFactory.newAlpha();
+			InputConfig cfg = InputConfig.forString("a :- &connected[\"hello\",2].");
+			cfg.addPredicateMethod("connected", Externals.processPredicate((Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3)));
+			InputProgram prog = system.readProgram(cfg);
 
-		system.solve(prog).collect(Collectors.toSet());
+			system.solve(prog).collect(Collectors.toSet());
 		});
 	}
 
@@ -308,22 +319,6 @@ public class AlphaImplTest {
 		public int compareTo(Thingy o) {
 			return 0;
 		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (o == null) {
-				return false;
-			}
-			if (!(o instanceof  Thingy)) {
-				return false;
-			}
-			return true;
-		}
-
-		@Override
-		public int hashCode() {
-			return 1;
-		}
 	}
 
 	private static class SubThingy extends Thingy {
@@ -333,15 +328,15 @@ public class AlphaImplTest {
 	public void withExternalSubtype() throws Exception {
 		SubThingy thingy = new SubThingy();
 
-		BasicRule rule = new BasicRule(
+		Rule<Head> rule = Rules.newRule(
 				Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("p", 1), Terms.newConstant("x"))),
-				singletonList(Literals.fromAtom(Atoms.newExternalAtom(Predicates.getPredicate("thinger", 1),
+				singleton(Literals.fromAtom(Atoms.newExternalAtom(Predicates.getPredicate("thinger", 1),
 						new MethodPredicateInterpretation(this.getClass().getMethod("thinger", Thingy.class)), singletonList(Terms.newConstant(thingy)),
 						emptyList()), true)));
 
 		Alpha system = AlphaFactory.newAlpha();
 
-		InputProgram prog = new InputProgramImpl(singletonList(rule), emptyList(), new InlineDirectivesImpl());
+		InputProgram prog = Programs.newInputProgram(singletonList(rule), emptyList(), Programs.newInlineDirectives());
 
 		Set<AnswerSet> actual = system.solve(prog).collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("p").instance("x").build()));
@@ -368,10 +363,10 @@ public class AlphaImplTest {
 	@Test
 	public void errorDuplicateExternal() {
 		assertThrows(IllegalArgumentException.class, () -> {
-		InputConfig cfg = InputConfig.forString("someString.");
-		cfg.addPredicateMethods(Externals.scan(this.getClass()));
-		cfg.addPredicateMethods(Externals.scan(this.getClass()));
-});
+			InputConfig cfg = InputConfig.forString("someString.");
+			cfg.addPredicateMethods(Externals.scan(this.getClass()));
+			cfg.addPredicateMethods(Externals.scan(this.getClass()));
+		});
 	}
 
 	@Test
@@ -439,7 +434,7 @@ public class AlphaImplTest {
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
 	}
-	
+
 	@Test
 	@SuppressWarnings("unchecked")
 	public void programWithExternalStringStuff() throws IOException {
@@ -475,6 +470,27 @@ public class AlphaImplTest {
 	}
 
 	@Test
+	public void reifyInput() {
+		String aspInput = "p(X) :- q(X), not r(X).";
+		Alpha system = AlphaFactory.newAlpha();
+		InputProgram input = system.readProgramString(aspInput);
+		Set<BasicAtom> reified = system.reify(input);
+
+		Set<BasicAtom> reifiedPredicates = reified.stream()
+				.filter((a) -> a.getPredicate().equals(Predicates.getPredicate("predicate", 3)))
+				.collect(Collectors.toSet());
+		Set<BasicAtom> reifiedRuleHeads = reified.stream()
+				.filter((a) -> a.getPredicate().equals(Predicates.getPredicate("rule_head", 2)))
+				.collect(Collectors.toSet());
+		Set<BasicAtom> reifiedBodyLiterals = reified.stream()
+				.filter((a) -> a.getPredicate().equals(Predicates.getPredicate("rule_bodyLiteral", 2)))
+				.collect(Collectors.toSet());
+		assertEquals(3, reifiedPredicates.size());
+		assertEquals(1, reifiedRuleHeads.size());
+		assertEquals(2, reifiedBodyLiterals.size());
+	}
+
+	@Test
 	public void basicUsage() throws Exception {
 		Alpha system = AlphaFactory.newAlpha();
 		Set<AnswerSet> actual = system.solve(system.readProgram(InputConfig.forString("p(a)."))).collect(Collectors.toSet());
@@ -504,37 +520,80 @@ public class AlphaImplTest {
 		assertEquals(expected, actual);
 	}
 
-	/**
-	 * Verifies that no stratified evaluation is performed up-front when disabled in config.
-	 */
 	@Test
-	public void disableStratifiedEvalTest() {
-		// Note: This might be cleaner if the test used the debugSolve method from the interface
-		String progstr = "p(a). q(X) :- p(X).";
-		SystemConfig cfg = new SystemConfig();
-		cfg.setEvaluateStratifiedPart(false);
-		AlphaImpl system = (AlphaImpl) AlphaFactory.newAlpha(cfg);
-		InputProgram input = system.readProgramString(progstr);
-		NormalProgram normal = system.normalizeProgram(input);
-		CompiledProgram preprocessed = system.performProgramPreprocessing(normal);
-		assertFalse(preprocessed.getFacts().contains(Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newSymbolicConstant("a"))), 
-				"Preprocessed program contains fact derived from stratifiable rule, but should not!");
+	public void passingUnitTestExpectUnsat() {
+		Alpha alpha = AlphaFactory.newAlpha();
+		InputProgram prog = alpha.readProgramString(UNIT_TEST_EXPECT_UNSAT);
+		TestResult testResult = alpha.test(prog);
+		assertTrue(testResult.isSuccess());
 	}
 
-	/**
-	 * Verifies that stratified evaluation is performed up-front if not otherwise configured.
-	 */
 	@Test
-	public void enableStratifiedEvalTest() {
-		// Note: This might be cleaner if the test used the debugSolve method from the interface
-		String progstr = "p(a). q(X) :- p(X).";
-		SystemConfig cfg = new SystemConfig();
-		AlphaImpl system = (AlphaImpl) AlphaFactory.newAlpha(cfg);
-		InputProgram input = system.readProgramString(progstr);
-		NormalProgram normal = system.normalizeProgram(input);
-		CompiledProgram preprocessed = system.performProgramPreprocessing(normal);
-		assertTrue(preprocessed.getFacts().contains(Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newSymbolicConstant("a"))),
-				"Preprocessed program does not contain fact derived from stratifiable rule, but should!");
+	public void passingUnitTestBasicTest() {
+		Alpha alpha = AlphaFactory.newAlpha();
+		InputProgram prog = alpha.readProgramString(UNIT_TEST_BASIC_TEST);
+		TestResult testResult = alpha.test(prog);
+		assertTrue(testResult.isSuccess());
+		assertEquals(1, testResult.getTestCaseResults().size());
+		TestResult.TestCaseResult tcResult = testResult.getTestCaseResults().get(0);
+		assertTrue(tcResult.isSuccess());
+		assertEquals(1, tcResult.getAssertionsPassed());
+		assertEquals(0, tcResult.getAssertionsFailed());
+		assertFalse(tcResult.answerSetCountVerificationResult().isPresent());
+		assertTrue(tcResult.getAssertionErrors().isEmpty());
+	}
+
+	@Test
+	public void passingUnitTestMultipleAssertions() {
+		Alpha alpha = AlphaFactory.newAlpha();
+		InputProgram prog = alpha.readProgramString(UNIT_TEST_MORE_ASSERTIONS);
+		TestResult testResult = alpha.test(prog);
+		assertTrue(testResult.isSuccess());
+		assertEquals(1, testResult.getTestCaseResults().size());
+		TestResult.TestCaseResult tcResult = testResult.getTestCaseResults().get(0);
+		assertTrue(tcResult.isSuccess());
+		assertEquals(2, tcResult.getAssertionsPassed());
+		assertEquals(0, tcResult.getAssertionsFailed());
+		assertFalse(tcResult.answerSetCountVerificationResult().isPresent());
+		assertTrue(tcResult.getAssertionErrors().isEmpty());
+	}
+
+	@Test
+	public void passingUnitTestMultipleTestCases() {
+		Alpha alpha = AlphaFactory.newAlpha();
+		InputProgram prog = alpha.readProgramString(UNIT_TEST_MORE_TCS);
+		TestResult testResult = alpha.test(prog);
+		assertTrue(testResult.isSuccess());
+		assertEquals(2, testResult.getTestCaseResults().size());
+	}
+
+	@Test
+	public void failingAssertionUnitTest() {
+		Alpha alpha = AlphaFactory.newAlpha();
+		InputProgram prog = alpha.readProgramString(UNIT_TEST_FAILING_ASSERTION);
+		TestResult testResult = alpha.test(prog);
+		assertFalse(testResult.isSuccess());
+		assertEquals(1, testResult.getTestCaseResults().size());
+		TestResult.TestCaseResult tcResult = testResult.getTestCaseResults().get(0);
+		assertFalse(tcResult.isSuccess());
+		assertEquals(0, tcResult.getAssertionsPassed());
+		assertEquals(1, tcResult.getAssertionsFailed());
+		assertFalse(tcResult.answerSetCountVerificationResult().isPresent());
+		assertEquals(1, tcResult.getAssertionErrors().size());
+	}
+
+	@Test
+	public void failingAnswerSetCountUnitTest() {
+		Alpha alpha = AlphaFactory.newAlpha();
+		InputProgram prog = alpha.readProgramString(UNIT_TEST_FAILING_COUNT);
+		TestResult testResult = alpha.test(prog);
+		assertFalse(testResult.isSuccess());
+		assertEquals(1, testResult.getTestCaseResults().size());
+		TestResult.TestCaseResult tcResult = testResult.getTestCaseResults().get(0);
+		assertFalse(tcResult.isSuccess());
+		assertEquals(1, tcResult.getAssertionsPassed());
+		assertEquals(0, tcResult.getAssertionsFailed());
+		assertTrue(tcResult.answerSetCountVerificationResult().isPresent());
 	}
 
 	/**
@@ -616,16 +675,18 @@ public class AlphaImplTest {
 		InputProgram prog = system.readProgram(inputCfg);
 		assertFalse(system.solve(prog).limit(limit).collect(Collectors.toList()).isEmpty());
 	}
-	
+
 	// Detailed reproduction test-case for github issue #239.
 	@Test
+	@Disabled("This test relies on stratified evaluation being disabled, which is not supported anymore.")
 	public void testLearnedUnaryNoGoodCausingOutOfOrderLiteralsConflict() throws IOException {
 		final ProgramParser parser = new ProgramParserImpl();
-		InputProgramImpl.Builder bld = InputProgramImpl.builder();
+		InputProgramBuilder bld = Programs.builder();
 		bld.accumulate(parser.parse(Files.newInputStream(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp"), StandardOpenOption.READ)));
-		bld.accumulate(parser.parse(Files.newInputStream(Paths.get("src", "test", "resources", "HanoiTower_instances", "simple.asp"), StandardOpenOption.READ)));
+		bld.accumulate(
+				parser.parse(Files.newInputStream(Paths.get("src", "test", "resources", "HanoiTower_instances", "simple.asp"), StandardOpenOption.READ)));
 		InputProgram parsedProgram = bld.build();
-		
+
 		SystemConfig config = new SystemConfig();
 		config.setSolverName("default");
 		config.setNogoodStoreName("alpharoaming");
@@ -633,14 +694,12 @@ public class AlphaImplTest {
 		config.setBranchingHeuristic(Heuristic.valueOf("VSIDS"));
 		config.setDebugInternalChecks(true);
 		config.setDisableJustificationSearch(false);
-		config.setEvaluateStratifiedPart(false);
 		config.setReplayChoices(Arrays.asList(21, 26, 36, 56, 91, 96, 285, 166, 101, 290, 106, 451, 445, 439, 448,
-			433, 427, 442, 421, 415, 436, 409, 430, 397, 391, 424, 385, 379,
-			418, 373, 412, 406, 394, 388, 382, 245, 232, 208
-		));
+				433, 427, 442, 421, 415, 436, 409, 430, 397, 391, 424, 385, 379,
+				418, 373, 412, 406, 394, 388, 382, 245, 232, 208));
 		Alpha alpha = AlphaFactory.newAlpha(config);
 		Optional<AnswerSet> answerSet = alpha.solve(parsedProgram).findFirst();
 		assertTrue(answerSet.isPresent());
 	}
-	
+
 }

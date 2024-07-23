@@ -13,16 +13,16 @@ import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
-import at.ac.tuwien.kr.alpha.commons.literals.Literals;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.literals.Literals;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.EnumerationLiteral;
 import at.ac.tuwien.kr.alpha.core.grounder.WorkingMemory;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.EnumerationAtom;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.EnumerationLiteral;
 
 public class LiteralInstantiatorTest {
 

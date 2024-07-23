@@ -1,16 +1,5 @@
 package at.ac.tuwien.kr.alpha;
 
-import static java.util.stream.Collectors.toList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.junit.jupiter.api.Test;
-
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.externals.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
@@ -18,19 +7,28 @@ import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.NormalRule;
-import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.externals.Externals;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.ArithmeticTermsRewriting;
+import org.junit.jupiter.api.Test;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Copyright (c) 2021, the Alpha Team.
  */
-// TODO This is a functional test and should not be run with standard unit tests
 public class ArithmeticTermsRewritingTest {
 
 	private final Map<String, PredicateInterpretation> externalsOfThisClass = Externals.scan(ArithmeticTermsRewritingTest.class);
@@ -45,7 +43,7 @@ public class ArithmeticTermsRewritingTest {
 
 	@Test
 	public void rewriteRule() {
-		NormalProgram inputProgram = NormalProgramImpl.fromInputProgram(parser.parse("p(X+1) :- q(Y/2), r(f(X*2),Y), X-2 = Y*3, X = 0..9."));
+		NormalProgram inputProgram = Programs.toNormalProgram(parser.parse("p(X+1) :- q(Y/2), r(f(X*2),Y), X-2 = Y*3, X = 0..9."));
 		assertEquals(1, inputProgram.getRules().size());
 		ArithmeticTermsRewriting arithmeticTermsRewriting = new ArithmeticTermsRewriting();
 		NormalProgram rewrittenProgram = arithmeticTermsRewriting.apply(inputProgram);
@@ -58,7 +56,7 @@ public class ArithmeticTermsRewritingTest {
 
 	@Test
 	public void rewriteExternalAtom() {
-		NormalProgram inputProgram = NormalProgramImpl.fromInputProgram(parser.parse("p :- Y = 13, &extArithTest[Y*5](Y-4)."));
+		NormalProgram inputProgram = Programs.toNormalProgram(parser.parse("p :- Y = 13, &extArithTest[Y*5](Y-4)."));
 		assertEquals(1, inputProgram.getRules().size());
 		ArithmeticTermsRewriting arithmeticTermsRewriting = new ArithmeticTermsRewriting();
 		NormalProgram rewrittenProgram = arithmeticTermsRewriting.apply(inputProgram);

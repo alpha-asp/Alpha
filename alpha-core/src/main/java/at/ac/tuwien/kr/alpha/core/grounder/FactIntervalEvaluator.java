@@ -5,12 +5,12 @@ import java.util.Collections;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.api.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Instance;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
 /**
  * Helper functions to evaluate facts potentially containing intervals.

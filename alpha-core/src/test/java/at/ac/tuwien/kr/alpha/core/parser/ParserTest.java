@@ -40,6 +40,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import at.ac.tuwien.kr.alpha.api.programs.tests.Assertion;
+import at.ac.tuwien.kr.alpha.api.programs.tests.TestCase;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.junit.jupiter.api.Test;
@@ -50,21 +52,41 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.heads.ChoiceHead;
-import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.api.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead;
+import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ParserTest {
+
+	private static final String UNIT_TEST_EXPECT_UNSAT =
+			"p(1). p(2). "
+			+ ":- p(X), p(Y), X + Y = 3."
+			+ "#test expected_unsat(expect: unsat) {"
+			+ "given {}"
+			+ "}";
+
+	private static final String UNIT_TEST_BASIC_TEST =
+			"a :- b. #test ensure_a(expect: 1) { given { b. } assertForAll { :- not a. } }";
+	private static final String UNIT_TEST_MORE_ASSERTIONS =
+			"a :- b. #test ensure_a(expect: 1) { given { b. } assertForAll { :- not a. } assertForSome { :- not a.} }";
+
+	private static final String UNIT_TEST_MORE_TCS =
+			"a :- b. #test ensure_a(expect: 1) { given { b. } assertForAll { :- not a. }} " +
+					"#test ensure_not_c (expect: 1) { given { b.} assertForAll { :- c. }}";
+
+	private static final String UNIT_TEST_KEYWORDS_AS_IDS =
+			"assert(a) :- given(b). # test test(expect: 1) { given { given(b). } assertForAll { :- not assert(a). :- assertForSome(b).}}";
+
 	private final ProgramParserImpl parser = new ProgramParserImpl();
 
 	@Test
@@ -227,6 +249,60 @@ public class ParserTest {
 		Atom stringAtom = prog.getFacts().get(0);
 		String stringWithQuotes = stringAtom.getTerms().get(0).toString();
 		assertEquals("\"a string with \"quotes\"\"", stringWithQuotes);
+	}
+
+	@Test
+	public void unitTestExpectUnsat() {
+		InputProgram prog = parser.parse(UNIT_TEST_EXPECT_UNSAT);
+		assertEquals(1, prog.getTestCases().size());
+		TestCase tc = prog.getTestCases().get(0);
+		assertEquals("expected_unsat", tc.getName());
+		assertTrue(tc.getInput().isEmpty());
+		assertTrue(tc.getAssertions().isEmpty());
+	}
+
+	@Test
+	public void unitTestBasicTest() {
+		InputProgram prog = parser.parse(UNIT_TEST_BASIC_TEST);
+		assertEquals(1, prog.getTestCases().size());
+		TestCase tc = prog.getTestCases().get(0);
+		assertEquals("ensure_a", tc.getName());
+		assertEquals(1, tc.getInput().size());
+		assertEquals(1, tc.getAssertions().size());
+		assertEquals(Assertion.Mode.FOR_ALL, tc.getAssertions().get(0).getMode());
+	}
+
+	@Test
+	public void unitTestMultipleAsserts() {
+		InputProgram prog = parser.parse(UNIT_TEST_MORE_ASSERTIONS);
+		assertEquals(1, prog.getTestCases().size());
+		TestCase tc = prog.getTestCases().get(0);
+		assertEquals("ensure_a", tc.getName());
+		assertEquals(1, tc.getInput().size());
+		assertEquals(2, tc.getAssertions().size());
+		assertEquals(Assertion.Mode.FOR_ALL, tc.getAssertions().get(0).getMode());
+		assertEquals(Assertion.Mode.FOR_SOME, tc.getAssertions().get(1).getMode());
+	}
+
+	@Test
+	public void unitTestMoreTCs() {
+		InputProgram prog = parser.parse(UNIT_TEST_MORE_TCS);
+		assertEquals(2, prog.getTestCases().size());
+		TestCase tc1 = prog.getTestCases().get(0);
+		assertEquals("ensure_a", tc1.getName());
+		TestCase tc2 = prog.getTestCases().get(1);
+		assertEquals("ensure_not_c", tc2.getName());
+	}
+
+	@Test
+	public void unitTestKeywordsAsIds() {
+		InputProgram prog = parser.parse(UNIT_TEST_KEYWORDS_AS_IDS);
+		assertEquals(1, prog.getTestCases().size());
+		TestCase tc = prog.getTestCases().get(0);
+		assertEquals("test", tc.getName());
+		assertEquals(1, tc.getInput().size());
+		assertEquals(1, tc.getAssertions().size());
+		assertEquals(Assertion.Mode.FOR_ALL, tc.getAssertions().get(0).getMode());
 	}
 
 }

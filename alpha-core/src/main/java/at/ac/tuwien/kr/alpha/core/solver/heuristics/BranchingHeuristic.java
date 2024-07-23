@@ -28,7 +28,7 @@ package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.solver.learning.GroundConflictNoGoodLearner;
 
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomToLiteral;
 
 import java.util.Collection;
 

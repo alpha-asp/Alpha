@@ -1,11 +1,10 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import java.util.function.Supplier;
-
+import at.ac.tuwien.kr.alpha.api.config.AggregateRewritingConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
-import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
-import at.ac.tuwien.kr.alpha.core.programs.NormalProgramImpl;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.core.programs.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewriting;
 
 /**
@@ -15,10 +14,10 @@ import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRe
  */
 public class NormalizeProgramTransformation extends ProgramTransformation<InputProgram, NormalProgram> {
 
-	private final Supplier<AggregateRewriting> aggregateRewritingFactory;
+	private final AggregateRewritingConfig aggregateRewritingCfg;
 
-	public NormalizeProgramTransformation(Supplier<AggregateRewriting> aggregateRewritingFactory) {
-		this.aggregateRewritingFactory = aggregateRewritingFactory;
+	public NormalizeProgramTransformation(AggregateRewritingConfig aggregateCfg) {
+		this.aggregateRewritingCfg = aggregateCfg;
 	}
 
 	@Override
@@ -29,13 +28,13 @@ public class NormalizeProgramTransformation extends ProgramTransformation<InputP
 		// Transform choice rules.
 		tmpPrg = new ChoiceHeadToNormal().apply(tmpPrg);
 		// Transform aggregates.
-		tmpPrg = aggregateRewritingFactory.get().apply(tmpPrg);
+		tmpPrg = new AggregateRewriting(aggregateRewritingCfg.isUseSortingGridEncoding(), aggregateRewritingCfg.isSupportNegativeValuesInSums()).apply(tmpPrg);
 		// Transform enumeration atoms.
 		tmpPrg = new EnumerationRewriting().apply(tmpPrg);
 		EnumerationAtom.resetEnumerations();
 
 		// Construct the normal program.
-		NormalProgram retVal = NormalProgramImpl.fromInputProgram(tmpPrg);
+		NormalProgram retVal = Programs.toNormalProgram(tmpPrg);
 		// Transform intervals.
 		retVal = new IntervalTermToIntervalAtom().apply(retVal);
 		// Rewrite ArithmeticTerms.

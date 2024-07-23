@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -26,8 +28,6 @@ import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
 
 // TODO This is a functional test and should not be run with standard unit tests
 public class StratifiedEvaluationRegressionTest {
@@ -129,7 +129,7 @@ public class StratifiedEvaluationRegressionTest {
 		assertFactsContainedInProgram(evaluated, Atoms.newBasicAtom(Predicates.getPredicate("a", 0)),
 				Atoms.newBasicAtom(Predicates.getPredicate("b", 0)));
 		assertEquals(2, evaluated.getFacts().size());
-		assertTrue(evaluated.getRules().size() == 0);
+		assertTrue(evaluated.getRules().isEmpty());
 	}
 
 	private static void verifyAnswerSetsBasic(Set<AnswerSet> answerSets) {
@@ -140,7 +140,7 @@ public class StratifiedEvaluationRegressionTest {
 		assertFactsContainedInProgram(evaluated,
 				Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newSymbolicConstant("a")),
 				Atoms.newBasicAtom(Predicates.getPredicate("q", 1), Terms.newSymbolicConstant("b")));
-		assertTrue(evaluated.getRules().size() == 0);
+		assertTrue(evaluated.getRules().isEmpty());
 	}
 
 	private static void verifyAnswerSetsBasicMultiInstance(Set<AnswerSet> answerSets) {

@@ -25,10 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.regressiontests;
 
-import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.buildSolverForRegressionTest;
-import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.ignoreTestForNaiveSolver;
-import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.ignoreTestForNonDefaultDomainIndependentHeuristics;
-import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.runWithTimeout;
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -36,28 +33,27 @@ import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.SortedSet;
 
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
-import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 
 /**
- * Tests {@link AbstractSolver} using some hanoi tower test cases (see https://en.wikipedia.org/wiki/Tower_of_Hanoi).
+ * Tests {@link Solver} using some hanoi tower test cases (see <a href="https://en.wikipedia.org/wiki/Tower_of_Hanoi">Towers of Hanoi</a>).
  *
  */
-// TODO This is a functional test and should not be run with standard unit tests
 public class HanoiTowerTest {
 
 	@SuppressWarnings("unused")
@@ -106,8 +102,6 @@ public class HanoiTowerTest {
 	}
 
 	private void testHanoiTower(String instance, SystemConfig cfg) throws IOException {
-		// TODO should be read by the Alpha instance constructed in buildSolverForRegressionTest,
-		// do not instantiate parsers "free-style"!
 		InputProgram prog = new ProgramParserImpl().parse(
 				Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp"),
 				Paths.get("src", "test", "resources", "HanoiTower_instances", instance + ".asp"));
@@ -142,7 +136,7 @@ public class HanoiTowerTest {
 		Predicate steps = Predicates.getPredicate("steps", 1);
 		for (Atom atom : parsedProgram.getFacts()) {
 			if (atom.getPredicate().getName().equals(steps.getName()) && atom.getPredicate().getArity() == steps.getArity()) {
-				return Integer.valueOf(atom.getTerms().get(0).toString());
+				return Integer.parseInt(atom.getTerms().get(0).toString());
 			}
 		}
 		throw new IllegalArgumentException("No steps atom found in input program.");

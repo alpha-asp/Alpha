@@ -27,37 +27,27 @@
  */
 package at.ac.tuwien.kr.alpha.regressiontests;
 
-import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.assertRegressionTestAnswerSets;
-import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.assertRegressionTestAnswerSetsWithBase;
-import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.buildSolverForRegressionTest;
-import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.collectRegressionTestAnswerSets;
-import static java.util.Collections.singleton;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
-
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTest;
 import at.ac.tuwien.kr.alpha.test.AnswerSetsParser;
 
-// TODO This is a functional test and should not be run with standard unit tests
+import java.util.*;
+
+import static at.ac.tuwien.kr.alpha.regressiontests.util.RegressionTestUtils.*;
+import static java.util.Collections.singleton;
+import static org.junit.jupiter.api.Assertions.*;
+
 public class SolverTests {
 	
 	private static class Thingy implements Comparable<Thingy> {
@@ -78,10 +68,10 @@ public class SolverTests {
 
 		final Atom fact = Atoms.newBasicAtom(Predicates.getPredicate("foo", 1), Terms.newConstant(thingy));
 
-		final InputProgram program = new InputProgramImpl(
+		final InputProgram program = Programs.newInputProgram(
 			Collections.emptyList(),
 			Collections.singletonList(fact),
-			new InlineDirectivesImpl()
+			Programs.newInlineDirectives()
 		);
 
 		assertEquals(singleton(new AnswerSetBuilder()
@@ -764,15 +754,15 @@ public class SolverTests {
 	}
 
 	private void assertPropositionalPredicateFalse(AnswerSet answerSet, Predicate predicate) {
-		assertEquals(null, answerSet.getPredicateInstances(predicate));
+		assertNull(answerSet.getPredicateInstances(predicate));
 	}
 
 	private void assertEnumerationPositions(SortedSet<Atom> positions, int numPositions) {
 		assertEquals(numPositions, positions.size());
-		boolean usedPositions[] = new boolean[numPositions];
+		boolean[] usedPositions = new boolean[numPositions];
 		for (Atom position : positions) {
 			@SuppressWarnings("unchecked")
-			Integer atomPos = ((ConstantTerm<Integer>) position.getTerms().get(1)).getObject() - 1;
+			int atomPos = ((ConstantTerm<Integer>) position.getTerms().get(1)).getObject() - 1;
 			assertTrue(atomPos < numPositions);
 			usedPositions[atomPos] = true;
 		}
@@ -803,17 +793,17 @@ public class SolverTests {
 		);
 	}
 
-	// TODO @AntoniusW what are these? Can we get rid of them? If not, where do I move them?
-	// @RegressionTest
-	// public void dummyGrounder(SystemConfig cfg) {
-	// 	AtomStore atomStore = new AtomStoreImpl();
-	// 	assertEquals(GrounderMockWithBasicProgram.EXPECTED, buildSolverForRegressionTest(atomStore, new GrounderMockWithBasicProgram(atomStore), cfg).collectSet());
-	// }
-
-	// @RegressionTest
-	// public void choiceGrounder(SystemConfig cfg) {
-	// 	AtomStore atomStore = new AtomStoreImpl();
-	// 	assertEquals(GrounderMockWithChoice.EXPECTED, buildSolverForRegressionTest(atomStore, new GrounderMockWithChoice(atomStore), cfg).collectSet());
-	// }
+	// TODO these look obsolete - confirm if they can be removed
+//	@RegressionTest
+//	public void dummyGrounder(SystemConfig cfg) {
+//		AtomStore atomStore = new AtomStoreImpl();
+//		assertEquals(DummyGrounder.EXPECTED, buildSolverForRegressionTest(atomStore, new DummyGrounder(atomStore), cfg).collectSet());
+//	}
+//
+//	@RegressionTest
+//	public void choiceGrounder(SystemConfig cfg) {
+//		AtomStore atomStore = new AtomStoreImpl();
+//		assertEquals(ChoiceGrounder.EXPECTED, buildSolverForRegressionTest(atomStore, new ChoiceGrounder(atomStore), cfg).collectSet());
+//	}
 
 }

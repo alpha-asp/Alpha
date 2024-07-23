@@ -25,7 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.atomOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -35,13 +35,14 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.core.programs.rules.CompiledRule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
@@ -49,8 +50,7 @@ import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.rules.CompiledRule;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
+import at.ac.tuwien.kr.alpha.core.rules.CompiledRules;
 import at.ac.tuwien.kr.alpha.core.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.core.solver.NaiveNoGoodStore;
 import at.ac.tuwien.kr.alpha.core.solver.TrailAssignment;
@@ -83,11 +83,11 @@ public class AlphaHeuristicTestAssumptions {
 		 */
 		List<Atom> facts = Arrays.asList(Atoms.newBasicAtom(Predicates.getPredicate("b1", 0)), Atoms.newBasicAtom(Predicates.getPredicate("b2", 0)));
 		List<CompiledRule> rules = Arrays.asList(
-				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("b3", 0))), Atoms.newBasicAtom(Predicates.getPredicate("nb3", 0)).toLiteral(false)),
-				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("nb3", 0))), Atoms.newBasicAtom(Predicates.getPredicate("b3", 0)).toLiteral(false)),
-				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("b4", 0))), Atoms.newBasicAtom(Predicates.getPredicate("nb4", 0)).toLiteral(false)),
-				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("nb4", 0))), Atoms.newBasicAtom(Predicates.getPredicate("b4", 0)).toLiteral(false)),
-				new InternalRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("h", 0))),
+				CompiledRules.newCompiledRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("b3", 0))), Atoms.newBasicAtom(Predicates.getPredicate("nb3", 0)).toLiteral(false)),
+				CompiledRules.newCompiledRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("nb3", 0))), Atoms.newBasicAtom(Predicates.getPredicate("b3", 0)).toLiteral(false)),
+				CompiledRules.newCompiledRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("b4", 0))), Atoms.newBasicAtom(Predicates.getPredicate("nb4", 0)).toLiteral(false)),
+				CompiledRules.newCompiledRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("nb4", 0))), Atoms.newBasicAtom(Predicates.getPredicate("b4", 0)).toLiteral(false)),
+				CompiledRules.newCompiledRule(Heads.newNormalHead(Atoms.newBasicAtom(Predicates.getPredicate("h", 0))),
 						Atoms.newBasicAtom(Predicates.getPredicate("b1", 0)).toLiteral(),
 						Atoms.newBasicAtom(Predicates.getPredicate("b2", 0)).toLiteral(),
 						Atoms.newBasicAtom(Predicates.getPredicate("b3", 0)).toLiteral(false),

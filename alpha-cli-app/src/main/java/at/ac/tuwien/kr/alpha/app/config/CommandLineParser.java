@@ -88,6 +88,8 @@ public class CommandLineParser {
 			.desc("write files for normalized and preprocessed programs, also emit dependency- and component graphs as (graphviz) dot files").build();
 	private static final Option OPT_WRITE_XSLX = Option.builder("wx").longOpt("write-xlsx").hasArg(true).argName("path").type(String.class)
 			.desc("Write answer sets to excel files, i.e. xlsx workbooks (one workbook per answer set)").build();
+	private static final Option OPT_REIFY = Option.builder("reify").longOpt("reifyProgram").hasArg(false).desc("Reifies, i.e. encodes as ASP facts, the given program.").build();
+	private static final Option OPT_RUN_TESTS = Option.builder("t").longOpt("run-tests").hasArg(false).desc("Runs all unit tests of the given ASP Program").build();
 
 	// general system-wide config
 	private static final Option OPT_SOLVER = Option.builder("s").longOpt("solver").hasArg(true).argName("solver")
@@ -121,9 +123,6 @@ public class CommandLineParser {
 			.build();
 	private static final Option OPT_AGGREGATES_NO_NEGATIVE_INTEGERS = Option.builder("dni").longOpt("disableNegativeIntegers")
 			.desc("use simplified encodings without netagive integer support for #sum aggregates (default: " + !AggregateRewritingConfig.DEFAULT_SUPPORT_NEGATIVE_INTEGERS + ")")
-			.build();
-	private static final Option OPT_NO_EVAL_STRATIFIED = Option.builder("dse").longOpt("disableStratifiedEvaluation")
-			.desc("Disable stratified evaluation")
 			.build();
 	private static final Option OPT_NO_NOGOOD_DELETION = Option.builder("dnd").longOpt("disableNoGoodDeletion")
 			.desc("disable the deletion of (learned, little active) nogoods (default: " 
@@ -162,6 +161,8 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_ASPSTRING);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_DEBUG_PREPROCESSING);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_XSLX);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_REIFY);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_RUN_TESTS);
 
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SOLVER);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NOGOOD_STORE);
@@ -177,7 +178,6 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_AGGREGATES_NO_SORTING_GRID);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_AGGREGATES_NO_NEGATIVE_INTEGERS);
 
-		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_EVAL_STRATIFIED);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_NOGOOD_DELETION);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES);
@@ -232,7 +232,6 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), this::handleNoJustification);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_AGGREGATES_NO_SORTING_GRID.getOpt(), this::handleDisableSortingGrid);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_AGGREGATES_NO_NEGATIVE_INTEGERS.getOpt(), this::handleDisableNegativeSumElements);
-		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_EVAL_STRATIFIED.getOpt(), this::handleDisableStratifedEval);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS.getOpt(), this::handleGrounderToleranceConstraints);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES.getOpt(), this::handleGrounderToleranceRules);
@@ -248,6 +247,8 @@ public class CommandLineParser {
 		this.inputOptionHandlers.put(CommandLineParser.OPT_LITERATE.getOpt(), this::handleLiterate);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_DEBUG_PREPROCESSING.getOpt(), this::handleDebugPreprocessing);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_XSLX.getOpt(), this::handleWriteXlsx);
+		this.inputOptionHandlers.put(CommandLineParser.OPT_REIFY.getOpt(), this::handleReify);
+		this.inputOptionHandlers.put(CommandLineParser.OPT_RUN_TESTS.getOpt(), this::handleRunTests);
 	}
 
 	public AlphaConfig parseCommandLine(String[] args) throws ParseException {
@@ -349,10 +350,6 @@ public class CommandLineParser {
 		cfg.setSortAnswerSets(true);
 	}
 
-	private void handleDeterministic(Option opt, SystemConfig cfg) {
-		cfg.setSeed(0);
-	}
-
 	private void handleSeed(Option opt, SystemConfig cfg) {
 		String optVal = opt.getValue();
 		long seed;
@@ -411,6 +408,14 @@ public class CommandLineParser {
 		cfg.setAnswerSetFileOutputPath(outputPath);
 	}
 
+	private void handleReify(Option opt, InputConfig cfg) {
+		cfg.setReifyInput(true);
+	}
+
+	private void handleRunTests(Option opt, InputConfig cfg) {
+		cfg.setRunTests(true);
+	}
+
 	private void handleStats(Option opt, SystemConfig cfg) {
 		cfg.setPrintStats(true);
 	}
@@ -422,13 +427,9 @@ public class CommandLineParser {
 	private void handleDisableSortingGrid(Option opt, SystemConfig cfg) {
 		cfg.getAggregateRewritingConfig().setUseSortingGridEncoding(false);
 	}
-	
+
 	private void handleDisableNegativeSumElements(Option opt, SystemConfig cfg) {
 		cfg.getAggregateRewritingConfig().setSupportNegativeValuesInSums(false);
-	}
-
-	private void handleDisableStratifedEval(Option opt, SystemConfig cfg) {
-		cfg.setEvaluateStratifiedPart(false);
 	}
 
 	private void handleDebugPreprocessing(Option opt, InputConfig cfg) {
@@ -456,5 +457,5 @@ public class CommandLineParser {
 	private void handleAtomSeparator(Option opt, SystemConfig cfg) {
 		cfg.setAtomSeparator(StringEscapeUtils.unescapeJava(opt.getValue(SystemConfig.DEFAULT_ATOM_SEPARATOR)));
 	}
-	
+
 }

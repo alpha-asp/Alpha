@@ -1,23 +1,16 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.collections4.SetUtils;
-
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.api.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
+import org.apache.commons.collections4.SetUtils;
+
+import java.util.*;
 
 /**
  * Analyses a rule and records occurring aggregates and for each aggregate its global variables and its dependencies on

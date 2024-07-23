@@ -1,21 +1,19 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders;
 
-import org.stringtemplate.v4.ST;
-import org.stringtemplate.v4.STGroup;
-
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
+import org.stringtemplate.v4.ST;
+import org.stringtemplate.v4.STGroup;
 
 /**
  * Aggregate encoder handling sum aggregates.
@@ -33,16 +31,16 @@ public final class SumEncoder extends StringtemplateBasedAggregateEncoder {
 	private static final ST NON_NEG_ELEMENTS_SUM_LE_TEMPLATE = AGGREGATE_ENCODINGS.getInstanceOf("sum_le_no_negative_elements");
 	private static final ST NON_NEG_ELEMENTS_SUM_EQ_TEMPLATE = AGGREGATE_ENCODINGS.getInstanceOf("sum_eq_no_negative_elements");
 
-	private SumEncoder(ProgramParser parser, ComparisonOperator acceptedOperator, ST encodingTemplate) {
-		super(parser, AggregateFunctionSymbol.SUM, acceptedOperator, encodingTemplate);
+	private SumEncoder(ComparisonOperator acceptedOperator, ST encodingTemplate) {
+		super(AggregateFunctionSymbol.SUM, acceptedOperator, encodingTemplate);
 	}
 
-	public static SumEncoder buildSumLessOrEqualEncoder(ProgramParser parser, boolean supportNegativeIntegers) {
-		return new SumEncoder(parser, ComparisonOperators.LE, supportNegativeIntegers ? SUM_LE_TEMPLATE : NON_NEG_ELEMENTS_SUM_LE_TEMPLATE);
+	static SumEncoder buildSumLessOrEqualEncoder(boolean supportNegativeIntegers) {
+		return new SumEncoder(ComparisonOperators.LE, supportNegativeIntegers ? SUM_LE_TEMPLATE : NON_NEG_ELEMENTS_SUM_LE_TEMPLATE);
 	}
 
-	public static SumEncoder buildSumEqualsEncoder(ProgramParser parser, boolean supportNegativeIntegers) {
-		return new SumEncoder(parser, ComparisonOperators.EQ, supportNegativeIntegers ? SUM_EQ_TEMPLATE : NON_NEG_ELEMENTS_SUM_EQ_TEMPLATE);
+	static SumEncoder buildSumEqualsEncoder(boolean supportNegativeIntegers) {
+		return new SumEncoder(ComparisonOperators.EQ, supportNegativeIntegers ? SUM_EQ_TEMPLATE : NON_NEG_ELEMENTS_SUM_EQ_TEMPLATE);
 	}
 
 	/**

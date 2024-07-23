@@ -38,14 +38,15 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
 
 /**
- * A parser that, in contrast to {@link ProgramParserImpl}, does not parse full programs but only program parts like
+ * A parser that, in contrast to {@link at.ac.tuwien.kr.alpha.api.programs.ProgramParser}, does not parse full programs but only program parts like
  * atoms, terms and such.
  */
+// TODO adapt this and create evolog version
 public class ProgramPartParser {
 	private final ParseTreeVisitor visitor = new ParseTreeVisitor(Collections.emptyMap(), true);
 

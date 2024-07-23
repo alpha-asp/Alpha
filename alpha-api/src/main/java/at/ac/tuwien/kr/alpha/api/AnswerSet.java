@@ -1,10 +1,13 @@
 package at.ac.tuwien.kr.alpha.api;
 
-import java.util.List;
-import java.util.SortedSet;
-
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AtomQuery;
+
+import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * API representation of an answer set, i.e. a set of atoms that is a model of an ASP program.
@@ -29,7 +32,17 @@ public interface AnswerSet extends Comparable<AnswerSet> {
 	boolean isEmpty();
 
 	/**
-	 * List {@link Atom}s in this answer set satisfying the given {@link AnswerSetQuery}.
+	 * List {@link Atom}s in this answer set satisfying the given {@link AtomQuery}.
 	 */
-	List<Atom> query(AnswerSetQuery query);
+	List<Atom> query(AtomQuery query);
+
+	default Set<Atom> asFacts() {
+		return getPredicates().stream()
+				.map(this::getPredicateInstances)
+				.reduce(new TreeSet<Atom>(), (left, right) -> {
+					left.addAll(right);
+					return left;
+				});
+	}
+
 }

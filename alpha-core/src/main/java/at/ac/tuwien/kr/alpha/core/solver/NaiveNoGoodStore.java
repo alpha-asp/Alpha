@@ -34,10 +34,12 @@ import at.ac.tuwien.kr.alpha.core.common.NoGood;
 
 import java.util.HashMap;
 
-import static at.ac.tuwien.kr.alpha.core.atoms.Literals.*;
+import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.*;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.*;
 
 public class NaiveNoGoodStore implements NoGoodStore {
+
+	@SuppressWarnings("unused")
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveNoGoodStore.class);
 
 	private HashMap<Integer, NoGood> delegate = new HashMap<>();

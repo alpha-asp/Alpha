@@ -1,11 +1,5 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.collections4.ListUtils;
-
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
@@ -13,19 +7,26 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.api.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.rules.heads.Heads;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
-import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.InputProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.PredicateInternalizer;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.collections4.SetUtils;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Abstract base class for aggregate encoders. An aggregate encoder provides an encoding for a given aggregate literal,
@@ -52,7 +53,7 @@ public abstract class AbstractAggregateEncoder {
 	 * @return all rules encoding the given aggregates as an {@link InputProgram}.
 	 */
 	public InputProgram encodeAggregateLiterals(Set<AggregateInfo> aggregatesToEncode) {
-		InputProgramImpl.Builder programBuilder = InputProgramImpl.builder();
+		InputProgramBuilder programBuilder = Programs.builder();
 		for (AggregateInfo aggregateInfo : aggregatesToEncode) {
 			programBuilder.accumulate(encodeAggregateLiteral(aggregateInfo));
 		}
@@ -82,7 +83,7 @@ public abstract class AbstractAggregateEncoder {
 			Rule<Head> elementRule = encodeAggregateElement(aggregateToEncode, elementToEncode);
 			elementEncodingRules.add(PredicateInternalizer.makePrefixedPredicatesInternal(elementRule, aggregateId));
 		}
-		return new InputProgramImpl(ListUtils.union(literalEncoding.getRules(), elementEncodingRules), literalEncoding.getFacts(), new InlineDirectivesImpl());
+		return Programs.newInputProgram(ListUtils.union(literalEncoding.getRules(), elementEncodingRules), literalEncoding.getFacts(), Programs.newInlineDirectives());
 	}
 
 	/**
@@ -104,8 +105,8 @@ public abstract class AbstractAggregateEncoder {
 	 */
 	protected Rule<Head> encodeAggregateElement(AggregateInfo aggregateInfo, AggregateElement element) {
 		BasicAtom headAtom = buildElementRuleHead(aggregateInfo.getId(), element, aggregateInfo.getAggregateArguments());
-		return new BasicRule(Heads.newNormalHead(headAtom),
-				ListUtils.union(element.getElementLiterals(), new ArrayList<>(aggregateInfo.getDependencies())));
+		return Rules.newRule(Heads.newNormalHead(headAtom),
+				SetUtils.union(new LinkedHashSet<>(element.getElementLiterals()), new LinkedHashSet<>(aggregateInfo.getDependencies())));
 	}
 
 	/**

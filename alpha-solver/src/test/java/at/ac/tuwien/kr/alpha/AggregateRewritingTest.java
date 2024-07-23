@@ -1,25 +1,23 @@
 package at.ac.tuwien.kr.alpha;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-// TODO This is a functional test and should not be run with standard unit tests
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class AggregateRewritingTest {
 
 	//@formatter:off

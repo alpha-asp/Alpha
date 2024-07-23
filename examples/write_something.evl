@@ -1,0 +1,9 @@
+outfile("/home/michael/asp_snippets/evolog-actions/hello.out").
+
+open_result(PATH, RES) : @fileOutputStream[PATH] = RES :- outfile(PATH).
+
+write_result(PATH, RES) : @streamWrite[STREAM, "HelloEvologWorld!"] = RES :- open_result(PATH, success(stream(STREAM))), outfile(PATH).
+
+can_close(PATH, FD) :- write_result(PATH, success(ok)), open_result(PATH, success(stream(FD))), outfile(PATH).
+
+close_result(PATH, RES) : @outputStreamClose[STREAM] = RES :- write_result(PATH, success(ok)), open_result(PATH, success(stream(STREAM))), outfile(PATH).

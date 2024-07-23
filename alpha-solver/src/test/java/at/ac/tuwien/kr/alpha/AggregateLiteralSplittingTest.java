@@ -1,17 +1,16 @@
 package at.ac.tuwien.kr.alpha;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateLiteralSplitting;
+import at.ac.tuwien.kr.alpha.test.RuleParser;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import at.ac.tuwien.kr.alpha.api.rules.Rule;
-import at.ac.tuwien.kr.alpha.api.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateLiteralSplitting;
-
-// TODO This is a functional test and should not be run with standard unit tests
 public class AggregateLiteralSplittingTest {
 
 	//@formatter:off
