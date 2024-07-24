@@ -25,13 +25,34 @@ public interface ModuleAtom extends Atom {
 	@Override
 	ModuleAtom substitute(Substitution substitution);
 
+	@Override
+	ModuleAtom withTerms(List<Term> terms);
+
 	interface ModuleInstantiationMode {
 		Optional<Integer> requestedAnswerSets();
 
 		ModuleInstantiationMode ALL = Optional::empty;
 
 		static ModuleInstantiationMode forNumAnswerSets(int answerSets) {
-			return () -> Optional.of(answerSets);
+			return new ModuleInstantiationMode() {
+				@Override
+				public Optional<Integer> requestedAnswerSets() {
+					return Optional.of(answerSets);
+				}
+
+				@Override
+				public int hashCode() {
+					return answerSets;
+				}
+
+				@Override
+				public boolean equals(Object obj) {
+					if (!(obj instanceof ModuleInstantiationMode)) {
+						return false;
+					}
+					return ((ModuleInstantiationMode) obj).requestedAnswerSets().equals(this.requestedAnswerSets());
+				}
+			};
 		}
 
 	}

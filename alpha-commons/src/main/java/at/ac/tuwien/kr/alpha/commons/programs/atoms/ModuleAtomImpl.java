@@ -2,7 +2,6 @@ package at.ac.tuwien.kr.alpha.commons.programs.atoms;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ModuleAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ModuleLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
@@ -50,7 +49,7 @@ class ModuleAtomImpl extends AbstractAtom implements ModuleAtom {
 	}
 
 	@Override
-	public Atom withTerms(List<Term> terms) {
+	public ModuleAtom withTerms(List<Term> terms) {
 		if (terms.size() != this.input.size() + this.output.size()) {
 			throw new IllegalArgumentException(
 					"Cannot apply term list " + terms + " to module atom " + this + ", terms has invalid size!");
