@@ -9,7 +9,7 @@ public interface Module {
 
 	String getName();
 
-	Set<Predicate> getInputSpec();
+	Predicate getInputSpec();
 
 	Set<Predicate> getOutputSpec();
 

@@ -69,10 +69,10 @@ public class ParserTest {
 
 	private static final String UNIT_TEST_EXPECT_UNSAT =
 			"p(1). p(2). "
-			+ ":- p(X), p(Y), X + Y = 3."
-			+ "#test expected_unsat(expect: unsat) {"
-			+ "given {}"
-			+ "}";
+					+ ":- p(X), p(Y), X + Y = 3."
+					+ "#test expected_unsat(expect: unsat) {"
+					+ "given {}"
+					+ "}";
 
 	private static final String UNIT_TEST_BASIC_TEST =
 			"a :- b. #test ensure_a(expect: 1) { given { b. } assertForAll { :- not a. } }";
@@ -86,17 +86,13 @@ public class ParserTest {
 	private static final String UNIT_TEST_KEYWORDS_AS_IDS =
 			"assert(a) :- given(b). # test test(expect: 1) { given { given(b). } assertForAll { :- not assert(a). :- assertForSome(b).}}";
 
-	private static final String MODULE_SIMPLE = "#module aSimpleModule({input/1} => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). }";
+	private static final String MODULE_SIMPLE = "#module aSimpleModule(input/1 => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). }";
 
-	private static final String MODULE_OUTPUT_ALL = "#module mod({in/1} => {*}) { a(X). b(X) :- a(X).}";
+	private static final String MODULE_OUTPUT_ALL = "#module mod(in/1 => {*}) { a(X). b(X) :- a(X).}";
 
-	private static final String MODULE_WITH_REGULAR_STMTS = "p(a). p(b). q(X) :- p(X). #module aSimpleModule({input/1} => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). }";
+	private static final String MODULE_WITH_REGULAR_STMTS = "p(a). p(b). q(X) :- p(X). #module aSimpleModule(input/1 => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). }";
 
-	private static final String MODULE_MULTIPLE_DEFINITIONS = "a. b(5). #module aSimpleModule({input/1} => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). } q(Y) :- r(S, Y), t(S). #module anotherModule({input/1} => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). }";
-
-	private static final String MODULE_EMPTY_INPUT_SPEC = "#module someModule({} => {*}) {p(a).}";
-
-	private static final String MODULE_MULTIPLE_INPUTS = "#module someModule({input/1, input2/2} => {out1/2}) {p(a).}";
+	private static final String MODULE_MULTIPLE_DEFINITIONS = "a. b(5). #module aSimpleModule(input/1 => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). } q(Y) :- r(S, Y), t(S). #module anotherModule(input/1 => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). }";
 
 	private static final String MODULE_LITERAL = "p(a). q(b). r(X) :- p(X), q(Y), #mod[X, Y](X).";
 
@@ -336,11 +332,9 @@ public class ParserTest {
 		assertEquals(1, modules.size());
 		Module module = modules.get(0);
 		assertEquals("aSimpleModule", module.getName());
-		Set<Predicate> inputSpec = module.getInputSpec();
-		assertEquals(1, inputSpec.size());
-		Predicate inputPredicate = inputSpec.iterator().next();
-		assertEquals("input", inputPredicate.getName());
-		assertEquals(1, inputPredicate.getArity());
+		Predicate inputSpec = module.getInputSpec();
+		assertEquals("input", inputSpec.getName());
+		assertEquals(1, inputSpec.getArity());
 		Set<Predicate> outputSpec = module.getOutputSpec();
 		assertEquals(2, outputSpec.size());
 		assertTrue(outputSpec.contains(Predicates.getPredicate("out1", 2)));
@@ -358,11 +352,9 @@ public class ParserTest {
 		assertEquals(1, modules.size());
 		Module module = modules.get(0);
 		assertEquals("mod", module.getName());
-		Set<Predicate> inputSpec = module.getInputSpec();
-		assertEquals(1, inputSpec.size());
-		Predicate inputPredicate = inputSpec.iterator().next();
-		assertEquals("in", inputPredicate.getName());
-		assertEquals(1, inputPredicate.getArity());
+		Predicate inputSpec = module.getInputSpec();
+		assertEquals("in", inputSpec.getName());
+		assertEquals(1, inputSpec.getArity());
 		assertTrue(module.getOutputSpec().isEmpty());
 		InputProgram implementation = module.getImplementation();
 		assertEquals(1, implementation.getFacts().size());
@@ -379,11 +371,9 @@ public class ParserTest {
 		assertEquals(1, modules.size());
 		Module module = modules.get(0);
 		assertEquals("aSimpleModule", module.getName());
-		Set<Predicate> inputSpec = module.getInputSpec();
-		assertEquals(1, inputSpec.size());
-		Predicate inputPredicate = inputSpec.iterator().next();
-		assertEquals("input", inputPredicate.getName());
-		assertEquals(1, inputPredicate.getArity());
+		Predicate inputSpec = module.getInputSpec();
+		assertEquals("input", inputSpec.getName());
+		assertEquals(1, inputSpec.getArity());
 		Set<Predicate> outputSpec = module.getOutputSpec();
 		assertEquals(2, outputSpec.size());
 		assertTrue(outputSpec.contains(Predicates.getPredicate("out1", 2)));
@@ -407,42 +397,13 @@ public class ParserTest {
 	@Test
 	public void invalidNestedModule() {
 		assertThrows(IllegalStateException.class, () ->
-				parser.parse("#module aSimpleModule({input/1} => {out1/2, out2/3}) { p(a). p(b). #module anotherModule({input/1} => {out1/2, out2/3}) { p(a). p(b). } }"));
+				parser.parse("#module aSimpleModule(input/1 => {out1/2, out2/3}) { p(a). p(b). #module anotherModule(input/1 => {out1/2, out2/3}) { p(a). p(b). } }"));
 	}
 
 	@Test
 	public void invalidNestedTest() {
 		assertThrows(IllegalStateException.class, () ->
-			parser.parse("#module mod({foo/1} => {*}) { #test test(expect: 1) { given { b. } assertForAll { :- a. } } }"));
-	}
-
-	@Test
-	public void emptyInputSpec() {
-		InputProgram prog = parser.parse(MODULE_EMPTY_INPUT_SPEC);
-		List<Module> modules = prog.getModules();
-		assertEquals(1, modules.size());
-		Module module = modules.get(0);
-		assertEquals("someModule", module.getName());
-		Set<Predicate> inputSpec = module.getInputSpec();
-		assertTrue(inputSpec.isEmpty());
-		Set<Predicate> outputSpec = module.getOutputSpec();
-		assertTrue(outputSpec.isEmpty());
-	}
-
-	@Test
-	public void multipleInputs() {
-		InputProgram prog = parser.parse(MODULE_MULTIPLE_INPUTS);
-		List<Module> modules = prog.getModules();
-		assertEquals(1, modules.size());
-		Module module = modules.get(0);
-		assertEquals("someModule", module.getName());
-		Set<Predicate> inputSpec = module.getInputSpec();
-		assertEquals(2, inputSpec.size());
-		assertTrue(inputSpec.contains(Predicates.getPredicate("input", 1)));
-		assertTrue(inputSpec.contains(Predicates.getPredicate("input2", 2)));
-		Set<Predicate> outputSpec = module.getOutputSpec();
-		assertEquals(1, outputSpec.size());
-		assertTrue(outputSpec.contains(Predicates.getPredicate("out1", 2)));
+				parser.parse("#module mod(foo/1 => {*}) { #test test(expect: 1) { given { b. } assertForAll { :- a. } } }"));
 	}
 
 	@Test
