@@ -6,7 +6,6 @@ import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.tests.Assertion;
 import at.ac.tuwien.kr.alpha.api.programs.tests.TestResult;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
@@ -17,7 +16,6 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -33,7 +31,7 @@ public class End2EndTests {
 		Alpha alpha = AlphaFactory.newAlpha();
 		Programs.InputProgramBuilder programBuilder = Programs.builder();
 		for (String file : fileset) {
-			try(InputStream is = End2EndTests.class.getResourceAsStream(file)) {
+			try (InputStream is = End2EndTests.class.getResourceAsStream(file)) {
 				programBuilder.accumulate(alpha.readProgramStream(is));
 			} catch (IOException ex) {
 				throw new RuntimeException("Failed to read test file: " + file, ex);

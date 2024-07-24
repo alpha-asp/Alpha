@@ -27,40 +27,40 @@
  */
 package at.ac.tuwien.kr.alpha.core.parser;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.ModuleAtom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.literals.ModuleLiteral;
+import at.ac.tuwien.kr.alpha.api.programs.modules.Module;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
+import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.api.programs.tests.Assertion;
+import at.ac.tuwien.kr.alpha.api.programs.tests.TestCase;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
+import at.ac.tuwien.kr.alpha.commons.util.Util;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
 import java.util.*;
 import java.util.stream.Stream;
 
-import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.modules.Module;
-import at.ac.tuwien.kr.alpha.api.programs.tests.Assertion;
-import at.ac.tuwien.kr.alpha.api.programs.tests.TestCase;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.junit.jupiter.api.Test;
-
-import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
-import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead;
-import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.api.programs.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
-import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.Predicates;
-import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
-import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
-import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
-import at.ac.tuwien.kr.alpha.commons.util.Util;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -93,6 +93,18 @@ public class ParserTest {
 	private static final String MODULE_WITH_REGULAR_STMTS = "p(a). p(b). q(X) :- p(X). #module aSimpleModule(input/1 => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). }";
 
 	private static final String MODULE_MULTIPLE_DEFINITIONS = "a. b(5). #module aSimpleModule(input/1 => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). } q(Y) :- r(S, Y), t(S). #module anotherModule(input/1 => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). }";
+
+	private static final String MODULE_LITERAL = "p(a). q(b). r(X) :- p(X), q(Y), #mod[X, Y](X).";
+
+	private static final String MODULE_LITERAL_WITH_NUM_ANSWER_SETS = ":- r(1), q(B, 1). r(X) :- p(X), q(Y), #mod{4}[X, Y](X).";
+
+	private static final String MODULE_LITERAL_NO_INPUT = "a(X) :- #something(X).";
+
+	private static final String MODULE_LITERAL_NO_INPUT_WITH_NUM_ANSWER_SETS = "a(X) :- #something{4}(X).";
+
+	private static final String MODULE_LITERAL_NO_OUTPUT = "a(X) :- #something[X].";
+
+	private static final String MODULE_LITERAL_NO_OUTPUT_WITH_NUM_ANSWER_SETS = "a(X) :- #something{4}[X].";
 
 	private final ProgramParserImpl parser = new ProgramParserImpl();
 
@@ -154,9 +166,9 @@ public class ParserTest {
 	public void parseInterval() {
 		InputProgram parsedProgram = parser.parse("fact(2..5). p(X) :- q(a, 3 .. X).");
 		IntervalTerm factInterval = (IntervalTerm) parsedProgram.getFacts().get(0).getTerms().get(0);
-		assertTrue(factInterval.equals(Terms.newIntervalTerm(Terms.newConstant(2), Terms.newConstant(5))));
+		assertEquals(factInterval, Terms.newIntervalTerm(Terms.newConstant(2), Terms.newConstant(5)));
 		IntervalTerm bodyInterval = (IntervalTerm) parsedProgram.getRules().get(0).getBody().stream().findFirst().get().getTerms().get(1);
-		assertTrue(bodyInterval.equals(Terms.newIntervalTerm(Terms.newConstant(3), Terms.newVariable("X"))));
+		assertEquals(bodyInterval, Terms.newIntervalTerm(Terms.newConstant(3), Terms.newVariable("X")));
 	}
 
 	@Test
@@ -164,10 +176,10 @@ public class ParserTest {
 		InputProgram parsedProgram = parser.parse("dom(1). dom(2). { a ; b } :- dom(X).");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
 		assertEquals(2, choiceHead.getChoiceElements().size());
-		assertTrue(choiceHead.getChoiceElements().get(0).getChoiceAtom().toString().equals("a"));
-		assertTrue(choiceHead.getChoiceElements().get(1).getChoiceAtom().toString().equals("b"));
-		assertEquals(null, choiceHead.getLowerBound());
-		assertEquals(null, choiceHead.getUpperBound());
+		assertEquals("a", choiceHead.getChoiceElements().get(0).getChoiceAtom().toString());
+		assertEquals("b", choiceHead.getChoiceElements().get(1).getChoiceAtom().toString());
+		assertNull(choiceHead.getLowerBound());
+		assertNull(choiceHead.getUpperBound());
 	}
 
 	@Test
@@ -175,8 +187,8 @@ public class ParserTest {
 		InputProgram parsedProgram = parser.parse("dom(1). dom(2). 1 < { a: p(v,w), not r; b } <= 13 :- dom(X). foo.");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
 		assertEquals(2, choiceHead.getChoiceElements().size());
-		assertTrue(choiceHead.getChoiceElements().get(0).getChoiceAtom().toString().equals("a"));
-		assertTrue(choiceHead.getChoiceElements().get(1).getChoiceAtom().toString().equals("b"));
+		assertEquals("a", choiceHead.getChoiceElements().get(0).getChoiceAtom().toString());
+		assertEquals("b", choiceHead.getChoiceElements().get(1).getChoiceAtom().toString());
 		List<Literal> conditionalLiterals = choiceHead.getChoiceElements().get(0).getConditionLiterals();
 		assertEquals(2, conditionalLiterals.size());
 		assertFalse(conditionalLiterals.get(0).isNegated());
@@ -392,6 +404,99 @@ public class ParserTest {
 	public void invalidNestedTest() {
 		assertThrows(IllegalStateException.class, () ->
 			parser.parse("#module mod(foo/1 => {*}) { #test test(expect: 1) { given { b. } assertForAll { :- a. } } }"));
+	}
+
+	@Test
+	public void moduleLiteral() {
+		InputProgram prog = parser.parse(MODULE_LITERAL);
+		assertEquals(2, prog.getFacts().size());
+		assertEquals(1, prog.getRules().size());
+		Rule<?> rule = prog.getRules().get(0);
+		assertEquals(3, rule.getBody().size());
+		assertEquals(1, rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).count());
+		ModuleLiteral moduleLiteral = (ModuleLiteral) rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).findFirst().get();
+		assertEquals("mod", moduleLiteral.getAtom().getModuleName());
+		assertEquals(2, moduleLiteral.getAtom().getInput().size());
+		assertEquals(1, moduleLiteral.getAtom().getOutput().size());
+		assertEquals(ModuleAtom.ModuleInstantiationMode.ALL, moduleLiteral.getAtom().getInstantiationMode());
+	}
+
+	@Test
+	public void moduleLiteralWithNumAnswerSets() {
+		InputProgram prog = parser.parse(MODULE_LITERAL_WITH_NUM_ANSWER_SETS);
+		assertEquals(2, prog.getRules().size());
+		Optional<Rule<Head>> ruleWithModuleLiteral = prog.getRules().stream().filter(rule -> rule.getBody().stream().anyMatch(lit -> lit instanceof ModuleLiteral)).findFirst();
+		assertTrue(ruleWithModuleLiteral.isPresent());
+		Rule<?> rule = ruleWithModuleLiteral.get();
+		assertEquals(3, rule.getBody().size());
+		assertEquals(1, rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).count());
+		Optional<Literal> optModuleLiteral = rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).findFirst();
+		assertTrue(optModuleLiteral.isPresent());
+		ModuleLiteral moduleLiteral = (ModuleLiteral) optModuleLiteral.get();
+		assertEquals("mod", moduleLiteral.getAtom().getModuleName());
+		assertEquals(2, moduleLiteral.getAtom().getInput().size());
+		assertEquals(1, moduleLiteral.getAtom().getOutput().size());
+		assertTrue(moduleLiteral.getAtom().getInstantiationMode().requestedAnswerSets().isPresent());
+		assertEquals(4, moduleLiteral.getAtom().getInstantiationMode().requestedAnswerSets().get());
+	}
+
+	@Test
+	public void moduleLiteralNoInput() {
+		InputProgram prog = parser.parse(MODULE_LITERAL_NO_INPUT);
+		assertEquals(1, prog.getRules().size());
+		Rule<?> rule = prog.getRules().get(0);
+		assertEquals(1, rule.getBody().size());
+		assertEquals(1, rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).count());
+		ModuleLiteral moduleLiteral = (ModuleLiteral) rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).findFirst().get();
+		assertEquals("something", moduleLiteral.getAtom().getModuleName());
+		assertTrue(moduleLiteral.getAtom().getInput().isEmpty());
+		assertEquals(1, moduleLiteral.getAtom().getOutput().size());
+		assertEquals(ModuleAtom.ModuleInstantiationMode.ALL, moduleLiteral.getAtom().getInstantiationMode());
+	}
+
+	@Test
+	public void moduleLiteralNoInputWithNumAnswerSets() {
+		InputProgram prog = parser.parse(MODULE_LITERAL_NO_INPUT_WITH_NUM_ANSWER_SETS);
+		assertEquals(1, prog.getRules().size());
+		Rule<?> rule = prog.getRules().get(0);
+		assertEquals(1, rule.getBody().size());
+		assertEquals(1, rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).count());
+		ModuleLiteral moduleLiteral = (ModuleLiteral) rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).findFirst().get();
+		assertEquals("something", moduleLiteral.getAtom().getModuleName());
+		assertTrue(moduleLiteral.getAtom().getInput().isEmpty());
+		assertEquals(1, moduleLiteral.getAtom().getOutput().size());
+		assertTrue(moduleLiteral.getAtom().getInstantiationMode().requestedAnswerSets().isPresent());
+		assertEquals(4, moduleLiteral.getAtom().getInstantiationMode().requestedAnswerSets().get());
+	}
+
+	@Test
+	public void moduleLiteralNoOutput() {
+		InputProgram prog = parser.parse(MODULE_LITERAL_NO_OUTPUT);
+		assertEquals(1, prog.getRules().size());
+		Rule<?> rule = prog.getRules().get(0);
+		assertEquals(1, rule.getBody().size());
+		assertEquals(1, rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).count());
+		ModuleLiteral moduleLiteral = (ModuleLiteral) rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).findFirst().get();
+		assertEquals("something", moduleLiteral.getAtom().getModuleName());
+		assertEquals(1, moduleLiteral.getAtom().getInput().size());
+		assertTrue(moduleLiteral.getAtom().getOutput().isEmpty());
+		assertFalse(moduleLiteral.getAtom().getInstantiationMode().requestedAnswerSets().isPresent());
+		assertEquals(ModuleAtom.ModuleInstantiationMode.ALL, moduleLiteral.getAtom().getInstantiationMode());
+	}
+
+	@Test
+	public void moduleLiteralNoOutputWithNumAnswerSets() {
+		InputProgram prog = parser.parse(MODULE_LITERAL_NO_OUTPUT_WITH_NUM_ANSWER_SETS);
+		assertEquals(1, prog.getRules().size());
+		Rule<?> rule = prog.getRules().get(0);
+		assertEquals(1, rule.getBody().size());
+		assertEquals(1, rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).count());
+		ModuleLiteral moduleLiteral = (ModuleLiteral) rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).findFirst().get();
+		assertEquals("something", moduleLiteral.getAtom().getModuleName());
+		assertEquals(1, moduleLiteral.getAtom().getInput().size());
+		assertTrue(moduleLiteral.getAtom().getOutput().isEmpty());
+		assertTrue(moduleLiteral.getAtom().getInstantiationMode().requestedAnswerSets().isPresent());
+		assertEquals(4, moduleLiteral.getAtom().getInstantiationMode().requestedAnswerSets().get());
 	}
 
 }

@@ -46,7 +46,7 @@ weight_at_level : term (AT term)? (COMMA terms)?;
 
 naf_literals : naf_literal (COMMA naf_literals)?;
 
-naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
+naf_literal : NAF? (external_atom | module_atom | classical_literal | builtin_atom);
 
 id : ID | TEST_EXPECT | TEST_UNSAT | TEST_GIVEN | TEST_ASSERT_ALL | TEST_ASSERT_SOME | DIRECTIVE_ENUM | DIRECTIVE_TEST;
 
@@ -86,6 +86,8 @@ interval : lower = interval_bound DOT DOT upper = interval_bound; // NOT Core2 s
 interval_bound : numeral | VARIABLE;
 
 external_atom : MINUS? AMPERSAND id (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?; // NOT Core2 syntax.
+
+module_atom : SHARP id (CURLY_OPEN NUMBER CURLY_CLOSE)? (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?; // NOT Core2 syntax.
 
 directive : directive_enumeration | directive_test | directive_module;  // NOT Core2 syntax, allows solver specific directives. Further directives shall be added here.
 

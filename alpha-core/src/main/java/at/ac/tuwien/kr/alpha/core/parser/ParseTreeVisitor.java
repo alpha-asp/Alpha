@@ -529,6 +529,8 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			return Literals.fromAtom(visitClassical_literal(ctx.classical_literal()), !isCurrentLiteralNegated);
 		} else if (ctx.external_atom() != null) {
 			return Literals.fromAtom(visitExternal_atom(ctx.external_atom()), !isCurrentLiteralNegated);
+		} else if (ctx.module_atom() != null) {
+			return Literals.fromAtom(visitModule_atom(ctx.module_atom()), !isCurrentLiteralNegated);
 		}
 		throw notSupported(ctx);
 	}
@@ -579,7 +581,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	public Integer visitNumeral(ASPCore2Parser.NumeralContext ctx) { 
 		// numeral : MINUS? NUMBER;
-		int absValue = Integer.valueOf(ctx.NUMBER().getText());
+		int absValue = Integer.parseInt(ctx.NUMBER().getText());
 		return ctx.MINUS() != null ? -1 * absValue : absValue;
 	}
 
@@ -645,6 +647,21 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
+	public ModuleAtom visitModule_atom(ASPCore2Parser.Module_atomContext ctx) {
+		// module_atom : SHARP id (CURLY_OPEN NUMBER CURLY_CLOSE)? (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?;
+		String moduleName = visitId(ctx.id());
+		ModuleAtom.ModuleInstantiationMode instantiationMode;
+		if (ctx.NUMBER() != null) {
+			instantiationMode = ModuleAtom.ModuleInstantiationMode.forNumAnswerSets(Integer.parseInt(ctx.NUMBER().getText()));
+		} else {
+			instantiationMode = ModuleAtom.ModuleInstantiationMode.ALL;
+		}
+		List<Term> inputTerms = visitTerms(ctx.input);
+		List<Term> outputTerms = visitTerms(ctx.output);
+		return Atoms.newModuleAtom(moduleName, instantiationMode, inputTerms, outputTerms);
+	}
+
+	@Override
 	public IntervalTerm visitTerm_interval(ASPCore2Parser.Term_intervalContext ctx) {
 		// interval : lower = interval_bound DOT DOT upper = interval_bound;
 		ASPCore2Parser.IntervalContext ictx = ctx.interval();
@@ -704,7 +721,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			return Tests.newIsUnsatCondition();
 		} else {
 			// binop? NUMBER
-			int num = Integer.valueOf(ctx.NUMBER().getText());
+			int num = Integer.parseInt(ctx.NUMBER().getText());
 			if (ctx.binop() == null) {
 				return Tests.newAnswerSetCountCondition(ComparisonOperators.EQ, num);
 			} else {
