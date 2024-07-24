@@ -92,6 +92,8 @@ public class ParserTest {
 
 	private static final String MODULE_WITH_REGULAR_STMTS = "p(a). p(b). q(X) :- p(X). #module aSimpleModule(input/1 => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). }";
 
+	private static final String MODULE_MULTIPLE_DEFINITIONS = "a. b(5). #module aSimpleModule(input/1 => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). } q(Y) :- r(S, Y), t(S). #module anotherModule(input/1 => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). }";
+
 	private final ProgramParserImpl parser = new ProgramParserImpl();
 
 	@Test
@@ -367,6 +369,29 @@ public class ParserTest {
 		InputProgram implementation = module.getImplementation();
 		assertEquals(2, implementation.getFacts().size());
 		assertEquals(1, implementation.getRules().size());
+	}
+
+	@Test
+	public void multipleModuleDefinitions() {
+		InputProgram prog = parser.parse(MODULE_MULTIPLE_DEFINITIONS);
+		assertEquals(2, prog.getFacts().size());
+		assertEquals(1, prog.getRules().size());
+
+		List<Module> modules = prog.getModules();
+		assertFalse(modules.isEmpty());
+		assertEquals(2, modules.size());
+	}
+
+	@Test
+	public void invalidNestedModule() {
+		assertThrows(IllegalStateException.class, () ->
+				parser.parse("#module aSimpleModule(input/1 => {out1/2, out2/3}) { p(a). p(b). #module anotherModule(input/1 => {out1/2, out2/3}) { p(a). p(b). } }"));
+	}
+
+	@Test
+	public void invalidNestedTest() {
+		assertThrows(IllegalStateException.class, () ->
+			parser.parse("#module mod(foo/1 => {*}) { #test test(expect: 1) { given { b. } assertForAll { :- a. } } }"));
 	}
 
 }
