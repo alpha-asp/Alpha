@@ -50,6 +50,7 @@ import at.ac.tuwien.kr.alpha.commons.programs.Programs;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs.InputProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.literals.Literals;
+import at.ac.tuwien.kr.alpha.commons.programs.modules.Modules;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
@@ -58,6 +59,7 @@ import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.*;
 import java.util.function.IntPredicate;
@@ -306,6 +308,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public Object visitDirective_test(ASPCore2Parser.Directive_testContext ctx) {
+		if (!programBuilders.empty()) {
+			throw new IllegalStateException("Test directives are not allowed in nested programs!");
+		}
 		// directive_test : DIRECTIVE_TEST id PAREN_OPEN test_satisfiability_condition PAREN_CLOSE CURLY_OPEN test_input test_assert* CURLY_CLOSE;
 		String name = visitId(ctx.id());
 		IntPredicate answerSetCountVerifier = visitTest_satisfiability_condition(ctx.test_satisfiability_condition());
@@ -322,6 +327,44 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		TestCase testCase = Tests.newTestCase(name, answerSetCountVerifier, input, assertions);
 		currentLevelProgramBuilder.addTestCase(testCase);
 		return null;
+	}
+
+	public Object visitDirective_module(ASPCore2Parser.Directive_moduleContext ctx) {
+		if (!programBuilders.empty()) {
+			throw new IllegalStateException("Module directives are not allowed in nested programs!");
+		}
+		// directive_module: SHARP DIRECTIVE_MODULE id PAREN_OPEN module_signature PAREN_CLOSE CURLY_OPEN statements CURLY_CLOSE;
+		String name = visitId(ctx.id());
+		ImmutablePair<Predicate, Set<Predicate>> moduleSignature = visitModule_signature(ctx.module_signature());
+		startNestedProgram();
+		visitStatements(ctx.statements());
+		InputProgram moduleImplementation = endNestedProgram();
+		currentLevelProgramBuilder.addModule(Modules.newModule(name, moduleSignature.getLeft(), moduleSignature.getRight(), moduleImplementation));
+		return null;
+	}
+
+	public ImmutablePair<Predicate, Set<Predicate>> visitModule_signature(ASPCore2Parser.Module_signatureContext ctx) {
+		Predicate inputPredicate = visitPredicate_spec(ctx.predicate_spec());
+		Set<Predicate> outputPredicates = ctx.predicate_specs() != null ? visitPredicate_specs(ctx.predicate_specs()) : Collections.emptySet();
+		return ImmutablePair.of(inputPredicate, outputPredicates);
+	}
+
+	@Override
+	public Set<Predicate> visitPredicate_specs(ASPCore2Parser.Predicate_specsContext ctx) {
+		// predicate_specs : predicate_spec (COMMA predicate_specs)?;
+		Set<Predicate> result = new LinkedHashSet<>();
+		result.add(visitPredicate_spec(ctx.predicate_spec()));
+		if (ctx.predicate_specs() != null) {
+			result.addAll(visitPredicate_specs(ctx.predicate_specs()));
+		}
+		return result;
+	}
+
+	@Override
+	public Predicate visitPredicate_spec(ASPCore2Parser.Predicate_specContext ctx) {
+		String symbol = visitId(ctx.id());
+		int arity = Integer.parseInt(ctx.NUMBER().getText());
+		return Predicates.getPredicate(symbol, arity);
 	}
 
 	@Override
@@ -710,14 +753,23 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			return Tests.newAssertion(assertionMode, Programs.emptyProgram());
 		}
 		List<ASPCore2Parser.StatementContext> stmts = ctx.statement();
-		programBuilders.push(currentLevelProgramBuilder);
-		currentLevelProgramBuilder = new InputProgramBuilder();
+		startNestedProgram();
 		for (ASPCore2Parser.StatementContext stmtCtx : stmts) {
 			visit(stmtCtx);
 		}
-		InputProgram verifier = currentLevelProgramBuilder.build();
-		currentLevelProgramBuilder = programBuilders.pop();
+		InputProgram verifier = endNestedProgram();
 		return Tests.newAssertion(assertionMode, verifier);
+	}
+
+	private void startNestedProgram() {
+		programBuilders.push(currentLevelProgramBuilder);
+		currentLevelProgramBuilder = new InputProgramBuilder();
+	}
+
+	private InputProgram endNestedProgram() {
+		InputProgram result = currentLevelProgramBuilder.build();
+		currentLevelProgramBuilder = programBuilders.pop();
+		return result;
 	}
 
 }

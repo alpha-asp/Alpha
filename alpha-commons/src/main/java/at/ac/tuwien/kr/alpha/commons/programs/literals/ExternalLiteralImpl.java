@@ -27,12 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.commons.programs.literals;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ExternalLiteral;
@@ -40,11 +34,12 @@ import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.programs.atoms.AbstractAtom;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 
+import java.util.*;
+
 /**
- * Contains a potentially negated {@link ExternalAtomImpl}.
+ * Contains a potentially negated {@link ExternalAtom}.
  */
 class ExternalLiteralImpl extends AbstractLiteral implements ExternalLiteral {
 
@@ -67,7 +62,7 @@ class ExternalLiteralImpl extends AbstractLiteral implements ExternalLiteral {
 	}
 
 	/**
-	 * @see AbstractAtom#substitute(BasicSubstitution)
+	 * @see Literal#substitute(Substitution)
 	 */
 	@Override
 	public ExternalLiteralImpl substitute(Substitution substitution) {

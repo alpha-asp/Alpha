@@ -28,6 +28,7 @@ SQUARE_OPEN : '[';
 SQUARE_CLOSE : ']';
 CURLY_OPEN : '{';
 CURLY_CLOSE : '}';
+ARROW : '=>';
 EQUAL : '=';
 UNEQUAL : '<>' | '!=';
 LESS : '<';
@@ -48,6 +49,8 @@ TEST_UNSAT : 'unsat';
 TEST_GIVEN : 'given';
 TEST_ASSERT_ALL : 'assertForAll';
 TEST_ASSERT_SOME : 'assertForSome';
+
+DIRECTIVE_MODULE : 'module';
 
 
 ID : ('a'..'z') ( 'A'..'Z' | 'a'..'z' | '0'..'9' | '_' )*;

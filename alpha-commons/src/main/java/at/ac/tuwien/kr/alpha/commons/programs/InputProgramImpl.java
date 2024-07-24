@@ -33,6 +33,7 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.programs.tests.TestCase;
+import at.ac.tuwien.kr.alpha.api.programs.modules.Module;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 
 import java.util.Collections;
@@ -46,18 +47,24 @@ import java.util.List;
 // TODO rename this to InputProgramImpl or some such
 class InputProgramImpl extends AbstractProgram<Rule<Head>> implements InputProgram {
 
-	static final InputProgramImpl EMPTY = new InputProgramImpl(Collections.emptyList(), Collections.emptyList(), new InlineDirectivesImpl(), Collections.emptyList());
+	static final InputProgramImpl EMPTY = new InputProgramImpl(Collections.emptyList(), Collections.emptyList(), new InlineDirectivesImpl(), Collections.emptyList(), Collections.emptyList());
 
 	private final List<TestCase> testCases;
+	private final List<Module> modules;
 
-	InputProgramImpl(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives, List<TestCase> testCases) {
+	InputProgramImpl(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives, List<TestCase> testCases, List<Module> modules) {
 		super(rules, facts, inlineDirectives);
 		this.testCases = testCases;
+		this.modules = modules;
 	}
 
 	@Override
 	public List<TestCase> getTestCases() {
 		return testCases;
+	}
+
+	public List<Module> getModules() {
+		return modules;
 	}
 
 	@Override

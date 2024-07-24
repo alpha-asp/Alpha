@@ -8,6 +8,7 @@ import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.modules.Module;
 import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
@@ -24,14 +25,18 @@ public final class Programs {
 		return InputProgramImpl.EMPTY;
 	}
 
+	public static InputProgram newInputProgram(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives, List<TestCase> testCases, List<Module> modules) {
+		return new InputProgramImpl(rules, facts, inlineDirectives, testCases, modules);
+	}
+
 	// TODO rename method
 	public static InputProgram newInputProgram(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives, List<TestCase> testCases) {
-		return new InputProgramImpl(rules, facts, inlineDirectives, testCases);
+		return new InputProgramImpl(rules, facts, inlineDirectives, testCases, Collections.emptyList());
 	}
 
 	// TODO rename method
 	public static InputProgram newInputProgram(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
-		return new InputProgramImpl(rules, facts, inlineDirectives, Collections.emptyList());
+		return new InputProgramImpl(rules, facts, inlineDirectives, Collections.emptyList(), Collections.emptyList());
 	}
 
 	public static InputProgramBuilder builder() {
@@ -69,6 +74,7 @@ public final class Programs {
 		private InlineDirectives inlineDirectives = new InlineDirectivesImpl();
 
 		private List<TestCase> testCases = new ArrayList<>();
+		private List<Module> modules = new ArrayList<>();
 
 		public InputProgramBuilder(InputProgram prog) {
 			this.addRules(prog.getRules());
@@ -116,12 +122,22 @@ public final class Programs {
 			return this;
 		}
 
+		public InputProgramBuilder addModule(Module module) {
+			this.modules.add(module);
+			return this;
+		}
+
+		public InputProgramBuilder addModules(List<Module> modules) {
+			this.modules.addAll(modules);
+			return this;
+		}
+
 		public InputProgramBuilder accumulate(InputProgram prog) {
-			return this.addRules(prog.getRules()).addFacts(prog.getFacts()).addInlineDirectives(prog.getInlineDirectives()).addTestCases(prog.getTestCases());
+			return this.addRules(prog.getRules()).addFacts(prog.getFacts()).addInlineDirectives(prog.getInlineDirectives()).addTestCases(prog.getTestCases()).addModules(prog.getModules());
 		}
 
 		public InputProgram build() {
-			return Programs.newInputProgram(this.rules, this.facts, this.inlineDirectives, this.testCases);
+			return Programs.newInputProgram(this.rules, this.facts, this.inlineDirectives, this.testCases, this.modules);
 		}
 
 	}

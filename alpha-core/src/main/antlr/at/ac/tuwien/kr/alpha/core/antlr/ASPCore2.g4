@@ -56,6 +56,10 @@ classical_literal : MINUS? basic_atom;
 
 builtin_atom : term binop term;
 
+predicate_spec: id '/' NUMBER;
+
+predicate_specs: predicate_spec (COMMA predicate_specs)?;
+
 binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
 
 terms : term (COMMA terms)?;
@@ -83,12 +87,15 @@ interval_bound : numeral | VARIABLE;
 
 external_atom : MINUS? AMPERSAND id (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?; // NOT Core2 syntax.
 
-directive : directive_enumeration | directive_test;  // NOT Core2 syntax, allows solver specific directives. Further directives shall be added here.
+directive : directive_enumeration | directive_test | directive_module;  // NOT Core2 syntax, allows solver specific directives. Further directives shall be added here.
 
 directive_enumeration :  SHARP DIRECTIVE_ENUM id DOT;  // NOT Core2 syntax, used for aggregate translation.
 
 // Alpha-specific language extension: Unit Tests (-> https://github.com/alpha-asp/Alpha/issues/237)
 directive_test : SHARP DIRECTIVE_TEST id PAREN_OPEN test_satisfiability_condition PAREN_CLOSE CURLY_OPEN test_input test_assert* CURLY_CLOSE;
+
+// Alpha-specific language extension: Program Modularization (-> https://github.com/madmike200590/evolog-thesis)
+directive_module: SHARP DIRECTIVE_MODULE id PAREN_OPEN module_signature PAREN_CLOSE CURLY_OPEN statements CURLY_CLOSE;
 
 basic_terms : basic_term (COMMA basic_terms)? ;
 
@@ -111,4 +118,6 @@ test_assert : test_assert_all | test_assert_some;
 test_assert_all : TEST_ASSERT_ALL CURLY_OPEN statements? CURLY_CLOSE;
 
 test_assert_some : TEST_ASSERT_SOME CURLY_OPEN statements? CURLY_CLOSE;
+
+module_signature : predicate_spec ARROW CURLY_OPEN ('*' | predicate_specs) CURLY_CLOSE;
 

@@ -34,12 +34,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.modules.Module;
 import at.ac.tuwien.kr.alpha.api.programs.tests.Assertion;
 import at.ac.tuwien.kr.alpha.api.programs.tests.TestCase;
 import org.antlr.v4.runtime.CharStream;
@@ -86,6 +85,12 @@ public class ParserTest {
 
 	private static final String UNIT_TEST_KEYWORDS_AS_IDS =
 			"assert(a) :- given(b). # test test(expect: 1) { given { given(b). } assertForAll { :- not assert(a). :- assertForSome(b).}}";
+
+	private static final String MODULE_SIMPLE = "#module aSimpleModule(input/1 => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). }";
+
+	private static final String MODULE_OUTPUT_ALL = "#module mod(in/1 => {*}) { a(X). b(X) :- a(X).}";
+
+	private static final String MODULE_WITH_REGULAR_STMTS = "p(a). p(b). q(X) :- p(X). #module aSimpleModule(input/1 => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). }";
 
 	private final ProgramParserImpl parser = new ProgramParserImpl();
 
@@ -303,6 +308,65 @@ public class ParserTest {
 		assertEquals(1, tc.getInput().size());
 		assertEquals(1, tc.getAssertions().size());
 		assertEquals(Assertion.Mode.FOR_ALL, tc.getAssertions().get(0).getMode());
+	}
+
+	@Test
+	public void simpleModule() {
+		InputProgram prog = parser.parse(MODULE_SIMPLE);
+		List<Module> modules = prog.getModules();
+		assertFalse(modules.isEmpty());
+		assertEquals(1, modules.size());
+		Module module = modules.get(0);
+		assertEquals("aSimpleModule", module.getName());
+		Predicate inputSpec = module.getInputSpec();
+		assertEquals("input", inputSpec.getName());
+		assertEquals(1, inputSpec.getArity());
+		Set<Predicate> outputSpec = module.getOutputSpec();
+		assertEquals(2, outputSpec.size());
+		assertTrue(outputSpec.contains(Predicates.getPredicate("out1", 2)));
+		assertTrue(outputSpec.contains(Predicates.getPredicate("out2", 3)));
+		InputProgram implementation = module.getImplementation();
+		assertEquals(2, implementation.getFacts().size());
+		assertEquals(1, implementation.getRules().size());
+	}
+
+	@Test
+	public void moduleOutputAll() {
+		InputProgram prog = parser.parse(MODULE_OUTPUT_ALL);
+		List<Module> modules = prog.getModules();
+		assertFalse(modules.isEmpty());
+		assertEquals(1, modules.size());
+		Module module = modules.get(0);
+		assertEquals("mod", module.getName());
+		Predicate inputSpec = module.getInputSpec();
+		assertEquals("in", inputSpec.getName());
+		assertEquals(1, inputSpec.getArity());
+		assertTrue(module.getOutputSpec().isEmpty());
+		InputProgram implementation = module.getImplementation();
+		assertEquals(1, implementation.getFacts().size());
+		assertEquals(1, implementation.getRules().size());
+	}
+
+	@Test
+	public void moduleAndRegularStmts() {
+		InputProgram prog = parser.parse(MODULE_WITH_REGULAR_STMTS);
+		assertEquals(2, prog.getFacts().size());
+		assertEquals(1, prog.getRules().size());
+		List<Module> modules = prog.getModules();
+		assertFalse(modules.isEmpty());
+		assertEquals(1, modules.size());
+		Module module = modules.get(0);
+		assertEquals("aSimpleModule", module.getName());
+		Predicate inputSpec = module.getInputSpec();
+		assertEquals("input", inputSpec.getName());
+		assertEquals(1, inputSpec.getArity());
+		Set<Predicate> outputSpec = module.getOutputSpec();
+		assertEquals(2, outputSpec.size());
+		assertTrue(outputSpec.contains(Predicates.getPredicate("out1", 2)));
+		assertTrue(outputSpec.contains(Predicates.getPredicate("out2", 3)));
+		InputProgram implementation = module.getImplementation();
+		assertEquals(2, implementation.getFacts().size());
+		assertEquals(1, implementation.getRules().size());
 	}
 
 }
