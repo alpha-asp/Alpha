@@ -121,5 +121,5 @@ test_assert_all : TEST_ASSERT_ALL CURLY_OPEN statements? CURLY_CLOSE;
 
 test_assert_some : TEST_ASSERT_SOME CURLY_OPEN statements? CURLY_CLOSE;
 
-module_signature : predicate_spec ARROW CURLY_OPEN ('*' | predicate_specs) CURLY_CLOSE;
+module_signature : CURLY_OPEN predicate_specs? CURLY_CLOSE ARROW CURLY_OPEN ('*' | predicate_specs) CURLY_CLOSE;
 

@@ -42,7 +42,6 @@ public final class Rules {
 			if (!(rule.getHead() instanceof NormalHead)) {
 				throw Util.oops("Trying to construct a NormalRule from rule with non-normal head! Head type is: " + rule.getHead().getClass().getSimpleName());
 			}
-
 		}
 		return newNormalRule(rule.isConstraint() ? null : (NormalHead) rule.getHead(), new LinkedHashSet<>(rule.getBody()));
 	}

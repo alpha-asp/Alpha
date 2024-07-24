@@ -12,7 +12,7 @@ public final class Modules {
 		throw new AssertionError("Cannot instantiate utility class!");
 	}
 
-	public static Module newModule(final String name, final Predicate inputSpec, final Set<Predicate> outputSpec, final InputProgram implementation) {
+	public static Module newModule(final String name, final Set<Predicate> inputSpec, final Set<Predicate> outputSpec, final InputProgram implementation) {
 		return new ModuleImpl(name, inputSpec, outputSpec, implementation);
 	}
 

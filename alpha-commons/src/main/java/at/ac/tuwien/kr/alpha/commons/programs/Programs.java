@@ -48,7 +48,11 @@ public final class Programs {
 	}
 
 	public static NormalProgram newNormalProgram(List<NormalRule> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
-		return new NormalProgramImpl(rules, facts, inlineDirectives);
+		return new NormalProgramImpl(rules, facts, inlineDirectives, Collections.emptyList());
+	}
+
+	public static NormalProgram newNormalProgram(List<NormalRule> rules, List<Atom> facts, InlineDirectives inlineDirectives, List<Module> modules) {
+		return new NormalProgramImpl(rules, facts, inlineDirectives, modules);
 	}
 
 	public static NormalProgram toNormalProgram(InputProgram inputProgram) {
@@ -56,7 +60,7 @@ public final class Programs {
 		for (Rule<Head> r : inputProgram.getRules()) {
 			normalRules.add(Rules.toNormalRule(r));
 		}
-		return new NormalProgramImpl(normalRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+		return new NormalProgramImpl(normalRules, inputProgram.getFacts(), inputProgram.getInlineDirectives(), inputProgram.getModules());
 	}
 
 	public static InlineDirectives newInlineDirectives() {
@@ -81,6 +85,7 @@ public final class Programs {
 			this.addFacts(prog.getFacts());
 			this.addInlineDirectives(prog.getInlineDirectives());
 			this.addTestCases(prog.getTestCases());
+			this.addModules(prog.getModules());
 		}
 
 		public InputProgramBuilder() {

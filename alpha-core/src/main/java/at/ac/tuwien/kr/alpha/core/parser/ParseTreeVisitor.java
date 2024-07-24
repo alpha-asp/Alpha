@@ -335,7 +335,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		}
 		// directive_module: SHARP DIRECTIVE_MODULE id PAREN_OPEN module_signature PAREN_CLOSE CURLY_OPEN statements CURLY_CLOSE;
 		String name = visitId(ctx.id());
-		ImmutablePair<Predicate, Set<Predicate>> moduleSignature = visitModule_signature(ctx.module_signature());
+		ImmutablePair<Set<Predicate>, Set<Predicate>> moduleSignature = visitModule_signature(ctx.module_signature());
 		startNestedProgram();
 		visitStatements(ctx.statements());
 		InputProgram moduleImplementation = endNestedProgram();
@@ -343,10 +343,10 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		return null;
 	}
 
-	public ImmutablePair<Predicate, Set<Predicate>> visitModule_signature(ASPCore2Parser.Module_signatureContext ctx) {
-		Predicate inputPredicate = visitPredicate_spec(ctx.predicate_spec());
-		Set<Predicate> outputPredicates = ctx.predicate_specs() != null ? visitPredicate_specs(ctx.predicate_specs()) : Collections.emptySet();
-		return ImmutablePair.of(inputPredicate, outputPredicates);
+	public ImmutablePair<Set<Predicate>, Set<Predicate>> visitModule_signature(ASPCore2Parser.Module_signatureContext ctx) {
+		Set<Predicate> inputPredicates = ctx.predicate_specs(0) != null ? visitPredicate_specs(ctx.predicate_specs(0)) : Collections.emptySet();
+		Set<Predicate> outputPredicates = ctx.predicate_specs(1) != null ? visitPredicate_specs(ctx.predicate_specs(1)) : Collections.emptySet();
+		return ImmutablePair.of(inputPredicates, outputPredicates);
 	}
 
 	@Override

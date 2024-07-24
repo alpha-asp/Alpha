@@ -9,11 +9,11 @@ import java.util.Set;
 class ModuleImpl implements Module {
 
 	private final String name;
-	private final Predicate inputSpec;
+	private final Set<Predicate> inputSpec;
 	private final Set<Predicate> outputSpec;
 	private final InputProgram implementation;
 
-	ModuleImpl(String name, Predicate inputSpec, Set<Predicate> outputSpec, InputProgram implementation) {
+	ModuleImpl(String name, Set<Predicate> inputSpec, Set<Predicate> outputSpec, InputProgram implementation) {
 		this.name = name;
 		this.inputSpec = inputSpec;
 		this.outputSpec = outputSpec;
@@ -26,7 +26,7 @@ class ModuleImpl implements Module {
 	}
 
 	@Override
-	public Predicate getInputSpec() {
+	public Set<Predicate> getInputSpec() {
 		return this.inputSpec;
 	}
 
