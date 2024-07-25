@@ -29,6 +29,7 @@ import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpreta
 import at.ac.tuwien.kr.alpha.api.externals.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
@@ -114,7 +115,7 @@ public final class Externals {
 		return new BinaryPredicateInterpretation<>(predicate);
 	}
 
-	public static PredicateInterpretation processPredicate(java.util.function.Supplier<Set<List<ConstantTerm<?>>>> supplier) {
+	public static PredicateInterpretation processPredicate(java.util.function.Supplier<Set<List<Term>>> supplier) {
 		return new SuppliedPredicateInterpretation(supplier);
 	}
 

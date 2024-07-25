@@ -28,7 +28,6 @@
 package at.ac.tuwien.kr.alpha.commons.externals;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.BindingPredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 
 import java.util.List;
@@ -36,14 +35,14 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 public class SuppliedPredicateInterpretation implements BindingPredicateInterpretation {
-	private final Supplier<Set<List<ConstantTerm<?>>>> supplier;
+	private final Supplier<Set<List<Term>>> supplier;
 
-	public SuppliedPredicateInterpretation(Supplier<Set<List<ConstantTerm<?>>>> supplier) {
+	public SuppliedPredicateInterpretation(Supplier<Set<List<Term>>> supplier) {
 		this.supplier = supplier;
 	}
 
 	@Override
-	public Set<List<ConstantTerm<?>>> evaluate(List<Term> terms) {
+	public Set<List<Term>> evaluate(List<Term> terms) {
 		if (!terms.isEmpty()) {
 			throw new IllegalArgumentException("Can only be used without any arguments.");
 		}

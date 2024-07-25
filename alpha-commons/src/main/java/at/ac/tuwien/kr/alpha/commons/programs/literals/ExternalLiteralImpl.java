@@ -127,7 +127,8 @@ class ExternalLiteralImpl extends AbstractLiteral implements ExternalLiteral {
 		for (Term t : input) {
 			substitutes.add(t.substitute(partialSubstitution));
 		}
-		Set<List<ConstantTerm<?>>> results = getAtom().getInterpretation().evaluate(substitutes);
+		Set<List<Term>> results = getAtom().getInterpretation().evaluate(substitutes);
+		// TODO verify all results are ground
 		if (results == null) {
 			throw new NullPointerException("Predicate " + getPredicate().getName() + " returned null. It must return a Set.");
 		}
@@ -160,10 +161,10 @@ class ExternalLiteralImpl extends AbstractLiteral implements ExternalLiteral {
 	 * @return true iff no list in externalMethodResult equals the external atom's output term
 	 *         list as substituted by the grounder, false otherwise
 	 */
-	private boolean isNegatedLiteralSatisfied(Set<List<ConstantTerm<?>>> externalMethodResult) {
+	private boolean isNegatedLiteralSatisfied(Set<List<Term>> externalMethodResult) {
 		List<Term> externalAtomOutTerms = this.getAtom().getOutput();
 		boolean outputMatches;
-		for (List<ConstantTerm<?>> resultTerms : externalMethodResult) {
+		for (List<Term> resultTerms : externalMethodResult) {
 			outputMatches = true;
 			for (int i = 0; i < externalAtomOutTerms.size(); i++) {
 				if (!resultTerms.get(i).equals(externalAtomOutTerms.get(i))) {
@@ -182,10 +183,10 @@ class ExternalLiteralImpl extends AbstractLiteral implements ExternalLiteral {
 		return true;
 	}
 
-	private List<Substitution> buildSubstitutionsForOutputs(Substitution partialSubstitution, Set<List<ConstantTerm<?>>> outputs) {
+	private List<Substitution> buildSubstitutionsForOutputs(Substitution partialSubstitution, Set<List<Term>> outputs) {
 		List<Substitution> retVal = new ArrayList<>();
 		List<Term> externalAtomOutputTerms = this.getAtom().getOutput();
-		for (List<ConstantTerm<?>> bindings : outputs) {
+		for (List<Term> bindings : outputs) {
 			if (bindings.size() < externalAtomOutputTerms.size()) {
 				throw new RuntimeException(
 						"Predicate " + getPredicate().getName() + " returned " + bindings.size() + " terms when at least " + externalAtomOutputTerms.size()

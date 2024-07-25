@@ -52,7 +52,7 @@ public class BindingMethodPredicateInterpretation implements BindingPredicateInt
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public Set<List<ConstantTerm<?>>> evaluate(List<Term> terms) {
+	public Set<List<Term>> evaluate(List<Term> terms) {
 		if (terms.size() != method.getParameterCount()) {
 			throw new IllegalArgumentException(
 					"Parameter count mismatch when calling " + method.getName() + ". " +
@@ -90,7 +90,7 @@ public class BindingMethodPredicateInterpretation implements BindingPredicateInt
 		}
 
 		try {
-			return (Set<List<ConstantTerm<?>>>) method.invoke(null, arguments);
+			return (Set<List<Term>>) method.invoke(null, arguments);
 		} catch (IllegalAccessException | InvocationTargetException ex) {
 			throw new RuntimeException("Error invoking method " + method + "with args [" + StringUtils.join(arguments) + "], expection is: " + ex.getMessage());
 		}
