@@ -1,21 +1,34 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ModuleAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ModuleLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.modules.Module;
 import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.collections4.SetUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Program transformation that translates {@link at.ac.tuwien.kr.alpha.api.programs.literals.ModuleLiteral}s into
@@ -57,17 +70,57 @@ public class ModuleLinker extends ProgramTransformation<NormalProgram, NormalPro
 		return Rules.newNormalRule(newHead, newBody);
 	}
 
-	private ExternalAtom translateModuleAtom(ModuleAtom moduleAtom, Map<String, Module> moduleTable) {
-		if (!moduleTable.containsKey(moduleAtom.getModuleName())) {
-			throw new IllegalArgumentException("Module " + moduleAtom.getModuleName() + " not found in module table.");
+	private ExternalAtom translateModuleAtom(ModuleAtom atom, Map<String, Module> moduleTable) {
+		if (!moduleTable.containsKey(atom.getModuleName())) {
+			throw new IllegalArgumentException("Module " + atom.getModuleName() + " not found in module table.");
 		}
-		Module implementationModule = moduleTable.get(moduleAtom.getModuleName());
-		//implementationModule.
-		return null;
+		Module definition = moduleTable.get(atom.getModuleName());
+		// verify inputs
+		Predicate inputSpec = definition.getInputSpec();
+		if (atom.getInput().size() != inputSpec.getArity()) {
+			throw new IllegalArgumentException("Module " + atom.getModuleName() + " expects " + inputSpec.getArity() + " inputs, but " + atom.getInput().size() + " were given.");
+		}
+		NormalProgram normalizedImplementation = moduleRunner.normalizeProgram(definition.getImplementation());
+		// verify outputs
+		Set<Predicate> outputSpec = definition.getOutputSpec();
+		int expectedOutputTerms;
+		if (outputSpec.isEmpty()) {
+			expectedOutputTerms = calculateOutputPredicates(normalizedImplementation).size();
+		} else {
+			expectedOutputTerms = outputSpec.size();
+		}
+		if (atom.getOutput().size() != expectedOutputTerms) {
+			throw new IllegalArgumentException("Module " + atom.getModuleName() + " expects " + outputSpec.size() + " outputs, but " + atom.getOutput().size() + " were given.");
+		}
+		// create the actual interpretation
+		PredicateInterpretation interpretation = terms -> {
+			BasicAtom inputAtom = Atoms.newBasicAtom(inputSpec, terms);
+			NormalProgram program = Programs.newNormalProgram(normalizedImplementation.getRules(),
+					ListUtils.union(List.of(inputAtom), normalizedImplementation.getFacts()), normalizedImplementation.getInlineDirectives());
+			java.util.function.Predicate<Predicate> filter = outputSpec.isEmpty() ? p -> true : outputSpec::contains;
+			Stream<AnswerSet> answerSets = moduleRunner.solve(program, filter);
+			if (atom.getInstantiationMode().requestedAnswerSets().isPresent()) {
+				answerSets = answerSets.limit(atom.getInstantiationMode().requestedAnswerSets().get());
+			}
+			return answerSets.map(ModuleLinker::answerSetToTerms).collect(Collectors.toSet());
+		};
+		return Atoms.newExternalAtom(atom.getPredicate(), interpretation, atom.getInput(), atom.getOutput());
 	}
 
 	private static boolean containsModuleAtom(NormalRule rule) {
 		return rule.getBody().stream().anyMatch(literal -> literal instanceof ModuleLiteral);
+	}
+
+	private static Set<Predicate> calculateOutputPredicates(NormalProgram program) {
+		return SetUtils.union(program.getFacts().stream().map(Atom::getPredicate).collect(Collectors.toSet()),
+				program.getRules().stream()
+						.filter(java.util.function.Predicate.not(Rule::isConstraint))
+						.map(Rule::getHead).map(NormalHead::getAtom).map(Atom::getPredicate)
+						.collect(Collectors.toSet()));
+	}
+
+	private static List<Term> answerSetToTerms(AnswerSet answerSet) {
+		return Collections.emptyList(); // TODO
 	}
 
 }

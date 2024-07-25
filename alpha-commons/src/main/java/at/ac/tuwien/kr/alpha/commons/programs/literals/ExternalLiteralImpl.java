@@ -37,6 +37,7 @@ import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * Contains a potentially negated {@link ExternalAtom}.
@@ -128,9 +129,11 @@ class ExternalLiteralImpl extends AbstractLiteral implements ExternalLiteral {
 			substitutes.add(t.substitute(partialSubstitution));
 		}
 		Set<List<Term>> results = getAtom().getInterpretation().evaluate(substitutes);
-		// TODO verify all results are ground
 		if (results == null) {
 			throw new NullPointerException("Predicate " + getPredicate().getName() + " returned null. It must return a Set.");
+		}
+		if (results.stream().anyMatch(trms -> trms.stream().anyMatch(Predicate.not(Term::isGround)))) {
+			throw new IllegalStateException("Predicate " + getPredicate().getName() + " returned non-ground term.");
 		}
 
 		if (this.isNegated()) {
