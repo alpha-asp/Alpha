@@ -11,8 +11,10 @@ import at.ac.tuwien.kr.alpha.api.programs.atoms.*;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.AggregateAtomImpl.AggregateElementImpl;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 
 public final class Atoms {
 
@@ -69,6 +71,10 @@ public final class Atoms {
 
 	public static AtomQuery query(String predicateName, int predicateArity) {
 		return AtomQueryImpl.forPredicate(predicateName, predicateArity);
+	}
+
+	public static FunctionTerm toFunctionTerm(Atom atom) {
+		return Terms.newFunctionTerm(atom.getPredicate().getName(), atom.getTerms());
 	}
 
 }

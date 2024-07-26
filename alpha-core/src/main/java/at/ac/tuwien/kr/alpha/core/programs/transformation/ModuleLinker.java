@@ -15,17 +15,16 @@ import at.ac.tuwien.kr.alpha.api.programs.modules.Module;
 import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.SetUtils;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -83,13 +82,13 @@ public class ModuleLinker extends ProgramTransformation<NormalProgram, NormalPro
 		NormalProgram normalizedImplementation = moduleRunner.normalizeProgram(definition.getImplementation());
 		// verify outputs
 		Set<Predicate> outputSpec = definition.getOutputSpec();
-		int expectedOutputTerms;
+		Set<Predicate> expectedOutputPredicates;
 		if (outputSpec.isEmpty()) {
-			expectedOutputTerms = calculateOutputPredicates(normalizedImplementation).size();
+			expectedOutputPredicates = calculateOutputPredicates(normalizedImplementation);
 		} else {
-			expectedOutputTerms = outputSpec.size();
+			expectedOutputPredicates = outputSpec;
 		}
-		if (atom.getOutput().size() != expectedOutputTerms) {
+		if (atom.getOutput().size() != expectedOutputPredicates.size()) {
 			throw new IllegalArgumentException("Module " + atom.getModuleName() + " expects " + outputSpec.size() + " outputs, but " + atom.getOutput().size() + " were given.");
 		}
 		// create the actual interpretation
@@ -102,7 +101,7 @@ public class ModuleLinker extends ProgramTransformation<NormalProgram, NormalPro
 			if (atom.getInstantiationMode().requestedAnswerSets().isPresent()) {
 				answerSets = answerSets.limit(atom.getInstantiationMode().requestedAnswerSets().get());
 			}
-			return answerSets.map(ModuleLinker::answerSetToTerms).collect(Collectors.toSet());
+			return answerSets.map(as -> answerSetToTerms(as, expectedOutputPredicates)).collect(Collectors.toSet());
 		};
 		return Atoms.newExternalAtom(atom.getPredicate(), interpretation, atom.getInput(), atom.getOutput());
 	}
@@ -119,8 +118,18 @@ public class ModuleLinker extends ProgramTransformation<NormalProgram, NormalPro
 						.collect(Collectors.toSet()));
 	}
 
-	private static List<Term> answerSetToTerms(AnswerSet answerSet) {
-		return Collections.emptyList(); // TODO
+	private static List<Term> answerSetToTerms(AnswerSet answerSet, Set<Predicate> moduleOutputSpec) {
+		List<Term> terms = new ArrayList<>();
+		for (Predicate predicate : moduleOutputSpec) {
+			if (!answerSet.getPredicates().contains(predicate)) {
+				terms.add(Terms.EMPTY_LIST);
+			} else {
+				terms.add(Terms.asListTerm(answerSet.getPredicateInstances(predicate).stream()
+						.map(Atoms::toFunctionTerm).collect(Collectors.toList())));
+			}
+		}
+		return terms;
 	}
+
 
 }

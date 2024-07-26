@@ -1,8 +1,6 @@
 package at.ac.tuwien.kr.alpha.commons.programs.terms;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.terms.*;
@@ -17,6 +15,9 @@ import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
  * Copyright (c) 2020, the Alpha Team.
  */
 public final class Terms {
+
+	public static final String LIST_TERM_SYMBOL = "lst";
+	public static final ConstantTerm<String> EMPTY_LIST =  Terms.newSymbolicConstant("emptyList");
 
 	/**
 	 * Since this is purely a utility class, it may not be instantiated.
@@ -80,6 +81,20 @@ public final class Terms {
 			retVal.add(ConstantTermImpl.getInstance(value));
 		}
 		return retVal;
+	}
+
+	/**
+	 * Constructs a single list term from a list of terms.
+	 */
+	public static Term asListTerm(Collection<Term> terms) {
+		List<Term> reversedTerms = new ArrayList<>(terms);
+		Collections.reverse(reversedTerms);
+		// iterate over the list in reverse order to build the list term from the back.
+		Term tail = EMPTY_LIST;
+		for (Term t : reversedTerms) {
+			tail = Terms.newFunctionTerm(LIST_TERM_SYMBOL, t, tail);
+		}
+		return tail;
 	}
 
 	public static List<Term> renameTerms(List<Term> terms, String prefix, int counterStartingValue) {

@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha.api;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AtomQuery;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 
 import java.util.List;
 import java.util.Set;
