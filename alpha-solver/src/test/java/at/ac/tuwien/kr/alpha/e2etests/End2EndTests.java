@@ -63,7 +63,8 @@ public class End2EndTests {
 	@TestFactory
 	Stream<DynamicTest> alphaEnd2EndTests() {
 		return Stream.of(
-				alphaEnd2EndTest("3-Coloring", E2E_TESTS_DIR + "3col.asp")
+				alphaEnd2EndTest("3-Coloring", E2E_TESTS_DIR + "3col.asp"),
+				alphaEnd2EndTest("modules-basic", E2E_TESTS_DIR + "modules-basic.evl")
 		);
 	}
 

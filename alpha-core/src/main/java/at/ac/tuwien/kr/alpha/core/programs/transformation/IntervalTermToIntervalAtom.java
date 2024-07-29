@@ -58,8 +58,6 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 
 	/**
 	 * Rewrites intervals into a new variable and special IntervalAtom.
-	 * 
-	 * @return true if some interval occurs in the rule.
 	 */
 	private static NormalRule rewriteIntervalSpecifications(NormalRule rule) {
 		// Collect all intervals and replace them with variables.
@@ -180,6 +178,6 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		if (!didChange) {
 			return inputProgram;
 		}
-		return Programs.newNormalProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+		return Programs.newNormalProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives(), inputProgram.getModules());
 	}
 }

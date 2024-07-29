@@ -40,7 +40,7 @@ class TestRunner {
 		LOGGER.info("Running test case " + testCase.getName());
 		List<Atom> facts = new ArrayList<>(programUnderTest.getFacts());
 		facts.addAll(testCase.getInput());
-		NormalProgram prog = Programs.newNormalProgram(programUnderTest.getRules(), facts, programUnderTest.getInlineDirectives());
+		NormalProgram prog = Programs.newNormalProgram(programUnderTest.getRules(), facts, programUnderTest.getInlineDirectives(), programUnderTest.getModules());
 		Set<AnswerSet> answerSets;
 		try {
 			answerSets = alpha.solve(prog).collect(Collectors.toSet());

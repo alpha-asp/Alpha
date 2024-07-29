@@ -114,7 +114,7 @@ public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, Inpu
 			}
 		}
 		return programBuilder.addRules(srcRules).addRules(additionalRules).addFacts(inputProgram.getFacts())
-				.addInlineDirectives(inputProgram.getInlineDirectives()).build();
+				.addInlineDirectives(inputProgram.getInlineDirectives()).addModules(inputProgram.getModules()).build();
 	}
 
 	private static boolean containsIntervalTerms(Atom atom) {

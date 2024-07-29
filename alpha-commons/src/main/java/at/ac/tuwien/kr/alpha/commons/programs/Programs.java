@@ -47,9 +47,9 @@ public final class Programs {
 		return new InputProgramBuilder(program);
 	}
 
-	public static NormalProgram newNormalProgram(List<NormalRule> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
-		return new NormalProgramImpl(rules, facts, inlineDirectives, Collections.emptyList());
-	}
+//	public static NormalProgram newNormalProgram(List<NormalRule> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
+//		return new NormalProgramImpl(rules, facts, inlineDirectives, Collections.emptyList());
+//	}
 
 	public static NormalProgram newNormalProgram(List<NormalRule> rules, List<Atom> facts, InlineDirectives inlineDirectives, List<Module> modules) {
 		return new NormalProgramImpl(rules, facts, inlineDirectives, modules);

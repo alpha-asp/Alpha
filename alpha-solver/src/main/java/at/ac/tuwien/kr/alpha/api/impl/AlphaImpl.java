@@ -52,6 +52,7 @@ import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.ModuleLinker;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
@@ -168,11 +169,9 @@ public class AlphaImpl implements Alpha {
 	@VisibleForTesting
 	InternalProgram performProgramPreprocessing(NormalProgram program) {
 		LOGGER.debug("Preprocessing InternalProgram!");
-		LOGGER.debug("Preprocessing InternalProgram!");
-		InternalProgram retVal = InternalProgram.fromNormalProgram(program);
-		AnalyzedProgram analyzed = new AnalyzedProgram(retVal.getRules(), retVal.getFacts());
-		retVal = stratifiedEvaluationFactory.get().apply(analyzed);
-		return retVal;
+		NormalProgram linkedProgram = new ModuleLinker(this).apply(program);
+		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(linkedProgram);
+		return stratifiedEvaluationFactory.get().apply(analyzed);
 	}
 
 	/**
@@ -255,7 +254,8 @@ public class AlphaImpl implements Alpha {
 	public DebugSolvingContext prepareDebugSolve(final NormalProgram program, java.util.function.Predicate<Predicate> filter) {
 		final DependencyGraph depGraph;
 		final ComponentGraph compGraph;
-		final AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(program);
+		NormalProgram linkedProgram = new ModuleLinker(this).apply(program);
+		final AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(linkedProgram);
 		final NormalProgram preprocessed;
 		preprocessed = stratifiedEvaluationFactory.get().apply(analyzed).toNormalProgram();
 		depGraph = analyzed.getDependencyGraph();

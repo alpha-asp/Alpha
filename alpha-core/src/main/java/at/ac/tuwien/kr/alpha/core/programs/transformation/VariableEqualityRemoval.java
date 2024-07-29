@@ -58,7 +58,7 @@ public class VariableEqualityRemoval extends ProgramTransformation<InputProgram,
 		for (Rule<Head> rule : inputProgram.getRules()) {
 			rewrittenRules.add(findAndReplaceVariableEquality(rule));
 		}
-		return Programs.newInputProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+		return Programs.newInputProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives(), Collections.emptyList(), inputProgram.getModules());
 	}
 
 	private Rule<Head> findAndReplaceVariableEquality(Rule<Head> rule) {

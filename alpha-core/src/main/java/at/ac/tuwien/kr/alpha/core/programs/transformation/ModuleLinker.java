@@ -3,8 +3,8 @@ package at.ac.tuwien.kr.alpha.core.programs.transformation;
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
@@ -15,7 +15,6 @@ import at.ac.tuwien.kr.alpha.api.programs.modules.Module;
 import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
-import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
@@ -37,7 +36,6 @@ import java.util.stream.Stream;
 public class ModuleLinker extends ProgramTransformation<NormalProgram, NormalProgram> {
 
 	// Note: References to a standard library of modules that are always available for linking should be member variables of a linker.
-
 	private final Alpha moduleRunner;
 
 	public ModuleLinker(Alpha moduleRunner) {
@@ -51,11 +49,10 @@ public class ModuleLinker extends ProgramTransformation<NormalProgram, NormalPro
 		List<NormalRule> transformedRules = inputProgram.getRules().stream()
 				.map(rule -> containsModuleAtom(rule) ? linkModuleAtoms(rule, moduleTable) : rule)
 				.collect(Collectors.toList());
-		return null;
+		return Programs.newNormalProgram(transformedRules, inputProgram.getFacts(), inputProgram.getInlineDirectives(), Collections.emptyList());
 	}
 
 	private NormalRule linkModuleAtoms(NormalRule rule, Map<String, Module> moduleTable) {
-		NormalHead newHead = rule.getHead();
 		Set<Literal> newBody = rule.getBody().stream()
 				.map(literal -> {
 					if (literal instanceof ModuleLiteral) {
@@ -66,7 +63,7 @@ public class ModuleLinker extends ProgramTransformation<NormalProgram, NormalPro
 					}
 				})
 				.collect(Collectors.toSet());
-		return Rules.newNormalRule(newHead, newBody);
+		return Rules.newNormalRule(rule.getHead(), newBody);
 	}
 
 	private ExternalAtom translateModuleAtom(ModuleAtom atom, Map<String, Module> moduleTable) {
@@ -95,7 +92,7 @@ public class ModuleLinker extends ProgramTransformation<NormalProgram, NormalPro
 		PredicateInterpretation interpretation = terms -> {
 			BasicAtom inputAtom = Atoms.newBasicAtom(inputSpec, terms);
 			NormalProgram program = Programs.newNormalProgram(normalizedImplementation.getRules(),
-					ListUtils.union(List.of(inputAtom), normalizedImplementation.getFacts()), normalizedImplementation.getInlineDirectives());
+					ListUtils.union(List.of(inputAtom), normalizedImplementation.getFacts()), normalizedImplementation.getInlineDirectives(), Collections.emptyList());
 			java.util.function.Predicate<Predicate> filter = outputSpec.isEmpty() ? p -> true : outputSpec::contains;
 			Stream<AnswerSet> answerSets = moduleRunner.solve(program, filter);
 			if (atom.getInstantiationMode().requestedAnswerSets().isPresent()) {

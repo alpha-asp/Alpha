@@ -106,7 +106,7 @@ public class InternalProgram extends AbstractProgram<CompiledRule> implements Co
 		for (CompiledRule rule : getRules()) {
 			normalRules.add(Rules.newNormalRule(rule.getHead(), new LinkedHashSet<>(rule.getBody())));
 		}
-		return Programs.newNormalProgram(normalRules, getFacts(), getInlineDirectives());
+		return Programs.newNormalProgram(normalRules, getFacts(), getInlineDirectives(), Collections.emptyList());
 	}
 
 }

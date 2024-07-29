@@ -45,7 +45,7 @@ public class EnumerationRewriting extends ProgramTransformation<InputProgram, In
 		programBuilder.addFacts(inputProgram.getFacts());
 
 		List<Rule<Head>> srcRules = new ArrayList<>(inputProgram.getRules());
-		programBuilder.addRules(rewriteRules(srcRules, enumPredicate));
+		programBuilder.addRules(rewriteRules(srcRules, enumPredicate)).addModules(inputProgram.getModules());
 		return programBuilder.build();
 	}
 
