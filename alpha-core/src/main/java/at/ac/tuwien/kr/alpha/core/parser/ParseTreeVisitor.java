@@ -388,7 +388,19 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public AggregateLiteral visitAggregate(ASPCore2Parser.AggregateContext ctx) {
-		// aggregate : NAF? (lt=term lop=binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (uop=binop ut=term)?;
+		// aggregate : (classic_aggregate | list_aggregate);
+		if (ctx.classic_aggregate() != null) {
+			return visitClassic_aggregate(ctx.classic_aggregate());
+		} else if (ctx.list_aggregate() != null) {
+			return visitList_aggregate(ctx.list_aggregate());
+		} else {
+			throw notSupported(ctx);
+		}
+	}
+
+	@Override
+	public AggregateLiteral visitClassic_aggregate(ASPCore2Parser.Classic_aggregateContext ctx) {
+		// classic_aggregate: NAF? (lt=term lop=binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (uop=binop ut=term)?;
 		boolean isPositive = ctx.NAF() == null;
 		Term lt = null;
 		ComparisonOperator lop = null;
@@ -405,6 +417,23 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		AggregateAtom.AggregateFunctionSymbol aggregateFunction = visitAggregate_function(ctx.aggregate_function());
 		List<AggregateAtom.AggregateElement> aggregateElements = visitAggregate_elements(ctx.aggregate_elements());
 		return Atoms.newAggregateAtom(lop, lt, uop, ut, aggregateFunction, aggregateElements).toLiteral(isPositive);
+	}
+
+	@Override
+	public AggregateLiteral visitList_aggregate(ASPCore2Parser.List_aggregateContext ctx) {
+		// list_aggregate: term EQUAL AGGREGATE_LIST CURLY_OPEN list_comprehension CURLY_CLOSE;
+		Term listResultTerm = (Term) visit(ctx.term());
+		ImmutablePair<Term, List<Literal>> listComprehension = visitList_comprehension(ctx.list_comprehension());
+		return Atoms.newAggregateAtom(ComparisonOperators.EQ, listResultTerm, AggregateAtom.AggregateFunctionSymbol.LIST,
+				List.of(Atoms.newAggregateElement(List.of(listComprehension.left), listComprehension.right))).toLiteral();
+	}
+
+	@Override
+	public ImmutablePair<Term, List<Literal>> visitList_comprehension(ASPCore2Parser.List_comprehensionContext ctx) {
+		// list_comprehension: term COLON naf_literals;
+		Term elementTerm = (Term) visit(ctx.term());
+		List<Literal> elementSelectors = visitNaf_literals(ctx.naf_literals());
+		return ImmutablePair.of(elementTerm, elementSelectors);
 	}
 
 	@Override

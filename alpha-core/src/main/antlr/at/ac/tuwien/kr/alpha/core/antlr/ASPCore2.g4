@@ -34,7 +34,13 @@ choice_elements : choice_element (SEMICOLON choice_elements)?;
 
 choice_element : classical_literal (COLON naf_literals?)?;
 
-aggregate : NAF? (lt=term lop=binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (uop=binop ut=term)?;
+aggregate : (classic_aggregate | list_aggregate);
+
+list_aggregate: term EQUAL AGGREGATE_LIST CURLY_OPEN list_comprehension CURLY_CLOSE;
+
+list_comprehension: term COLON naf_literals; // Note: Term is expected to be a function term or basic_term
+
+classic_aggregate: NAF? (lt=term lop=binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (uop=binop ut=term)?;
 
 aggregate_elements : aggregate_element (SEMICOLON aggregate_elements)?;
 

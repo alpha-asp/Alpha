@@ -24,7 +24,8 @@ public interface AggregateAtom extends Atom {
 		COUNT,
 		MAX,
 		MIN,
-		SUM
+		SUM,
+		LIST
 	}
 
 	ComparisonOperator getLowerBoundOperator();
@@ -43,6 +44,11 @@ public interface AggregateAtom extends Atom {
 
 	@Override
 	AggregateLiteral toLiteral(boolean positive);
+
+	@Override
+	default AggregateLiteral toLiteral() {
+		return toLiteral(true);
+	}
 
 	interface AggregateElement {
 

@@ -106,6 +106,10 @@ public class ParserTest {
 
 	private static final String MODULE_LITERAL_NO_OUTPUT_WITH_NUM_ANSWER_SETS = "a(X) :- #something{4}[X].";
 
+	private static final String LIST_AGGREGATE = "stuff_list(LST) :- LST = #list{X : stuff(X)}.";
+
+	private static final String LIST_AGGREGATE_TUPLE = "stuff_list(LST) :- LST = #list{stuff_tuple(X,Y) : stuff(X,Y)}.";
+
 	private final ProgramParserImpl parser = new ProgramParserImpl();
 
 	@Test
@@ -497,6 +501,50 @@ public class ParserTest {
 		assertTrue(moduleLiteral.getAtom().getOutput().isEmpty());
 		assertTrue(moduleLiteral.getAtom().getInstantiationMode().requestedAnswerSets().isPresent());
 		assertEquals(4, moduleLiteral.getAtom().getInstantiationMode().requestedAnswerSets().get());
+	}
+
+	@Test
+	public void listAggregate() {
+		InputProgram prog = parser.parse(LIST_AGGREGATE);
+		assertEquals(1, prog.getRules().size());
+		Rule<?> rule = prog.getRules().get(0);
+		assertEquals(1, rule.getBody().size());
+		assertEquals(1, rule.getBody().stream().filter(lit -> lit instanceof AggregateLiteral).count());
+		AggregateLiteral aggregateLiteral = (AggregateLiteral) rule.getBody().stream().filter(lit -> lit instanceof AggregateLiteral).findFirst().get();
+		AggregateAtom aggregateAtom = aggregateLiteral.getAtom();
+		assertEquals(ComparisonOperators.EQ, aggregateAtom.getLowerBoundOperator());
+		assertEquals(Terms.newVariable("LST"), aggregateAtom.getLowerBoundTerm());
+		assertEquals(AggregateAtom.AggregateFunctionSymbol.LIST, aggregateAtom.getAggregateFunction());
+		assertEquals(1, aggregateAtom.getAggregateElements().size());
+		AggregateAtom.AggregateElement aggregateElement = aggregateAtom.getAggregateElements().get(0);
+		assertEquals(1, aggregateElement.getElementTerms().size());
+		Term elementTerm = aggregateElement.getElementTerms().get(0);
+		assertEquals(Terms.newVariable("X"), elementTerm);
+		assertEquals(1, aggregateElement.getElementLiterals().size());
+		Literal elementLiteral = aggregateElement.getElementLiterals().get(0);
+		assertEquals(Atoms.newBasicAtom(Predicates.getPredicate("stuff", 1), Terms.newVariable("X")).toLiteral(), elementLiteral);
+	}
+
+	@Test
+	public void listAggregateWithTuples() {
+		InputProgram prog = parser.parse(LIST_AGGREGATE_TUPLE);
+		assertEquals(1, prog.getRules().size());
+		Rule<?> rule = prog.getRules().get(0);
+		assertEquals(1, rule.getBody().size());
+		assertEquals(1, rule.getBody().stream().filter(lit -> lit instanceof AggregateLiteral).count());
+		AggregateLiteral aggregateLiteral = (AggregateLiteral) rule.getBody().stream().filter(lit -> lit instanceof AggregateLiteral).findFirst().get();
+		AggregateAtom aggregateAtom = aggregateLiteral.getAtom();
+		assertEquals(ComparisonOperators.EQ, aggregateAtom.getLowerBoundOperator());
+		assertEquals(Terms.newVariable("LST"), aggregateAtom.getLowerBoundTerm());
+		assertEquals(AggregateAtom.AggregateFunctionSymbol.LIST, aggregateAtom.getAggregateFunction());
+		assertEquals(1, aggregateAtom.getAggregateElements().size());
+		AggregateAtom.AggregateElement aggregateElement = aggregateAtom.getAggregateElements().get(0);
+		assertEquals(1, aggregateElement.getElementTerms().size());
+		Term elementTerm = aggregateElement.getElementTerms().get(0);
+		assertEquals(Terms.newFunctionTerm("stuff_tuple", Terms.newVariable("X"), Terms.newVariable("Y")), elementTerm);
+		assertEquals(1, aggregateElement.getElementLiterals().size());
+		Literal elementLiteral = aggregateElement.getElementLiterals().get(0);
+		assertEquals(Atoms.newBasicAtom(Predicates.getPredicate("stuff", 2), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral(), elementLiteral);
 	}
 
 }

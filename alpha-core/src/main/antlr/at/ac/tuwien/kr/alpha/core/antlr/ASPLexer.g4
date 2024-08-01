@@ -40,6 +40,7 @@ AGGREGATE_COUNT : '#count';
 AGGREGATE_MAX : '#max';
 AGGREGATE_MIN : '#min';
 AGGREGATE_SUM : '#sum';
+AGGREGATE_LIST : '#list';
 
 DIRECTIVE_ENUM : 'enumeration_predicate_is';
 
