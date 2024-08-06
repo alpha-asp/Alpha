@@ -5,6 +5,8 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.SortedSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -74,6 +77,10 @@ public class AggregateRewritingTest {
 			"p(1..10)."
 			+ "q :- X = #count { Y : p( Y ) }, X = #count { Z : p( Z ) },"
 			+ "	Y = #count { X : p( X ) }, 1 <= #count { X : p( X ) }, Z = #max { W : p( W ) }.";
+
+	private static final String LIST_COLLECT =
+			"p(1). p(2). p(3)."
+			+ " q(X) :- X = #list{ Y : p(Y) }.";
 	//@formatter:on
 
 	// Use an alpha instance with default config for all test cases
@@ -231,6 +238,20 @@ public class AggregateRewritingTest {
 
 		assertTrue(answerSet.getPredicates().contains(q));
 		assertTrue(answerSet.getPredicateInstances(q).contains(Atoms.newBasicAtom(q)));
+	}
+
+	@Test
+	public void listCollect() {
+		List<AnswerSet> answerSets = solve.apply(LIST_COLLECT);
+		assertEquals(1, answerSets.size());
+		AnswerSet answerSet = answerSets.get(0);
+		Predicate q = Predicates.getPredicate("q", 1);
+		SortedSet<Atom> instances = answerSet.getPredicateInstances(q);
+		assertEquals(1, instances.size());
+		Atom instance = instances.first();
+		assertEquals(1, instance.getTerms().size());
+		Term term = instance.getTerms().get(0);
+		assertEquals(Terms.asListTerm(List.of(Terms.newConstant(1), Terms.newConstant(2), Terms.newConstant(3))), term);
 	}
 
 }

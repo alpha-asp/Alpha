@@ -33,6 +33,7 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	private final AbstractAggregateEncoder sumLessOrEqualEncoder;
 	private final AbstractAggregateEncoder minEncoder;
 	private final AbstractAggregateEncoder maxEncoder;
+	private final AbstractAggregateEncoder listEncoder;
 
 	/**
 	 * Creates a new {@link AggregateRewriting} transformation.
@@ -51,6 +52,8 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 		this.countEqualsEncoder = AggregateEncoders.newCountEqualsEncoder();
 		this.minEncoder = AggregateEncoders.newMinEncoder();
 		this.maxEncoder = AggregateEncoders.newMaxEncoder();
+		this.listEncoder = AggregateEncoders.newListEncoder();
+
 	}
 
 	/**
@@ -117,6 +120,8 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 				} else {
 					throw new UnsupportedOperationException("No fitting encoder for aggregate function " + function + "and operator " + operator + "!");
 				}
+			case LIST:
+				return listEncoder;
 			default:
 				throw new UnsupportedOperationException("Unsupported aggregate function/comparison operator: " + function + ", " + operator);
 		}

@@ -64,7 +64,8 @@ public class End2EndTests {
 	Stream<DynamicTest> alphaEnd2EndTests() {
 		return Stream.of(
 				alphaEnd2EndTest("3-Coloring", E2E_TESTS_DIR + "3col.asp"),
-				alphaEnd2EndTest("modules-basic", E2E_TESTS_DIR + "modules-basic.evl")
+				alphaEnd2EndTest("modules-basic", E2E_TESTS_DIR + "modules-basic.evl"),
+				alphaEnd2EndTest("neighboring-vertices-list", E2E_TESTS_DIR + "neighboring-vertices-list.evl")
 		);
 	}
 

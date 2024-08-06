@@ -17,7 +17,7 @@ import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 public final class Terms {
 
 	public static final String LIST_TERM_SYMBOL = "lst";
-	public static final ConstantTerm<String> EMPTY_LIST =  Terms.newSymbolicConstant("emptyList");
+	public static final ConstantTerm<String> EMPTY_LIST =  Terms.newSymbolicConstant("lst_empty");
 
 	/**
 	 * Since this is purely a utility class, it may not be instantiated.

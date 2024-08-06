@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders;
 
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
 public final class AggregateEncoders {
 	
@@ -30,6 +31,10 @@ public final class AggregateEncoders {
 	
 	public static MinMaxEncoder newMaxEncoder() {
 		return new MinMaxEncoder(AggregateFunctionSymbol.MAX);
+	}
+
+	public static AbstractAggregateEncoder newListEncoder() {
+		return new ListEncoder(new ProgramParserImpl());
 	}
 
 }
