@@ -65,10 +65,9 @@ public class End2EndTests {
 		return Stream.of(
 				alphaEnd2EndTest("3-Coloring", E2E_TESTS_DIR + "3col.asp"),
 				alphaEnd2EndTest("modules-basic", E2E_TESTS_DIR + "modules-basic.evl"),
-				alphaEnd2EndTest("neighboring-vertices-list", E2E_TESTS_DIR + "neighboring-vertices-list.evl")
+				alphaEnd2EndTest("neighboring-vertices-list", E2E_TESTS_DIR + "neighboring-vertices-list.evl"),
+				alphaEnd2EndTest("bin-packing", E2E_TESTS_DIR + "bin-packing.evl", E2E_TESTS_DIR + "bin-packing.test.evl")
 		);
 	}
-
-
 
 }

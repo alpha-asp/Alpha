@@ -26,8 +26,8 @@ public class ListEncoder extends AbstractAggregateEncoder {
 			// Now build the list as a recursively nested function term
 			"$id$_lst_element(ARGS, IDX, lst(N, lst_empty)) :- $id$_element(ARGS, N), not $id$_element_has_successor(ARGS, N), IDX = 0. " +
 			"$id$_lst_element(ARGS, IDX, lst(N, lst(K, TAIL))) :- $id$_element(ARGS, N), $id$_element_successor(ARGS, K, N), $id$_lst_element(ARGS, PREV_IDX, lst(K, TAIL)), IDX = PREV_IDX + 1. " +
-			"has_next_$id$_element(ARGS, IDX) :- $id$_lst_element(ARGS, IDX, _), NEXT_IDX = IDX + 1, $id$_lst_element(ARGS, NEXT_IDX, _). " +
-			"$aggregate_result$(ARGS, LIST) :- $id$_lst_element(ARGS, IDX, LIST), not has_next_$id$_element(ARGS, IDX).");
+			"$id$_has_next_element(ARGS, IDX) :- $id$_lst_element(ARGS, IDX, _), NEXT_IDX = IDX + 1, $id$_lst_element(ARGS, NEXT_IDX, _). " +
+			"$aggregate_result$(ARGS, LIST) :- $id$_lst_element(ARGS, IDX, LIST), not $id$_has_next_element(ARGS, IDX).");
 
 	private final ProgramParser parser;
 

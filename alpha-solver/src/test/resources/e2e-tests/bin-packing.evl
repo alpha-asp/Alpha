@@ -1,0 +1,66 @@
+%%% Module Bin-Packing %%%
+% 
+% This module solves instances of the bin-packing decision problem:
+% Given a set of bins, described as terms bin(B, SIZE), and items, described as terms item(I, SIZE),
+% the module calculates all assignments of items to bins, such that all items are packed and no
+% bin size is exceeded. Each answer set corresponds to one valid assignment.
+%
+% Input: a fact "instance(BIN_LST, ITEM_LST)", where 
+%	- BIN_LST is a list of terms of form bin(B, SIZE),
+%   - and ITEM_LST is a list of terms of form item(I, SIZE)
+%
+%%%
+#module bin_packing(instance/2 => {item_packed/2}) {
+	% Unpack input lists.
+	bin_element(E, TAIL) :- instance(lst(E, TAIL), _).
+	bin_element(E, TAIL) :- bin_element(_, lst(E, TAIL)).
+	bin(B, S) :- bin_element(bin(B, S), _).
+	
+	item_element(E, TAIL) :- instance(_, lst(E, TAIL)).
+	item_element(E, TAIL) :- item_element(_, lst(E, TAIL)).
+	item(I, S) :- item_element(item(I, S), _).
+
+	% For every item, guess an assignment to each bin.
+	{ item_packed(I, B) : bin(B, _) } :- item(I, _).
+	% An item may only be assigned to one bin at a time
+	:- item_packed(I, B1), item_packed(I, B2), B1 != B2.
+
+	% We must not exceed the capacity of any bin.
+	capacity_used(B, C) :- C = #sum{S : item(I, S), item_packed(I, B)}, bin(B, _).
+	:- capacity_used(B, C), C > S, bin(B, S).
+
+	% Every item must be packed.
+	item_packed_somewhere(I) :- item_packed(I, _).
+	:- item(I, _), not item_packed_somewhere(I).
+}
+
+
+%%% Bin-Packing Valuation %%%
+%
+% Given a Bin-Packing instance and a satisfying assignment,
+% calculates a numeric value for the given assignment.
+% The value is the sum of the capacities of all bins used in the assignment.
+% Intuitively, we calculate the cost in total storage capacity of a given bin assignment.
+%
+%%%
+#module bin_packing_valuation(instance_with_assignment/3 => {assignment_value/1}) {
+	%% Unpack input
+	% Extract bins from bin list
+	bin_element(E, TAIL) :- instance_with_assignment(lst(E, TAIL), _, _).
+	bin_element(E, TAIL) :- bin_element(_, lst(E, TAIL)).
+	bin(B, S) :- bin_element(bin(B, S), _).
+	
+	% Extract items from item list
+	item_element(E, TAIL) :- instance_with_assignment(_, lst(E, TAIL), _).
+	item_element(E, TAIL) :- item_element(_, lst(E, TAIL)).
+	item(I, S) :- item_element(item(I, S), _).	
+	
+	% Extract individual item assignments
+	assignment_element(E, TAIL) :- instance_with_assignment(_, _, lst(E, TAIL)).
+	assignment_element(E, TAIL) :- assignment_element(_, lst(E, TAIL)).
+	assigned(I, B) :- assignment_element(item_packed(I, B), _).
+	
+	% Get all bins that are used in the assignment
+	bin_used(B) :- assigned(_, B).
+	assignment_value(V) :- V = #sum{ S : bin(B, S), bin_used(B)}.
+}
