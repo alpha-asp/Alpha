@@ -167,5 +167,10 @@ public class EnumerationAtom extends AbstractAtom implements BasicAtom {
 	public int hashCode() {
 		return 31 * ENUMERATION_PREDICATE.hashCode() + getTerms().hashCode();
 	}
-	
+
+	@Override
+	public String toString() {
+		return String.format("%s(%s,%s,%s)", ENUMERATION_PREDICATE.getName(), enumIdTerm, valueTerm, indexTerm);
+	}
+
 }

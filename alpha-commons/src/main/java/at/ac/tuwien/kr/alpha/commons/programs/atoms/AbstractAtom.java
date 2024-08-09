@@ -98,4 +98,7 @@ public abstract class AbstractAtom implements Atom {
 	@Override
 	public abstract int hashCode();
 
+	@Override
+	public abstract String toString();
+
 }

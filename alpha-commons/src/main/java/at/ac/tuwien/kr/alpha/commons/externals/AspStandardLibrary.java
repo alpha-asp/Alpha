@@ -245,6 +245,7 @@ public final class AspStandardLibrary {
 		}
 	}
 
+	// TODO we could add something to convert string to list
 	@Predicate(name = "str_x_xs")
 	public static Set<List<ConstantTerm<String>>> stringHeadRemainder(String str) {
 		List<ConstantTerm<String>> xXs = new ArrayList<>();
