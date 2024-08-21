@@ -27,10 +27,9 @@ package at.ac.tuwien.kr.alpha.commons.externals;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -259,6 +258,16 @@ public final class AspStandardLibrary {
 			xXs.add(Terms.newConstant(str.substring(1, str.length())));
 		}
 		return Collections.singleton(xXs);
+	}
+
+	@Predicate(name = "regex_matches")
+	public static Set<List<ConstantTerm<?>>> regexMatchesInString(String regex, String str) {
+		Matcher matcher = Pattern.compile(regex).matcher(str); // Note: This could be done more efficiently by caching patterns.
+		Set<List<ConstantTerm<?>>> result = new LinkedHashSet<>();
+		while (matcher.find()) {
+			result.add(List.of(Terms.newConstant(matcher.group(1)), Terms.newConstant(matcher.start(1)), Terms.newConstant(matcher.end(1))));
+		}
+		return result;
 	}
 
 }
