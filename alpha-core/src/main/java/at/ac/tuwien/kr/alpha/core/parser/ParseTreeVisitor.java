@@ -71,7 +71,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	private final Map<String, PredicateInterpretation> externals;
 	private final boolean acceptVariables;
 
-	private InlineDirectives inlineDirectives;
+	//private InlineDirectives inlineDirectives;
 
 	/*
 	 * Since verifiers for tests are ASP programs in themselves, we need to parse nested programs.
@@ -156,10 +156,11 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		if (ctx.statements() == null) {
 			return Programs.emptyProgram();
 		}
-		inlineDirectives = Programs.newInlineDirectives();
+
+		//inlineDirectives = Programs.newInlineDirectives();
 		currentLevelProgramBuilder = Programs.builder();
 		visitStatements(ctx.statements());
-		currentLevelProgramBuilder.addInlineDirectives(inlineDirectives);
+		//currentLevelProgramBuilder.addInlineDirectives(inlineDirectives);
 		return currentLevelProgramBuilder.build();
 	}
 
@@ -302,7 +303,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Object visitDirective_enumeration(ASPCore2Parser.Directive_enumerationContext ctx) {
 		// directive_enumeration : DIRECTIVE_ENUM id DOT;
-		inlineDirectives.addDirective(InlineDirectives.DIRECTIVE.enum_predicate_is, visitId(ctx.id()));
+		InlineDirectives directives = Programs.newInlineDirectives();
+		directives.addDirective(InlineDirectives.DIRECTIVE.enum_predicate_is, visitId(ctx.id()));
+		currentLevelProgramBuilder.addInlineDirectives(directives);
 		return null;
 	}
 
