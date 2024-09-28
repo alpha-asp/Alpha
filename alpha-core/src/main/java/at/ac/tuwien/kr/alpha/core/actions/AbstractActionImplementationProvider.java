@@ -113,8 +113,7 @@ public abstract class AbstractActionImplementationProvider implements ActionImpl
 			return Terms.actionError("Second input term must be a string constant!");
 		}
 		String str = ((ConstantTerm<String>) input.get(1)).getObject();
-		// TODO this needs some built-in conversion function
-		byte[] data = str.getBytes();
+		byte[] data = (str + "\n").getBytes();
 		OutputStream dst = dstHandle.getStream();
 		try {
 			dst.write(data);

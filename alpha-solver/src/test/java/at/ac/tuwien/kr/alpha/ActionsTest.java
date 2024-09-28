@@ -48,7 +48,7 @@ public class ActionsTest {
 		Alpha alpha = alphaFactory.buildInstance(new SystemConfig());
 		InputProgram program = alpha.readProgramString(HELLO_WORLD);
 		alpha.solve(program);
-		assertEquals("Hello World!", alphaFactory.getActionImplementationMock().getStdoutContent());
+		assertEquals("Hello World!\n", alphaFactory.getActionImplementationMock().getStdoutContent());
 	}
 
 	@Test
@@ -100,7 +100,7 @@ public class ActionsTest {
 					return funcTerm.getTerms().get(0) instanceof ConstantTerm<?> && ((ConstantTerm<String>) funcTerm.getTerms().get(0)).getObject().equals("ok");
 				})
 		).size());
-		assertEquals("Foo bar!", dummyFileContent.toString());
+		assertEquals("Foo bar!\n", dummyFileContent.toString());
 	}
 
 }
