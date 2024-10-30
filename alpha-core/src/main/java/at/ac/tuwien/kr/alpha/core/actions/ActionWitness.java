@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.core.actions;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ActionResultTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 
 import java.util.List;
@@ -11,9 +12,9 @@ public class ActionWitness {
 	private final Substitution groundSubstitution;
 	private final String actionName;
 	private final List<Term> actionInput;
-	private final Term actionResult;
+	private final ActionResultTerm<?> actionResult;
 
-	public ActionWitness(int ruleId, Substitution groundSubstitution, String actionName, List<Term> actionInput, Term actionResult) {
+	public ActionWitness(int ruleId, Substitution groundSubstitution, String actionName, List<Term> actionInput, ActionResultTerm<?> actionResult) {
 		this.ruleId = ruleId;
 		this.groundSubstitution = groundSubstitution;
 		this.actionName = actionName;
@@ -37,7 +38,7 @@ public class ActionWitness {
 		return actionInput;
 	}
 
-	public Term getActionResult() {
+	public ActionResultTerm<?> getActionResult() {
 		return actionResult;
 	}
 	
