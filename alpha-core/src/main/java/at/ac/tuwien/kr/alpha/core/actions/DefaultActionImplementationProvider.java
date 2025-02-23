@@ -21,7 +21,7 @@ public class DefaultActionImplementationProvider extends AbstractActionImplement
 
 	@Override
 	protected OutputStream getFileOutputStream(String path) throws IOException {
-		return Files.newOutputStream(Paths.get(path), StandardOpenOption.APPEND);
+		return Files.newOutputStream(Paths.get(path), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 	}
 
 	@Override

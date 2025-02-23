@@ -212,7 +212,7 @@ public final class AspStandardLibrary {
 	 * Concatenates the two given strings
 	 */
 	@Predicate(name = "stdlib_string_concat")
-	public static Set<List<ConstantTerm<String>>> stringConcat(String s1, String s2) {
+	public static Set<List<ConstantTerm<String>>> stringConcat(String s1, Object s2) {
 		return Collections.singleton(Terms.asTermList(s1 + s2));
 	}
 
