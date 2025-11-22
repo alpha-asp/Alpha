@@ -18,8 +18,6 @@ public class ActionExecutionServiceImpl implements ActionExecutionService {
 		this.actionProvider = implementationProvider;
 	}
 
-	// TODO possible bug: For two identical rules, the action should only be executed once - test this.
-	//  Note that there may be more answers to this: Formally, a program is a *set* of rules, i.e. duplicate rules are not allowed.
 	@Override
 	public ActionWitness execute(String actionName, int sourceRuleId, Substitution sourceRuleInstance, List<Term> inputTerms) {
 		ActionInput actInput = new ActionInput(actionName, sourceRuleId, sourceRuleInstance, inputTerms);
