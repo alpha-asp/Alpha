@@ -11,9 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import at.ac.tuwien.kr.alpha.api.programs.rules.RuleInstantiator;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ActionHead;
-import at.ac.tuwien.kr.alpha.api.programs.rules.heads.InstantiableHead;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
@@ -54,7 +52,7 @@ import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
  *
  * Copyright (c) 2019-2020, the Alpha Team.
  */
-public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram, InternalProgram> implements RuleInstantiator {
+public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram, InternalProgram> {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(StratifiedEvaluation.class);
 
@@ -333,17 +331,12 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		workingMemory.addInstance(newAtom, true);
 	}
 
-	@Override
-	public BasicAtom instantiate(InstantiableHead ruleHead, Substitution substitution) {
-		return ruleHead.instantiate(this, substitution);
-	}
-
-	// FIXME should be dispatched via visitor pattern
+	// Note: Could be dispatched via visitor pattern
 	public BasicAtom instantiateNormalHead(NormalHead head, Substitution substitution) {
 		return head.getAtom().substitute(substitution);
 	}
 
-	// FIXME should be dispatched via visitor pattern
+	// Note: Could be dispatched via visitor pattern
 	public BasicAtom instantiateActionHead(ActionHead head, Substitution substitution, CompiledRule rule) {
 		List<Term> actionInput = head.getActionInputTerms();
 		List<Term> substitutedInput = new ArrayList<>();

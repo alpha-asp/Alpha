@@ -1,6 +1,5 @@
 package at.ac.tuwien.kr.alpha.commons.programs.rules;
 
-import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
@@ -37,7 +36,6 @@ public final class Rules {
 	}
 
 	public static NormalRule toNormalRule(Rule<Head> rule) {
-		BasicAtom headAtom = null;
 		if (!rule.isConstraint()) {
 			if (!(rule.getHead() instanceof NormalHead)) {
 				throw Util.oops("Trying to construct a NormalRule from rule with non-normal head! Head type is: " + rule.getHead().getClass().getSimpleName());

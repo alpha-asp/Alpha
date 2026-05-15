@@ -1,8 +1,6 @@
 package at.ac.tuwien.kr.alpha.commons.programs.rules.heads;
 
-import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.api.programs.rules.RuleInstantiator;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ActionHead;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
@@ -32,13 +30,8 @@ class ActionHeadImpl implements ActionHead {
 
 	@Override
 	public boolean isGround() {
-		// TODO: an action head is conceptually a basic one with an (interpreted) function term
+		// Note: an action head is conceptually a basic one with an (interpreted) function term
 		return false;
-	}
-
-	@Override
-	public BasicAtom instantiate(RuleInstantiator instantiator, Substitution substitution) {
-		return instantiator.instantiate(this, substitution);
 	}
 
 	@Override
