@@ -114,8 +114,9 @@ Peer-reviewed publications part of journals, conferences and workshops:
  * [Lazy-Grounding for Answer Set Programs with External Source Access](https://doi.org/10.24963/ijcai.2017/141)
  * [Techniques for Efficient Lazy-Grounding ASP Solving](https://doi.org/10.1007/978-3-030-00801-7_9) ([technical report](https://www.uni-wuerzburg.de/fileadmin/10030100/Publications/TR_Declare17.pdf#page=131))
 
-Others (e.g. non-peer-reviewed publications, less formal articles, newsletters):
+Others (e.g. non-peer-reviewed publications, less formal articles, newsletters, theses):
 
+ * [Master Thesis "Evolog: actions and modularization in lazy-grounding answer set programming"](https://repositum.tuwien.at/handle/20.500.12708/220293): the theoretical foundations for Alpha's support of actions and modularization.
  * [The Alpha Solver for Lazy-Grounding Answer-Set Programming](https://www.cs.nmsu.edu/ALP/2019/04/the-alpha-solver-for-lazy-grounding-answer-set-programming/)
 
 ## Similar Work
