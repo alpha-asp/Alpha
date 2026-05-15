@@ -12,11 +12,11 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Program;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
-import at.ac.tuwien.kr.alpha.core.externals.Externals;
+import at.ac.tuwien.kr.alpha.commons.externals.Externals;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
 public class ProgramTransformationTest {
@@ -44,11 +44,11 @@ public class ProgramTransformationTest {
 	}
 
 	private <I extends Program<?>, O extends Program<?>> void genericTransformationTest(ProgramTransformation<I, O> transform,
-			Function<ASPCore2Program, I> prepareFunc, String resourceSet) {
+			Function<InputProgram, I> prepareFunc, String resourceSet) {
 		try {
 			String inputCode = ProgramTransformationTest.readTestResource(resourceSet + ".in");
 			String expectedResult = ProgramTransformationTest.readTestResource(resourceSet + ".out");
-			ASPCore2Program inputProg = PARSER.parse(inputCode, Externals.scan(ProgramTransformationTest.class));
+			InputProgram inputProg = PARSER.parse(inputCode, Externals.scan(ProgramTransformationTest.class));
 			I transformInput = prepareFunc.apply(inputProg);
 			String beforeTransformProg = transformInput.toString();
 			O transformedProg = transform.apply(transformInput);

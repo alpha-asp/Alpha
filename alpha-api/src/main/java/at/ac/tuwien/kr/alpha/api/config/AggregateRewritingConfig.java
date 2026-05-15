@@ -5,7 +5,7 @@ import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 
 /**
  * Configuration structure controlling how {@link AggregateLiteral}s are compiled during program normalization in
- * {@link Alpha#normalizeProgram(at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program)}.
+ * {@link Alpha#normalizeProgram(at.ac.tuwien.kr.alpha.api.programs.InputProgram)}.
  * 
  * Copyright (c) 2021, the Alpha Team.
  */

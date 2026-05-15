@@ -27,10 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
@@ -61,14 +58,12 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 
 	/**
 	 * Rewrites intervals into a new variable and special IntervalAtom.
-	 * 
-	 * @return true if some interval occurs in the rule.
 	 */
 	private static NormalRule rewriteIntervalSpecifications(NormalRule rule) {
 		// Collect all intervals and replace them with variables.
 		Map<VariableTerm, IntervalTerm> intervalReplacements = new LinkedHashMap<>();
 
-		List<Literal> rewrittenBody = new ArrayList<>();
+		Set<Literal> rewrittenBody = new LinkedHashSet<>();
 
 		for (Literal literal : rule.getBody()) {
 			Literal rewrittenLiteral = rewriteLiteral(literal, intervalReplacements);
@@ -78,6 +73,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		}
 		// Note that this cast is safe: NormalHead can only have a BasicAtom, so literalizing and getting back the Atom destroys type information,
 		// but should never yield anything other than a BasicAtom
+		// TODO handle action headS!
 		NormalHead rewrittenHead = rule.isConstraint() ? null
 				: Heads.newNormalHead((BasicAtom) rewriteLiteral(rule.getHead().getAtom().toLiteral(), intervalReplacements).getAtom());
 
@@ -182,6 +178,6 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		if (!didChange) {
 			return inputProgram;
 		}
-		return Programs.newNormalProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+		return Programs.newNormalProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives(), inputProgram.getModules());
 	}
 }

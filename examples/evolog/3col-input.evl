@@ -1,0 +1,6 @@
+vertex(a). 
+vertex(b). 
+vertex(c). 
+edge(a, b). 
+edge(b, c). 
+edge(c, a).

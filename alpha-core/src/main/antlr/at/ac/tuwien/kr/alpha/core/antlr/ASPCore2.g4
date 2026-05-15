@@ -20,7 +20,9 @@ statement : head DOT                     # statement_fact
           | WCONS body? DOT SQUARE_OPEN weight_at_level SQUARE_CLOSE # statement_weightConstraint
           | directive                    # statement_directive;   // NOT Core2 syntax.
 
-head : disjunction | choice;
+head : disjunction | choice | action;
+
+action: classical_literal COLON AT ID SQUARE_OPEN terms SQUARE_CLOSE EQUAL variable_term; // NOT Core2 syntax
 
 body : ( naf_literal | aggregate ) (COMMA body)?;
 
@@ -32,7 +34,13 @@ choice_elements : choice_element (SEMICOLON choice_elements)?;
 
 choice_element : classical_literal (COLON naf_literals?)?;
 
-aggregate : NAF? (lt=term lop=binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (uop=binop ut=term)?;
+aggregate : (classic_aggregate | list_aggregate);
+
+list_aggregate: term EQUAL AGGREGATE_LIST CURLY_OPEN list_comprehension CURLY_CLOSE;
+
+list_comprehension: term COLON naf_literals; // Note: Term is expected to be a function term or basic_term
+
+classic_aggregate: NAF? (lt=term lop=binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (uop=binop ut=term)?;
 
 aggregate_elements : aggregate_element (SEMICOLON aggregate_elements)?;
 
@@ -44,7 +52,7 @@ weight_at_level : term (AT term)? (COMMA terms)?;
 
 naf_literals : naf_literal (COMMA naf_literals)?;
 
-naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
+naf_literal : NAF? (external_atom | module_atom | classical_literal | builtin_atom);
 
 id : ID | TEST_EXPECT | TEST_UNSAT | TEST_GIVEN | TEST_ASSERT_ALL | TEST_ASSERT_SOME | DIRECTIVE_ENUM | DIRECTIVE_TEST;
 
@@ -53,6 +61,10 @@ basic_atom : id (PAREN_OPEN terms PAREN_CLOSE)?;
 classical_literal : MINUS? basic_atom;
 
 builtin_atom : term binop term;
+
+predicate_spec: id '/' NUMBER;
+
+predicate_specs: predicate_spec (COMMA predicate_specs)?;
 
 binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
 
@@ -81,12 +93,17 @@ interval_bound : numeral | VARIABLE;
 
 external_atom : MINUS? AMPERSAND id (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?; // NOT Core2 syntax.
 
-directive : directive_enumeration | directive_test;  // NOT Core2 syntax, allows solver specific directives. Further directives shall be added here.
+module_atom : SHARP id (CURLY_OPEN NUMBER CURLY_CLOSE)? (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?; // NOT Core2 syntax.
+
+directive : directive_enumeration | directive_test | directive_module;  // NOT Core2 syntax, allows solver specific directives. Further directives shall be added here.
 
 directive_enumeration :  SHARP DIRECTIVE_ENUM id DOT;  // NOT Core2 syntax, used for aggregate translation.
 
 // Alpha-specific language extension: Unit Tests (-> https://github.com/alpha-asp/Alpha/issues/237)
 directive_test : SHARP DIRECTIVE_TEST id PAREN_OPEN test_satisfiability_condition PAREN_CLOSE CURLY_OPEN test_input test_assert* CURLY_CLOSE;
+
+// Alpha-specific language extension: Program Modularization (-> https://github.com/madmike200590/evolog-thesis)
+directive_module: SHARP DIRECTIVE_MODULE id PAREN_OPEN module_signature PAREN_CLOSE CURLY_OPEN statements CURLY_CLOSE;
 
 basic_terms : basic_term (COMMA basic_terms)? ;
 
@@ -109,4 +126,6 @@ test_assert : test_assert_all | test_assert_some;
 test_assert_all : TEST_ASSERT_ALL CURLY_OPEN statements? CURLY_CLOSE;
 
 test_assert_some : TEST_ASSERT_SOME CURLY_OPEN statements? CURLY_CLOSE;
+
+module_signature : predicate_spec ARROW CURLY_OPEN ('*' | predicate_specs) CURLY_CLOSE;
 

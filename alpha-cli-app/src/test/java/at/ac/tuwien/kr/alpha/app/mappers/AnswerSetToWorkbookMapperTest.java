@@ -16,12 +16,13 @@ import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
-import at.ac.tuwien.kr.alpha.api.impl.AlphaImpl;
+import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
 
+// TODO This is a functional test and should not be run with standard unit tests
 public class AnswerSetToWorkbookMapperTest {
 
 	private AnswerSetToWorkbookMapper mapper = new AnswerSetToWorkbookMapper();
@@ -46,7 +47,7 @@ public class AnswerSetToWorkbookMapperTest {
 				+ "p(N) :- p(I), N = I + 1, N <= MX, maxP(MX)."
 				+ "q(A, B) :- p(A), p(B).";
 		//@formatter:on
-		Alpha alpha = new AlphaImpl();
+		Alpha alpha = AlphaFactory.newAlpha();
 		List<AnswerSet> answerSets = alpha.solve(alpha.readProgramString(progstr)).collect(Collectors.toList());
 		assertEquals(1, answerSets.size());
 		AnswerSet as = answerSets.get(0);

@@ -39,6 +39,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+// TODO this is an end-to-end test
 public class MainTest {
 	
 	private static final String INPUT = "p(a). " + System.lineSeparator() + " b :- p(X)." + System.lineSeparator();
@@ -48,10 +49,10 @@ public class MainTest {
 	
 	private static Stream<Arguments> provideCommandLineArguments() {
 		return Stream.of(
-				Arguments.of((Object) new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "20", "-str", INPUT}),
-				Arguments.of((Object) new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "0", "-str", INPUT}),
-				Arguments.of((Object) new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "1", "-str", INPUT}),
-				Arguments.of((Object) new String[]{"-g", "naive", "-s", "default", "-r", "naive", "-e", "1119654162577372", "--numAS", "1", "-str", INPUT}));
+				Arguments.of((Object) new String[]{"-DebugEnableInternalChecks", "-s", "default", "-e", "1119654162577372", "-n", "20", "-str", INPUT}),
+				Arguments.of((Object) new String[]{"-DebugEnableInternalChecks", "-s", "default", "-n", "0", "-str", INPUT}),
+				Arguments.of((Object) new String[]{"-DebugEnableInternalChecks", "-s", "default", "-n", "1", "-str", INPUT}),
+				Arguments.of((Object) new String[]{"-s", "default", "-r", "naive", "-e", "1119654162577372", "--numAS", "1", "-str", INPUT}));
 	}
 
 	/**

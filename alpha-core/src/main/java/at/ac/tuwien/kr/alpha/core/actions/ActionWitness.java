@@ -1,0 +1,45 @@
+package at.ac.tuwien.kr.alpha.core.actions;
+
+import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.programs.terms.ActionResultTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+
+import java.util.List;
+
+public class ActionWitness {
+
+	private final int ruleId;
+	private final Substitution groundSubstitution;
+	private final String actionName;
+	private final List<Term> actionInput;
+	private final ActionResultTerm<?> actionResult;
+
+	public ActionWitness(int ruleId, Substitution groundSubstitution, String actionName, List<Term> actionInput, ActionResultTerm<?> actionResult) {
+		this.ruleId = ruleId;
+		this.groundSubstitution = groundSubstitution;
+		this.actionName = actionName;
+		this.actionInput = actionInput;
+		this.actionResult = actionResult;
+	}
+
+	public int getRuleId() {
+		return ruleId;
+	}
+
+	public Substitution getGroundSubstitution() {
+		return groundSubstitution;
+	}
+
+	public String getActionName() {
+		return actionName;
+	}
+
+	public List<Term> getActionInput() {
+		return actionInput;
+	}
+
+	public ActionResultTerm<?> getActionResult() {
+		return actionResult;
+	}
+	
+}

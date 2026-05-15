@@ -42,7 +42,7 @@ public interface Atom extends Comparable<Atom> {
 
 	Set<VariableTerm> getOccurringVariables();
 
-	Atom substitute(Substitution substitution); // Introduce parameterized interface Substituable<A extends Atom> to get atom types right?
+	Atom substitute(Substitution substitution); // Introduce parameterized interface Substitutable<A extends Atom> to get atom types right?
 
 	Atom renameVariables(String newVariablePrefix);
 

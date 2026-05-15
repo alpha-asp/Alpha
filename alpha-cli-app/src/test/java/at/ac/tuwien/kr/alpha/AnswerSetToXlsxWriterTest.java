@@ -19,6 +19,7 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.app.mappers.AnswerSetToWorkbookMapperTest;
 import at.ac.tuwien.kr.alpha.commons.AnswerSetBuilder;
 
+// TODO this is an integration test
 public class AnswerSetToXlsxWriterTest {
 
 	@Test

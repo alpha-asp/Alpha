@@ -25,25 +25,24 @@
  */
 package at.ac.tuwien.kr.alpha.core.common;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import org.junit.jupiter.api.Test;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ProgramTest {
-	
+
 	@Test
 	public void testToString() {
-		ASPCore2Program parsedProgram = new ProgramParserImpl().parse(
+		InputProgram parsedProgram = new ProgramParserImpl().parse(
 				"p(a)." + System.lineSeparator() +
-					"q(X) :- p(X)." + System.lineSeparator() +
-					"p(b).");
+						"q(X) :- p(X)." + System.lineSeparator() +
+						"p(b).");
 		assertEquals(
 				"p(a)." + System.lineSeparator() +
-					"p(b)." + System.lineSeparator() +
-					"q(X) :- p(X)." + System.lineSeparator(),
+						"p(b)." + System.lineSeparator() +
+						"q(X) :- p(X)." + System.lineSeparator(),
 				parsedProgram.toString());
 	}
 }

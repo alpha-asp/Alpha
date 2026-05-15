@@ -30,8 +30,8 @@ package at.ac.tuwien.kr.alpha.core.parser;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.*;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
@@ -47,9 +47,10 @@ import at.ac.tuwien.kr.alpha.commons.AnswerSets;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
-import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.InputProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.literals.Literals;
+import at.ac.tuwien.kr.alpha.commons.programs.modules.Modules;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
@@ -58,6 +59,7 @@ import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.core.antlr.ASPCore2Parser;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.*;
 import java.util.function.IntPredicate;
@@ -69,15 +71,15 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	private final Map<String, PredicateInterpretation> externals;
 	private final boolean acceptVariables;
 
-	private InlineDirectives inlineDirectives;
+	//private InlineDirectives inlineDirectives;
 
 	/*
 	 * Since verifiers for tests are ASP programs in themselves, we need to parse nested programs.
 	 * Therefore, have a stack onto which we "park" a program builder for the outer scope (i.e. main program)
 	 * while we parse the inner scope (i.e. test verifier).
 	 */
-	private ASPCore2ProgramBuilder currentLevelProgramBuilder;
-	private Stack<ASPCore2ProgramBuilder> programBuilders = new Stack<>();
+	private InputProgramBuilder currentLevelProgramBuilder;
+	private Stack<InputProgramBuilder> programBuilders = new Stack<>();
 
 	public ParseTreeVisitor(Map<String, PredicateInterpretation> externals) {
 		this(externals, true);
@@ -95,7 +97,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	/**
 	 * Translates a program context (referring to a node in an ATN specific to ANTLR) to the internal representation of Alpha.
 	 */
-	public ASPCore2Program translate(ASPCore2Parser.ProgramContext input) {
+	public InputProgram translate(ASPCore2Parser.ProgramContext input) {
 		return visitProgram(input);
 	}
 
@@ -145,7 +147,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public ASPCore2Program visitProgram(ASPCore2Parser.ProgramContext ctx) {
+	public InputProgram visitProgram(ASPCore2Parser.ProgramContext ctx) {
 		// program : statements? query?;
 		if (ctx.query() != null) {
 			throw notSupported(ctx.query());
@@ -154,10 +156,11 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		if (ctx.statements() == null) {
 			return Programs.emptyProgram();
 		}
-		inlineDirectives = Programs.newInlineDirectives();
+
+		//inlineDirectives = Programs.newInlineDirectives();
 		currentLevelProgramBuilder = Programs.builder();
 		visitStatements(ctx.statements());
-		currentLevelProgramBuilder.addInlineDirectives(inlineDirectives);
+		//currentLevelProgramBuilder.addInlineDirectives(inlineDirectives);
 		return currentLevelProgramBuilder.build();
 	}
 
@@ -178,7 +181,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			currentLevelProgramBuilder.addFact(((NormalHead) head).getAtom());
 		} else {
 			// Treat facts with choice or disjunction in the head like a rule.
-			currentLevelProgramBuilder.addRule(Rules.newRule(head, Collections.emptyList()));
+			currentLevelProgramBuilder.addRule(Rules.newRule(head, Collections.emptySet()));
 		}
 		return null;
 	}
@@ -222,11 +225,15 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public Head visitHead(ASPCore2Parser.HeadContext ctx) {
-		// head : disjunction | choice;
+		// head : disjunction | choice | action;
 		if (ctx.choice() != null) {
 			return visitChoice(ctx.choice());
+		} else if (ctx.action() != null) {
+			return visitAction(ctx.action());
+		} else if (ctx.disjunction() != null) {
+			return visitDisjunction(ctx.disjunction());
 		}
-		return visitDisjunction(ctx.disjunction());
+		throw notSupported(ctx);
 	}
 
 	@Override
@@ -245,6 +252,15 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			uop = visitBinop(ctx.uop);
 		}
 		return Heads.newChoiceHead(visitChoice_elements(ctx.choice_elements()), lt, lop, ut, uop);
+	}
+
+	@Override
+	public Head visitAction(ASPCore2Parser.ActionContext ctx) {
+		BasicAtom atom = visitClassical_literal(ctx.classical_literal());
+		VariableTerm actionResultTerm = visitVariable_term(ctx.variable_term());
+		String actionId = ctx.ID().getText();
+		List<Term> actionInputTerms = visitTerms(ctx.terms());
+		return Heads.newActionHead(atom, actionId, actionInputTerms, actionResultTerm);
 	}
 
 	@Override
@@ -287,12 +303,17 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Object visitDirective_enumeration(ASPCore2Parser.Directive_enumerationContext ctx) {
 		// directive_enumeration : DIRECTIVE_ENUM id DOT;
-		inlineDirectives.addDirective(InlineDirectives.DIRECTIVE.enum_predicate_is, visitId(ctx.id()));
+		InlineDirectives directives = Programs.newInlineDirectives();
+		directives.addDirective(InlineDirectives.DIRECTIVE.enum_predicate_is, visitId(ctx.id()));
+		currentLevelProgramBuilder.addInlineDirectives(directives);
 		return null;
 	}
 
 	@Override
 	public Object visitDirective_test(ASPCore2Parser.Directive_testContext ctx) {
+		if (!programBuilders.empty()) {
+			throw new IllegalStateException("Test directives are not allowed in nested programs!");
+		}
 		// directive_test : DIRECTIVE_TEST id PAREN_OPEN test_satisfiability_condition PAREN_CLOSE CURLY_OPEN test_input test_assert* CURLY_CLOSE;
 		String name = visitId(ctx.id());
 		IntPredicate answerSetCountVerifier = visitTest_satisfiability_condition(ctx.test_satisfiability_condition());
@@ -311,14 +332,52 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		return null;
 	}
 
+	public Object visitDirective_module(ASPCore2Parser.Directive_moduleContext ctx) {
+		if (!programBuilders.empty()) {
+			throw new IllegalStateException("Module directives are not allowed in nested programs!");
+		}
+		// directive_module: SHARP DIRECTIVE_MODULE id PAREN_OPEN module_signature PAREN_CLOSE CURLY_OPEN statements CURLY_CLOSE;
+		String name = visitId(ctx.id());
+		ImmutablePair<Predicate, Set<Predicate>> moduleSignature = visitModule_signature(ctx.module_signature());
+		startNestedProgram();
+		visitStatements(ctx.statements());
+		InputProgram moduleImplementation = endNestedProgram();
+		currentLevelProgramBuilder.addModule(Modules.newModule(name, moduleSignature.getLeft(), moduleSignature.getRight(), moduleImplementation));
+		return null;
+	}
+
+	public ImmutablePair<Predicate, Set<Predicate>> visitModule_signature(ASPCore2Parser.Module_signatureContext ctx) {
+		Predicate inputPredicate = visitPredicate_spec(ctx.predicate_spec());
+		Set<Predicate> outputPredicates = ctx.predicate_specs() != null ? visitPredicate_specs(ctx.predicate_specs()) : Collections.emptySet();
+		return ImmutablePair.of(inputPredicate, outputPredicates);
+	}
+
 	@Override
-	public List<Literal> visitBody(ASPCore2Parser.BodyContext ctx) {
+	public Set<Predicate> visitPredicate_specs(ASPCore2Parser.Predicate_specsContext ctx) {
+		// predicate_specs : predicate_spec (COMMA predicate_specs)?;
+		Set<Predicate> result = new LinkedHashSet<>();
+		result.add(visitPredicate_spec(ctx.predicate_spec()));
+		if (ctx.predicate_specs() != null) {
+			result.addAll(visitPredicate_specs(ctx.predicate_specs()));
+		}
+		return result;
+	}
+
+	@Override
+	public Predicate visitPredicate_spec(ASPCore2Parser.Predicate_specContext ctx) {
+		String symbol = visitId(ctx.id());
+		int arity = Integer.parseInt(ctx.NUMBER().getText());
+		return Predicates.getPredicate(symbol, arity);
+	}
+
+	@Override
+	public Set<Literal> visitBody(ASPCore2Parser.BodyContext ctx) {
 		// body : ( naf_literal | aggregate ) (COMMA body)?;
 		if (ctx == null) {
-			return Collections.emptyList();
+			return Collections.emptySet();
 		}
 
-		final List<Literal> literals = new ArrayList<>();
+		final Set<Literal> literals = new LinkedHashSet<>();
 		do {
 			if (ctx.naf_literal() != null) {
 				literals.add(visitNaf_literal(ctx.naf_literal()));
@@ -332,7 +391,19 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public AggregateLiteral visitAggregate(ASPCore2Parser.AggregateContext ctx) {
-		// aggregate : NAF? (lt=term lop=binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (uop=binop ut=term)?;
+		// aggregate : (classic_aggregate | list_aggregate);
+		if (ctx.classic_aggregate() != null) {
+			return visitClassic_aggregate(ctx.classic_aggregate());
+		} else if (ctx.list_aggregate() != null) {
+			return visitList_aggregate(ctx.list_aggregate());
+		} else {
+			throw notSupported(ctx);
+		}
+	}
+
+	@Override
+	public AggregateLiteral visitClassic_aggregate(ASPCore2Parser.Classic_aggregateContext ctx) {
+		// classic_aggregate: NAF? (lt=term lop=binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (uop=binop ut=term)?;
 		boolean isPositive = ctx.NAF() == null;
 		Term lt = null;
 		ComparisonOperator lop = null;
@@ -349,6 +420,23 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		AggregateAtom.AggregateFunctionSymbol aggregateFunction = visitAggregate_function(ctx.aggregate_function());
 		List<AggregateAtom.AggregateElement> aggregateElements = visitAggregate_elements(ctx.aggregate_elements());
 		return Atoms.newAggregateAtom(lop, lt, uop, ut, aggregateFunction, aggregateElements).toLiteral(isPositive);
+	}
+
+	@Override
+	public AggregateLiteral visitList_aggregate(ASPCore2Parser.List_aggregateContext ctx) {
+		// list_aggregate: term EQUAL AGGREGATE_LIST CURLY_OPEN list_comprehension CURLY_CLOSE;
+		Term listResultTerm = (Term) visit(ctx.term());
+		ImmutablePair<Term, List<Literal>> listComprehension = visitList_comprehension(ctx.list_comprehension());
+		return Atoms.newAggregateAtom(ComparisonOperators.EQ, listResultTerm, AggregateAtom.AggregateFunctionSymbol.LIST,
+				List.of(Atoms.newAggregateElement(List.of(listComprehension.left), listComprehension.right))).toLiteral();
+	}
+
+	@Override
+	public ImmutablePair<Term, List<Literal>> visitList_comprehension(ASPCore2Parser.List_comprehensionContext ctx) {
+		// list_comprehension: term COLON naf_literals;
+		Term elementTerm = (Term) visit(ctx.term());
+		List<Literal> elementSelectors = visitNaf_literals(ctx.naf_literals());
+		return ImmutablePair.of(elementTerm, elementSelectors);
 	}
 
 	@Override
@@ -409,7 +497,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public Term visitVariable_term(ASPCore2Parser.Variable_termContext ctx) {
+	public VariableTerm visitVariable_term(ASPCore2Parser.Variable_termContext ctx) {
 		// variable_term : VARIABLE | ANONYMOUS_VARIABLE;
 		if (ctx.VARIABLE() != null) {
 			return Terms.newVariable(ctx.VARIABLE().getText());
@@ -473,6 +561,8 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			return Literals.fromAtom(visitClassical_literal(ctx.classical_literal()), !isCurrentLiteralNegated);
 		} else if (ctx.external_atom() != null) {
 			return Literals.fromAtom(visitExternal_atom(ctx.external_atom()), !isCurrentLiteralNegated);
+		} else if (ctx.module_atom() != null) {
+			return Literals.fromAtom(visitModule_atom(ctx.module_atom()), !isCurrentLiteralNegated);
 		}
 		throw notSupported(ctx);
 	}
@@ -523,7 +613,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	public Integer visitNumeral(ASPCore2Parser.NumeralContext ctx) { 
 		// numeral : MINUS? NUMBER;
-		int absValue = Integer.valueOf(ctx.NUMBER().getText());
+		int absValue = Integer.parseInt(ctx.NUMBER().getText());
 		return ctx.MINUS() != null ? -1 * absValue : absValue;
 	}
 
@@ -589,6 +679,21 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
+	public ModuleAtom visitModule_atom(ASPCore2Parser.Module_atomContext ctx) {
+		// module_atom : SHARP id (CURLY_OPEN NUMBER CURLY_CLOSE)? (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?;
+		String moduleName = visitId(ctx.id());
+		ModuleAtom.ModuleInstantiationMode instantiationMode;
+		if (ctx.NUMBER() != null) {
+			instantiationMode = ModuleAtom.ModuleInstantiationMode.forNumAnswerSets(Integer.parseInt(ctx.NUMBER().getText()));
+		} else {
+			instantiationMode = ModuleAtom.ModuleInstantiationMode.ALL;
+		}
+		List<Term> inputTerms = visitTerms(ctx.input);
+		List<Term> outputTerms = visitTerms(ctx.output);
+		return Atoms.newModuleAtom(moduleName, instantiationMode, inputTerms, outputTerms);
+	}
+
+	@Override
 	public IntervalTerm visitTerm_interval(ASPCore2Parser.Term_intervalContext ctx) {
 		// interval : lower = interval_bound DOT DOT upper = interval_bound;
 		ASPCore2Parser.IntervalContext ictx = ctx.interval();
@@ -648,7 +753,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			return Tests.newIsUnsatCondition();
 		} else {
 			// binop? NUMBER
-			int num = Integer.valueOf(ctx.NUMBER().getText());
+			int num = Integer.parseInt(ctx.NUMBER().getText());
 			if (ctx.binop() == null) {
 				return Tests.newAnswerSetCountCondition(ComparisonOperators.EQ, num);
 			} else {
@@ -697,14 +802,23 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			return Tests.newAssertion(assertionMode, Programs.emptyProgram());
 		}
 		List<ASPCore2Parser.StatementContext> stmts = ctx.statement();
-		programBuilders.push(currentLevelProgramBuilder);
-		currentLevelProgramBuilder = new ASPCore2ProgramBuilder();
+		startNestedProgram();
 		for (ASPCore2Parser.StatementContext stmtCtx : stmts) {
 			visit(stmtCtx);
 		}
-		ASPCore2Program verifier = currentLevelProgramBuilder.build();
-		currentLevelProgramBuilder = programBuilders.pop();
+		InputProgram verifier = endNestedProgram();
 		return Tests.newAssertion(assertionMode, verifier);
+	}
+
+	private void startNestedProgram() {
+		programBuilders.push(currentLevelProgramBuilder);
+		currentLevelProgramBuilder = new InputProgramBuilder();
+	}
+
+	private InputProgram endNestedProgram() {
+		InputProgram result = currentLevelProgramBuilder.build();
+		currentLevelProgramBuilder = programBuilders.pop();
+		return result;
 	}
 
 }

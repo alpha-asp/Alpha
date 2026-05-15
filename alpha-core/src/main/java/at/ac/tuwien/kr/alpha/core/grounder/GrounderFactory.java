@@ -35,22 +35,22 @@ import at.ac.tuwien.kr.alpha.core.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 
 public final class GrounderFactory {
-	public static Grounder getInstance(String name, CompiledProgram program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter,
-			GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, Bridge... bridges) {
-		switch (name.toLowerCase()) {
-			case "naive":
-				return new NaiveGrounder(program, atomStore, filter, heuristicsConfiguration, debugInternalChecks, bridges);
-		}
-		throw new IllegalArgumentException("Unknown grounder requested.");
-	}
-	
-	public static Grounder getInstance(String name, CompiledProgram program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter,
-			GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks) {
-		return getInstance(name, program, atomStore, filter, heuristicsConfiguration, debugInternalChecks, new Bridge[] {});
+
+	private final GrounderHeuristicsConfiguration heuristicsConfig;
+	private final boolean enableDebugChecks;
+
+	public GrounderFactory(GrounderHeuristicsConfiguration heuristicsConfig, boolean enabledDebugChecks) {
+		this.heuristicsConfig = heuristicsConfig;
+		this.enableDebugChecks = enabledDebugChecks;
 	}
 
-	public static Grounder getInstance(String name, CompiledProgram program, AtomStore atomStore, boolean debugInternalChecks) {
-		return getInstance(name, program, atomStore, InputConfig.DEFAULT_FILTER,
-				new GrounderHeuristicsConfiguration(), debugInternalChecks);
+	public Grounder createGrounder(CompiledProgram program, AtomStore atomStore) {
+		return createGrounder(program, atomStore, InputConfig.DEFAULT_FILTER);
 	}
+
+	// TODO eliminate this method, filter should never go this deep into core, can be applied on answer sets from top-level
+	public Grounder createGrounder(CompiledProgram program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter) {
+		return new NaiveGrounder(program, atomStore, filter, heuristicsConfig, enableDebugChecks, new Bridge[] {});
+	}
+
 }

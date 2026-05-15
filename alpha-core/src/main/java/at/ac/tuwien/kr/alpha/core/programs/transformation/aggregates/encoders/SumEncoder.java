@@ -1,20 +1,19 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders;
 
-import org.stringtemplate.v4.ST;
-import org.stringtemplate.v4.STGroup;
-
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
+import org.stringtemplate.v4.ST;
+import org.stringtemplate.v4.STGroup;
 
 /**
  * Aggregate encoder handling sum aggregates.
@@ -36,11 +35,11 @@ public final class SumEncoder extends StringtemplateBasedAggregateEncoder {
 		super(AggregateFunctionSymbol.SUM, acceptedOperator, encodingTemplate);
 	}
 
-	public static SumEncoder buildSumLessOrEqualEncoder(boolean supportNegativeIntegers) {
+	static SumEncoder buildSumLessOrEqualEncoder(boolean supportNegativeIntegers) {
 		return new SumEncoder(ComparisonOperators.LE, supportNegativeIntegers ? SUM_LE_TEMPLATE : NON_NEG_ELEMENTS_SUM_LE_TEMPLATE);
 	}
 
-	public static SumEncoder buildSumEqualsEncoder(boolean supportNegativeIntegers) {
+	static SumEncoder buildSumEqualsEncoder(boolean supportNegativeIntegers) {
 		return new SumEncoder(ComparisonOperators.EQ, supportNegativeIntegers ? SUM_EQ_TEMPLATE : NON_NEG_ELEMENTS_SUM_EQ_TEMPLATE);
 	}
 

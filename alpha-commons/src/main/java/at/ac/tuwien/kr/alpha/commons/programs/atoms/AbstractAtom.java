@@ -79,7 +79,7 @@ public abstract class AbstractAtom implements Atom {
 	/**
 	 * Returns whether this atom is ground, i.e., variable-free.
 	 *
-	 * @return true iff the terms of this atom contain no {@link VariableTermImpl}.
+	 * @return true iff the terms of this atom contain no {@link VariableTerm}.
 	 */
 	@Override
 	public abstract boolean isGround();
@@ -97,5 +97,8 @@ public abstract class AbstractAtom implements Atom {
 
 	@Override
 	public abstract int hashCode();
+
+	@Override
+	public abstract String toString();
 
 }

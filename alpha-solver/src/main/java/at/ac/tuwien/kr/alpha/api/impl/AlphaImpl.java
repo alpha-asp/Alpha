@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
- * 
+ * <p>
  * Additional changes made by Siemens.
- * 
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ * <p>
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 
+ * list of conditions and the following disclaimer.
+ * <p>
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- * 
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -32,10 +32,8 @@ import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.config.InputConfig;
-import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
@@ -44,21 +42,18 @@ import at.ac.tuwien.kr.alpha.api.programs.analysis.DependencyGraph;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.tests.TestResult;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
-import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.InputProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.reification.Reifier;
-import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
-import at.ac.tuwien.kr.alpha.commons.util.IdGenerator;
-import at.ac.tuwien.kr.alpha.commons.util.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.CompiledProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.ModuleLinker;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
 import com.google.common.annotations.VisibleForTesting;
@@ -76,6 +71,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -83,29 +79,35 @@ public class AlphaImpl implements Alpha {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlphaImpl.class);
 
-	private final SystemConfig config; // Config is initialized with default values.
-	private final ProgramParser parser = new ProgramParserImpl();
-
+	private final ProgramParser parser;
+	private final ProgramTransformation<InputProgram, NormalProgram> programNormalization;
+	private final Supplier<StratifiedEvaluation> stratifiedEvaluationFactory;
+	private final GrounderFactory grounderFactory;
+	private final SolverFactory solverFactory;
 	private final TestRunner testRunner;
-	private final Reifier reifier = new Reifier(() -> {
-		IdGenerator<Integer> idGen = new IntIdGenerator(0);
-		return () -> Terms.newConstant(idGen.getNextId());
-	});
+	private final Reifier reifier;
+	private final boolean sortAnswerSets;
 
-
-	public AlphaImpl(SystemConfig cfg) {
-		this.config = cfg;
+	AlphaImpl(ProgramParser parser, ProgramTransformation<InputProgram, NormalProgram> programNormalization,
+			Supplier<StratifiedEvaluation> stratifiedEvaluationFactory,
+			GrounderFactory grounderFactory,
+			SolverFactory solverFactory,
+			Reifier reifier,
+			boolean sortAnswerSets) {
+		this.parser = parser;
+		this.programNormalization = programNormalization;
+		this.stratifiedEvaluationFactory = stratifiedEvaluationFactory;
+		this.grounderFactory = grounderFactory;
+		this.solverFactory = solverFactory;
+		this.reifier = reifier;
 		this.testRunner = new TestRunner(this);
-	}
-
-	public AlphaImpl() {
-		this(new SystemConfig());
+		this.sortAnswerSets = sortAnswerSets;
 	}
 
 	@Override
-	public ASPCore2Program readProgram(InputConfig cfg) throws IOException {
-		ASPCore2ProgramBuilder prgBuilder = Programs.builder();
-		ASPCore2Program tmpProg;
+	public InputProgram readProgram(InputConfig cfg) throws IOException {
+		InputProgramBuilder prgBuilder = Programs.builder();
+		InputProgram tmpProg;
 		if (!cfg.getFiles().isEmpty()) {
 			tmpProg = readProgramFiles(cfg.isLiterate(), cfg.getPredicateMethods(), cfg.getFiles());
 			prgBuilder.accumulate(tmpProg);
@@ -118,14 +120,14 @@ public class AlphaImpl implements Alpha {
 	}
 
 	@Override
-	public ASPCore2Program readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException {
-		return readProgramFiles(literate, externals, paths.stream().map(Paths::get).collect(Collectors.toList()).toArray(new Path[] {}));
+	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException {
+		return readProgramFiles(literate, externals, paths.stream().map(Paths::get).collect(Collectors.toList()).toArray(new Path[]{}));
 	}
 
 	@Override
-	public ASPCore2Program readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
-		ASPCore2ProgramBuilder prgBuilder = Programs.builder();
-		ASPCore2Program tmpProg;
+	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
+		InputProgramBuilder prgBuilder = Programs.builder();
+		InputProgram tmpProg;
 		for (Path path : paths) {
 			InputStream stream;
 			if (!literate) {
@@ -140,29 +142,36 @@ public class AlphaImpl implements Alpha {
 	}
 
 	@Override
-	public ASPCore2Program readProgramString(String aspString, Map<String, PredicateInterpretation> externals) {
+	public InputProgram readProgramString(String aspString, Map<String, PredicateInterpretation> externals) {
 		return parser.parse(aspString, externals);
 	}
 
 	@Override
-	public ASPCore2Program readProgramString(String aspString) {
+	public InputProgram readProgramString(String aspString) {
 		return readProgramString(aspString, Collections.emptyMap());
 	}
 
 	@Override
-	public NormalProgram normalizeProgram(ASPCore2Program program) {
-		return new NormalizeProgramTransformation(config.getAggregateRewritingConfig()).apply(program);
+	public InputProgram readProgramStream(InputStream is) throws IOException {
+		return parser.parse(is);
+	}
+
+	@Override
+	public InputProgram readProgramStream(InputStream is, Map<String, PredicateInterpretation> externals) throws IOException {
+		return parser.parse(is, externals);
+	}
+
+	@Override
+	public NormalProgram normalizeProgram(InputProgram program) {
+		return programNormalization.apply(program);
 	}
 
 	@VisibleForTesting
 	InternalProgram performProgramPreprocessing(NormalProgram program) {
 		LOGGER.debug("Preprocessing InternalProgram!");
-		InternalProgram retVal = InternalProgram.fromNormalProgram(program);
-		if (config.isEvaluateStratifiedPart()) {
-			AnalyzedProgram analyzed = new AnalyzedProgram(retVal.getRules(), retVal.getFacts());
-			retVal = new StratifiedEvaluation().apply(analyzed);
-		}
-		return retVal;
+		NormalProgram linkedProgram = new ModuleLinker(this).apply(program);
+		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(linkedProgram);
+		return stratifiedEvaluationFactory.get().apply(analyzed);
 	}
 
 	/**
@@ -170,7 +179,7 @@ public class AlphaImpl implements Alpha {
 	 * program analysis and normalization aren't of interest.
 	 */
 	@Override
-	public Stream<AnswerSet> solve(ASPCore2Program program) {
+	public Stream<AnswerSet> solve(InputProgram program) {
 		return solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
@@ -179,7 +188,7 @@ public class AlphaImpl implements Alpha {
 	 * details of the program analysis and normalization aren't of interest.
 	 */
 	@Override
-	public Stream<AnswerSet> solve(ASPCore2Program program, java.util.function.Predicate<Predicate> filter) {
+	public Stream<AnswerSet> solve(InputProgram program, java.util.function.Predicate<Predicate> filter) {
 		NormalProgram normalized = normalizeProgram(program);
 		return solve(normalized, filter);
 	}
@@ -201,41 +210,33 @@ public class AlphaImpl implements Alpha {
 
 	/**
 	 * Solves the given program and filters answer sets based on the passed predicate.
-	 * 
+	 *
 	 * @param program an {@link InternalProgram} to solve
-	 * @param filter  {@link Predicate} filtering {@at.ac.tuwien.kr.alpha.common.Predicate}s in the returned answer sets
+	 * @param filter  {@link Predicate} filtering {@link at.ac.tuwien.kr.alpha.api.programs.Predicate}s in the returned answer sets
 	 * @return a Stream of answer sets representing stable models of the given program
 	 */
 	private Stream<AnswerSet> solve(CompiledProgram program, java.util.function.Predicate<Predicate> filter) {
 		Stream<AnswerSet> retVal = prepareSolverFor(program, filter).stream();
-		return config.isSortAnswerSets() ? retVal.sorted() : retVal;
+		return sortAnswerSets ? retVal.sorted() : retVal;
 	}
 
 	/**
 	 * Prepares a solver (and accompanying grounder) instance pre-loaded with the given program. Use this if the
 	 * solver is needed after reading answer sets (e.g. for obtaining statistics).
-	 * 
+	 *
 	 * @param program the program to solve.
 	 * @param filter  a (java util) predicate that filters (asp-)predicates which should be contained in the answer
 	 *                set stream from the solver.
 	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program.
 	 */
 	private Solver prepareSolverFor(CompiledProgram program, java.util.function.Predicate<Predicate> filter) {
-		String grounderName = config.getGrounderName();
-		boolean doDebugChecks = config.isDebugInternalChecks();
-
-		GrounderHeuristicsConfiguration grounderHeuristicConfiguration = GrounderHeuristicsConfiguration
-				.getInstance(config.getGrounderToleranceConstraints(), config.getGrounderToleranceRules());
-		grounderHeuristicConfiguration.setAccumulatorEnabled(config.isGrounderAccumulatorEnabled());
-
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, grounderHeuristicConfiguration, doDebugChecks);
-
-		return SolverFactory.getInstance(config, atomStore, grounder);
+		Grounder grounder = grounderFactory.createGrounder(program, atomStore, filter);
+		return solverFactory.createSolver(grounder, atomStore);
 	}
 
 	@Override
-	public DebugSolvingContext prepareDebugSolve(ASPCore2Program program) {
+	public DebugSolvingContext prepareDebugSolve(InputProgram program) {
 		return prepareDebugSolve(program, InputConfig.DEFAULT_FILTER);
 	}
 
@@ -245,7 +246,7 @@ public class AlphaImpl implements Alpha {
 	}
 
 	@Override
-	public DebugSolvingContext prepareDebugSolve(final ASPCore2Program program, java.util.function.Predicate<Predicate> filter) {
+	public DebugSolvingContext prepareDebugSolve(final InputProgram program, java.util.function.Predicate<Predicate> filter) {
 		return prepareDebugSolve(normalizeProgram(program), filter);
 	}
 
@@ -253,13 +254,10 @@ public class AlphaImpl implements Alpha {
 	public DebugSolvingContext prepareDebugSolve(final NormalProgram program, java.util.function.Predicate<Predicate> filter) {
 		final DependencyGraph depGraph;
 		final ComponentGraph compGraph;
-		final AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(program);
+		NormalProgram linkedProgram = new ModuleLinker(this).apply(program);
+		final AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(linkedProgram);
 		final NormalProgram preprocessed;
-		if (this.config.isEvaluateStratifiedPart()) {
-			preprocessed = new StratifiedEvaluation().apply(analyzed).toNormalProgram();
-		} else {
-			preprocessed = program;
-		}
+		preprocessed = stratifiedEvaluationFactory.get().apply(analyzed).toNormalProgram();
 		depGraph = analyzed.getDependencyGraph();
 		compGraph = analyzed.getComponentGraph();
 		final Solver solver = prepareSolverFor(analyzed, filter);
@@ -294,7 +292,7 @@ public class AlphaImpl implements Alpha {
 	}
 
 	@Override
-	public Solver prepareSolverFor(ASPCore2Program program, java.util.function.Predicate<Predicate> filter) {
+	public Solver prepareSolverFor(InputProgram program, java.util.function.Predicate<Predicate> filter) {
 		return prepareSolverFor(normalizeProgram(program), filter);
 	}
 
@@ -304,12 +302,12 @@ public class AlphaImpl implements Alpha {
 	}
 
 	@Override
-	public Set<BasicAtom> reify(ASPCore2Program program) {
+	public Set<BasicAtom> reify(InputProgram program) {
 		return reifier.reifyProgram(program);
 	}
 
 	@Override
-	public TestResult test(ASPCore2Program program) {
+	public TestResult test(InputProgram program) {
 		return testRunner.test(program);
 	}
 

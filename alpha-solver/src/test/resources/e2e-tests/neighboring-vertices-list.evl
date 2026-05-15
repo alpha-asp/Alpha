@@ -1,0 +1,45 @@
+% Graph is undirected
+edge(Y, X) :- edge(X, Y).
+
+%% Generate list of neighboring vertices for each vertex in the graph
+neighbor(V, N) :- vertex(V), vertex(N), edge(V, N).
+neighbors(V, LST) :- vertex(V), LST = #list{ N : neighbor(V, N)}.
+
+#test lineGraph(expect: 1) {
+	given {
+		vertex(1). vertex(2). edge(1, 2).
+	}
+	assertForAll {
+		:- not neighbors(1, lst(2, lst_empty)).
+		:- not neighbors(2, lst(1, lst_empty)).
+	}
+}
+
+#test network(expect: 1) {
+	given {
+		vertex(1..8).
+
+		edge(1, 2).
+		edge(1, 3).
+		edge(1, 4).
+		edge(2, 5).
+		edge(1, 3).
+		edge(1, 4).
+		edge(2, 5).
+		edge(3, 6).
+		edge(4, 7).
+		edge(5, 8).
+		edge(6, 8).
+		edge(7, 8).	
+	}
+	assertForAll {
+		:- not neighbors(1, lst(2, lst(3, lst(4, lst_empty)))).
+		:- not neighbors(2, lst(1, lst(5, lst_empty))).
+		:- not neighbors(3, lst(1, lst(6, lst_empty))).
+		:- not neighbors(4, lst(1, lst(7, lst_empty))).
+		:- not neighbors(5, lst(2, lst(8, lst_empty))).
+		:- not neighbors(6, lst(3, lst(8, lst_empty))).
+		:- not neighbors(7, lst(4, lst(8, lst_empty))).
+		:- not neighbors(8, lst(5, lst(6, lst(7, lst_empty)))).
+	}
+}

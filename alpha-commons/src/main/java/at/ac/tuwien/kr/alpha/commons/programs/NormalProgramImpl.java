@@ -5,6 +5,7 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.modules.Module;
 import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
 
 /**
@@ -14,8 +15,16 @@ import at.ac.tuwien.kr.alpha.api.programs.rules.NormalRule;
  */
 class NormalProgramImpl extends AbstractProgram<NormalRule> implements NormalProgram {
 
-	NormalProgramImpl(List<NormalRule> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
+	private final List<Module> modules;
+
+	NormalProgramImpl(List<NormalRule> rules, List<Atom> facts, InlineDirectives inlineDirectives, List<Module> modules) {
 		super(rules, facts, inlineDirectives);
+		this.modules = modules;
+	}
+
+	@Override
+	public List<Module> getModules() {
+		return modules;
 	}
 
 }

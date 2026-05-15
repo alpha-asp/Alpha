@@ -1,13 +1,7 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.encoders;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.collections4.ListUtils;
-
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
@@ -19,13 +13,20 @@ import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
-import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.InputProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.PredicateInternalizer;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.collections4.SetUtils;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Abstract base class for aggregate encoders. An aggregate encoder provides an encoding for a given aggregate literal,
@@ -49,10 +50,10 @@ public abstract class AbstractAggregateEncoder {
 	 * Encodes all aggregate literals in the given set of aggregate referenced by the given {@link AggregateInfo}.
 	 * 
 	 * @param aggregatesToEncode the aggregates to encode.
-	 * @return all rules encoding the given aggregates as an {@link AspCore2ProgramImpl}.
+	 * @return all rules encoding the given aggregates as an {@link InputProgram}.
 	 */
-	public ASPCore2Program encodeAggregateLiterals(Set<AggregateInfo> aggregatesToEncode) {
-		ASPCore2ProgramBuilder programBuilder = Programs.builder();
+	public InputProgram encodeAggregateLiterals(Set<AggregateInfo> aggregatesToEncode) {
+		InputProgramBuilder programBuilder = Programs.builder();
 		for (AggregateInfo aggregateInfo : aggregatesToEncode) {
 			programBuilder.accumulate(encodeAggregateLiteral(aggregateInfo));
 		}
@@ -65,7 +66,7 @@ public abstract class AbstractAggregateEncoder {
 	 * @param aggregateToEncode
 	 * @return
 	 */
-	public ASPCore2Program encodeAggregateLiteral(AggregateInfo aggregateToEncode) {
+	public InputProgram encodeAggregateLiteral(AggregateInfo aggregateToEncode) {
 		AggregateLiteral literalToEncode = aggregateToEncode.getLiteral();
 		if (literalToEncode.getAtom().getAggregateFunction() != this.aggregateFunctionToEncode) {
 			throw new IllegalArgumentException(
@@ -76,13 +77,13 @@ public abstract class AbstractAggregateEncoder {
 					+ literalToEncode.getAtom().getAggregateFunction() + " with operator " + literalToEncode.getAtom().getLowerBoundOperator());
 		}
 		String aggregateId = aggregateToEncode.getId();
-		ASPCore2Program literalEncoding = PredicateInternalizer.makePrefixedPredicatesInternal(encodeAggregateResult(aggregateToEncode), aggregateId);
+		InputProgram literalEncoding = PredicateInternalizer.makePrefixedPredicatesInternal(encodeAggregateResult(aggregateToEncode), aggregateId);
 		List<Rule<Head>> elementEncodingRules = new ArrayList<>();
 		for (AggregateElement elementToEncode : literalToEncode.getAtom().getAggregateElements()) {
 			Rule<Head> elementRule = encodeAggregateElement(aggregateToEncode, elementToEncode);
 			elementEncodingRules.add(PredicateInternalizer.makePrefixedPredicatesInternal(elementRule, aggregateId));
 		}
-		return Programs.newASPCore2Program(ListUtils.union(literalEncoding.getRules(), elementEncodingRules), literalEncoding.getFacts(), Programs.newInlineDirectives());
+		return Programs.newInputProgram(ListUtils.union(literalEncoding.getRules(), elementEncodingRules), literalEncoding.getFacts(), Programs.newInlineDirectives());
 	}
 
 	/**
@@ -93,7 +94,7 @@ public abstract class AbstractAggregateEncoder {
 	 * @param aggregateToEncode
 	 * @return
 	 */
-	protected abstract ASPCore2Program encodeAggregateResult(AggregateInfo aggregateToEncode);
+	protected abstract InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode);
 
 	/**
 	 * Encodes individual aggregate elements. For each aggregate element, a rule is created that fires for each tuple matching the element.
@@ -105,7 +106,7 @@ public abstract class AbstractAggregateEncoder {
 	protected Rule<Head> encodeAggregateElement(AggregateInfo aggregateInfo, AggregateElement element) {
 		BasicAtom headAtom = buildElementRuleHead(aggregateInfo.getId(), element, aggregateInfo.getAggregateArguments());
 		return Rules.newRule(Heads.newNormalHead(headAtom),
-				ListUtils.union(element.getElementLiterals(), new ArrayList<>(aggregateInfo.getDependencies())));
+				SetUtils.union(new LinkedHashSet<>(element.getElementLiterals()), new LinkedHashSet<>(aggregateInfo.getDependencies())));
 	}
 
 	/**

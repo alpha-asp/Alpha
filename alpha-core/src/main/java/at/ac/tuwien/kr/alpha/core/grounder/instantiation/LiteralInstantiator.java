@@ -112,7 +112,7 @@ public class LiteralInstantiator {
 	}
 
 	/**
-	 * Calculates a substitution that adds an enumeration index (see {@link EnumerationLiteral#addEnumerationIndexToSubstitution(BasicSubstitution)})
+	 * Calculates a substitution that adds an enumeration index (see {@link EnumerationLiteral#addEnumerationIndexToSubstitution(Substitution)})
 	 * to the given partial substitution. Due to the special nature of enumeration literals, this method will always return
 	 * {@link LiteralInstantiationResult.Type#CONTINUE} as its result type. This method assumes that the partial substitution has
 	 * <emph>not</emph> been applied to the passed literal.
