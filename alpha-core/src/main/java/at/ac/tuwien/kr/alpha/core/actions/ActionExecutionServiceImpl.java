@@ -4,6 +4,7 @@ import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.actions.Action;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ActionResultTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +41,7 @@ public class ActionExecutionServiceImpl implements ActionExecutionService {
 		public ActionInput(String name, int sourceRule, Substitution instance, List<Term> inputTerms) {
 			this.name = name;
 			this.sourceRule = sourceRule;
-			this.instance = instance;
+			this.instance = new BasicSubstitution(instance);
 			this.inputTerms = inputTerms;
 		}
 
