@@ -28,9 +28,11 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
@@ -41,6 +43,7 @@ import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
@@ -109,16 +112,6 @@ public class VariableEqualityRemoval extends ProgramTransformation<InputProgram,
 		if (!rule.isConstraint() && rule.getHead() instanceof DisjunctiveHead) {
 			throw new UnsupportedOperationException("VariableEqualityRemoval cannot be applied to rule with DisjunctiveHead, yet.");
 		}
-		// TODO can this be done nicer?
-		NormalHead rewrittenHead = null;
-		if (!rule.isConstraint()) {
-			if (rule.getHead() instanceof ActionHead) {
-				ActionHead actHead = (ActionHead) rule.getHead();
-				rewrittenHead = Heads.newActionHead(actHead.getAtom(), actHead.getActionName(), actHead.getActionInputTerms(), actHead.getActionOutputTerm());
-			} else {
-				rewrittenHead = Heads.newNormalHead(((NormalHead) rule.getHead()).getAtom());
-			}
-		}
 
 		// Use substitution for actual replacement.
 		Unifier replacementSubstitution = new Unifier();
@@ -143,14 +136,24 @@ public class VariableEqualityRemoval extends ProgramTransformation<InputProgram,
 				literal.getTerms().set(i, replaced);
 			}
 		}
-		// Replace variables in head.
-		if (rewrittenHead != null) {
-			Atom headAtom = rewrittenHead.getAtom();
-			for (int i = 0; i < headAtom.getTerms().size(); i++) {
-				Term replaced = headAtom.getTerms().get(i).substitute(replacementSubstitution);
-				headAtom.getTerms().set(i, replaced);
-			}
-		}
+        NormalHead rewrittenHead = rule.isConstraint() ? null : rewriteHead((NormalHead) rule.getHead(), replacementSubstitution);
 		return Rules.newRule(rewrittenHead, rewrittenBody);
 	}
+
+    private NormalHead rewriteHead(NormalHead head, Unifier replacementSubstitution) {
+        if (head instanceof ActionHead) {
+            Term replacedOutputTerm = ((ActionHead) head).getActionOutputTerm().substitute(replacementSubstitution);
+            if (!(replacedOutputTerm instanceof VariableTerm)) {
+                throw new IllegalArgumentException("Action output variable may not be bound to a ground term!");
+            }
+            return Heads.newActionHead(Atoms.newBasicAtom(head.getAtom().getPredicate(), head.getAtom().getTerms().stream().map(term -> term.substitute(replacementSubstitution)).collect(Collectors.toList())),
+                    ((ActionHead) head).getActionName(),
+                    ((ActionHead) head).getActionInputTerms().stream().map(term -> term.substitute(replacementSubstitution)).collect(Collectors.toList()),
+                    (VariableTerm) replacedOutputTerm);
+
+        } else {
+            return Heads.newNormalHead(Atoms.newBasicAtom(head.getAtom().getPredicate(), head.getAtom().getTerms().stream().map(term -> term.substitute(replacementSubstitution)).collect(Collectors.toList())));
+        }
+    }
+
 }
