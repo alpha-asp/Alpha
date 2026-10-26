@@ -50,7 +50,7 @@ class ActionHeadImpl implements ActionHead {
 	}
 
 	public String toString() {
-		return atom.toString() + " : @" + actionName + "(" + StringUtils.join(actionInputTerms, ", ") + ") = " + actionOutputTerm;
+		return atom.toString() + " : @" + actionName + "[" + StringUtils.join(actionInputTerms, ", ") + "] = " + actionOutputTerm;
 	}
 
 }
