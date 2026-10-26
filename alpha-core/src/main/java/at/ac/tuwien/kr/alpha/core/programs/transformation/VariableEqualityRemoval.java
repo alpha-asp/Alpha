@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2017-2018, the Alpha Team.
  * All rights reserved.
- *
+ * <p>
  * Additional changes made by Siemens.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * <p>
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- *
+ * list of conditions and the following disclaimer.
+ * <p>
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -27,12 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
@@ -48,9 +43,12 @@ import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * Removes variable equalities from rules by replacing one variable with the other.
- *
+ * <p>
  * Copyright (c) 2017-2021, the Alpha Team.
  */
 public class VariableEqualityRemoval extends ProgramTransformation<InputProgram, InputProgram> {
@@ -136,24 +134,24 @@ public class VariableEqualityRemoval extends ProgramTransformation<InputProgram,
 				literal.getTerms().set(i, replaced);
 			}
 		}
-        NormalHead rewrittenHead = rule.isConstraint() ? null : rewriteHead((NormalHead) rule.getHead(), replacementSubstitution);
+		NormalHead rewrittenHead = rule.isConstraint() ? null : rewriteHead((NormalHead) rule.getHead(), replacementSubstitution);
 		return Rules.newRule(rewrittenHead, rewrittenBody);
 	}
 
-    private NormalHead rewriteHead(NormalHead head, Unifier replacementSubstitution) {
-        if (head instanceof ActionHead) {
-            Term replacedOutputTerm = ((ActionHead) head).getActionOutputTerm().substitute(replacementSubstitution);
-            if (!(replacedOutputTerm instanceof VariableTerm)) {
-                throw new IllegalArgumentException("Action output variable may not be bound to a ground term!");
-            }
-            return Heads.newActionHead(Atoms.newBasicAtom(head.getAtom().getPredicate(), head.getAtom().getTerms().stream().map(term -> term.substitute(replacementSubstitution)).collect(Collectors.toList())),
-                    ((ActionHead) head).getActionName(),
-                    ((ActionHead) head).getActionInputTerms().stream().map(term -> term.substitute(replacementSubstitution)).collect(Collectors.toList()),
-                    (VariableTerm) replacedOutputTerm);
+	private NormalHead rewriteHead(NormalHead head, Unifier replacementSubstitution) {
+		if (head instanceof ActionHead) {
+			Term replacedOutputTerm = ((ActionHead) head).getActionOutputTerm().substitute(replacementSubstitution);
+			if (!(replacedOutputTerm instanceof VariableTerm)) {
+				throw new IllegalArgumentException("Action output variable may not be bound to a ground term!");
+			}
+			return Heads.newActionHead(Atoms.newBasicAtom(head.getAtom().getPredicate(), head.getAtom().getTerms().stream().map(term -> term.substitute(replacementSubstitution)).collect(Collectors.toList())),
+					((ActionHead) head).getActionName(),
+					((ActionHead) head).getActionInputTerms().stream().map(term -> term.substitute(replacementSubstitution)).collect(Collectors.toList()),
+					(VariableTerm) replacedOutputTerm);
 
-        } else {
-            return Heads.newNormalHead(Atoms.newBasicAtom(head.getAtom().getPredicate(), head.getAtom().getTerms().stream().map(term -> term.substitute(replacementSubstitution)).collect(Collectors.toList())));
-        }
-    }
+		} else {
+			return Heads.newNormalHead(Atoms.newBasicAtom(head.getAtom().getPredicate(), head.getAtom().getTerms().stream().map(term -> term.substitute(replacementSubstitution)).collect(Collectors.toList())));
+		}
+	}
 
 }
