@@ -6,8 +6,8 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateElement;
@@ -35,6 +35,7 @@ import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.IdGenerator;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
 
+// TODO add support for action rules
 public class Reifier {
 
 	// Predicates describing rules.
@@ -193,7 +194,7 @@ public class Reifier {
 		this.idGeneratorProvider = idGeneratorProvider;
 	}
 
-	public Set<BasicAtom> reifyProgram(ASPCore2Program program) {
+	public Set<BasicAtom> reifyProgram(InputProgram program) {
 		ReificationContext ctx = new ReificationContext(idGeneratorProvider.get());
 		reifyDirectives(ctx, program.getInlineDirectives());
 		for (Atom fact : program.getFacts()) {

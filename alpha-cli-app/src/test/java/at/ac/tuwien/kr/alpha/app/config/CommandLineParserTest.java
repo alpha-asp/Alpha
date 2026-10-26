@@ -28,7 +28,6 @@
 package at.ac.tuwien.kr.alpha.app.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -158,20 +157,6 @@ public class CommandLineParserTest {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
 		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-acc"});
 		assertTrue(alphaConfig.getSystemConfig().isGrounderAccumulatorEnabled());
-	}
-
-	@Test
-	public void disableStratifiedEval() throws ParseException {
-		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig ctx = parser.parseCommandLine(new String[]{"-i", "someFile.asp", "-i", "someOtherFile.asp", "-dse"});
-		assertFalse(ctx.getSystemConfig().isEvaluateStratifiedPart());
-	}
-	
-	@Test
-	public void disableStratifiedEvalLongOpt() throws ParseException {
-		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig ctx = parser.parseCommandLine(new String[]{"-i", "someFile.asp", "-i", "someOtherFile.asp", "--disableStratifiedEvaluation"});
-		assertFalse(ctx.getSystemConfig().isEvaluateStratifiedPart());
 	}
 
 	@Test

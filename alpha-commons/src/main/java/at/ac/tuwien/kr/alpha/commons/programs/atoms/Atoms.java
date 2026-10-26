@@ -7,16 +7,14 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.*;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom.AggregateFunctionSymbol;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.AtomQuery;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.AggregateAtomImpl.AggregateElementImpl;
+import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 
 public final class Atoms {
 
@@ -63,12 +61,20 @@ public final class Atoms {
 		return new ExternalAtomImpl(predicate, interpretation, input, output);
 	}
 
+	public static ModuleAtom newModuleAtom(String moduleName, ModuleAtom.ModuleInstantiationMode instantiationMode, List<Term> input, List<Term> output) {
+		return new ModuleAtomImpl(moduleName, input, output, instantiationMode);
+	}
+
 	public static AtomQuery query(Predicate predicate) {
 		return AtomQueryImpl.forPredicate(predicate);
 	}
 
 	public static AtomQuery query(String predicateName, int predicateArity) {
 		return AtomQueryImpl.forPredicate(predicateName, predicateArity);
+	}
+
+	public static FunctionTerm toFunctionTerm(Atom atom) {
+		return Terms.newFunctionTerm(atom.getPredicate().getName(), atom.getTerms());
 	}
 
 }

@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.function.IntPredicate;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.api.programs.tests.Assertion;
 import at.ac.tuwien.kr.alpha.api.programs.tests.TestCase;
@@ -24,7 +24,7 @@ public final class Tests {
 		return new TestCaseImpl(name, answerSetCountVerifier, input, assertions);
 	}
 
-	public static Assertion newAssertion(final Assertion.Mode mode, final ASPCore2Program verifier) {
+	public static Assertion newAssertion(final Assertion.Mode mode, final InputProgram verifier) {
 		return new AssertionImpl(mode, verifier);
 	}
 

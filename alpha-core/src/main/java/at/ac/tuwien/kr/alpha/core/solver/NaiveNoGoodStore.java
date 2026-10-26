@@ -38,6 +38,8 @@ import static at.ac.tuwien.kr.alpha.core.programs.atoms.Literals.*;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.*;
 
 public class NaiveNoGoodStore implements NoGoodStore {
+
+	@SuppressWarnings("unused")
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveNoGoodStore.class);
 
 	private HashMap<Integer, NoGood> delegate = new HashMap<>();

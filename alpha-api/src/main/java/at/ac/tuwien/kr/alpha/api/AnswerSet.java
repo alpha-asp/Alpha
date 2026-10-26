@@ -32,7 +32,7 @@ public interface AnswerSet extends Comparable<AnswerSet> {
 	boolean isEmpty();
 
 	/**
-	 * List {@link Atom}s in this answer set satisfying the given {@link AnswerSetQuery}.
+	 * List {@link Atom}s in this answer set satisfying the given {@link AtomQuery}.
 	 */
 	List<Atom> query(AtomQuery query);
 

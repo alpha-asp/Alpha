@@ -1,7 +1,6 @@
 package at.ac.tuwien.kr.alpha.core.solver.learning;
 
 import static at.ac.tuwien.kr.alpha.core.common.NoGoodTest.fromOldLiterals;
-import static at.ac.tuwien.kr.alpha.core.solver.AntecedentTest.antecedentsEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -71,7 +70,7 @@ public class GroundConflictNoGoodLearnerTest {
 		assertNotNull(conflictCause);
 		Antecedent violatedNoGood = conflictCause.getAntecedent();
 		assertNotNull(violatedNoGood);
-		assertTrue(antecedentsEquals(violatedNoGood, n5.asAntecedent()) || antecedentsEquals(violatedNoGood, n7.asAntecedent()));
+		assertTrue(TestUtils.antecedentsEquals(violatedNoGood, n5.asAntecedent()) || TestUtils.antecedentsEquals(violatedNoGood, n7.asAntecedent()));
 		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(conflictCause.getAntecedent());
 		NoGood learnedNoGood = analysisResult.learnedNoGood;
 		assertEquals(new NoGood(fromOldLiterals(1, -8)), learnedNoGood);

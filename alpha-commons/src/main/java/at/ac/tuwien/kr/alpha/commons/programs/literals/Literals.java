@@ -1,13 +1,7 @@
 package at.ac.tuwien.kr.alpha.commons.programs.literals;
 
-import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.ComparisonAtom;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
-import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.api.programs.literals.BasicLiteral;
-import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
-import at.ac.tuwien.kr.alpha.api.programs.literals.ExternalLiteral;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.*;
+import at.ac.tuwien.kr.alpha.api.programs.literals.*;
 
 public final class Literals {
 
@@ -30,7 +24,11 @@ public final class Literals {
 	public static ExternalLiteral fromAtom(ExternalAtom atom, boolean positive) {
 		return new ExternalLiteralImpl(atom, positive);
 	}
-	
+
+	public static ModuleLiteral fromAtom(ModuleAtom atom, boolean positive) {
+		return new ModuleLiteralImpl(atom, positive);
+	}
+
 	public static ComparisonLiteral newComparisonLiteral(ComparisonAtom atom, boolean positive) {
 		return new ComparisonLiteralImpl(atom, positive);
 	}

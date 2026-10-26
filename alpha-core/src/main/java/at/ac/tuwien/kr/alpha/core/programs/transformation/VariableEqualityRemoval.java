@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2017-2018, the Alpha Team.
  * All rights reserved.
- *
+ * <p>
  * Additional changes made by Siemens.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * <p>
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- *
+ * list of conditions and the following disclaimer.
+ * <p>
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -27,45 +27,39 @@
  */
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
-import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ActionHead;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.NormalHead;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
 import at.ac.tuwien.kr.alpha.commons.substitutions.Unifier;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * Removes variable equalities from rules by replacing one variable with the other.
- *
+ * <p>
  * Copyright (c) 2017-2021, the Alpha Team.
  */
-public class VariableEqualityRemoval extends ProgramTransformation<ASPCore2Program, ASPCore2Program> {
+public class VariableEqualityRemoval extends ProgramTransformation<InputProgram, InputProgram> {
 
 	@Override
-	public ASPCore2Program apply(ASPCore2Program inputProgram) {
+	public InputProgram apply(InputProgram inputProgram) {
 		List<Rule<Head>> rewrittenRules = new ArrayList<>();
 		for (Rule<Head> rule : inputProgram.getRules()) {
 			rewrittenRules.add(findAndReplaceVariableEquality(rule));
 		}
-		return Programs.newASPCore2Program(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+		return Programs.newInputProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives(), Collections.emptyList(), inputProgram.getModules());
 	}
 
 	private Rule<Head> findAndReplaceVariableEquality(Rule<Head> rule) {
@@ -112,11 +106,10 @@ public class VariableEqualityRemoval extends ProgramTransformation<ASPCore2Progr
 			return rule;
 		}
 
-		List<Literal> rewrittenBody = new ArrayList<>(rule.getBody());
+		Set<Literal> rewrittenBody = new LinkedHashSet<>(rule.getBody());
 		if (!rule.isConstraint() && rule.getHead() instanceof DisjunctiveHead) {
 			throw new UnsupportedOperationException("VariableEqualityRemoval cannot be applied to rule with DisjunctiveHead, yet.");
 		}
-		NormalHead rewrittenHead = rule.isConstraint() ? null : Heads.newNormalHead(((NormalHead)rule.getHead()).getAtom());
 
 		// Use substitution for actual replacement.
 		Unifier replacementSubstitution = new Unifier();
@@ -141,14 +134,24 @@ public class VariableEqualityRemoval extends ProgramTransformation<ASPCore2Progr
 				literal.getTerms().set(i, replaced);
 			}
 		}
-		// Replace variables in head.
-		if (rewrittenHead != null) {
-			Atom headAtom = rewrittenHead.getAtom();
-			for (int i = 0; i < headAtom.getTerms().size(); i++) {
-				Term replaced = headAtom.getTerms().get(i).substitute(replacementSubstitution);
-				headAtom.getTerms().set(i, replaced);
-			}
-		}
+		NormalHead rewrittenHead = rule.isConstraint() ? null : rewriteHead((NormalHead) rule.getHead(), replacementSubstitution);
 		return Rules.newRule(rewrittenHead, rewrittenBody);
 	}
+
+	private NormalHead rewriteHead(NormalHead head, Unifier replacementSubstitution) {
+		if (head instanceof ActionHead) {
+			Term replacedOutputTerm = ((ActionHead) head).getActionOutputTerm().substitute(replacementSubstitution);
+			if (!(replacedOutputTerm instanceof VariableTerm)) {
+				throw new IllegalArgumentException("Action output variable may not be bound to a ground term!");
+			}
+			return Heads.newActionHead(Atoms.newBasicAtom(head.getAtom().getPredicate(), head.getAtom().getTerms().stream().map(term -> term.substitute(replacementSubstitution)).collect(Collectors.toList())),
+					((ActionHead) head).getActionName(),
+					((ActionHead) head).getActionInputTerms().stream().map(term -> term.substitute(replacementSubstitution)).collect(Collectors.toList()),
+					(VariableTerm) replacedOutputTerm);
+
+		} else {
+			return Heads.newNormalHead(Atoms.newBasicAtom(head.getAtom().getPredicate(), head.getAtom().getTerms().stream().map(term -> term.substitute(replacementSubstitution)).collect(Collectors.toList())));
+		}
+	}
+
 }

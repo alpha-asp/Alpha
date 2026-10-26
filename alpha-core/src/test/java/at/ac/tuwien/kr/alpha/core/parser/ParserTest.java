@@ -27,41 +27,40 @@
  */
 package at.ac.tuwien.kr.alpha.core.parser;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import at.ac.tuwien.kr.alpha.api.programs.tests.Assertion;
-import at.ac.tuwien.kr.alpha.api.programs.tests.TestCase;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.junit.jupiter.api.Test;
-
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.programs.InlineDirectives;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.atoms.ModuleAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
+import at.ac.tuwien.kr.alpha.api.programs.literals.ModuleLiteral;
+import at.ac.tuwien.kr.alpha.api.programs.modules.Module;
+import at.ac.tuwien.kr.alpha.api.programs.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.programs.rules.heads.ChoiceHead;
+import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.api.programs.tests.Assertion;
+import at.ac.tuwien.kr.alpha.api.programs.tests.TestCase;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.comparisons.ComparisonOperators;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 import at.ac.tuwien.kr.alpha.commons.util.Util;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.nio.channels.ReadableByteChannel;
+import java.util.*;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -70,10 +69,10 @@ public class ParserTest {
 
 	private static final String UNIT_TEST_EXPECT_UNSAT =
 			"p(1). p(2). "
-			+ ":- p(X), p(Y), X + Y = 3."
-			+ "#test expected_unsat(expect: unsat) {"
-			+ "given {}"
-			+ "}";
+					+ ":- p(X), p(Y), X + Y = 3."
+					+ "#test expected_unsat(expect: unsat) {"
+					+ "given {}"
+					+ "}";
 
 	private static final String UNIT_TEST_BASIC_TEST =
 			"a :- b. #test ensure_a(expect: 1) { given { b. } assertForAll { :- not a. } }";
@@ -87,11 +86,35 @@ public class ParserTest {
 	private static final String UNIT_TEST_KEYWORDS_AS_IDS =
 			"assert(a) :- given(b). # test test(expect: 1) { given { given(b). } assertForAll { :- not assert(a). :- assertForSome(b).}}";
 
+	private static final String MODULE_SIMPLE = "#module aSimpleModule(input/1 => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). }";
+
+	private static final String MODULE_OUTPUT_ALL = "#module mod(in/1 => {*}) { a(X). b(X) :- a(X).}";
+
+	private static final String MODULE_WITH_REGULAR_STMTS = "p(a). p(b). q(X) :- p(X). #module aSimpleModule(input/1 => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). }";
+
+	private static final String MODULE_MULTIPLE_DEFINITIONS = "a. b(5). #module aSimpleModule(input/1 => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). } q(Y) :- r(S, Y), t(S). #module anotherModule(input/1 => {out1/2, out2/3}) { p(a). p(b). q(X) :- p(X). }";
+
+	private static final String MODULE_LITERAL = "p(a). q(b). r(X) :- p(X), q(Y), #mod[X, Y](X).";
+
+	private static final String MODULE_LITERAL_WITH_NUM_ANSWER_SETS = ":- r(1), q(B, 1). r(X) :- p(X), q(Y), #mod{4}[X, Y](X).";
+
+	private static final String MODULE_LITERAL_NO_INPUT = "a(X) :- #something(X).";
+
+	private static final String MODULE_LITERAL_NO_INPUT_WITH_NUM_ANSWER_SETS = "a(X) :- #something{4}(X).";
+
+	private static final String MODULE_LITERAL_NO_OUTPUT = "a(X) :- #something[X].";
+
+	private static final String MODULE_LITERAL_NO_OUTPUT_WITH_NUM_ANSWER_SETS = "a(X) :- #something{4}[X].";
+
+	private static final String LIST_AGGREGATE = "stuff_list(LST) :- LST = #list{X : stuff(X)}.";
+
+	private static final String LIST_AGGREGATE_TUPLE = "stuff_list(LST) :- LST = #list{stuff_tuple(X,Y) : stuff(X,Y)}.";
+
 	private final ProgramParserImpl parser = new ProgramParserImpl();
 
 	@Test
 	public void parseFact() {
-		ASPCore2Program parsedProgram = parser.parse("p(a,b).");
+		InputProgram parsedProgram = parser.parse("p(a,b).");
 
 		assertEquals(1, parsedProgram.getFacts().size(), "Program contains one fact.");
 		assertEquals("p", parsedProgram.getFacts().get(0).getPredicate().getName(), "Predicate name of fact is p.");
@@ -102,7 +125,7 @@ public class ParserTest {
 
 	@Test
 	public void parseFactWithFunctionTerms() {
-		ASPCore2Program parsedProgram = parser.parse("p(f(a),g(h(Y))).");
+		InputProgram parsedProgram = parser.parse("p(f(a),g(h(Y))).");
 
 		assertEquals(1, parsedProgram.getFacts().size(), "Program contains one fact.");
 		assertEquals("p", parsedProgram.getFacts().get(0).getPredicate().getName(), "Predicate name of fact is p.");
@@ -113,7 +136,7 @@ public class ParserTest {
 
 	@Test
 	public void parseSmallProgram() {
-		ASPCore2Program parsedProgram = parser.parse(
+		InputProgram parsedProgram = parser.parse(
 				"a :- b, not d." + System.lineSeparator() +
 						"c(X) :- p(X,a,_), q(Xaa,xaa)." + System.lineSeparator() +
 						":- f(Y).");
@@ -130,7 +153,7 @@ public class ParserTest {
 
 	@Test
 	public void parseBuiltinAtom() {
-		ASPCore2Program parsedProgram = parser.parse("a :- p(X), X != Y, q(Y).");
+		InputProgram parsedProgram = parser.parse("a :- p(X), X != Y, q(Y).");
 		assertEquals(1, parsedProgram.getRules().size());
 		assertEquals(3, parsedProgram.getRules().get(0).getBody().size());
 	}
@@ -145,31 +168,31 @@ public class ParserTest {
 
 	@Test
 	public void parseInterval() {
-		ASPCore2Program parsedProgram = parser.parse("fact(2..5). p(X) :- q(a, 3 .. X).");
+		InputProgram parsedProgram = parser.parse("fact(2..5). p(X) :- q(a, 3 .. X).");
 		IntervalTerm factInterval = (IntervalTerm) parsedProgram.getFacts().get(0).getTerms().get(0);
-		assertTrue(factInterval.equals(Terms.newIntervalTerm(Terms.newConstant(2), Terms.newConstant(5))));
+		assertEquals(factInterval, Terms.newIntervalTerm(Terms.newConstant(2), Terms.newConstant(5)));
 		IntervalTerm bodyInterval = (IntervalTerm) parsedProgram.getRules().get(0).getBody().stream().findFirst().get().getTerms().get(1);
-		assertTrue(bodyInterval.equals(Terms.newIntervalTerm(Terms.newConstant(3), Terms.newVariable("X"))));
+		assertEquals(bodyInterval, Terms.newIntervalTerm(Terms.newConstant(3), Terms.newVariable("X")));
 	}
 
 	@Test
 	public void parseChoiceRule() {
-		ASPCore2Program parsedProgram = parser.parse("dom(1). dom(2). { a ; b } :- dom(X).");
+		InputProgram parsedProgram = parser.parse("dom(1). dom(2). { a ; b } :- dom(X).");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
 		assertEquals(2, choiceHead.getChoiceElements().size());
-		assertTrue(choiceHead.getChoiceElements().get(0).getChoiceAtom().toString().equals("a"));
-		assertTrue(choiceHead.getChoiceElements().get(1).getChoiceAtom().toString().equals("b"));
-		assertEquals(null, choiceHead.getLowerBound());
-		assertEquals(null, choiceHead.getUpperBound());
+		assertEquals("a", choiceHead.getChoiceElements().get(0).getChoiceAtom().toString());
+		assertEquals("b", choiceHead.getChoiceElements().get(1).getChoiceAtom().toString());
+		assertNull(choiceHead.getLowerBound());
+		assertNull(choiceHead.getUpperBound());
 	}
 
 	@Test
 	public void parseChoiceRuleBounded() {
-		ASPCore2Program parsedProgram = parser.parse("dom(1). dom(2). 1 < { a: p(v,w), not r; b } <= 13 :- dom(X). foo.");
+		InputProgram parsedProgram = parser.parse("dom(1). dom(2). 1 < { a: p(v,w), not r; b } <= 13 :- dom(X). foo.");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
 		assertEquals(2, choiceHead.getChoiceElements().size());
-		assertTrue(choiceHead.getChoiceElements().get(0).getChoiceAtom().toString().equals("a"));
-		assertTrue(choiceHead.getChoiceElements().get(1).getChoiceAtom().toString().equals("b"));
+		assertEquals("a", choiceHead.getChoiceElements().get(0).getChoiceAtom().toString());
+		assertEquals("b", choiceHead.getChoiceElements().get(1).getChoiceAtom().toString());
 		List<Literal> conditionalLiterals = choiceHead.getChoiceElements().get(0).getConditionLiterals();
 		assertEquals(2, conditionalLiterals.size());
 		assertFalse(conditionalLiterals.get(0).isNegated());
@@ -215,7 +238,7 @@ public class ParserTest {
 
 	@Test
 	public void parseEnumerationDirective() {
-		ASPCore2Program parsedProgram = parser.parse("p(a,1)." +
+		InputProgram parsedProgram = parser.parse("p(a,1)." +
 				"# enumeration_predicate_is mune." +
 				"r(X) :- p(X), mune(X)." +
 				"p(b,2).");
@@ -225,7 +248,7 @@ public class ParserTest {
 
 	@Test
 	public void cardinalityAggregate() {
-		ASPCore2Program parsedProgram = parser.parse("num(K) :-  K <= #count {X,Y,Z : p(X,Y,Z) }, dom(K).");
+		InputProgram parsedProgram = parser.parse("num(K) :-  K <= #count {X,Y,Z : p(X,Y,Z) }, dom(K).");
 		Optional<Literal> optionalBodyElement = parsedProgram.getRules().get(0).getBody().stream().filter((lit) -> lit instanceof AggregateLiteral).findFirst();
 		assertTrue(optionalBodyElement.isPresent());
 		Literal bodyElement = optionalBodyElement.get();
@@ -244,7 +267,7 @@ public class ParserTest {
 	@Test
 	public void stringWithEscapedQuotes() throws IOException {
 		CharStream stream = CharStreams.fromStream(ParserTest.class.getResourceAsStream("/escaped_quotes.asp"));
-		ASPCore2Program prog = parser.parse(stream);
+		InputProgram prog = parser.parse(stream);
 		assertEquals(1, prog.getFacts().size());
 		Atom stringAtom = prog.getFacts().get(0);
 		String stringWithQuotes = stringAtom.getTerms().get(0).toString();
@@ -253,7 +276,7 @@ public class ParserTest {
 
 	@Test
 	public void unitTestExpectUnsat() {
-		ASPCore2Program prog = parser.parse(UNIT_TEST_EXPECT_UNSAT);
+		InputProgram prog = parser.parse(UNIT_TEST_EXPECT_UNSAT);
 		assertEquals(1, prog.getTestCases().size());
 		TestCase tc = prog.getTestCases().get(0);
 		assertEquals("expected_unsat", tc.getName());
@@ -263,7 +286,7 @@ public class ParserTest {
 
 	@Test
 	public void unitTestBasicTest() {
-		ASPCore2Program prog = parser.parse(UNIT_TEST_BASIC_TEST);
+		InputProgram prog = parser.parse(UNIT_TEST_BASIC_TEST);
 		assertEquals(1, prog.getTestCases().size());
 		TestCase tc = prog.getTestCases().get(0);
 		assertEquals("ensure_a", tc.getName());
@@ -274,7 +297,7 @@ public class ParserTest {
 
 	@Test
 	public void unitTestMultipleAsserts() {
-		ASPCore2Program prog = parser.parse(UNIT_TEST_MORE_ASSERTIONS);
+		InputProgram prog = parser.parse(UNIT_TEST_MORE_ASSERTIONS);
 		assertEquals(1, prog.getTestCases().size());
 		TestCase tc = prog.getTestCases().get(0);
 		assertEquals("ensure_a", tc.getName());
@@ -286,7 +309,7 @@ public class ParserTest {
 
 	@Test
 	public void unitTestMoreTCs() {
-		ASPCore2Program prog = parser.parse(UNIT_TEST_MORE_TCS);
+		InputProgram prog = parser.parse(UNIT_TEST_MORE_TCS);
 		assertEquals(2, prog.getTestCases().size());
 		TestCase tc1 = prog.getTestCases().get(0);
 		assertEquals("ensure_a", tc1.getName());
@@ -296,13 +319,232 @@ public class ParserTest {
 
 	@Test
 	public void unitTestKeywordsAsIds() {
-		ASPCore2Program prog = parser.parse(UNIT_TEST_KEYWORDS_AS_IDS);
+		InputProgram prog = parser.parse(UNIT_TEST_KEYWORDS_AS_IDS);
 		assertEquals(1, prog.getTestCases().size());
 		TestCase tc = prog.getTestCases().get(0);
 		assertEquals("test", tc.getName());
 		assertEquals(1, tc.getInput().size());
 		assertEquals(1, tc.getAssertions().size());
 		assertEquals(Assertion.Mode.FOR_ALL, tc.getAssertions().get(0).getMode());
+	}
+
+	@Test
+	public void simpleModule() {
+		InputProgram prog = parser.parse(MODULE_SIMPLE);
+		List<Module> modules = prog.getModules();
+		assertFalse(modules.isEmpty());
+		assertEquals(1, modules.size());
+		Module module = modules.get(0);
+		assertEquals("aSimpleModule", module.getName());
+		Predicate inputSpec = module.getInputSpec();
+		assertEquals("input", inputSpec.getName());
+		assertEquals(1, inputSpec.getArity());
+		Set<Predicate> outputSpec = module.getOutputSpec();
+		assertEquals(2, outputSpec.size());
+		assertTrue(outputSpec.contains(Predicates.getPredicate("out1", 2)));
+		assertTrue(outputSpec.contains(Predicates.getPredicate("out2", 3)));
+		InputProgram implementation = module.getImplementation();
+		assertEquals(2, implementation.getFacts().size());
+		assertEquals(1, implementation.getRules().size());
+	}
+
+	@Test
+	public void moduleOutputAll() {
+		InputProgram prog = parser.parse(MODULE_OUTPUT_ALL);
+		List<Module> modules = prog.getModules();
+		assertFalse(modules.isEmpty());
+		assertEquals(1, modules.size());
+		Module module = modules.get(0);
+		assertEquals("mod", module.getName());
+		Predicate inputSpec = module.getInputSpec();
+		assertEquals("in", inputSpec.getName());
+		assertEquals(1, inputSpec.getArity());
+		assertTrue(module.getOutputSpec().isEmpty());
+		InputProgram implementation = module.getImplementation();
+		assertEquals(1, implementation.getFacts().size());
+		assertEquals(1, implementation.getRules().size());
+	}
+
+	@Test
+	public void moduleAndRegularStmts() {
+		InputProgram prog = parser.parse(MODULE_WITH_REGULAR_STMTS);
+		assertEquals(2, prog.getFacts().size());
+		assertEquals(1, prog.getRules().size());
+		List<Module> modules = prog.getModules();
+		assertFalse(modules.isEmpty());
+		assertEquals(1, modules.size());
+		Module module = modules.get(0);
+		assertEquals("aSimpleModule", module.getName());
+		Predicate inputSpec = module.getInputSpec();
+		assertEquals("input", inputSpec.getName());
+		assertEquals(1, inputSpec.getArity());
+		Set<Predicate> outputSpec = module.getOutputSpec();
+		assertEquals(2, outputSpec.size());
+		assertTrue(outputSpec.contains(Predicates.getPredicate("out1", 2)));
+		assertTrue(outputSpec.contains(Predicates.getPredicate("out2", 3)));
+		InputProgram implementation = module.getImplementation();
+		assertEquals(2, implementation.getFacts().size());
+		assertEquals(1, implementation.getRules().size());
+	}
+
+	@Test
+	public void multipleModuleDefinitions() {
+		InputProgram prog = parser.parse(MODULE_MULTIPLE_DEFINITIONS);
+		assertEquals(2, prog.getFacts().size());
+		assertEquals(1, prog.getRules().size());
+
+		List<Module> modules = prog.getModules();
+		assertFalse(modules.isEmpty());
+		assertEquals(2, modules.size());
+	}
+
+	@Test
+	public void invalidNestedModule() {
+		assertThrows(IllegalStateException.class, () ->
+				parser.parse("#module aSimpleModule(input/1 => {out1/2, out2/3}) { p(a). p(b). #module anotherModule(input/1 => {out1/2, out2/3}) { p(a). p(b). } }"));
+	}
+
+	@Test
+	public void invalidNestedTest() {
+		assertThrows(IllegalStateException.class, () ->
+				parser.parse("#module mod(foo/1 => {*}) { #test test(expect: 1) { given { b. } assertForAll { :- a. } } }"));
+	}
+
+	@Test
+	public void moduleLiteral() {
+		InputProgram prog = parser.parse(MODULE_LITERAL);
+		assertEquals(2, prog.getFacts().size());
+		assertEquals(1, prog.getRules().size());
+		Rule<?> rule = prog.getRules().get(0);
+		assertEquals(3, rule.getBody().size());
+		assertEquals(1, rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).count());
+		ModuleLiteral moduleLiteral = (ModuleLiteral) rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).findFirst().get();
+		assertEquals("mod", moduleLiteral.getAtom().getModuleName());
+		assertEquals(2, moduleLiteral.getAtom().getInput().size());
+		assertEquals(1, moduleLiteral.getAtom().getOutput().size());
+		assertEquals(ModuleAtom.ModuleInstantiationMode.ALL, moduleLiteral.getAtom().getInstantiationMode());
+	}
+
+	@Test
+	public void moduleLiteralWithNumAnswerSets() {
+		InputProgram prog = parser.parse(MODULE_LITERAL_WITH_NUM_ANSWER_SETS);
+		assertEquals(2, prog.getRules().size());
+		Optional<Rule<Head>> ruleWithModuleLiteral = prog.getRules().stream().filter(rule -> rule.getBody().stream().anyMatch(lit -> lit instanceof ModuleLiteral)).findFirst();
+		assertTrue(ruleWithModuleLiteral.isPresent());
+		Rule<?> rule = ruleWithModuleLiteral.get();
+		assertEquals(3, rule.getBody().size());
+		assertEquals(1, rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).count());
+		Optional<Literal> optModuleLiteral = rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).findFirst();
+		assertTrue(optModuleLiteral.isPresent());
+		ModuleLiteral moduleLiteral = (ModuleLiteral) optModuleLiteral.get();
+		assertEquals("mod", moduleLiteral.getAtom().getModuleName());
+		assertEquals(2, moduleLiteral.getAtom().getInput().size());
+		assertEquals(1, moduleLiteral.getAtom().getOutput().size());
+		assertTrue(moduleLiteral.getAtom().getInstantiationMode().requestedAnswerSets().isPresent());
+		assertEquals(4, moduleLiteral.getAtom().getInstantiationMode().requestedAnswerSets().get());
+	}
+
+	@Test
+	public void moduleLiteralNoInput() {
+		InputProgram prog = parser.parse(MODULE_LITERAL_NO_INPUT);
+		assertEquals(1, prog.getRules().size());
+		Rule<?> rule = prog.getRules().get(0);
+		assertEquals(1, rule.getBody().size());
+		assertEquals(1, rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).count());
+		ModuleLiteral moduleLiteral = (ModuleLiteral) rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).findFirst().get();
+		assertEquals("something", moduleLiteral.getAtom().getModuleName());
+		assertTrue(moduleLiteral.getAtom().getInput().isEmpty());
+		assertEquals(1, moduleLiteral.getAtom().getOutput().size());
+		assertEquals(ModuleAtom.ModuleInstantiationMode.ALL, moduleLiteral.getAtom().getInstantiationMode());
+	}
+
+	@Test
+	public void moduleLiteralNoInputWithNumAnswerSets() {
+		InputProgram prog = parser.parse(MODULE_LITERAL_NO_INPUT_WITH_NUM_ANSWER_SETS);
+		assertEquals(1, prog.getRules().size());
+		Rule<?> rule = prog.getRules().get(0);
+		assertEquals(1, rule.getBody().size());
+		assertEquals(1, rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).count());
+		ModuleLiteral moduleLiteral = (ModuleLiteral) rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).findFirst().get();
+		assertEquals("something", moduleLiteral.getAtom().getModuleName());
+		assertTrue(moduleLiteral.getAtom().getInput().isEmpty());
+		assertEquals(1, moduleLiteral.getAtom().getOutput().size());
+		assertTrue(moduleLiteral.getAtom().getInstantiationMode().requestedAnswerSets().isPresent());
+		assertEquals(4, moduleLiteral.getAtom().getInstantiationMode().requestedAnswerSets().get());
+	}
+
+	@Test
+	public void moduleLiteralNoOutput() {
+		InputProgram prog = parser.parse(MODULE_LITERAL_NO_OUTPUT);
+		assertEquals(1, prog.getRules().size());
+		Rule<?> rule = prog.getRules().get(0);
+		assertEquals(1, rule.getBody().size());
+		assertEquals(1, rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).count());
+		ModuleLiteral moduleLiteral = (ModuleLiteral) rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).findFirst().get();
+		assertEquals("something", moduleLiteral.getAtom().getModuleName());
+		assertEquals(1, moduleLiteral.getAtom().getInput().size());
+		assertTrue(moduleLiteral.getAtom().getOutput().isEmpty());
+		assertFalse(moduleLiteral.getAtom().getInstantiationMode().requestedAnswerSets().isPresent());
+		assertEquals(ModuleAtom.ModuleInstantiationMode.ALL, moduleLiteral.getAtom().getInstantiationMode());
+	}
+
+	@Test
+	public void moduleLiteralNoOutputWithNumAnswerSets() {
+		InputProgram prog = parser.parse(MODULE_LITERAL_NO_OUTPUT_WITH_NUM_ANSWER_SETS);
+		assertEquals(1, prog.getRules().size());
+		Rule<?> rule = prog.getRules().get(0);
+		assertEquals(1, rule.getBody().size());
+		assertEquals(1, rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).count());
+		ModuleLiteral moduleLiteral = (ModuleLiteral) rule.getBody().stream().filter(lit -> lit instanceof ModuleLiteral).findFirst().get();
+		assertEquals("something", moduleLiteral.getAtom().getModuleName());
+		assertEquals(1, moduleLiteral.getAtom().getInput().size());
+		assertTrue(moduleLiteral.getAtom().getOutput().isEmpty());
+		assertTrue(moduleLiteral.getAtom().getInstantiationMode().requestedAnswerSets().isPresent());
+		assertEquals(4, moduleLiteral.getAtom().getInstantiationMode().requestedAnswerSets().get());
+	}
+
+	@Test
+	public void listAggregate() {
+		InputProgram prog = parser.parse(LIST_AGGREGATE);
+		assertEquals(1, prog.getRules().size());
+		Rule<?> rule = prog.getRules().get(0);
+		assertEquals(1, rule.getBody().size());
+		assertEquals(1, rule.getBody().stream().filter(lit -> lit instanceof AggregateLiteral).count());
+		AggregateLiteral aggregateLiteral = (AggregateLiteral) rule.getBody().stream().filter(lit -> lit instanceof AggregateLiteral).findFirst().get();
+		AggregateAtom aggregateAtom = aggregateLiteral.getAtom();
+		assertEquals(ComparisonOperators.EQ, aggregateAtom.getLowerBoundOperator());
+		assertEquals(Terms.newVariable("LST"), aggregateAtom.getLowerBoundTerm());
+		assertEquals(AggregateAtom.AggregateFunctionSymbol.LIST, aggregateAtom.getAggregateFunction());
+		assertEquals(1, aggregateAtom.getAggregateElements().size());
+		AggregateAtom.AggregateElement aggregateElement = aggregateAtom.getAggregateElements().get(0);
+		assertEquals(1, aggregateElement.getElementTerms().size());
+		Term elementTerm = aggregateElement.getElementTerms().get(0);
+		assertEquals(Terms.newVariable("X"), elementTerm);
+		assertEquals(1, aggregateElement.getElementLiterals().size());
+		Literal elementLiteral = aggregateElement.getElementLiterals().get(0);
+		assertEquals(Atoms.newBasicAtom(Predicates.getPredicate("stuff", 1), Terms.newVariable("X")).toLiteral(), elementLiteral);
+	}
+
+	@Test
+	public void listAggregateWithTuples() {
+		InputProgram prog = parser.parse(LIST_AGGREGATE_TUPLE);
+		assertEquals(1, prog.getRules().size());
+		Rule<?> rule = prog.getRules().get(0);
+		assertEquals(1, rule.getBody().size());
+		assertEquals(1, rule.getBody().stream().filter(lit -> lit instanceof AggregateLiteral).count());
+		AggregateLiteral aggregateLiteral = (AggregateLiteral) rule.getBody().stream().filter(lit -> lit instanceof AggregateLiteral).findFirst().get();
+		AggregateAtom aggregateAtom = aggregateLiteral.getAtom();
+		assertEquals(ComparisonOperators.EQ, aggregateAtom.getLowerBoundOperator());
+		assertEquals(Terms.newVariable("LST"), aggregateAtom.getLowerBoundTerm());
+		assertEquals(AggregateAtom.AggregateFunctionSymbol.LIST, aggregateAtom.getAggregateFunction());
+		assertEquals(1, aggregateAtom.getAggregateElements().size());
+		AggregateAtom.AggregateElement aggregateElement = aggregateAtom.getAggregateElements().get(0);
+		assertEquals(1, aggregateElement.getElementTerms().size());
+		Term elementTerm = aggregateElement.getElementTerms().get(0);
+		assertEquals(Terms.newFunctionTerm("stuff_tuple", Terms.newVariable("X"), Terms.newVariable("Y")), elementTerm);
+		assertEquals(1, aggregateElement.getElementLiterals().size());
+		Literal elementLiteral = aggregateElement.getElementLiterals().get(0);
+		assertEquals(Atoms.newBasicAtom(Predicates.getPredicate("stuff", 2), Terms.newVariable("X"), Terms.newVariable("Y")).toLiteral(), elementLiteral);
 	}
 
 }

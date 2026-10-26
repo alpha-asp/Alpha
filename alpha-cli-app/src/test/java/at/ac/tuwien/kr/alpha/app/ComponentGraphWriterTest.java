@@ -8,9 +8,10 @@ import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.DebugSolvingContext;
-import at.ac.tuwien.kr.alpha.api.impl.AlphaImpl;
+import at.ac.tuwien.kr.alpha.api.impl.AlphaFactory;
 import at.ac.tuwien.kr.alpha.api.programs.analysis.ComponentGraph;
 
+// TODO This is a functional test and should not be run with standard unit tests
 public class ComponentGraphWriterTest {
 	private static final String LS = System.lineSeparator();
 
@@ -53,7 +54,7 @@ public class ComponentGraphWriterTest {
 				"n1 -> n5 [xlabel=\"-\" labeldistance=0.1]" + LS +
 				"n2 -> n5 [xlabel=\"+\" labeldistance=0.1]" + LS +
 				"}" + LS;
-		Alpha alpha = new AlphaImpl();
+		Alpha alpha = AlphaFactory.newAlpha();
 		DebugSolvingContext dbgResult = alpha.prepareDebugSolve(alpha.readProgramString(asp));
 		ComponentGraph compgraph = dbgResult.getComponentGraph();
 		ComponentGraphWriter writer = new ComponentGraphWriter();

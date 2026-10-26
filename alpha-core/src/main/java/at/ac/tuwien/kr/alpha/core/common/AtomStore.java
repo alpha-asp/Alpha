@@ -116,4 +116,8 @@ public interface AtomStore {
 	}
 
 	AtomCounter getAtomCounter();
+	
+	static boolean isAtom(int atom) {
+		return atom >= 0;
+	}
 }

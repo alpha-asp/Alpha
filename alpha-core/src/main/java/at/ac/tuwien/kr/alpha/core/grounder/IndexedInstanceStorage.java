@@ -112,7 +112,8 @@ public class IndexedInstanceStorage {
 	 * @return true if the instance is already contained in the storage.
 	 */
 	public boolean containsInstance(Instance instance) {
-		return instances.contains(instance);
+		boolean contains = instances.contains(instance);
+		return contains; // TODO remove extra variable, debugging only
 	}
 
 	public void addInstance(Instance instance) {

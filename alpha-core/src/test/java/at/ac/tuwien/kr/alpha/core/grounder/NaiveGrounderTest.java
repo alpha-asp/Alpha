@@ -25,7 +25,6 @@
  */
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import static at.ac.tuwien.kr.alpha.core.test.util.TestUtils.atom;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -36,6 +35,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
+import at.ac.tuwien.kr.alpha.commons.Predicates;
+import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -43,7 +46,7 @@ import org.junit.jupiter.api.Test;
 import at.ac.tuwien.kr.alpha.api.config.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.api.programs.ProgramParser;
 import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
@@ -100,14 +103,14 @@ public class NaiveGrounderTest {
 	 */
 	@Test
 	public void groundRuleAlreadyGround() {
-		ASPCore2Program program = PROGRAM_PARSER.parse("a :- not b. "
+		InputProgram program = PROGRAM_PARSER.parse("a :- not b. "
 				+ "b :- not a. "
 				+ "c :- b.");
 		NormalProgram normal = NORMALIZE_TRANSFORM.apply(program);
-		CompiledProgram prog = new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normal));
+		CompiledProgram prog = new StratifiedEvaluation(null, false).apply(AnalyzedProgram.analyzeNormalProgram(normal));
 
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", prog, atomStore, true);
+		Grounder grounder = new GrounderFactory(new GrounderHeuristicsConfiguration(), true).createGrounder(prog, atomStore);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		int litCNeg = Literals.atomToLiteral(atomStore.get(PROGRAM_PART_PARSER.parseBasicAtom("c")), false);
 		int litB = Literals.atomToLiteral(atomStore.get(PROGRAM_PART_PARSER.parseBasicAtom("b")));
@@ -121,15 +124,15 @@ public class NaiveGrounderTest {
 	 */
 	@Test
 	public void groundRuleWithLongerBodyAlreadyGround() {
-		ASPCore2Program program = PROGRAM_PARSER.parse("a :- not b. "
+		InputProgram program = PROGRAM_PARSER.parse("a :- not b. "
 				+ "b :- not a. "
 				+ "c :- b. "
 				+ "d :- b, c. ");
 		NormalProgram normal = NORMALIZE_TRANSFORM.apply(program);
-		InternalProgram prog = new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normal));
+		InternalProgram prog = new StratifiedEvaluation(null, false).apply(AnalyzedProgram.analyzeNormalProgram(normal));
 
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", prog, atomStore, true);
+		Grounder grounder = new GrounderFactory(new GrounderHeuristicsConfiguration(), true).createGrounder(prog, atomStore);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		int litANeg = Literals.atomToLiteral(atomStore.get(PROGRAM_PART_PARSER.parseBasicAtom("a")), false);
 		int litBNeg = Literals.atomToLiteral(atomStore.get(PROGRAM_PART_PARSER.parseBasicAtom("b")), false);
@@ -147,14 +150,14 @@ public class NaiveGrounderTest {
 	 */
 	@Test
 	public void groundConstraintAlreadyGround() {
-		ASPCore2Program program = PROGRAM_PARSER.parse("a :- not b. "
+		InputProgram program = PROGRAM_PARSER.parse("a :- not b. "
 				+ "b :- not a. "
 				+ ":- b.");
 		NormalProgram normal = NORMALIZE_TRANSFORM.apply(program);
-		InternalProgram prog = new StratifiedEvaluation().apply(AnalyzedProgram.analyzeNormalProgram(normal));
+		InternalProgram prog = new StratifiedEvaluation(null, false).apply(AnalyzedProgram.analyzeNormalProgram(normal));
 
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", prog, atomStore, true);
+		Grounder grounder = new GrounderFactory(new GrounderHeuristicsConfiguration(), true).createGrounder(prog, atomStore);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		int litB = Literals.atomToLiteral(atomStore.get(PROGRAM_PART_PARSER.parseBasicAtom("b")));
 		assertTrue(noGoods.containsValue(NoGood.fromConstraint(Collections.singletonList(litB), Collections.emptyList())));
@@ -189,7 +192,7 @@ public class NaiveGrounderTest {
 	}
 
 	/**
-	 * Tests the method {@link NaiveGrounder#getGroundInstantiations(InternalRule, RuleGroundingOrder, Substitution, Assignment)} on a
+	 * Tests the method {@link NaiveGrounder#getGroundInstantiations)} on a
 	 * predefined program:
 	 * <code>
 	 *  p1(1). q1(1). <br/>
@@ -218,8 +221,7 @@ public class NaiveGrounderTest {
 						PROGRAM_PARSER.parse(aspStr)));
 
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, p -> true,
-				GrounderHeuristicsConfiguration.permissive(), true);
+		NaiveGrounder grounder = (NaiveGrounder) new GrounderFactory(GrounderHeuristicsConfiguration.permissive(), true).createGrounder(program, atomStore, p -> true);
 
 		CompiledRule nonGroundRule = grounder.getNonGroundRule(0);
 		String strLiteral = "p1".equals(predicateNameOfStartingLiteral) ? "p1(X)" : "p1(Y)";
@@ -237,7 +239,7 @@ public class NaiveGrounderTest {
 
 	@Test
 	public void testGroundingOfRuleSwitchedOffByFalsePositiveBody() {
-		ASPCore2Program program = PROGRAM_PARSER.parse("a(1). "
+		InputProgram program = PROGRAM_PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X). "
 				+ "b(X) :- something(X). ");
 		testIfGrounderGroundsRule(program, 0, litAX, 1, ThriceTruth.FALSE, false);
@@ -245,7 +247,7 @@ public class NaiveGrounderTest {
 
 	@Test
 	public void testGroundingOfRuleNotSwitchedOffByTruePositiveBody() {
-		ASPCore2Program program = PROGRAM_PARSER.parse("a(1). "
+		InputProgram program = PROGRAM_PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X). "
 				+ "b(X) :- something(X). ");
 		testIfGrounderGroundsRule(program, 0, litAX, 1, ThriceTruth.TRUE, true);
@@ -254,7 +256,7 @@ public class NaiveGrounderTest {
 	@Test
 	@Disabled("Currently, rule grounding is not switched off by a true negative body atom")
 	public void testGroundingOfRuleSwitchedOffByTrueNegativeBody() {
-		ASPCore2Program program = PROGRAM_PARSER.parse("a(1). "
+		InputProgram program = PROGRAM_PARSER.parse("a(1). "
 				+ "c(X) :- a(X), not b(X). "
 				+ "b(X) :- something(X). ");
 		testIfGrounderGroundsRule(program, 0, litAX, 1, ThriceTruth.TRUE, false);
@@ -262,7 +264,7 @@ public class NaiveGrounderTest {
 
 	@Test
 	public void testGroundingOfRuleNotSwitchedOffByFalseNegativeBody() {
-		ASPCore2Program program = PROGRAM_PARSER.parse("a(1). "
+		InputProgram program = PROGRAM_PARSER.parse("a(1). "
 				+ "c(X) :- a(X), not b(X). "
 				+ "b(X) :- something(X). ");
 
@@ -270,21 +272,20 @@ public class NaiveGrounderTest {
 	}
 
 	/**
-	 * Tests if {@link NaiveGrounder#getGroundInstantiations(InternalRule, RuleGroundingOrder, Substitution, Assignment)}
+	 * Tests if {@link NaiveGrounder#getGroundInstantiations(CompiledRule, RuleGroundingOrder, Substitution, Assignment)}
 	 * produces ground instantiations for the rule with ID {@code ruleID} in {@code program} when {@code startingLiteral}
 	 * unified with the numeric instance {@code startingInstance} is used as starting literal and {@code b(1)} is assigned
 	 * {@code bTruth}.
 	 * It is asserted that ground instantiations are produced if and only if {@code expectNoGoods} is true.
 	 */
-	private void testIfGrounderGroundsRule(ASPCore2Program program, int ruleID, Literal startingLiteral, int startingInstance, ThriceTruth bTruth,
+	private void testIfGrounderGroundsRule(InputProgram program, int ruleID, Literal startingLiteral, int startingInstance, ThriceTruth bTruth,
 			boolean expectNoGoods) {
 		CompiledProgram internalPrg = InternalProgram.fromNormalProgram(NORMALIZE_TRANSFORM.apply(program));
 		AtomStore atomStore = new AtomStoreImpl();
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
-		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", internalPrg, atomStore, p -> true,
-				GrounderHeuristicsConfiguration.permissive(), true);
+		NaiveGrounder grounder = (NaiveGrounder) new GrounderFactory(GrounderHeuristicsConfiguration.permissive(), true).createGrounder(internalPrg, atomStore, p -> true);
 
-		int b = atomStore.putIfAbsent(atom("b", 1));
+		int b = atomStore.putIfAbsent(Atoms.newBasicAtom(Predicates.getPredicate("b", 1), Terms.newConstant(1)));
 		currentAssignment.growForMaxAtomId();
 		currentAssignment.assign(b, bTruth);
 
@@ -299,7 +300,7 @@ public class NaiveGrounderTest {
 
 	@Test
 	public void testPermissiveGrounderHeuristicTolerance_0_reject() {
-		ASPCore2Program program = PROGRAM_PARSER.parse("a(1). "
+		InputProgram program = PROGRAM_PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X). "
 				+ "b(X) :- something(X).");
 		testPermissiveGrounderHeuristicTolerance(program, 0, litAX, 1, 0, false, Arrays.asList(1));
@@ -307,7 +308,7 @@ public class NaiveGrounderTest {
 
 	@Test
 	public void testPermissiveGrounderHeuristicTolerance_1_accept() {
-		ASPCore2Program program = PROGRAM_PARSER.parse("a(1). "
+		InputProgram program = PROGRAM_PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X). "
 				+ "b(X) :- something(X).");
 		testPermissiveGrounderHeuristicTolerance(program, 0, litAX, 1, 1, true, Arrays.asList(1));
@@ -315,7 +316,7 @@ public class NaiveGrounderTest {
 
 	@Test
 	public void testPermissiveGrounderHeuristicTolerance_1_reject() {
-		ASPCore2Program program = PROGRAM_PARSER.parse("a(1). "
+		InputProgram program = PROGRAM_PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X), b(X+1). "
 				+ "b(X) :- something(X).");
 		testPermissiveGrounderHeuristicTolerance(program, 0, litAX, 1, 1, false, Arrays.asList(2));
@@ -323,7 +324,7 @@ public class NaiveGrounderTest {
 
 	@Test
 	public void testPermissiveGrounderHeuristicTolerance_2_accept() {
-		ASPCore2Program program = PROGRAM_PARSER.parse("a(1). "
+		InputProgram program = PROGRAM_PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X), b(X+1). "
 				+ "b(X) :- something(X).");
 		testPermissiveGrounderHeuristicTolerance(program, 0, litAX, 1, 2, true, Arrays.asList(2));
@@ -331,7 +332,7 @@ public class NaiveGrounderTest {
 
 	@Test
 	public void testPermissiveGrounderHeuristicTolerance_1_accept_two_substitutions() {
-		ASPCore2Program program = PROGRAM_PARSER.parse("a(1). "
+		InputProgram program = PROGRAM_PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X,Y). "
 				+ "b(X,Y) :- something(X,Y).");
 		testPermissiveGrounderHeuristicTolerance(program, 0, litAX, 1, 1, new ThriceTruth[] {ThriceTruth.TRUE, ThriceTruth.TRUE }, 2, true,
@@ -340,7 +341,7 @@ public class NaiveGrounderTest {
 
 	@Test
 	public void testPermissiveGrounderHeuristicTolerance_1_accept_accept_two_substitutions_with_different_remaining_tolerances() {
-		ASPCore2Program program = PROGRAM_PARSER.parse("a(1). "
+		InputProgram program = PROGRAM_PARSER.parse("a(1). "
 				+ "c(X) :- a(1), b(X,Y). "
 				+ "b(X,Y) :- something(X,Y).");
 		testPermissiveGrounderHeuristicTolerance(program, 0, litA1, 1, 1, new ThriceTruth[] {null, null }, 2, true, Arrays.asList(1, 1));
@@ -348,7 +349,7 @@ public class NaiveGrounderTest {
 
 	@Test
 	public void testPermissiveGrounderHeuristicTolerance_2_reject() {
-		ASPCore2Program program = PROGRAM_PARSER.parse("a(1). "
+		InputProgram program = PROGRAM_PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X), b(X+1), b(X+2). "
 				+ "b(X) :- something(X).");
 		testPermissiveGrounderHeuristicTolerance(program, 0, litAX, 1, 2, false, Arrays.asList(3));
@@ -356,20 +357,20 @@ public class NaiveGrounderTest {
 
 	@Test
 	public void testPermissiveGrounderHeuristicTolerance_2_accept_multiple_facts_of_same_variable() {
-		ASPCore2Program program = PROGRAM_PARSER.parse("a(1). b(1). "
+		InputProgram program = PROGRAM_PARSER.parse("a(1). b(1). "
 				+ "c(X) :- a(X), b(X), b(X+1), b(X+2). "
 				+ "b(X) :- something(X).");
 		testPermissiveGrounderHeuristicTolerance(program, 0, litAX, 1, 2, true, Arrays.asList(2));
 	}
 
-	private void testPermissiveGrounderHeuristicTolerance(ASPCore2Program program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance,
+	private void testPermissiveGrounderHeuristicTolerance(InputProgram program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance,
 			boolean expectNoGoods, List<Integer> expectedNumbersOfUnassignedPositiveBodyAtoms) {
 		testPermissiveGrounderHeuristicTolerance(program, ruleID, startingLiteral, startingInstance, tolerance, new ThriceTruth[] {}, 1, expectNoGoods,
 				expectedNumbersOfUnassignedPositiveBodyAtoms);
 	}
 
 	/**
-	 * Tests if {@link NaiveGrounder#getGroundInstantiations(InternalRule, RuleGroundingOrder, Substitution, Assignment)}
+	 * Tests if {@link NaiveGrounder#getGroundInstantiations(CompiledRule, RuleGroundingOrder, Substitution, Assignment)}
 	 * produces ground instantiations for the rule with ID {@code ruleID} in {@code program} when {@code startingLiteral}
 	 * unified with the numeric instance {@code startingInstance} is used as starting literal and the following
 	 * additional conditions are established:
@@ -386,13 +387,13 @@ public class NaiveGrounderTest {
 	 * If ground instantiations are produced, it is also asserted that the numbers of unassigned positive body atoms
 	 * determined by {@code getGroundInstantiations} match those given in {@code expectedNumbersOfUnassignedPositiveBodyAtoms}.
 	 */
-	private void testPermissiveGrounderHeuristicTolerance(ASPCore2Program program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance,
+	private void testPermissiveGrounderHeuristicTolerance(InputProgram program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance,
 			ThriceTruth[] truthsOfB, int arityOfB, boolean expectNoGoods, List<Integer> expectedNumbersOfUnassignedPositiveBodyAtoms) {
 		CompiledProgram internalPrg = InternalProgram.fromNormalProgram(NORMALIZE_TRANSFORM.apply(program));
 		AtomStore atomStore = new AtomStoreImpl();
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
 		GrounderHeuristicsConfiguration heuristicConfiguration = GrounderHeuristicsConfiguration.getInstance(tolerance, tolerance);
-		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", internalPrg, atomStore, p -> true, heuristicConfiguration, true);
+		NaiveGrounder grounder = (NaiveGrounder) new GrounderFactory(heuristicConfiguration, true).createGrounder(internalPrg, atomStore, p -> true);
 
 		int[] bAtomIDs = new int[truthsOfB.length];
 		for (int i = 0; i < truthsOfB.length; i++) {
@@ -455,6 +456,14 @@ public class NaiveGrounderTest {
 			}
 		}
 		fail("No NoGood exists that contains literal " + literal);
+	}
+
+	private static Atom atom(String predicateName, int... termInts) {
+		Term[] terms = new Term[termInts.length];
+		for (int i = 0; i < termInts.length; i++) {
+			terms[i] = Terms.newConstant(termInts[i]);
+		}
+		return Atoms.newBasicAtom(Predicates.getPredicate(predicateName, terms.length), terms);
 	}
 
 }

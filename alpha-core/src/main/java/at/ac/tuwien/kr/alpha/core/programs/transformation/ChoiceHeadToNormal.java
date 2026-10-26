@@ -27,11 +27,9 @@
  */
 package at.ac.tuwien.kr.alpha.core.programs.transformation;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.BasicAtom;
@@ -43,7 +41,7 @@ import at.ac.tuwien.kr.alpha.api.programs.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.commons.Predicates;
 import at.ac.tuwien.kr.alpha.commons.programs.Programs;
-import at.ac.tuwien.kr.alpha.commons.programs.Programs.ASPCore2ProgramBuilder;
+import at.ac.tuwien.kr.alpha.commons.programs.Programs.InputProgramBuilder;
 import at.ac.tuwien.kr.alpha.commons.programs.atoms.Atoms;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.programs.rules.heads.Heads;
@@ -53,12 +51,12 @@ import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
  * Copyright (c) 2017-2021, the Alpha Team.
  */
 // TODO this could already give NormalProgram as result type
-public class ChoiceHeadToNormal extends ProgramTransformation<ASPCore2Program, ASPCore2Program> {
+public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, InputProgram> {
 	private final static String PREDICATE_NEGATION_PREFIX = "_n";
 
 	@Override
-	public ASPCore2Program apply(ASPCore2Program inputProgram) {
-		ASPCore2ProgramBuilder programBuilder = Programs.builder();
+	public InputProgram apply(InputProgram inputProgram) {
+		InputProgramBuilder programBuilder = Programs.builder();
 		List<Rule<Head>> additionalRules = new ArrayList<>();
 
 		List<Rule<Head>> srcRules = new ArrayList<>(inputProgram.getRules());
@@ -104,11 +102,11 @@ public class ChoiceHeadToNormal extends ProgramTransformation<ASPCore2Program, A
 				BasicAtom negHead = Atoms.newBasicAtom(negPredicate, headTerms);
 
 				// Construct two guessing rules.
-				List<Literal> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
+				Set<Literal> guessingRuleBodyWithNegHead = new LinkedHashSet<>(ruleBody);
 				guessingRuleBodyWithNegHead.add(Atoms.newBasicAtom(head.getPredicate(), head.getTerms()).toLiteral(false));
 				additionalRules.add(Rules.newRule(Heads.newNormalHead(negHead), guessingRuleBodyWithNegHead));
 
-				List<Literal> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
+				Set<Literal> guessingRuleBodyWithHead = new LinkedHashSet<>(ruleBody);
 				guessingRuleBodyWithHead.add(Atoms.newBasicAtom(negPredicate, headTerms).toLiteral(false));
 				additionalRules.add(Rules.newRule(Heads.newNormalHead(head), guessingRuleBodyWithHead));
 
@@ -116,7 +114,7 @@ public class ChoiceHeadToNormal extends ProgramTransformation<ASPCore2Program, A
 			}
 		}
 		return programBuilder.addRules(srcRules).addRules(additionalRules).addFacts(inputProgram.getFacts())
-				.addInlineDirectives(inputProgram.getInlineDirectives()).build();
+				.addInlineDirectives(inputProgram.getInlineDirectives()).addModules(inputProgram.getModules()).build();
 	}
 
 	private static boolean containsIntervalTerms(Atom atom) {

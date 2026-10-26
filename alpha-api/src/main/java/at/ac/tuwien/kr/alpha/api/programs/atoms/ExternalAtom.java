@@ -4,6 +4,7 @@ import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.programs.VariableNormalizableAtom;
+import at.ac.tuwien.kr.alpha.api.programs.literals.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 
 /**
@@ -20,5 +21,13 @@ public interface ExternalAtom extends Atom, VariableNormalizableAtom {
 	List<Term> getOutput();
 
 	PredicateInterpretation getInterpretation();
+
+	@Override
+	default ExternalLiteral toLiteral() {
+		return toLiteral(true);
+	}
+
+	@Override
+	ExternalLiteral toLiteral(boolean positive);
 
 }

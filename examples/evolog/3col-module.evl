@@ -1,0 +1,60 @@
+%%% Module threecol %%%
+%
+% Calculates 3-colorings of a given graph.
+% Graph is expected to be represented as a function term with following
+% structure: graph(list(V, TAIL), list(E, TAIL)), where list(V, TAIL)
+% and list(E, TAIL) are vertex- and edge-lists.
+%
+%%%
+#module threecol(graph/2 => {col/2})  {
+	% Unwrap input
+	vertex_element(V, TAIL) :- graph(lst(V, TAIL), _).
+	vertex_element(V, TAIL) :- vertex_element(_, lst(V, TAIL)).
+	vertex(V) :- vertex_element(V, _).
+	edge_element(E, TAIL) :- graph(_, lst(E, TAIL)).
+	edge_element(E, TAIL) :- edge_element(_, lst(E, TAIL)).
+	edge(V1, V2) :- edge_element(edge(V1, V2), _).
+
+	% Make sure edges are symmetric
+	edge(V2, V1) :- edge(V1, V2).
+
+	% Guess colors
+	red(V) :- vertex(V), not green(V), not blue(V).
+	green(V) :- vertex(V), not red(V), not blue(V).
+	blue(V) :- vertex(V), not red(V), not green(V).
+
+	% Filter invalid guesses
+	:- vertex(V1), vertex(V2), edge(V1, V2), red(V1), red(V2).
+	:- vertex(V1), vertex(V2), edge(V1, V2), green(V1), green(V2).
+	:- vertex(V1), vertex(V2), edge(V1, V2), blue(V1), blue(V2).
+
+	col(V, red) :- red(V).
+	col(V, blue) :- blue(V).
+	col(V, green) :- green(V).
+}
+
+%%% Main program %%%
+%
+% This program uses the module "3col" to determine 3-colorability and actual colorings of a graph
+%
+%%%
+
+vertex_list(VLST) :- VLST = #list{V : vertex(V)}.
+edge_list(ELST) :- ELST = #list{edge(V1, V2) : edge(V1, V2)}.
+
+coloring(COL) :- vertex_list(VERTEX_LST), edge_list(EDGE_LST), #threecol{2}[VERTEX_LST, EDGE_LST](COL).
+
+#test smokeTest(expect: >0) {
+    given {
+        vertex(a).
+        vertex(b).
+        vertex(c).
+        edge(a, b).
+        edge(b, c).
+        edge(c, a).
+    }
+    assertForAll {
+        coloring_found :- coloring(_).
+        :- not coloring_found.
+    }
+}

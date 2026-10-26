@@ -1,0 +1,2 @@
+hello_text("Hello World!").
+hello_result(R) : @streamWrite[STDOUT, TEXT] = R :- hello_text(TEXT), &stdout(STDOUT).

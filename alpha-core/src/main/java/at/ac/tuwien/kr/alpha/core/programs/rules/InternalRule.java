@@ -43,7 +43,9 @@ import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingInfoImpl;
 import com.google.common.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a normal rule or a constraint for the semi-naive grounder.
@@ -67,7 +69,7 @@ public class InternalRule extends AbstractRule<NormalHead> implements CompiledRu
 	 * @param head the head of the rule.
 	 * @param body the list of body literals of the rule.
 	 */
-	public InternalRule(NormalHead head, List<Literal> body) {
+	public InternalRule(NormalHead head, Set<Literal> body) {
 		super(head, body);
 		if (body.isEmpty()) {
 			throw new IllegalArgumentException(
@@ -101,18 +103,19 @@ public class InternalRule extends AbstractRule<NormalHead> implements CompiledRu
 	}
 
 	public static CompiledRule fromNormalRule(Rule<NormalHead> rule) {
-		return new InternalRule(rule.isConstraint() ? null : Heads.newNormalHead(rule.getHead().getAtom()), new ArrayList<>(rule.getBody()));
+		return new InternalRule(rule.isConstraint() ? null : rule.getHead(), new LinkedHashSet<>(rule.getBody()));
 	}
 
 	/**
 	 * Returns a new Rule that is equal to this one except that all variables are renamed to have the newVariablePostfix
 	 * appended.
-	 * 
+	 *
 	 * @param newVariablePostfix
 	 * @return
 	 */
 	@Override
 	public InternalRule renameVariables(String newVariablePostfix) {
+		// TODO handle action heads!
 		List<VariableTerm> occurringVariables = new ArrayList<>();
 		BasicAtom headAtom = this.getHeadAtom();
 		occurringVariables.addAll(headAtom.getOccurringVariables());
@@ -125,10 +128,12 @@ public class InternalRule extends AbstractRule<NormalHead> implements CompiledRu
 			variableReplacement.put(occurringVariable, Terms.newVariable(newVariableName));
 		}
 		BasicAtom renamedHeadAtom = headAtom.substitute(variableReplacement);
-		ArrayList<Literal> renamedBody = new ArrayList<>(this.getBody().size());
+		Set<Literal> renamedBody = new LinkedHashSet<>(this.getBody().size());
 		for (Literal literal : this.getBody()) {
 			renamedBody.add(literal.substitute(variableReplacement));
 		}
+		// TODO action heads!
+		// TODO we want to pull renameVariables down to atom, term, etc level
 		return new InternalRule(Heads.newNormalHead(renamedHeadAtom), renamedBody);
 	}
 
@@ -151,7 +156,6 @@ public class InternalRule extends AbstractRule<NormalHead> implements CompiledRu
 		return this.ruleId;
 	}
 
-	@Override
 	public boolean isGround() {
 		if (!isConstraint() && !getHead().isGround()) {
 			return false;
@@ -180,4 +184,6 @@ public class InternalRule extends AbstractRule<NormalHead> implements CompiledRu
 	public int hashCode() {
 		return Integer.hashCode(getRuleId());
 	}
+
 }
+

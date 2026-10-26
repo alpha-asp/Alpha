@@ -1,0 +1,89 @@
+%%% Unit tests for bin_packing module
+
+instance(BINS, ITEMS) :- BINS = #list{bin(B, S) : bin(B, S)}, ITEMS = #list{item(I, S) : item(I, S)}.
+instance_with_assignment(BINS, ITEMS, ASSGN) :- instance(BINS, ITEMS), #bin_packing[BINS, ITEMS](ASSGN).
+bin_assignment(A) :- instance_with_assignment(_, _, A).
+assignment_valuation_result(A, V) :- instance_with_assignment(B, I, A), #bin_packing_valuation[B, I, A](V).
+assignment_value(A, V) :- assignment_valuation_result(A, lst(assignment_value(V), lst_empty)).
+
+#test singleBinPositiveCase(expect: 1) {
+	given {
+		bin(a, 10).
+
+		item(x, 3).
+		item(y, 2).
+		item(z, 4).
+
+	}
+	assertForAll {
+		% There is excatly one assignment
+		assignment_found :- bin_assignment(_).
+		:- not assignment_found.
+		:- bin_assignment(A1), bin_assignment(A2), A1 != A2.
+		
+		% Every item is in a bin
+		assignment_element(lst(E, TAIL), E, TAIL) :- bin_assignment(lst(E, TAIL)).
+		assignment_element(ASSGN, E, TAIL) :- assignment_element(ASSGN, _, lst(E, TAIL)).
+		assigned(I, B, A) :- assignment_element(A, item_packed(I, B), _).
+		item_assigned(A, I) :- item(I, _), assigned(I, _, A).
+		:- bin_assignment(A), item(I, _), not item_assigned(A, I).
+
+		% In no assignment, any bin capacity is exceeded
+		capacity_used(A, B, C) :- C = #sum{S : item(I, S), item_assigned(I, B, A)}, bin_assignment(A), bin(B, _).
+		:- bin_assignment(A), bin(B, S), capacity_used(A, B, C), C > S.
+		
+		% The single assignment has value 10
+		:- bin_assignment(A), not assignment_value(A, 10).
+	}
+}
+
+#test singleBinNegativeCase(expect: 1) {
+	given {
+		bin(a, 7).
+
+		item(x, 3).
+		item(y, 2).
+		item(z, 4).
+	} 
+	assertForAll {
+		% There is no assignment
+		assignment_found :- bin_assignment(_).
+		:- assignment_found.
+	}
+}
+
+#test twoBinsTwoAssignments(expect: 1) {
+	given {
+		bin(a, 6).
+		bin(b, 4).
+
+		item(x, 3).
+		item(y, 2).
+		item(z, 4).
+
+	}
+	assertForAll {
+		% There are exactly two assignments
+		num_assignments(N) :- N = #count{ A : bin_assignment(A)}.
+		assignment_found :- bin_assignment(_).
+		:- num_assignments(N), N != 2.
+		
+		% Every item is in a bin
+		assignment_element(lst(E, TAIL), E, TAIL) :- bin_assignment(lst(E, TAIL)).
+		assignment_element(ASSGN, E, TAIL) :- assignment_element(ASSGN, _, lst(E, TAIL)).
+		assigned(I, B, A) :- assignment_element(A, item_packed(I, B), _).
+		item_assigned(A, I) :- item(I, _), assigned(I, _, A).
+		:- bin_assignment(A), item(I, _), not item_assigned(A, I).
+
+		% In no assignment, any bin capacity is exceeded
+		capacity_used(A, B, C) :- C = #sum{S : item(I, S), item_assigned(I, B, A)}, bin_assignment(A), bin(B, _).
+		:- bin_assignment(A), bin(B, S), capacity_used(A, B, C), C > S.
+		
+		% There is an assignment in which items y and z are in bin a.
+		y_and_z_in_a :- bin_assignment(A), assigned(y, a, A), assigned(z, a, A).
+		:- not y_and_z_in_a.
+		
+		% Both assignments have value 10
+		:- bin_assignment(A), not assignment_value(A, 10).
+	}
+}

@@ -1,8 +1,6 @@
 package at.ac.tuwien.kr.alpha.core.programs.transformation.aggregates;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import at.ac.tuwien.kr.alpha.api.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.AggregateAtom;
@@ -22,7 +20,7 @@ import at.ac.tuwien.kr.alpha.commons.programs.rules.Rules;
 import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
 
 /**
- * Transforms an {@link AspCore2ProgramImpl} such that, for all aggregate (body-)literals, only the comparison operators "="
+ * Transforms an {@link at.ac.tuwien.kr.alpha.api.programs.InputProgram} such that, for all aggregate (body-)literals, only the comparison operators "="
  * and "<=" are used.
  * 
  * Rewriting of "#count" and "#sum" aggregates is done using the following equivalences:
@@ -41,7 +39,7 @@ import at.ac.tuwien.kr.alpha.commons.programs.terms.Terms;
  * Note that input programs must only contain aggregate literals of form <code>TERM OP #aggr{...}</code> or <code>#aggr{...} OP TERM</code>,
  * i.e. with only
  * a left or right term and operator (but not both). When preprocessing programs, apply this transformation AFTER
- * {@link at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateLiteralSplitting}.
+ * {@link AggregateLiteralSplitting}.
  * 
  * Copyright (c) 2020-2021, the Alpha Team.
  */
@@ -52,7 +50,7 @@ public final class AggregateOperatorNormalization {
 	}
 
 	public static Rule<Head> normalize(Rule<Head> rule) {
-		List<Literal> rewrittenBody = new ArrayList<>();
+		Set<Literal> rewrittenBody = new LinkedHashSet<>();
 		for (Literal lit : rule.getBody()) {
 			rewrittenBody.addAll(rewriteLiteral(lit));
 		}

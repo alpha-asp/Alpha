@@ -92,16 +92,12 @@ public class CommandLineParser {
 	private static final Option OPT_RUN_TESTS = Option.builder("t").longOpt("run-tests").hasArg(false).desc("Runs all unit tests of the given ASP Program").build();
 
 	// general system-wide config
-	private static final Option OPT_GROUNDER = Option.builder("g").longOpt("grounder").hasArg(true).argName("grounder")
-			.desc("the grounder implementation to use (default: " + SystemConfig.DEFAULT_GROUNDER_NAME + ")").build();
 	private static final Option OPT_SOLVER = Option.builder("s").longOpt("solver").hasArg(true).argName("solver")
 			.desc("the solver implementation to use (default: " + SystemConfig.DEFAULT_SOLVER_NAME + ")").build();
 	private static final Option OPT_NOGOOD_STORE = Option.builder("r").longOpt("store").hasArg(true).argName("store")
 			.desc("the nogood store to use (default: " + SystemConfig.DEFAULT_NOGOOD_STORE_NAME + ")").build();
 	private static final Option OPT_SORT = Option.builder("sort").longOpt("sort").hasArg(false)
 			.desc("sort answer sets (default: " + SystemConfig.DEFAULT_SORT_ANSWER_SETS + ")").build();
-	private static final Option OPT_DETERMINISTIC = Option.builder("d").longOpt("deterministic").hasArg(false)
-			.desc("disables randomness (default: " + SystemConfig.DEFAULT_DETERMINISTIC + ")").build();
 	private static final Option OPT_SEED = Option.builder("e").longOpt("seed").hasArg(true).argName("seed").type(Integer.class)
 			.desc("set seed (default: System.nanoTime())").build();
 	private static final Option OPT_DEBUG_INTERNAL_CHECKS = Option.builder("dbgs").longOpt("DebugEnableInternalChecks")
@@ -127,9 +123,6 @@ public class CommandLineParser {
 			.build();
 	private static final Option OPT_AGGREGATES_NO_NEGATIVE_INTEGERS = Option.builder("dni").longOpt("disableNegativeIntegers")
 			.desc("use simplified encodings without netagive integer support for #sum aggregates (default: " + !AggregateRewritingConfig.DEFAULT_SUPPORT_NEGATIVE_INTEGERS + ")")
-			.build();
-	private static final Option OPT_NO_EVAL_STRATIFIED = Option.builder("dse").longOpt("disableStratifiedEvaluation")
-			.desc("Disable stratified evaluation")
 			.build();
 	private static final Option OPT_NO_NOGOOD_DELETION = Option.builder("dnd").longOpt("disableNoGoodDeletion")
 			.desc("disable the deletion of (learned, little active) nogoods (default: " 
@@ -171,11 +164,9 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_REIFY);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_RUN_TESTS);
 
-		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SOLVER);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NOGOOD_STORE);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SORT);
-		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_DETERMINISTIC);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SEED);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_DEBUG_INTERNAL_CHECKS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_BRANCHING_HEURISTIC);
@@ -187,7 +178,6 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_AGGREGATES_NO_SORTING_GRID);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_AGGREGATES_NO_NEGATIVE_INTEGERS);
 
-		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_EVAL_STRATIFIED);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_NOGOOD_DELETION);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES);
@@ -229,11 +219,9 @@ public class CommandLineParser {
 		 */
 		// help is handled separately, therefore dummy handler
 		this.globalOptionHandlers.put(CommandLineParser.OPT_HELP.getOpt(), (o, c) -> { });
-		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER.getOpt(), this::handleGrounder);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_SOLVER.getOpt(), this::handleSolver);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NOGOOD_STORE.getOpt(), this::handleNogoodStore);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_SORT.getOpt(), this::handleSort);
-		this.globalOptionHandlers.put(CommandLineParser.OPT_DETERMINISTIC.getOpt(), this::handleDeterministic);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_SEED.getOpt(), this::handleSeed);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_DEBUG_INTERNAL_CHECKS.getOpt(), this::handleInternalChecks);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_BRANCHING_HEURISTIC.getOpt(), this::handleBranchingHeuristic);
@@ -244,7 +232,6 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), this::handleNoJustification);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_AGGREGATES_NO_SORTING_GRID.getOpt(), this::handleDisableSortingGrid);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_AGGREGATES_NO_NEGATIVE_INTEGERS.getOpt(), this::handleDisableNegativeSumElements);
-		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_EVAL_STRATIFIED.getOpt(), this::handleDisableStratifedEval);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS.getOpt(), this::handleGrounderToleranceConstraints);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES.getOpt(), this::handleGrounderToleranceRules);
@@ -341,10 +328,6 @@ public class CommandLineParser {
 		cfg.getFiles().add(optVal);
 	}
 
-	private void handleGrounder(Option opt, SystemConfig cfg) {
-		cfg.setGrounderName(opt.getValue(SystemConfig.DEFAULT_GROUNDER_NAME));
-	}
-
 	private void handleSolver(Option opt, SystemConfig cfg) {
 		cfg.setSolverName(opt.getValue(SystemConfig.DEFAULT_SOLVER_NAME));
 	}
@@ -367,13 +350,7 @@ public class CommandLineParser {
 		cfg.setSortAnswerSets(true);
 	}
 
-	private void handleDeterministic(Option opt, SystemConfig cfg) {
-		cfg.setDeterministic(true);
-		cfg.setSeed(0);
-	}
-
 	private void handleSeed(Option opt, SystemConfig cfg) {
-		cfg.setDeterministic(false);
 		String optVal = opt.getValue();
 		long seed;
 		if (optVal != null) {
@@ -453,10 +430,6 @@ public class CommandLineParser {
 
 	private void handleDisableNegativeSumElements(Option opt, SystemConfig cfg) {
 		cfg.getAggregateRewritingConfig().setSupportNegativeValuesInSums(false);
-	}
-
-	private void handleDisableStratifedEval(Option opt, SystemConfig cfg) {
-		cfg.setEvaluateStratifiedPart(false);
 	}
 
 	private void handleDebugPreprocessing(Option opt, InputConfig cfg) {

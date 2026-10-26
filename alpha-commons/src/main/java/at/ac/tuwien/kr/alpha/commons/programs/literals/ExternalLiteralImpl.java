@@ -27,12 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.commons.programs.literals;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.api.programs.literals.ExternalLiteral;
@@ -40,11 +34,13 @@ import at.ac.tuwien.kr.alpha.api.programs.literals.Literal;
 import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.commons.programs.atoms.AbstractAtom;
 import at.ac.tuwien.kr.alpha.commons.substitutions.BasicSubstitution;
 
+import java.util.*;
+import java.util.function.Predicate;
+
 /**
- * Contains a potentially negated {@link ExternalAtomImpl}.
+ * Contains a potentially negated {@link ExternalAtom}.
  */
 class ExternalLiteralImpl extends AbstractLiteral implements ExternalLiteral {
 
@@ -67,7 +63,7 @@ class ExternalLiteralImpl extends AbstractLiteral implements ExternalLiteral {
 	}
 
 	/**
-	 * @see AbstractAtom#substitute(BasicSubstitution)
+	 * @see Literal#substitute(Substitution)
 	 */
 	@Override
 	public ExternalLiteralImpl substitute(Substitution substitution) {
@@ -132,9 +128,12 @@ class ExternalLiteralImpl extends AbstractLiteral implements ExternalLiteral {
 		for (Term t : input) {
 			substitutes.add(t.substitute(partialSubstitution));
 		}
-		Set<List<ConstantTerm<?>>> results = getAtom().getInterpretation().evaluate(substitutes);
+		Set<List<Term>> results = getAtom().getInterpretation().evaluate(substitutes);
 		if (results == null) {
 			throw new NullPointerException("Predicate " + getPredicate().getName() + " returned null. It must return a Set.");
+		}
+		if (results.stream().anyMatch(trms -> trms.stream().anyMatch(Predicate.not(Term::isGround)))) {
+			throw new IllegalStateException("Predicate " + getPredicate().getName() + " returned non-ground term.");
 		}
 
 		if (this.isNegated()) {
@@ -165,10 +164,10 @@ class ExternalLiteralImpl extends AbstractLiteral implements ExternalLiteral {
 	 * @return true iff no list in externalMethodResult equals the external atom's output term
 	 *         list as substituted by the grounder, false otherwise
 	 */
-	private boolean isNegatedLiteralSatisfied(Set<List<ConstantTerm<?>>> externalMethodResult) {
+	private boolean isNegatedLiteralSatisfied(Set<List<Term>> externalMethodResult) {
 		List<Term> externalAtomOutTerms = this.getAtom().getOutput();
 		boolean outputMatches;
-		for (List<ConstantTerm<?>> resultTerms : externalMethodResult) {
+		for (List<Term> resultTerms : externalMethodResult) {
 			outputMatches = true;
 			for (int i = 0; i < externalAtomOutTerms.size(); i++) {
 				if (!resultTerms.get(i).equals(externalAtomOutTerms.get(i))) {
@@ -187,10 +186,10 @@ class ExternalLiteralImpl extends AbstractLiteral implements ExternalLiteral {
 		return true;
 	}
 
-	private List<Substitution> buildSubstitutionsForOutputs(Substitution partialSubstitution, Set<List<ConstantTerm<?>>> outputs) {
+	private List<Substitution> buildSubstitutionsForOutputs(Substitution partialSubstitution, Set<List<Term>> outputs) {
 		List<Substitution> retVal = new ArrayList<>();
 		List<Term> externalAtomOutputTerms = this.getAtom().getOutput();
-		for (List<ConstantTerm<?>> bindings : outputs) {
+		for (List<Term> bindings : outputs) {
 			if (bindings.size() < externalAtomOutputTerms.size()) {
 				throw new RuntimeException(
 						"Predicate " + getPredicate().getName() + " returned " + bindings.size() + " terms when at least " + externalAtomOutputTerms.size()

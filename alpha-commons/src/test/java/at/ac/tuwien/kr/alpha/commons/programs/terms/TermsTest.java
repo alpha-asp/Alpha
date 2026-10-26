@@ -4,9 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import org.junit.jupiter.api.Test;
 
 import at.ac.tuwien.kr.alpha.api.programs.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.programs.terms.FunctionTerm;
 
 public class TermsTest {
 
@@ -28,6 +30,39 @@ public class TermsTest {
 		assertEquals(2, terms.size());
 		assertEquals("\"bla\"", terms.get(0).toString());
 		assertEquals("\"blubb\"", terms.get(1).toString());
+	}
+
+	/**
+	 * Reproduction test for an error observed while testing evolog actions.
+	 */
+	@Test
+	public void functionTermVsActionSuccessTermHash() {
+		FunctionTerm funcTerm = Terms.newFunctionTerm("success", Terms.newFunctionTerm("stream", Terms.newConstant("outputStream_2")));
+		FunctionTerm actionSuccessTerm = Terms.actionSuccess(Terms.newFunctionTerm("stream", Terms.newConstant("outputStream_2")));
+		assertEquals(funcTerm, actionSuccessTerm);
+		assertEquals(funcTerm.hashCode(), actionSuccessTerm.hashCode());
+	}
+
+	@Test
+	public void asListTermSingleElement() {
+		List<Term> terms = List.of(Terms.newConstant(1));
+		Term lstTerm = Terms.asListTerm(terms);
+		assertEquals(Terms.newFunctionTerm(Terms.LIST_TERM_SYMBOL, Terms.newConstant(1), Terms.EMPTY_LIST), lstTerm);
+	}
+
+	@Test
+	public void asListTermEmptyList() {
+		assertEquals(Terms.asListTerm(List.of()), Terms.EMPTY_LIST);
+	}
+
+	@Test
+	public void asListTermMultipleElements() {
+		List<Term> terms = List.of(Terms.newConstant(1), Terms.newConstant(2), Terms.newConstant(3));
+		Term lstTerm = Terms.asListTerm(terms);
+		assertEquals(Terms.newFunctionTerm(Terms.LIST_TERM_SYMBOL, Terms.newConstant(1),
+				Terms.newFunctionTerm(Terms.LIST_TERM_SYMBOL, Terms.newConstant(2),
+						Terms.newFunctionTerm(Terms.LIST_TERM_SYMBOL, Terms.newConstant(3),
+								Terms.EMPTY_LIST))), lstTerm);
 	}
 
 }

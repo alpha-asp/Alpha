@@ -124,7 +124,7 @@ public class AtomCounterTests {
 	private void createRuleAtom() {
 		BasicAtom atomAA = Atoms.newBasicAtom(Predicates.getPredicate("aa", 0));
 		CompiledRule ruleAA = new InternalRule(Heads.newNormalHead(atomAA),
-				Collections.singletonList(Atoms.newBasicAtom(Predicates.getPredicate("bb", 0)).toLiteral(false)));
+				Collections.singleton(Atoms.newBasicAtom(Predicates.getPredicate("bb", 0)).toLiteral(false)));
 		atomStore.putIfAbsent(new RuleAtom(ruleAA, new BasicSubstitution()));
 	}
 

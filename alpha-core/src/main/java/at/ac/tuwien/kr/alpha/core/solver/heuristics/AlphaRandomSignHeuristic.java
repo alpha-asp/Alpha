@@ -25,14 +25,13 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
+import java.util.Random;
+
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.core.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
-
-import static at.ac.tuwien.kr.alpha.core.solver.Atoms.isAtom;
-
-import java.util.Random;
 
 public class AlphaRandomSignHeuristic extends DependencyDrivenHeuristic {
 
@@ -51,7 +50,7 @@ public class AlphaRandomSignHeuristic extends DependencyDrivenHeuristic {
 
 	@Override
 	public boolean chooseSign(int atom) {
-		if (!isAtom(atom)) {
+		if (!AtomStore.isAtom(atom)) {
 			throw new IllegalArgumentException("Atom must be a positive integer.");
 		}
 

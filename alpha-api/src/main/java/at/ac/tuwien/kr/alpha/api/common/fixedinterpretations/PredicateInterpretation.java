@@ -37,10 +37,11 @@ import static java.util.Collections.*;
 
 @FunctionalInterface
 public interface PredicateInterpretation {
-	Set<List<ConstantTerm<?>>> TRUE = singleton(emptyList());
-	Set<List<ConstantTerm<?>>> FALSE = emptySet();
+
+	Set<List<Term>> TRUE = singleton(emptyList());
+	Set<List<Term>> FALSE = emptySet();
 
 	String EVALUATE_RETURN_TYPE_NAME_PREFIX = Set.class.getName() + "<" + List.class.getName() + "<" + ConstantTerm.class.getName();
 
-	Set<List<ConstantTerm<?>>> evaluate(List<Term> terms);
+	Set<List<Term>> evaluate(List<Term> terms);
 }

@@ -3,7 +3,6 @@ package at.ac.tuwien.kr.alpha.core.solver;
 import static at.ac.tuwien.kr.alpha.core.common.NoGood.fact;
 import static at.ac.tuwien.kr.alpha.core.common.NoGood.headFirst;
 import static at.ac.tuwien.kr.alpha.core.common.NoGoodTest.fromOldLiterals;
-import static at.ac.tuwien.kr.alpha.core.solver.AntecedentTest.antecedentsEquals;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.TRUE;
@@ -348,7 +347,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		assignment.assign(1, FALSE);
 		ConflictCause conflictCause = store.add(1, noGood);
 		assertNotNull(conflictCause);
-		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
+		assertTrue(TestUtils.antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
 	@Test
@@ -357,7 +356,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		assignment.assign(1, TRUE);
 		assignment.assign(2, TRUE);
 		ConflictCause conflictCause = store.add(1, noGood);
-		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
+		assertTrue(TestUtils.antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
 	@Test
@@ -367,7 +366,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		assignment.assign(2, TRUE);
 		assignment.assign(3, TRUE);
 		ConflictCause conflictCause = store.add(1, noGood);
-		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
+		assertTrue(TestUtils.antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
 	@Test
@@ -380,7 +379,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		ConflictCause conflictCause = store.propagate();
 		assertNotNull(conflictCause);
 		assertFalse(store.didPropagate());
-		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
+		assertTrue(TestUtils.antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
 	@Test
@@ -402,7 +401,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		ConflictCause conflictCause = store.propagate();
 		assertFalse(store.didPropagate());
 		assertNotNull(conflictCause);
-		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
+		assertTrue(TestUtils.antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
 	@Test
@@ -415,7 +414,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		ConflictCause conflictCause = store.propagate();
 		assertFalse(store.didPropagate());
 		assertNotNull(conflictCause);
-		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
+		assertTrue(TestUtils.antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
 	@Test

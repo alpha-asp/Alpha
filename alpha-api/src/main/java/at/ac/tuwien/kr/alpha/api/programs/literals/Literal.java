@@ -1,18 +1,18 @@
 package at.ac.tuwien.kr.alpha.api.programs.literals;
 
-import java.util.List;
-import java.util.Set;
-
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.programs.Predicate;
 import at.ac.tuwien.kr.alpha.api.programs.atoms.Atom;
 import at.ac.tuwien.kr.alpha.api.programs.terms.Term;
 import at.ac.tuwien.kr.alpha.api.programs.terms.VariableTerm;
 
+import java.util.List;
+import java.util.Set;
+
 /**
- * A literal according to the ASP Core 2 Standard.
+ * <p>A literal according to the ASP Core 2 Standard.
  * Wraps an {@link Atom} that may or may not be negated.
- *
+ * </p>
  * Copyright (c) 2017-2021, the Alpha Team.
  */
 // TODO go through implementations and pull out stuff that can be default-implemented here

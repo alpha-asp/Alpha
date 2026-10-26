@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.api.programs.tests;
 
-import at.ac.tuwien.kr.alpha.api.programs.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.programs.InputProgram;
 
 public interface Assertion {
 	
@@ -23,7 +23,7 @@ public interface Assertion {
 
 	Mode getMode();
 
-	ASPCore2Program getVerifier();
+	InputProgram getVerifier();
 
 
 }
